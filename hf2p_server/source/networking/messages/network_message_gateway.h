@@ -1,30 +1,28 @@
 #pragma once
-#include "..\transport\transport_address.h"
-#include "..\delivery\network_link.h"
+#include <windows.h>
 #include "network_message_type_collection.h"
-#include <libloaderapi.h>
+#include "..\transport\transport_address.h"
+#include "..\..\memory\bitstream.h"
+#include "..\..\dllmain.h"
 
-static uintptr_t module_base = (uintptr_t)GetModuleHandle(NULL);
-
-class c_network_message_gateway // : c_network_channel_owner?
+class c_network_link;
+class c_network_message_handler;
+class c_network_message_type_collection;
+class c_network_message_gateway
 {
 public:
-	// send_message_directed
-
 	c_network_link* get_network_link();
+	bool send_message_directed(c_network_message_gateway* network_message_gateway, s_transport_address outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message* message);
 
 private:
-	long : 32; // c_network_channel_owner vftable pointer?
+	struct c_network_message_gateway_vtbl* __vftable /*VFT*/;
 	bool m_initialized;
-	c_network_link* m_link; // c_network_link
+	c_network_link* m_link;
 	c_network_message_type_collection* m_message_type_collection;
-	long : 32;
+	c_network_message_handler* m_message_handler;
 	bool m_outgoing_packet_pending;
-	byte m_outgoing_packet_storage[0x600];
+	byte m_outgoing_packet_storage[0x4B0]; // ms23 size = 0x5BE, h3debug size = 0x600
 	s_transport_address m_transport_address;
-	long m_outgoing_packet; // c_bitstream
+	c_bitstream m_outgoing_packet;
 };
-//static_assert(sizeof(c_network_message_gateway) == 0x62C + sizeof(c_bistream));
-
-typedef int(__thiscall* c_network_message_gateway__send_message_directed_ptr)(c_network_message_gateway* network_message_gateway, s_transport_address outgoing_address, e_network_message_type network_message_type, long message_storage_size, s_network_message* message);
-static auto c_network_message_gateway__send_message_directed = reinterpret_cast<c_network_message_gateway__send_message_directed_ptr>(module_base + 0x232C0);
+static_assert(sizeof(c_network_message_gateway) == 0x580);

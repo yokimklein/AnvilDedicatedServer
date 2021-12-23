@@ -1,6 +1,7 @@
 #include "network_message_handler.h"
 #include "network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
+#include "..\delivery\network_link.h"
 #include <iostream>
 
 int c_network_message_handler::handle_out_of_band_message(s_transport_address transport_address, e_network_message_type message_type, long message_storage_size, s_network_message* message)

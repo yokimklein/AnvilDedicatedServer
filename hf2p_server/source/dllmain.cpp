@@ -1,11 +1,10 @@
 #include <iostream>
-#include <Windows.h>
+#include <cstdint>
+#include <windows.h>
 #include <inttypes.h>
-#include "networking\session\network_session_parameters.h"
+#include "dllmain.h"
 #include "networking\session\network_session.h"
-#include "networking\transport\transport_security.h"
-
-static uintptr_t module_base = (uintptr_t)GetModuleHandle(NULL);
+#include "interface\user_interface_networking.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -63,31 +62,32 @@ int MainThread()
     typedef int(__stdcall* _network_life_cycle_end_ptr)();
     auto network_life_cycle_end = reinterpret_cast<_network_life_cycle_end_ptr>(module_base + 0xC00 + 0x2A020);
 
-    typedef char(__thiscall* network_life_cycle_create_local_squad_ptr)(int network_session_class); // 0 = offline, 1 = online, 2 = xbl
+    typedef char(__thiscall* network_life_cycle_create_local_squad_ptr)(e_network_session_class session_class); // 0 = offline, 1 = online, 2 = xbl
     auto network_life_cycle_create_local_squad = reinterpret_cast<network_life_cycle_create_local_squad_ptr>(module_base + 0xC00 + 0x2A100);
 
-    typedef char(__thiscall* user_interface_squad_set_ui_game_mode_ptr)(int* this_ptr, int start_mode); // 0 = campaign, 1 = matchmaking, 2 = customs, 3 = forge, 4 = theater, 5 = firefight
+    typedef char(__thiscall* user_interface_squad_set_ui_game_mode_ptr)(int* this_ptr, e_gui_game_mode start_mode); // 0 = campaign, 1 = matchmaking, 2 = customs, 3 = forge, 4 = theater, 5 = firefight
     auto user_interface_squad_set_ui_game_mode = reinterpret_cast<user_interface_squad_set_ui_game_mode_ptr>(module_base + 0xC00 + 0x3A8D0);
 
-    typedef char(__thiscall* user_interface_set_desired_multiplayer_mode_ptr)(int desired_multiplayer_mode);
+    typedef char(__thiscall* user_interface_set_desired_multiplayer_mode_ptr)(e_desired_multiplayer_mode desired_multiplayer_mode);
     auto user_interface_set_desired_multiplayer_mode = reinterpret_cast<user_interface_set_desired_multiplayer_mode_ptr>(module_base + 0xC00 + 0x3A9BD0);
 
-    typedef char(__cdecl* c_game_variant__get_ptr)(char* output); // none = 0, ctf = 1, slayer = 2, oddball = 3, koth = 4, sandbox = 5, vip = 6, juggernaut = 7, territories = 8, assault = 9, infection = 10
+    typedef char(__cdecl* c_game_variant__get_ptr)(c_game_variant* output); // ms23 version took in e_engine_variant & engine_subtype_index
+    // TODO: c_game_variant::get(void *this, int output_variant) - actual args? where this is e_engine_variant - alternatively rewrite function from scratch
     auto c_game_variant__get = reinterpret_cast<c_game_variant__get_ptr>(module_base + 0xC00 + 0xE9210); // function doesn't exist in the h3 debug build so this name is made up
 
-    typedef bool(__thiscall* user_interface_squad_set_game_variant_ptr)(char* game_variant);
+    typedef bool(__thiscall* user_interface_squad_set_game_variant_ptr)(c_game_variant* game_variant);
     auto user_interface_squad_set_game_variant = reinterpret_cast<user_interface_squad_set_game_variant_ptr>(module_base + 0x3ABEC0);
 
-    typedef bool(__thiscall* network_squad_session_set_game_variant_ptr)(char* game_variant);
+    typedef bool(__thiscall* network_squad_session_set_game_variant_ptr)(c_game_variant* game_variant);
     auto network_squad_session_set_game_variant = reinterpret_cast<network_squad_session_set_game_variant_ptr>(module_base + 0xC00 + 0x2D510);
 
-    typedef void(__thiscall* c_map_variant__c_map_variant_ptr)(void* map_variant);
+    typedef void*(__thiscall* c_map_variant__c_map_variant_ptr)(c_map_variant* map_variant);
     auto c_map_variant__c_map_variant = reinterpret_cast<c_map_variant__c_map_variant_ptr>(module_base + 0xC00 + 0xAA6F0);
 
-    typedef void(__thiscall* c_map_variant__create_default_ptr)(void* map_variant, int map_id); // _QWORD return?
+    typedef char(__thiscall* c_map_variant__create_default_ptr)(c_map_variant* map_variant, int map_id);
     auto c_map_variant__create_default = reinterpret_cast<c_map_variant__create_default_ptr>(module_base + 0xC00 + 0xAA780); // c_map_variant_initialize
 
-    typedef char(__thiscall* user_interface_squad_set_multiplayer_map_ptr)(void* map_variant);
+    typedef char(__thiscall* user_interface_squad_set_multiplayer_map_ptr)(c_map_variant* map_variant);
     auto user_interface_squad_set_multiplayer_map = reinterpret_cast<user_interface_squad_set_multiplayer_map_ptr>(module_base + 0xC00 + 0x3AB060);
 
     //typedef char(__cdecl* levels_get_path_ptr)(int campaign_id, int map_id, char* output, rsize_t size_in_bytes);
@@ -99,19 +99,19 @@ int MainThread()
     //typedef char(__cdecl* network_squad_session_set_map_variant_ptr)(void* map_variant);
     //auto network_squad_session_set_map_variant = reinterpret_cast<network_squad_session_set_map_variant_ptr>(0x95BC60);
 
-    typedef char(__thiscall* c_network_session_parameter_session_mode__set_ptr)(int* session_parameters, int network_session_mode); // 12-4 = ??, 3 = in game, 2 = start game, 1 = end game xwrite stats, 0 = none?
+    typedef char(__thiscall* c_network_session_parameter_session_mode__set_ptr)(c_network_session_parameters* session_parameters, e_network_session_mode session_mode);
     auto c_network_session_parameter_session_mode__set = reinterpret_cast<c_network_session_parameter_session_mode__set_ptr>(module_base + 0xC00 + 0x2CC20);
 
-    typedef char(__fastcall* managed_session_get_id_ptr)(int index, GUID* transport_secure_identifier); // 12-4 = ??, 3 = in game, 2 = start game, 1 = end game xwrite stats, 0 = none?
+    typedef char(__fastcall* managed_session_get_id_ptr)(int index, GUID* transport_secure_identifier);
     auto managed_session_get_id = reinterpret_cast<managed_session_get_id_ptr>(module_base + 0x28AE0);
 
-    c_network_session* network_session = (c_network_session*)(module_base + 0xC00 + 0x396F568); // c_network_session
-    void* session_manager = (void*)(network_session + 12);
+    c_network_session* network_session = (c_network_session*)(module_base + 0xC00 + 0x396F568);
+    c_network_session_manager* session_manager = network_session->m_session_manager;
 
     int* life_cycle_state_unknown = (int*)((int)network_session + 0xE1D68);
     int c_life_cycle_state_handler = (module_base + 0x3EADFAC); // 0x3EAE010[2]
     short* g_game_port = (short*)(module_base + 0xE9B7A0);
-    c_network_session_parameters* network_session_parameters = (c_network_session_parameters*)((int)network_session + 0xE1C90); // c_life_cycle_state + 0xE1C90
+    c_network_session_parameters* network_session_parameters = &network_session->m_session_parameters; //  (c_network_session_parameters*)((int)network_session + 0xE1C90); // c_life_cycle_state + 0xE1C90
 
     AllocConsole();
     UnprotectMemory(module_base);
@@ -119,46 +119,44 @@ int MainThread()
     freopen_s(&f, "CONOUT$", "w", stdout);
     printf("Anvil Station Dedicated Server\n");
     printf("Build date: " __DATE__ " @ " __TIME__ "\n");
-    printf("Base address: %" PRIxPTR "\n", module_base);
+    printf("Base address: %p\n", (void*)module_base);
     printf("Game port: %hi\n", *g_game_port);
-    printf("c_network_session address: %" PRIxPTR "\n\n", (int)network_session); // todo: remove
+    printf("c_network_session address: %p\n\n", network_session);
 
-    // main loop
     while (true)
     {
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP
         {
             int map_id = 31; // s3d_turf map id
 
-            network_life_cycle_end(); // destroy current session
+            network_life_cycle_end();
             std::cout << "Destroying current session...\n";
             
-            // untested from here on down
-            network_life_cycle_create_local_squad(1); // create online syslink session
+            network_life_cycle_create_local_squad(_network_session_class_online);
             std::cout << "Creating an online syslink session\n";
-            user_interface_squad_set_ui_game_mode(life_cycle_state_unknown, 2); // set ui game mode to customs
+            user_interface_squad_set_ui_game_mode(life_cycle_state_unknown, _gui_game_mode_multiplayer);
             std::cout << "UI gamemode set to customs\n";
 
-            user_interface_set_desired_multiplayer_mode(1);
-            std::cout << "Multiplayer mode set to 1\n";
+            user_interface_set_desired_multiplayer_mode(_desired_multiplayer_mode_custom_games);
+            std::cout << "Multiplayer mode set to custom-games\n";
 
             // TODO: fix map & game variant code
-            char* game_variant = new char[0x264];
-            c_game_variant__get(&game_variant[0]); // get multi-flag variant (subtype index is specified by the wezr tag?)
+            c_game_variant* game_variant = new c_game_variant;
+            c_game_variant__get(game_variant); // subtype index is specified by the wezr tag? function currently broken
             std::cout << "Getting game variant\n";
-            if (!user_interface_squad_set_game_variant(&game_variant[0]))
+            if (!user_interface_squad_set_game_variant(game_variant))
                 std::cout << "Failed to set game variant!\n";
             else
                 std::cout << "Game variant set\n";
 
             // TODO: map variant isn't loading correctly
             char* map_path = new char[MAX_PATH];
-            char* map_variant = new char[0xE090];
-            c_map_variant__c_map_variant(&map_variant[0]); // initialize map variant
+            c_map_variant* map_variant = new c_map_variant;
+            c_map_variant__c_map_variant(map_variant); // initialize map variant
             std::cout << "Initializing map variant\n";
-            c_map_variant__create_default(&map_variant[0], map_id); // create default s3d_turf map variant
+            c_map_variant__create_default(map_variant, map_id); // create default s3d_turf map variant
             std::cout << "Creating default map variant\n";
-            if (!user_interface_squad_set_multiplayer_map(&map_variant[0]))
+            if (!user_interface_squad_set_multiplayer_map(map_variant))
                 std::cout << "Failed to set map variant!\n";
             else
                 std::cout << "Map variant set\n";
@@ -183,18 +181,7 @@ int MainThread()
         else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN
         {
             printf("Launching session...\n");
-            c_network_session_parameter_session_mode__set((int*)network_session_parameters, 2); // parameters = ? + 0xE1C90
-            /*
-            *(unsigned long*)(c_life_cycle_state_handler + 52) = 2; // a2
-            *(unsigned long*)(c_life_cycle_state_handler + 56) = 0; // a3
-            void* v4 = (void*)(c_life_cycle_state_handler + 60);
-            *(unsigned char*)(c_life_cycle_state_handler + 48) = 1;
-            *(unsigned long long*)(c_life_cycle_state_handler + 60) = 0i64;
-            *(unsigned long long*)(c_life_cycle_state_handler + 68) = 0i64;
-            signed int v5 = *(unsigned long*)(c_life_cycle_state_handler + 56);
-            if (v5 > 0)
-                v4 = memmove(v4, 0, v5); // 0 is a4
-            */
+            c_network_session_parameter_session_mode__set(network_session_parameters, _network_session_mode_setup);
         }
         Sleep(100);
     }

@@ -48,17 +48,20 @@ enum e_network_message_type
 
 struct s_network_message
 {
+	// TODO: correct size?
 	// there's a good chance these names are wrong
 	long channel_identifier; // transport_secure_identifier?
-	long next_update_number; // time sent?
-	long chunk_size;
+	long next_update_number; // time sent? flags?
+	long chunk_size; // s_transport_secure_address?
 	long incremental_update_number; // enum? -1 == complete, else incremental
 	void* baseline_checksum;
+	// protocol_version
+	// payload
 };
 
 struct s_network_message_ping : s_network_message
 {
-
+	// TODO
 };
 
 struct s_network_message_pong : s_network_message
@@ -136,9 +139,57 @@ struct s_network_message_session_boot : s_network_message
 
 };
 
+struct s_network_message_host_decline : s_network_message
+{
+
+};
+
+struct s_network_message_peer_establish : s_network_message
+{
+
+};
+
+struct s_network_message_membership_update : s_network_message
+{
+
+};
+
+struct s_network_message_peer_properties : s_network_message
+{
+
+};
+
+struct s_network_message_delegate_leadership : s_network_message
+{
+
+};
+
+struct s_network_message_boot_machine : s_network_message
+{
+
+};
+
+struct s_network_message_player_add : s_network_message
+{
+
+};
+
 struct s_network_message_time_synchronize : s_network_message
 {
 
+};
+
+struct c_network_message_type
+{
+	bool __unknown0;
+	const char* message_type_name;
+	unsigned int flags;
+	unsigned int message_size;
+	unsigned int message_size_maximum;
+	void* encode_function;
+	void* decode_function;
+	void* compare_function;
+	void* dispose_function;
 };
 
 class c_network_message_type_collection
@@ -147,5 +198,5 @@ public:
 	// char handle_ping(c_network_message_handler* message_handler, s_transport_address outgoing_address, s_network_message_ping* message_ping);
 
 private:
-	
+	c_network_message_type message_types[37];
 };

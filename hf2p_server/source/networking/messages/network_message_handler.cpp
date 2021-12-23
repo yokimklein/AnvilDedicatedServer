@@ -1,9 +1,9 @@
+#include <iostream>
+#include <windows.h>
 #include "network_message_handler.h"
 #include "network_message_type_collection.h"
 #include "network_message_gateway.h"
 #include "..\transport\transport_address.h"
-#include <iostream>
-#include <windows.h>
 
 int c_network_message_handler::handle_ping(s_transport_address outgoing_address, s_network_message_ping* message_ping)
 {
@@ -12,7 +12,7 @@ int c_network_message_handler::handle_ping(s_transport_address outgoing_address,
         message_ping->channel_identifier, address_string, timeGetTime());
     
     c_network_message_gateway* message_gateway = this->m_message_gateway;
-    return c_network_message_gateway__send_message_directed(message_gateway, outgoing_address, _network_message_type_ping, sizeof(s_network_message_ping), message_ping);
+    return message_gateway->send_message_directed(message_gateway, outgoing_address, _network_message_type_ping, sizeof(s_network_message_ping), message_ping);
 }
 
 int c_network_message_handler::handle_pong(s_transport_address outgoing_address, s_network_message_pong* message)
@@ -26,7 +26,7 @@ int c_network_message_handler::handle_pong(s_transport_address outgoing_address,
     else
         time = timeGetTime();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)", 
-        message->channel_identifier, NULL/*transport_address_get_string(&outgoing_address)*/, timeGetTime(), time - message->next_update_number);
+        message->channel_identifier, "(null)"/*transport_address_get_string(&outgoing_address)*/, timeGetTime(), time - message->next_update_number);
     return 1;
 }
 /*
@@ -54,7 +54,10 @@ int c_network_message_handler::handle_connect_refuse(c_network_channel* outgoing
 
 int c_network_message_handler::handle_connect_establish(c_network_channel* outgoing_address, s_network_message_connect_establish* message)
 {
-    return 0;
+    typedef int(__fastcall* handle_connect_establish_ptr)(c_network_channel* outgoing_address, s_network_message_connect_establish* message);
+    auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0xD5B10);
+
+    return handle_connect_establish(outgoing_address, message);
 }
 
 int c_network_message_handler::handle_connect_closed(c_network_channel* outgoing_address, s_network_message_connect_closed* message)
@@ -94,13 +97,51 @@ int c_network_message_handler::handle_leave_acknowledge(s_transport_address outg
 
 int c_network_message_handler::handle_session_disband(s_transport_address outgoing_address, s_network_message_session_disband* message)
 {
+    //auto session = c_network_session_manager::get_session(this->m_session_manager, &message);
+    //if (session)
+    //    return c_network_session::handle_session_disband(session, &outgoing_address, &message);
+    // TODO - include additional logging strings
     return 0;
 }
 
 int c_network_message_handler::handle_session_boot(s_transport_address outgoing_address, s_network_message_session_boot* message)
 {
     return 0;
+}
 
+int c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_delegate_leadership(c_network_channel* channel, s_network_message_delegate_leadership* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_boot_machine(c_network_channel* channel, s_network_message_boot_machine* message)
+{
+    return 0;
+}
+
+int c_network_message_handler::handle_player_add(c_network_channel* channel, s_network_message_player_add* message)
+{
+    return 0;
 }
 
 int c_network_message_handler::handle_time_synchronize(s_transport_address outgoing_address, s_network_message_time_synchronize* message)
@@ -108,48 +149,107 @@ int c_network_message_handler::handle_time_synchronize(s_transport_address outgo
     return 0;
 }
 
-void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message_connect_establish* message)
+void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)
 {
+    char* message_type_name = channel->get_message_type_name(message_type);
+    char* channel_name = channel->get_name();
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over CLOSED channel '%s'",
+        message_type, message_type_name, channel_name);
+}
+
+void log_received_over_non_connected_channel(c_network_channel* channel, e_network_message_type message_type)
+{
+    char* message_type_name = channel->get_message_type_name(message_type);
+    char* channel_name = channel->get_name();
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over a non-connected channel '%s', discarding",
+        message_type, message_type_name, channel_name);
+}
+
+// might need a return code?
+void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message* message)
+{
+    s_transport_address remote_address;
     switch (message_type)
     {
-    case _network_message_type_connect_establish:
+        case _network_message_type_connect_establish:
+            this->handle_connect_establish(channel, (s_network_message_connect_establish*)message);
+            break;
 
-        break;
-    case _network_message_type_leave_session:
+        case _network_message_type_leave_session: // TODO - removed by saber in client builds
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_leave_session(remote_address, (s_network_message_leave_session*)message);
+            else
+                log_received_over_closed_channel(channel, _network_message_type_leave_session);
+            break;
 
-        break;
-    case _network_message_type_session_disband:
+        case _network_message_type_session_disband:
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_session_disband(remote_address, (s_network_message_session_disband*)message);
+            else
+                log_received_over_closed_channel(channel, _network_message_type_session_disband);
+            break;
 
-        break;
-    case _network_message_type_session_boot:
+        case _network_message_type_session_boot:
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_session_boot(remote_address, (s_network_message_session_boot*)message);
+            else
+                log_received_over_closed_channel(channel, _network_message_type_session_boot);
+            break;
 
-        break;
-    case _network_message_type_host_decline:
+        case _network_message_type_host_decline:
+            if (channel->connected())
+                this->handle_host_decline(channel, (s_network_message_host_decline*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_host_decline);
+            break;
 
-        break;
-    case _network_message_type_peer_establish:
+        case _network_message_type_peer_establish:
+            if (channel->connected())
+                this->handle_peer_establish(channel, (s_network_message_peer_establish*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_peer_establish);
+            break;
 
-        break;
-    case _network_message_type_membership_update:
+        case _network_message_type_membership_update:
+            if (channel->connected())
+                this->handle_membership_update(channel, (s_network_message_membership_update*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_membership_update);
+            break;
 
-        break;
-    case _network_message_type_peer_properties:
+        case _network_message_type_peer_properties:
+            if (channel->connected())
+                this->handle_peer_properties(channel, (s_network_message_peer_properties*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_peer_properties);
+            break;
 
-        break;
-    case _network_message_type_delegate_leadership:
+        case _network_message_type_delegate_leadership:
+            if (channel->connected())
+                this->handle_delegate_leadership(channel, (s_network_message_delegate_leadership*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_delegate_leadership);
+            break;
 
-        break;
-    case _network_message_type_boot_machine:
+        case _network_message_type_boot_machine:
+            if (channel->connected())
+                this->handle_boot_machine(channel, (s_network_message_boot_machine*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_boot_machine);
+            break;
 
-        break;
-    case _network_message_type_player_add:
+        case _network_message_type_player_add:
+            if (channel->connected())
+                this->handle_player_add(channel, (s_network_message_player_add*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_player_add);
+            break;
 
-        break;
         default:
+
             break;
     }
 }
-
 
 c_network_message_gateway* c_network_message_handler::get_message_gateway()
 {

@@ -1,0 +1,150 @@
+#pragma once
+#include <cstdint>
+#include <windows.h>
+#include "game_engine_player_traits.h"
+#include "..\memory\bitstream.h"
+
+enum e_engine_variant : long
+{
+	_engine_variant_base,
+	_engine_variant_ctf,
+	_engine_variant_slayer,
+	_engine_variant_oddball,
+	_engine_variant_king,
+	_engine_variant_sandbox,
+	_engine_variant_vip,
+	_engine_variant_juggernaut,
+	_engine_variant_territories,
+	_engine_variant_assault,
+	_engine_variant_infection,
+};
+
+enum e_content_item
+{
+	_content_item_usermap,
+	_content_item_personal,
+	_content_item_ctf,
+	_content_item_slayer,
+	_content_item_oddball,
+	_content_item_koth,
+	_content_item_juggernaut,
+	_content_item_territories,
+	_content_item_assault,
+	_content_item_vip,
+	_content_item_infection,
+	_content_item_film,
+	_content_item_clip,
+	_content_item_screenshot,
+
+	k_content_item_count
+};
+
+struct BLAM_CONTENT_HEADER
+{
+	uint64_t m_id;
+	wchar_t m_name[16];
+	char m_description[128];
+	char m_author[16];
+	e_content_item m_content_type;
+	uint32_t UnknownBC;
+	uint32_t UnknownC0;
+	uint32_t UnknownC4;
+	uint32_t m_size;
+	uint32_t UnknownCC;
+	uint64_t m_timestamp;
+	uint32_t UnknownD8;
+	uint32_t m_campaign_id;
+	uint32_t m_map_id;
+	uint32_t m_engine;
+	uint32_t m_campaign_difficulty;
+	uint8_t m_campaign_insertion;
+	uint8_t m_survival;
+	uint16_t unknownEE;
+	uint64_t m_game_instance;
+};
+
+struct c_game_engine_variant_general_settings
+{
+	byte m_flags;
+	byte m_time_limit;
+	byte m_number_of_rounds;
+	byte m_early_victory_win_count;
+};
+
+struct c_game_engine_variant_respawn_settings
+{
+	byte m_flags;
+	byte m_lives_per_round;
+	byte m_shared_team_lives;
+	byte m_respawn_time;
+	byte m_suicide_penalty;
+	byte m_betrayal_penalty;
+	byte m_unknown_penalty;
+	byte m_respawn_time_growth;
+	byte m_respawn_trait_duration;
+	short unknown9;
+	byte unknownB;
+	c_player_traits m_respawn_trait_profile;
+};
+
+struct c_game_engine_variant_social_settings
+{
+	short m_flags;
+	short m_team_changing;
+};
+
+struct c_game_engine_variant_map_overrides
+{
+	int m_flags;
+	c_player_traits m_base_traits;
+	short m_weapon_set;
+	short m_vehicle_set;
+	c_player_traits m_red_traits;
+	c_player_traits m_blue_traits;
+	c_player_traits m_yellow_traits;
+	byte m_red_traits_duration;
+	byte m_blue_traits_duration;
+	byte m_yellow_traits_duration;
+	byte unknwon7B;
+};
+
+struct c_game_engine_variant_vtbl;
+struct c_game_engine_base_variant
+{
+	c_game_engine_variant_vtbl* vftable;
+	int* SHA1_C;
+	char m_variant_backend_name[32];
+	BLAM_CONTENT_HEADER m_content_header;
+	c_game_engine_variant_general_settings m_general_settings;
+	c_game_engine_variant_respawn_settings m_respawn_settings;
+	c_game_engine_variant_social_settings m_social_settings;
+	c_game_engine_variant_map_overrides m_map_overrides;
+	uint16_t m_flags;
+	int16_t m_team_scoring;
+};
+
+struct c_game_engine_variant : c_game_engine_base_variant
+{
+	uint8_t m_specific_data[144];
+};
+
+struct c_game_variant
+{
+	e_engine_variant m_game_engine_index;
+	c_game_engine_variant m_variant;
+};
+
+struct c_game_engine_variant_vtbl
+{
+	int(__cdecl* get_name)();
+	int(__thiscall* get_description)(c_game_engine_variant*);
+	int(__thiscall* make_default)(c_game_engine_variant*);
+	void(__thiscall* build_settings)(c_game_engine_variant*);
+	void* backend_encode;
+	void(__thiscall* backend_decode)(c_game_engine_variant*, c_bitstream*);
+	int(__cdecl* func06)();
+	int(__thiscall* score_to_win)(c_game_engine_variant*);
+	int(__thiscall* func08)(c_game_engine_variant*);
+	void(__stdcall* get_engine)(c_game_engine_variant*, e_engine_variant, c_game_engine_variant**);
+	int(__stdcall* func10)(int, int, int);
+};

@@ -1,9 +1,6 @@
-#include "transport_address.h"
 #include <cstdint>
-#include <winnt.h>
-#include <libloaderapi.h>
-
-static uintptr_t module_base = (uintptr_t)GetModuleHandle(NULL);
+#include "transport_address.h"
+#include "..\..\dllmain.h"
 /*
 enum
 {

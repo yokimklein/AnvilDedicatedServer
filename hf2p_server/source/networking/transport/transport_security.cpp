@@ -1,9 +1,6 @@
+#include <windows.h>
 #include "transport_security.h"
-#include "guiddef.h"
-#include <libloaderapi.h>
-#include <Windows.h>
-
-static uintptr_t module_base = (uintptr_t)GetModuleHandle(NULL);
+#include "..\..\dllmain.h"
 
 int transport_secure_address_get(GUID* transport_secure_address)
 {
