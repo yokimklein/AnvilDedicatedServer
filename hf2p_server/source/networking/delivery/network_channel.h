@@ -95,7 +95,7 @@ class c_network_channel
 public:
 	bool connected();
 	char* get_name();
-	char* get_message_type_name(e_network_message_type message_type);
+	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
 	// allocated()
 	// allocate()
@@ -106,7 +106,6 @@ public:
 	// is_receive_only()
 	// is_transmit_only()
 
-private:
 	c_network_link* m_link;
 	c_network_observer* m_observer;
 	c_network_message_gateway* m_message_gateway;

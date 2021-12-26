@@ -1,4 +1,6 @@
 #pragma once
+#include "..\delivery\network_link.h"
+#include "..\messages\network_message_type_collection.h"
 
 enum e_observer_state : long
 {
@@ -15,7 +17,8 @@ enum e_network_observer_owner : long
 
 class c_network_observer
 {
-
+	public:
+		char handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 };
 
 /*

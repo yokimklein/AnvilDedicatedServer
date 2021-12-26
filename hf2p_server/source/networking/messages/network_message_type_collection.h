@@ -1,11 +1,11 @@
 #pragma once
 #include "..\transport\transport_address.h"
 
-enum e_network_message_type
+enum e_network_message_type : long
 {
 	_network_message_type_ping,
 	_network_message_type_pong,
-	//_network_message_type_broadcast_search, // saber removed most matchmaking parts of networking
+	//_network_message_type_broadcast_search, // saber removed most of the matchmaking related sections of the networking
 	//_network_message_type_broadcast_reply,
 	_network_message_type_connect_request,
 	_network_message_type_connect_refuse,
@@ -39,6 +39,7 @@ enum e_network_message_type
 	_network_message_type_synchronous_actions,
 	_network_message_type_synchronous_acknowledge,
 	_network_message_type_synchronous_gamestate,
+	//_network_message_type_distributed_game_results, // not sure if this one still exists in ms29
 	_network_message_type_synchronous_client_ready,
 	_network_message_type_game_results,
 	_network_message_type_test,
@@ -48,25 +49,37 @@ enum e_network_message_type
 
 struct s_network_message
 {
-	// TODO: correct size?
-	// there's a good chance these names are wrong
-	long channel_identifier; // transport_secure_identifier?
-	long next_update_number; // time sent? flags?
-	long chunk_size; // s_transport_secure_address?
-	long incremental_update_number; // enum? -1 == complete, else incremental
-	void* baseline_checksum;
+	// leftover notes
+	// struct has no members
+	
+	//long channel_identifier; // transport_secure_identifier?
+	//long next_update_number; // time sent? flags?
+	//long chunk_size; // s_transport_secure_address?
+	//long incremental_update_number; // enum? -1 == complete, else incremental
+	//void* baseline_checksum;
 	// protocol_version
 	// payload
 };
 
 struct s_network_message_ping : s_network_message
 {
-	// TODO
+	unsigned short id;
+	short : 16;
+
+	unsigned long timestamp;
+
+	bool request_qos;
+	char : 8;
+	short : 16;
 };
 
 struct s_network_message_pong : s_network_message
 {
+	unsigned short id;
+	short : 16;
 
+	unsigned long timestamp;
+	unsigned long request_qos;
 };
 /*
 struct s_network_message_broadcast_search : s_network_message
@@ -101,7 +114,12 @@ struct s_network_message_connect_closed : s_network_message
 
 struct s_network_message_join_request : s_network_message
 {
+	unsigned short protocol_version;
+	short : 16;
 
+	long : 32;
+	long : 32;
+	s_transport_secure_identifier session_id;
 };
 
 struct s_network_message_peer_connect : s_network_message
@@ -126,7 +144,7 @@ struct s_network_message_leave_session : s_network_message
 
 struct s_network_message_leave_acknowledge : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
 };
 
 struct s_network_message_session_disband : s_network_message
@@ -145,6 +163,11 @@ struct s_network_message_host_decline : s_network_message
 };
 
 struct s_network_message_peer_establish : s_network_message
+{
+
+};
+
+struct s_network_message_time_synchronize : s_network_message
 {
 
 };
@@ -174,7 +197,37 @@ struct s_network_message_player_add : s_network_message
 
 };
 
-struct s_network_message_time_synchronize : s_network_message
+struct s_network_message_player_refuse : s_network_message
+{
+
+};
+
+struct s_network_message_player_remove : s_network_message
+{
+
+};
+
+struct s_network_message_player_properties : s_network_message
+{
+
+};
+
+struct s_network_message_parameters_update : s_network_message
+{
+
+};
+
+struct s_network_message_parameters_request : s_network_message
+{
+
+};
+
+struct s_network_message_view_establishment : s_network_message
+{
+
+};
+
+struct s_network_message_player_acknowledge : s_network_message
 {
 
 };
@@ -196,7 +249,17 @@ class c_network_message_type_collection
 {
 public:
 	// char handle_ping(c_network_message_handler* message_handler, s_transport_address outgoing_address, s_network_message_ping* message_ping);
-
+	const char* get_message_type_name(e_network_message_type message_type);
 private:
-	c_network_message_type message_types[37];
+	c_network_message_type message_types[k_network_message_type_count];
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	// type names?
+
 };

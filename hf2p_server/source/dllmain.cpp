@@ -3,7 +3,9 @@
 #include <windows.h>
 #include <inttypes.h>
 #include "dllmain.h"
+#include "patch\Patch.hpp"
 #include "networking\session\network_session.h"
+#include "networking\messages\network_message_handler.h"
 #include "interface\user_interface_networking.h"
 
 void UnprotectMemory(uintptr_t base)
@@ -27,38 +29,17 @@ void UnprotectMemory(uintptr_t base)
     printf("Done! Unprotected %u bytes of memory\n", Total);
 }
 
-/*
-BYTE hook[6];
-BYTE hook2[6];
-BYTE hook3[6];
-BYTE jmp[6] = { 0xe9,0x00, 0x00, 0x00, 0x00 ,0xc3 };
-DWORD pPrevious;
-DWORD HookFunction(LPCSTR lpModule, LPCSTR lpFuncName, LPVOID lpFunction, unsigned char* lpBackup)
-{
-    DWORD dwAddr = (DWORD)GetProcAddress(GetModuleHandle(lpModule), lpFuncName);
-    ReadProcessMemory(GetCurrentProcess(), (LPVOID)dwAddr, lpBackup, 6, 0);
-    DWORD dwCalc = ((DWORD)lpFunction - dwAddr - 5);
-    VirtualProtect((void*)dwAddr, 6, PAGE_EXECUTE_READWRITE, &pPrevious);
-    memcpy(&jmp[1], &dwCalc, 4);
-    WriteProcessMemory(GetCurrentProcess(), (LPVOID)dwAddr, jmp, 6, 0);
-    VirtualProtect((void*)dwAddr, 6, pPrevious, &pPrevious);
-    FlushInstructionCache(GetCurrentProcess(), 0, 0);
-    return dwAddr;
-}
-BOOL UnHookFunction(LPCSTR lpModule, LPCSTR lpFuncName, unsigned char* lpBackup)
-{
-    DWORD dwAddr = (DWORD)GetProcAddress(GetModuleHandle(lpModule), lpFuncName);
-
-    if (WriteProcessMemory(GetCurrentProcess(), (LPVOID)dwAddr, lpBackup, 6, 0))
-        return TRUE;
-    FlushInstructionCache(GetCurrentProcess(), 0, 0);
-
-    return FALSE;
-}
-*/
-
 int MainThread()
 {
+    AllocConsole();
+    UnprotectMemory(module_base);
+    FILE* f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
+    printf("Anvil Station Dedicated Server\n");
+    printf("Build date: " __DATE__ " @ " __TIME__ "\n");
+    printf("Base address: %p\n", (void*)module_base);
+
+    // INIT
     typedef int(__stdcall* _network_life_cycle_end_ptr)();
     auto network_life_cycle_end = reinterpret_cast<_network_life_cycle_end_ptr>(module_base + 0xC00 + 0x2A020);
 
@@ -113,13 +94,15 @@ int MainThread()
     short* g_game_port = (short*)(module_base + 0xE9B7A0);
     c_network_session_parameters* network_session_parameters = &network_session->m_session_parameters; //  (c_network_session_parameters*)((int)network_session + 0xE1C90); // c_life_cycle_state + 0xE1C90
 
-    AllocConsole();
-    UnprotectMemory(module_base);
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
-    printf("Anvil Station Dedicated Server\n");
-    printf("Build date: " __DATE__ " @ " __TIME__ "\n");
-    printf("Base address: %p\n", (void*)module_base);
+    // HOOKS
+    Hook(0x25110, handle_out_of_band_message_hook).Apply();
+    Hook(0x252F0, handle_channel_message_hook).Apply();
+    printf("Hooks applied\n");
+    // PATCHES
+    //const char* title_str = "Anvil Dedicated Server %s";
+    //Pointer::Base(0xD699D8).Write(title_str);
+    printf("Patches applied\n");
+
     printf("Game port: %hi\n", *g_game_port);
     printf("c_network_session address: %p\n\n", network_session);
 

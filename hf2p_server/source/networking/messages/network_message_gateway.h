@@ -8,11 +8,11 @@
 class c_network_link;
 class c_network_message_handler;
 class c_network_message_type_collection;
-class c_network_message_gateway
+class c_network_message_gateway // : c_network_out_of_band_consumer // TODO, map out base class
 {
 public:
 	c_network_link* get_network_link();
-	bool send_message_directed(c_network_message_gateway* network_message_gateway, s_transport_address outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message* message);
+	bool send_message_directed(s_transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 
 private:
 	struct c_network_message_gateway_vtbl* __vftable /*VFT*/;
