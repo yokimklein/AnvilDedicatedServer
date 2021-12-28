@@ -1,9 +1,6 @@
 #pragma once
 #include "network_connection.h"
-#include "..\messages\network_message_type_collection.h"
 #include "..\transport\transport_address.h"
-#include "..\session\network_observer.h"
-#include "..\messages\network_message_gateway.h"
 #include "..\messages\network_message_queue.h"
 
 constexpr long k_network_channel_maximum_clients = 6;
@@ -89,7 +86,11 @@ class c_network_channel_simulation_gatekeeper : c_network_channel_client
 	bool data_expected;
 };
 
+class c_network_link;
+class c_network_observer;
 class c_network_message_handler;
+class c_network_message_gateway;
+class c_network_message_type_collection;
 class c_network_channel
 {
 public:

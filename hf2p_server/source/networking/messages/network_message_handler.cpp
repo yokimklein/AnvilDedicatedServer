@@ -3,6 +3,7 @@
 #include "network_message_handler.h"
 #include "network_message_type_collection.h"
 #include "network_message_gateway.h"
+#include "..\session\network_session_manager.h"
 #include "..\session\network_session.h"
 #include "..\transport\transport_address.h"
 
@@ -66,9 +67,10 @@ int c_network_message_handler::handle_join_request(s_transport_address const* ou
 {
     if (message->protocol_version == 9)
     {
-        c_network_session* session = this->m_session_manager->get_session(&message->session_id); // get_session is returning null! TODO - investigate why
+        // TEMP HACK - TODO
+        c_network_session* session = this->m_session_manager->session[0]; //this->m_session_manager->get_session(&message->session_id); // get_session is returning null! TODO - investigate why
         if (session)
-            if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
+            //if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband) // HACK
                 if (session->handle_join_request(outgoing_address, message))
                     return 1;
     }

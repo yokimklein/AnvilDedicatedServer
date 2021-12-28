@@ -47,6 +47,46 @@ enum e_network_message_type : long
 	k_network_message_type_count
 };
 
+// verified against ms23, not ms29 - INACCURATE! TODO will produce invalid error logs!
+enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whether these are correct for ms29, ms29's differs from mcc's slightly (check mcc odst's when it releases?)
+{
+	_network_join_refuse_reason_none, // verified
+	_network_join_refuse_reason_tried_to_join_self,
+	_network_join_refuse_reason_could_not_connect,
+	_network_join_refuse_reason_join_timed_out,
+	_network_join_refuse_reason_not_found,
+	_network_join_refuse_reason_privacy_mode,
+	_network_join_refuse_reason_not_joinable, // verified
+	_network_join_refuse_reason_session_full, // verified
+	_network_join_refuse_reason_alpha_split_screen,
+	_network_join_refuse_reason_session_disband, // verified
+	_network_join_refuse_reason_session_booted, // verified
+	_network_join_refuse_reason_address_invalid,
+	_network_join_refuse_reason_address_failed,
+	_network_join_refuse_reason_too_many_observers,
+	_network_join_refuse_reason_aborted,
+	_network_join_refuse_reason_abort_ignored,
+	_network_join_refuse_reason_wrong_payload_type,
+	_network_join_refuse_reason_no_reservation,
+	_network_join_refuse_reason_in_matchmaking, // verified
+	_network_join_refuse_reason_player_count_zero,
+	_network_join_refuse_reason_player_not_online_enabled,
+	_network_join_refuse_reason_player_add_pending,
+	_network_join_refuse_reason_player_add_failed,
+	_network_join_refuse_reason_host_time_out, // verified (verified in ms29 too)
+	_network_join_refuse_reason_rejected_by_host,
+	_network_join_refuse_reason_peer_version_too_low, // verified
+	_network_join_refuse_reason_host_version_too_low, // verified
+	_network_join_refuse_reason_holding_in_queue, // verified (in ms29 too)
+	_network_join_refuse_reason_film_in_progress, // verified
+	_network_join_refuse_reason_campaign_in_progress, // verified (verified in ms29 too)
+	_network_join_refuse_reason_user_content_not_allowed,
+	_network_join_refuse_reason_survival_in_progress, // verified
+	_network_join_refuse_reason_executable_type_mismatch, // verified
+
+	k_network_join_refuse_reason_count
+};
+
 struct s_network_message
 {
 	// leftover notes
@@ -134,7 +174,8 @@ struct s_network_message_join_abort : s_network_message
 
 struct s_network_message_join_refuse : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	e_network_join_refuse_reason reason;
 };
 
 struct s_network_message_leave_session : s_network_message

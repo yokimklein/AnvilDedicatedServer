@@ -8,5 +8,7 @@ public:
 	c_network_session* get_session(s_transport_secure_identifier const* secure_identifier);
 
 	c_network_session* session[3];
+	//
+	//
 };
 

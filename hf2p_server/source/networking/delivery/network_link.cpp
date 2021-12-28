@@ -1,3 +1,4 @@
+#include "..\..\dllmain.h"
 #include "network_link.h"
 #include "..\transport\transport_address.h"
 #include "..\delivery\network_channel.h"

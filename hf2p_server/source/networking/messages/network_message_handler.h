@@ -1,50 +1,42 @@
 #pragma once
 #include "network_message_type_collection.h"
-#include "network_message_gateway.h"
-#include "..\delivery\network_channel.h"
-#include "..\session\network_session_manager.h"
 
-// verified against ms23, not ms29
-enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whether these are correct for ms29, ms29's differs from mcc's slightly (check mcc odst's when it releases?)
-{
-	_network_join_refuse_reason_none, // verified
-	_network_join_refuse_reason_tried_to_join_self,
-	_network_join_refuse_reason_could_not_connect,
-	_network_join_refuse_reason_join_timed_out,
-	_network_join_refuse_reason_not_found,
-	_network_join_refuse_reason_privacy_mode,
-	_network_join_refuse_reason_not_joinable,
-	_network_join_refuse_reason_session_full, // verified
-	_network_join_refuse_reason_alpha_split_screen,
-	_network_join_refuse_reason_session_disband, // verified
-	_network_join_refuse_reason_session_booted, // verified
-	_network_join_refuse_reason_address_invalid,
-	_network_join_refuse_reason_address_failed,
-	_network_join_refuse_reason_too_many_observers,
-	_network_join_refuse_reason_aborted,
-	_network_join_refuse_reason_abort_ignored,
-	_network_join_refuse_reason_wrong_payload_type,
-	_network_join_refuse_reason_no_reservation,
-	_network_join_refuse_reason_in_matchmaking, // verified
-	_network_join_refuse_reason_player_count_zero,
-	_network_join_refuse_reason_player_not_online_enabled,
-	_network_join_refuse_reason_player_add_pending,
-	_network_join_refuse_reason_player_add_failed,
-	_network_join_refuse_reason_host_time_out, // verified (verified in ms29 too)
-	_network_join_refuse_reason_rejected_by_host,
-	_network_join_refuse_reason_peer_version_too_low, // verified
-	_network_join_refuse_reason_host_version_too_low, // verified
-	_network_join_refuse_reason_holding_in_queue, // verified
-	_network_join_refuse_reason_film_in_progress, // verified
-	_network_join_refuse_reason_campaign_in_progress, // verified (verified in ms29 too)
-	_network_join_refuse_reason_user_content_not_allowed,
-	_network_join_refuse_reason_survival_in_progress, // verified
-	_network_join_refuse_reason_executable_type_mismatch, // verified
-
-	k_network_join_refuse_reason_count
-};
-
+class c_network_channel;
+class c_network_link;
+class c_network_message_type_collection;
+class c_network_message_gateway;
 class c_network_observer;
+class c_network_session_manager;
+
+//struct s_network_message_ping;
+//struct s_network_message_pong;
+//struct s_network_message_connect_refuse;
+//struct s_network_message_connect_establish;
+//struct s_network_message_connect_closed;
+//struct s_network_message_join_request;
+//struct s_network_message_peer_connect;
+//struct s_network_message_join_abort;
+//struct s_network_message_join_refuse;
+//struct s_network_message_leave_session;
+//struct s_network_message_leave_acknowledge;
+//struct s_network_message_session_disband;
+//struct s_network_message_session_boot;
+//struct s_network_message_host_decline;
+//struct s_network_message_peer_establish;
+//struct s_network_message_time_synchronize;
+//struct s_network_message_membership_update;
+//struct s_network_message_peer_properties;
+//struct s_network_message_delegate_leadership;
+//struct s_network_message_boot_machine;
+//struct s_network_message_player_add;
+//struct s_network_message_player_refuse;
+//struct s_network_message_player_remove;
+//struct s_network_message_player_properties;
+//struct s_network_message_parameters_update;
+//struct s_network_message_parameters_request;
+//struct s_network_message_view_establishment;
+//struct s_network_message_player_acknowledge;
+
 class c_network_message_handler
 {
 public:
