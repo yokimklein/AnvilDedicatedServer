@@ -3,27 +3,7 @@
 #include <cstdint>
 #include "..\math\real_math.h"
 #include "..\objects\objects.h"
-
-struct s_content_item_metadata
-{
-	uint64_t id;
-	wchar_t name[16];
-	char description[128];
-	char author[16];
-	uint32_t content_type;
-	bool user_is_online;
-	uint64_t user_id;
-	uint64_t content_size;
-	uint64_t timestamp;
-	long : 32;
-	int campaign_id;
-	int map_id;
-	int game_engine_type;
-	uint32_t campaign_difficulty;
-	uint8_t campaign_insertion_point;
-	bool is_survival;
-	uint64_t map_checksum;
-};
+#include "..\game\game_engine.h"
 
 struct s_map_variant_placement_properties
 {

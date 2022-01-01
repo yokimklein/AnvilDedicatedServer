@@ -3,6 +3,15 @@
 #include "..\transport\transport_address.h"
 #include "..\transport\transport_security.h"
 
+enum e_network_session_class
+{
+	_network_session_class_offline,
+	_network_session_class_online,
+	_network_session_class_xbox_live,
+
+	k_network_session_class_count
+};
+
 enum e_network_session_mode
 {
 	_network_session_mode_none,
@@ -25,10 +34,11 @@ enum e_network_session_mode
 
 struct s_network_session_parameter_session_mode
 {
-	int set_counter;
+	long session_mode_sequence;
 	e_network_session_mode mode;
-	int last_set_time;
+	long session_mode_timestamp;
 };
+static_assert(sizeof(s_network_session_parameter_session_mode) == 0xC);
 
 class c_network_session_parameter_session_mode : c_network_session_parameter_base
 {
@@ -38,9 +48,10 @@ class c_network_session_parameter_session_mode : c_network_session_parameter_bas
 
 struct s_network_session_parameter_session_size
 {
-	int max_peer_count;
-	int max_player_count;
+	long maximum_peer_count;
+	long maximum_player_count;
 };
+static_assert(sizeof(s_network_session_parameter_session_size) == 0x8);
 
 struct c_network_session_parameter_session_size : c_network_session_parameter_base
 {
@@ -84,36 +95,38 @@ struct c_generic_network_session_parameter_bool : c_network_session_parameter_ba
 	bool m_requested_data;
 };
 
-struct s_network_session_remote_session_join_data
+struct s_remote_session_join_data
 {
-	int unknown0;
-	int unknown4;
+	long join_state;
+	long join_to;
 	unsigned __int64 join_nonce;
 	int transport_platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key key;
 	s_transport_secure_address host_address;
-	int session_class;
-	int status;
-	char unknown_char;
+	e_network_session_class session_class;
+	long join_result;
+	char join_to_public_slots;
 };
+static_assert(sizeof(s_remote_session_join_data) == 0x50);
 
 struct c_network_session_parameter_requested_remote_join_data : c_network_session_parameter_base
 {
-	s_network_session_remote_session_join_data m_data;
-	s_network_session_remote_session_join_data m_requested_data;
+	s_remote_session_join_data m_data;
+	s_remote_session_join_data m_requested_data;
 };
 
 struct c_network_session_parameter_remote_join_data : c_network_session_parameter_base
 {
-	s_network_session_remote_session_join_data m_data;
-	s_network_session_remote_session_join_data m_requested_data;
+	s_remote_session_join_data m_data;
+	s_remote_session_join_data m_requested_data;
 };
 
 struct s_network_session_parameter_leader_properties
 {
-	char data[64];
+	char override_hopper_directory[64];
 };
+static_assert(sizeof(s_network_session_parameter_leader_properties) == 0x40);
 
 struct c_network_session_parameter_leader_properties : c_network_session_parameter_base
 {

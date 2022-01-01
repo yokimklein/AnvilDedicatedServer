@@ -16,6 +16,7 @@ struct s_player_configuration_from_client
 	uint32_t cheating_flags;
 	uint32_t user_experience_flags;
 };
+static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 
 struct s_player_configuration_from_host
 {
@@ -23,10 +24,9 @@ struct s_player_configuration_from_host
 	wchar_t player_name[16];
 	int team;
 	int player_assigned_team;
-	byte data30[1632];
-	byte data690[1172];
-	byte data[28];
+	byte data[0xB08];
 };
+static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
 
 struct s_player_add_queue_entry
 {
@@ -37,19 +37,22 @@ struct s_player_add_queue_entry
 	s_player_configuration_from_client client_configuration;
 	uint32_t voice_settings;
 };
+static_assert(sizeof(s_player_add_queue_entry) == 0x48);
 
 struct s_player_configuration
 {
 	s_player_configuration_from_client client;
 	s_player_configuration_from_host host;
 };
+static_assert(sizeof(s_player_configuration) == 0xB70);
 
 struct s_network_session_peer
 {
 	s_transport_secure_address secure_address;
 	uint32_t connection_state;
-	char data[204];
+	char data[0xCC];
 };
+static_assert(sizeof(s_network_session_peer) == 0xE0);
 
 struct s_network_session_player
 {
@@ -62,6 +65,7 @@ struct s_network_session_player
 	s_player_configuration configuration;
 	uint32_t voice_settings;
 };
+static_assert(sizeof(s_network_session_player) == 0xB90);
 
 struct s_network_session_peer_channel
 {
@@ -69,6 +73,7 @@ struct s_network_session_peer_channel
 	int channel_index;
 	uint32_t expected_update_number;
 };
+static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 
 class c_network_session;
 class c_network_session_membership
@@ -90,7 +95,7 @@ public:
 	s_network_session_player m_players[k_network_maximum_players_per_session];
 	int m_player_sequence_number;
 	long : 32;
-	char m_incremental_update_buffers[k_network_maximum_machines_per_session][51344];
+	char m_incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
 	int m_incremental_updates[k_network_maximum_machines_per_session];
 	long : 32;
 	int m_local_peer_index;
@@ -100,8 +105,6 @@ public:
 	s_player_add_queue_entry m_player_add_queue[4];
 	int m_player_add_queue_current_index;
 	int m_player_add_queue_count;
-
-private:
-
+	byte size_hack[0x80]; // TODO - complete this struct properly
 };
-
+static_assert(sizeof(c_network_session_membership) == 0xE1C70); // missing an extra 0x80 bytes (currently 0xE1BF0)

@@ -1,7 +1,8 @@
 #include <iostream>
-#include "..\..\dllmain.h"
 #include "network_session.h"
+#include "..\..\dllmain.h"
 #include "..\messages\network_message_gateway.h"
+#include "..\messages\network_message_handler.h"
 
 bool c_network_session::acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason)
 {
@@ -13,15 +14,84 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
     const char* managed_session_index_string = "(null)"; // managed_session_get_id_string(session[618236]);
     printf("MP/NET/SESSION,CTRL: c_network_session::acknowledge_join_request: [%s] join failed, sending refusal (%s - possibly inaccurate) to '%s'\n", managed_session_index_string, join_refuse_reason_string, transport_address_string);
     s_network_message_join_refuse message;
-    managed_session_get_id(this->m_managed_session_index, &message.session_id);
+    managed_session_get_id(this->m_managed_session_index, &message.session_id); // returning null? client doesn't seem to listen to the response - this is likely the culprit - TODO
     message.reason = reason;
     return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, 20, &message);
+
+    // TEMP HACK - TODO REMOVE
+    //s_network_message_connect_request message;
+    //message.identifier = 1;
+    //message.flags = 0;
+    //return this->m_message_gateway->send_message_directed(address, _network_message_type_connect_request, 8, &message);
 }
 
-char c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
+bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
 {
     // temporary - TODO
     // log the packet send
     this->acknowledge_join_request(address, _network_join_refuse_reason_holding_in_queue);
-    return 1;
+    return true;
+}
+
+bool c_network_session::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
+{
+    typedef bool(__fastcall* handle_peer_connect_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
+    auto handle_peer_connect = reinterpret_cast<handle_peer_connect_ptr>(module_base + 0x4B2E0);
+    return handle_peer_connect(this, outgoing_address, message);
+}
+
+bool c_network_session::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
+{
+    typedef bool(__fastcall* handle_session_disband_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_disband const* message);
+    auto handle_session_disband = reinterpret_cast<handle_session_disband_ptr>(module_base + 0x4B4D0);
+    return handle_session_disband(this, outgoing_address, message);
+}
+
+bool c_network_session::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
+{
+    typedef bool(__fastcall* handle_session_boot_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_boot const* message);
+    auto handle_session_boot = reinterpret_cast<handle_session_boot_ptr>(module_base + 0x4B560);
+    return handle_session_boot(this, outgoing_address, message);
+}
+
+bool c_network_session::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
+{
+    typedef bool(__fastcall* handle_host_decline_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_host_decline const* message);
+    auto handle_host_decline = reinterpret_cast<handle_host_decline_ptr>(module_base + 0x4B5F0);
+    return handle_host_decline(this, channel, message);
+}
+
+bool c_network_session::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message)
+{
+    typedef bool(__fastcall* handle_time_synchronize_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message);
+    auto handle_time_synchronize = reinterpret_cast<handle_time_synchronize_ptr>(module_base + 0x4B430);
+    return handle_time_synchronize(this, outgoing_address, message);
+}
+
+bool c_network_session::channel_is_authoritative(c_network_channel* channel) // untested
+{
+    typedef bool(__fastcall* channel_is_authoritative_ptr)(c_network_session* session, c_network_channel* channel);
+    auto channel_is_authoritative = reinterpret_cast<channel_is_authoritative_ptr>(module_base + 0x227A0);
+    return channel_is_authoritative(this, channel);
+}
+
+bool c_network_session::handle_membership_update(s_network_message_membership_update const* message)
+{
+    typedef bool(__fastcall* handle_membership_update_ptr)(c_network_session* session, s_network_message_membership_update const* message);
+    auto handle_membership_update = reinterpret_cast<handle_membership_update_ptr>(module_base + 0x31DD0);
+    return handle_membership_update(this, message);
+}
+
+bool c_network_session::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
+{
+    typedef bool(__fastcall* handle_player_refuse_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_player_refuse const* message);
+    auto handle_player_refuse = reinterpret_cast<handle_player_refuse_ptr>(module_base + 0x4B7C0);
+    return handle_player_refuse(this, channel, message);
+}
+
+bool c_network_session::handle_parameters_update(s_network_message_parameters_update const* message)
+{
+    typedef bool(__fastcall* handle_parameters_update_ptr)(c_network_session* session, s_network_message_parameters_update const* message);
+    auto handle_parameters_update = reinterpret_cast<handle_parameters_update_ptr>(module_base + 0x4B3D0);
+    return handle_parameters_update(this, message);
 }

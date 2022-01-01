@@ -39,29 +39,27 @@ enum e_content_item
 	k_content_item_count
 };
 
-struct BLAM_CONTENT_HEADER
+struct s_content_item_metadata
 {
 	uint64_t m_id;
 	wchar_t m_name[16];
 	char m_description[128];
 	char m_author[16];
 	e_content_item m_content_type;
-	uint32_t UnknownBC;
-	uint32_t UnknownC0;
-	uint32_t UnknownC4;
-	uint32_t m_size;
-	uint32_t UnknownCC;
+	bool m_user_is_online;
+	uint64_t m_user_id;
+	uint64_t m_size;
 	uint64_t m_timestamp;
-	uint32_t UnknownD8;
+	uint32_t m_unknown;
 	uint32_t m_campaign_id;
 	uint32_t m_map_id;
 	uint32_t m_engine;
 	uint32_t m_campaign_difficulty;
 	uint8_t m_campaign_insertion;
-	uint8_t m_survival;
-	uint16_t unknownEE;
+	bool m_survival;
 	uint64_t m_game_instance;
 };
+static_assert(sizeof(s_content_item_metadata) == 0xF8);
 
 struct c_game_engine_variant_general_settings
 {
@@ -70,6 +68,7 @@ struct c_game_engine_variant_general_settings
 	byte m_number_of_rounds;
 	byte m_early_victory_win_count;
 };
+static_assert(sizeof(c_game_engine_variant_general_settings) == 0x4);
 
 struct c_game_engine_variant_respawn_settings
 {
@@ -83,15 +82,16 @@ struct c_game_engine_variant_respawn_settings
 	byte m_respawn_time_growth;
 	byte m_respawn_trait_duration;
 	short unknown9;
-	byte unknownB;
 	c_player_traits m_respawn_trait_profile;
 };
+static_assert(sizeof(c_game_engine_variant_respawn_settings) == 0x28);
 
 struct c_game_engine_variant_social_settings
 {
 	short m_flags;
 	short m_team_changing;
 };
+static_assert(sizeof(c_game_engine_variant_social_settings) == 0x4);
 
 struct c_game_engine_variant_map_overrides
 {
@@ -107,6 +107,7 @@ struct c_game_engine_variant_map_overrides
 	byte m_yellow_traits_duration;
 	byte unknwon7B;
 };
+static_assert(sizeof(c_game_engine_variant_map_overrides) == 0x7C);
 
 struct c_game_engine_variant_vtbl;
 struct c_game_engine_base_variant
@@ -114,7 +115,7 @@ struct c_game_engine_base_variant
 	c_game_engine_variant_vtbl* vftable;
 	int* SHA1_C;
 	char m_variant_backend_name[32];
-	BLAM_CONTENT_HEADER m_content_header;
+	s_content_item_metadata m_content_header;
 	c_game_engine_variant_general_settings m_general_settings;
 	c_game_engine_variant_respawn_settings m_respawn_settings;
 	c_game_engine_variant_social_settings m_social_settings;
@@ -122,17 +123,20 @@ struct c_game_engine_base_variant
 	uint16_t m_flags;
 	int16_t m_team_scoring;
 };
+static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
 
 struct c_game_engine_variant : c_game_engine_base_variant
 {
 	uint8_t m_specific_data[144];
 };
+static_assert(sizeof(c_game_engine_variant) == 0x260);
 
 struct c_game_variant
 {
 	e_engine_variant m_game_engine_index;
-	c_game_engine_variant m_variant;
+	byte storage[0x260]; // TODO - c_game_engine_variant union with different engine/gamemode types
 };
+static_assert(sizeof(c_game_variant) == 0x264);
 
 struct c_game_engine_variant_vtbl
 {

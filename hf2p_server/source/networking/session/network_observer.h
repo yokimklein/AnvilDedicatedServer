@@ -1,6 +1,9 @@
 #pragma once
+#include "..\delivery\network_channel.h"
 #include "..\delivery\network_link.h"
 #include "..\messages\network_message_type_collection.h"
+
+constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
 enum e_observer_state : long
 {
@@ -15,11 +18,38 @@ enum e_network_observer_owner : long
 	k_network_observer_owner_count = 4
 };
 
+class c_network_session;
 class c_network_observer
 {
 	public:
 		char handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
+
+		//struct s_channel_observer
+		//{
+		//	// starts with c_network_channel?
+		//	c_network_channel channel;
+		//	byte __data[0x62C];
+		//};
+		//static_assert(sizeof(s_channel_observer) == 0x10A8);
+
+		c_network_link* m_link;
+		c_network_message_gateway* m_message_gateway;
+		c_network_message_handler* m_message_handler;
+		c_network_message_type_collection* m_message_type_collection;
+		void* m_unknown;
+		c_network_session* m_session;
+		long m_unknown2; // e_network_observer_owner? managed_session_index?
+		void* m_unknown3;
+		void* m_unknown4; // null?
+		void* m_unknown5;
+		void* m_unknown6; // null?
+		long* m_unknown7;
+		void* m_unknown8; // null?
+
+		//s_channel_observer channels[k_network_maximum_observers];
+		//byte __data[0x62C];
 };
+//static_assert(sizeof(c_network_observer) == 0x23C7C); // TODO - verify if this size is accurate 
 
 /*
 

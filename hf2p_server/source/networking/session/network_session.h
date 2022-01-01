@@ -3,17 +3,8 @@
 #include <windows.h>
 #include "network_session_membership.h"
 #include "network_session_parameters.h"
+#include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
-#include "..\messages\network_message_handler.h"
-
-enum e_network_session_class
-{
-	_network_session_class_offline,
-	_network_session_class_online,
-	_network_session_class_xbox_live,
-
-	k_network_session_class_count
-};
 
 enum e_network_session_type
 {
@@ -47,8 +38,17 @@ class c_network_session_manager;
 class c_network_session : c_network_channel_owner
 {
 public:
-	char handle_join_request(s_transport_address const* address, s_network_message_join_request const* message);
+	bool handle_join_request(s_transport_address const* address, s_network_message_join_request const* message);
 	bool acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason);
+	bool handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
+	bool handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message);
+	bool handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message);
+	bool handle_host_decline (c_network_channel* channel, s_network_message_host_decline const* message);
+	bool handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message);
+	bool channel_is_authoritative(c_network_channel* channel);
+	bool handle_membership_update(s_network_message_membership_update const* message);
+	bool handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message);
+	bool handle_parameters_update(s_network_message_parameters_update const* message);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -59,7 +59,7 @@ public:
 	long : 32;
 	c_network_session_membership m_session_membership;
 	c_network_session_parameters m_session_parameters;
-	e_network_session_state m_local_state;
+	e_network_session_state m_local_state; // this should be + 0x1ABDA8
 	long : 32;
 	char m_local_state_data[648];
 	uint32_t m_connection_identifier;
@@ -75,4 +75,4 @@ public:
 private:
 
 };
-
+//static_assert(sizeof(c_network_session_membership) == 0x1AC098);

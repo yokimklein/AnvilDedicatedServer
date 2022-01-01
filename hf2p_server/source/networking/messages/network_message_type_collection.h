@@ -103,38 +103,23 @@ struct s_network_message
 
 struct s_network_message_ping : s_network_message
 {
-	unsigned short id;
-	short : 16;
-
+	unsigned long id;
 	unsigned long timestamp;
-
-	bool request_qos;
-	char : 8;
-	short : 16;
+	unsigned long request_qos;
 };
 
 struct s_network_message_pong : s_network_message
 {
-	unsigned short id;
-	short : 16;
-
+	unsigned long id;
 	unsigned long timestamp;
 	unsigned long request_qos;
 };
-/*
-struct s_network_message_broadcast_search : s_network_message
-{
+static_assert(sizeof(s_network_message_pong) == 0xC);
 
-};
-
-struct s_network_message_broadcast_reply : s_network_message
-{
-
-};
-*/
 struct s_network_message_connect_request : s_network_message
 {
-
+	unsigned long identifier;
+	unsigned long flags;
 };
 
 struct s_network_message_connect_refuse : s_network_message
@@ -149,8 +134,11 @@ struct s_network_message_connect_establish : s_network_message
 
 struct s_network_message_connect_closed : s_network_message
 {
-
+	unsigned long identifier;
+	unsigned long remote_identifier;
+	unsigned long closure_reason;
 };
+static_assert(sizeof(s_network_message_connect_closed) == 0xC);
 
 struct s_network_message_join_request : s_network_message
 {
@@ -164,8 +152,13 @@ struct s_network_message_join_request : s_network_message
 
 struct s_network_message_peer_connect : s_network_message
 {
-
+	unsigned short protocol_version;
+	short : 16;
+	s_transport_secure_identifier session_id;
+	long : 32;
+	long long join_nonce;
 };
+static_assert(sizeof(s_network_message_peer_connect) == 0x20);
 
 struct s_network_message_join_abort : s_network_message
 {
@@ -177,6 +170,7 @@ struct s_network_message_join_refuse : s_network_message
 	s_transport_secure_identifier session_id;
 	e_network_join_refuse_reason reason;
 };
+//static_assert(sizeof(s_network_message_join_refuse) == 0x20);
 
 struct s_network_message_leave_session : s_network_message
 {
@@ -190,17 +184,25 @@ struct s_network_message_leave_acknowledge : s_network_message
 
 struct s_network_message_session_disband : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
 };
 
 struct s_network_message_session_boot : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	unsigned long reason;
 };
 
 struct s_network_message_host_decline : s_network_message
 {
+	s_transport_secure_identifier session_id;
+	bool session_exists;
+	bool peer_exists;
 
+	bool host_exists;
+	char : 8;
+
+	s_transport_secure_address host_address;
 };
 
 struct s_network_message_peer_establish : s_network_message
@@ -210,12 +212,17 @@ struct s_network_message_peer_establish : s_network_message
 
 struct s_network_message_time_synchronize : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	unsigned long client_timestamp[2];
+	unsigned long authority_timestamp[2];
+	unsigned long synchronization_stage;
 };
+//static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
 
 struct s_network_message_membership_update : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	char __data[10712];
 };
 
 struct s_network_message_peer_properties : s_network_message
@@ -240,7 +247,10 @@ struct s_network_message_player_add : s_network_message
 
 struct s_network_message_player_refuse : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	s_transport_secure_identifier player_identifier;
+	unsigned long user_index;
+	unsigned long refuse_reason;
 };
 
 struct s_network_message_player_remove : s_network_message
@@ -255,7 +265,17 @@ struct s_network_message_player_properties : s_network_message
 
 struct s_network_message_parameters_update : s_network_message
 {
+	s_transport_secure_identifier session_id;
+	bool initial_update;
 
+	char : 8;
+	short : 16;
+	long : 32;
+
+	unsigned long long cleared_parameters;
+	unsigned long long updated_parameters;
+
+	char parameters[6144];
 };
 
 struct s_network_message_parameters_request : s_network_message
@@ -269,6 +289,41 @@ struct s_network_message_view_establishment : s_network_message
 };
 
 struct s_network_message_player_acknowledge : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_update : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_playback_control : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_actions : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_acknowledge : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_gamestate : s_network_message
+{
+
+};
+
+struct s_network_message_synchronous_client_ready : s_network_message
+{
+
+};
+
+struct s_network_message_game_results : s_network_message
 {
 
 };

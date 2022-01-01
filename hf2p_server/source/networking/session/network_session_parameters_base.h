@@ -23,6 +23,7 @@ protected:
 	byte : 8;
 	byte m_state_flags;
 };
+static_assert(sizeof(c_network_session_parameter_base) == 0x30);
 
 struct c_network_session_parameter_base_vtbl
 {

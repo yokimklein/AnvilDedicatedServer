@@ -21,7 +21,7 @@ public:
 	c_network_session_parameter_ui_game_mode ui_game_mode;
 	c_generic_network_session_parameter_dedicated_server_session_state dedicated_server_session_state;
 	c_network_session_parameter_map map;
-	c_network_session_parameter_initial_participants initial_participants;
+	c_network_session_parameter_initial_participants initial_participants; // 0x100 bytes larger than it should be
 	c_generic_network_session_parameter_qword game_instance;
 	c_generic_network_session_parameter_ulong random_seed;
 	c_generic_network_session_parameter_ulong language;
@@ -35,10 +35,10 @@ public:
 	c_generic_network_session_parameter_uchar ui_state;
 	c_generic_network_session_parameter_bool end_game;
 	c_generic_network_session_parameter_ulong start_mode;
-	c_network_session_parameter_game_variant game_variant;
+	c_network_session_parameter_game_variant game_variant; // 0x20 bytes larger than it should be
 	c_network_session_parameter_map_variant map_variant;
 	c_generic_network_session_parameter_saved_film_description saved_film;
-	c_network_session_parameter_saved_film_game_options saved_film_game_options;
+	c_network_session_parameter_saved_film_game_options saved_film_game_options; // 0x120 bytes larger than it should be
 	c_network_session_parameter_game_start_status game_start_status;
 	c_network_session_parameter_countdown_timer countdown_timer;
 	c_network_session_parameter_voice_repeater voice_repeater;
@@ -56,8 +56,6 @@ public:
 	c_network_session_parameter_base* parameters[k_network_session_parameter_type_count];
 	uint32_t flags;
 	uint32_t initial_parameters_update_mask;
-
-private:
-
 };
+static_assert(sizeof(c_network_session_parameters) == 0xCA118);
 

@@ -14,6 +14,36 @@ enum e_network_channel_client_flags
 	k_network_channel_client_flags_count
 };
 
+enum e_network_channel_activity
+{
+	k_network_channel_activity_count = 6
+};
+
+enum e_network_channel_closure_reason
+{
+	_network_channel_reason_none,
+	_network_channel_reason_link_destroyed,
+	_network_channel_reason_link_refused_listen,
+	_network_channel_reason_channel_deleted,
+	_network_channel_reason_connect_timeout,
+	_network_channel_reason_connect_refused,
+	_network_channel_reason_connect_reinitiate,
+	_network_channel_reason_establish_timeout,
+	_network_channel_reason_address_change,
+	_network_channel_reason_destination_unreachable,
+	_network_channel_reason_remote_closure,
+	_network_channel_reason_connection_overflow,
+	_network_channel_reason_message_overflow,
+	_network_channel_reason_security_lost,
+	_network_channel_reason_observer_released,
+	_network_channel_reason_observer_refused,
+	_network_channel_reason_observer_timeout,
+	_network_channel_reason_observer_reset,
+	_network_channel_reason_observer_reset_security,
+
+	k_network_channel_reason_count = 19
+};
+
 enum e_network_channel_state
 {
 	_network_channel_state_none,
@@ -24,11 +54,6 @@ enum e_network_channel_state
 	_network_channel_state_connected,
 
 	k_network_channel_state_count
-};
-
-enum e_network_channel_activity
-{
-	k_network_channel_activity_count = 6
 };
 
 struct s_channel_configuration
@@ -96,12 +121,13 @@ class c_network_channel
 public:
 	bool connected();
 	char* get_name();
+	e_network_channel_state get_state();
 	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
 	// allocated()
 	// allocate()
 	// closed()
-	// close()
+	int close(e_network_channel_closure_reason reason);
 	// simulation_can_be_established()
 	// is_voice_only()
 	// is_receive_only()
@@ -114,10 +140,17 @@ public:
 	s_channel_configuration* m_configuration; // g_network_configuration? s_channel_configuration?
 	c_network_message_type_collection* m_type_collection;
 	c_network_connection m_connection;
-	c_network_message_queue m_message_queue; // 606
-	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper; // 631
-	// above is 0x9E8 bytes
-	byte unknown[0x6F0];
+	c_network_message_queue m_message_queue;
+	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper;
+	byte m_unknown[32];
+	long m_identifier; // 0xA08 - untested
+	long m_unknown2;
+	e_network_channel_state m_state; // 0xA10 - untested
+	byte m_unknown3[24];
+	s_transport_address m_remote_address; // 0xA2C - untested
+	byte m_unknown4[60];
+};
+static_assert(sizeof(c_network_channel) == 0xA7C);
 	// 0x9EC
 
 	// 1,788 bytes remaining
@@ -163,5 +196,3 @@ public:
 	// sizeof == 0x11C0 in h3debug
 
 	// new_channel_flags?
-};
-static_assert(sizeof(c_network_channel) == 0x10D8);

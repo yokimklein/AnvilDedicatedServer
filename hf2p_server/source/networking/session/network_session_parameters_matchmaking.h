@@ -3,10 +3,11 @@
 
 struct s_network_session_parameter_matchmaking_messaging
 {
-	int unknown0;
-	int unknown4;
-	int unknown8;
+	long type;
+	long display_cookie;
+	long player_sequence_number;
 };
+static_assert(sizeof(s_network_session_parameter_matchmaking_messaging) == 0xC);
 
 struct c_network_session_parameter_matchmaking_messaging : c_network_session_parameter_base
 {

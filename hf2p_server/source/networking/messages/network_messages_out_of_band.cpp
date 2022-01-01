@@ -34,27 +34,26 @@ void c_network_message_handler::handle_out_of_band_message(s_transport_address c
             if (channel)
                 this->handle_connect_establish(channel, (s_network_message_connect_establish*)message);
             break;
-        // TODO
-        //case _network_message_type_connect_closed:
-        //    channel = this->get_message_gateway()->get_network_link()->get_associated_channel(address);
-        //    if (channel)
-        //        this->handle_connect_closed(channel, (s_network_message_connect_closed*)message);
-        //    break;
+        case _network_message_type_connect_closed:
+            channel = this->get_message_gateway()->get_network_link()->get_associated_channel(address);
+            if (channel)
+                this->handle_connect_closed(channel, (s_network_message_connect_closed*)message);
+            break;
         case _network_message_type_join_request:
             this->handle_join_request(address, (s_network_message_join_request*)message);
             break;
         case _network_message_type_peer_connect:
             this->handle_peer_connect(address, (s_network_message_peer_connect*)message);
             break;
-        case _network_message_type_join_abort:
-            this->handle_join_abort(address, (s_network_message_join_abort*)message);
-            break;
+        //case _network_message_type_join_abort:
+        //    this->handle_join_abort(address, (s_network_message_join_abort*)message);
+        //    break;
         case _network_message_type_join_refuse:
             this->handle_join_refuse(address, (s_network_message_join_refuse*)message);
             break;
-        case _network_message_type_leave_session:
-            this->handle_leave_session(address, (s_network_message_leave_session*)message);
-            break;
+        //case _network_message_type_leave_session:
+        //    this->handle_leave_session(address, (s_network_message_leave_session*)message);
+        //    break;
         case _network_message_type_leave_acknowledge:
             this->handle_leave_acknowledge(address, (s_network_message_leave_acknowledge*)message);
             break;

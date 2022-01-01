@@ -109,8 +109,8 @@
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.dll" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"
+copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,8 +135,8 @@
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.dll" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"
+copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

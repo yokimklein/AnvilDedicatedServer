@@ -40,11 +40,11 @@ int MainThread()
     printf("Base address: %p\n", (void*)module_base);
 
     // INIT
-    typedef int(__stdcall* _network_life_cycle_end_ptr)();
-    auto network_life_cycle_end = reinterpret_cast<_network_life_cycle_end_ptr>(module_base + 0xC00 + 0x2A020);
+    typedef int(__cdecl* _network_life_cycle_end_ptr)();
+    auto network_life_cycle_end = reinterpret_cast<_network_life_cycle_end_ptr>(module_base + 0x311720);
 
     typedef char(__thiscall* network_life_cycle_create_local_squad_ptr)(e_network_session_class session_class); // 0 = offline, 1 = online, 2 = xbl
-    auto network_life_cycle_create_local_squad = reinterpret_cast<network_life_cycle_create_local_squad_ptr>(module_base + 0xC00 + 0x2A100);
+    auto network_life_cycle_create_local_squad = reinterpret_cast<network_life_cycle_create_local_squad_ptr>(module_base + 0x2AD00);
 
     typedef char(__thiscall* user_interface_squad_set_ui_game_mode_ptr)(int* this_ptr, e_gui_game_mode start_mode); // 0 = campaign, 1 = matchmaking, 2 = customs, 3 = forge, 4 = theater, 5 = firefight
     auto user_interface_squad_set_ui_game_mode = reinterpret_cast<user_interface_squad_set_ui_game_mode_ptr>(module_base + 0xC00 + 0x3A8D0);
@@ -114,9 +114,9 @@ int MainThread()
 
             network_life_cycle_end();
             std::cout << "Destroying current session...\n";
-            
-            network_life_cycle_create_local_squad(_network_session_class_online);
+            network_life_cycle_create_local_squad(_network_session_class_online); // calling this should set m_local_state to 6 - why doesn't it?
             std::cout << "Creating an online syslink session\n";
+            
             user_interface_squad_set_ui_game_mode(life_cycle_state_unknown, _gui_game_mode_multiplayer);
             std::cout << "UI gamemode set to customs\n";
 
@@ -149,7 +149,7 @@ int MainThread()
 
             GUID server_secure_identifier;
             LPOLESTR secure_identifier_str;
-            if (managed_session_get_id(*(((int*)c_life_cycle_state_handler + 36) + 0x1AC050), &server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK))
+            if (managed_session_get_id(network_session->m_session_index, &server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK)) // *(((int*)c_life_cycle_state_handler + 36) + 0x1AC050)
                 printf("\nSecure id: %ls\n", secure_identifier_str);
             else
                 printf("Failed to get secure identifier\n");
@@ -157,9 +157,9 @@ int MainThread()
             GUID server_secure_address;
             LPOLESTR secure_address_str;
             if (transport_secure_address_get(&server_secure_address) && (StringFromCLSID(server_secure_address, &secure_address_str) == S_OK))
-                printf("Secure address: %ls\n", secure_address_str);
+                printf("Secure address: %ls\n\n", secure_address_str);
             else
-                printf("Failed to get secure address\n");
+                printf("Failed to get secure address\n\n");
         }
         else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN
         {

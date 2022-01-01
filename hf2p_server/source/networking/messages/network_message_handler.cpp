@@ -3,18 +3,25 @@
 #include "network_message_handler.h"
 #include "network_message_type_collection.h"
 #include "network_message_gateway.h"
+#include "..\delivery\network_link.h"
 #include "..\session\network_session_manager.h"
 #include "..\session\network_session.h"
 #include "..\transport\transport_address.h"
 
-int c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)
+// inlined in the ms29 client
+void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message) // untested
 {
-    const char* address_string = "(null)"; // transport_address_get_string(&outgoing_address);
+    const char* address_string = "(null)"; // transport_address_get_string(&outgoing_address); TODO
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, address_string, timeGetTime());
-    return this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_ping, sizeof(s_network_message_ping), message);
+    s_network_message_pong response;
+    response.id = message->id;
+    response.timestamp = message->timestamp;
+    response.request_qos = message->request_qos;
+    this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), &response);
 }
 
-int c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
 {
     bool* network_time_locked = (bool*)(module_base + 0x1038344);
     DWORD* g_network_locked_time = (DWORD*)(module_base + 0x1038348);
@@ -26,178 +33,231 @@ int c_network_message_handler::handle_pong(s_transport_address const* outgoing_a
         time = timeGetTime();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 
         message->id, "(null)"/*transport_address_get_string(&outgoing_address)*/, timeGetTime(), time - message->timestamp);
-    return 1;
-}
-/*
-int c_network_message_handler::handle_broadcast_search(s_transport_address const* outgoing_address, s_network_message_broadcast_search const* message)
-{
-
 }
 
-int c_network_message_handler::handle_broadcast_reply(s_transport_address const* outgoing_address, s_network_message_broadcast_reply const* message)
-{
-
-}
-*/
-
-int c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message)
+void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message) // tested - seems to work
 {
     typedef int(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
     auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(module_base + 0x25AC0);
-    return handle_connect_refuse(channel, message);
+    handle_connect_refuse(channel, message);
 }
 
-int c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message)
+void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message) // untested
 {
     typedef int(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
     auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0x25B10);
-    return handle_connect_establish(channel, message);
+    handle_connect_establish(channel, message);
 }
 
-int c_network_message_handler::handle_connect_closed(c_network_channel* channel, s_network_message_connect_closed const* message)
+// inlined in the ms29 client
+void c_network_message_handler::handle_connect_closed(c_network_channel* channel, s_network_message_connect_closed const* message) // untested
 {
-    // TODO
-    //if (channel && channel[644] > 2 && channel[642] == message->channel_identifier) // channel->identifier == message->channel_identifier
-    //    return c_network_channel::close(channel, 10);
-    //else
-        return 0;
+    if (channel && channel->m_state > _network_channel_state_closed && channel->m_identifier == message->identifier)
+        channel->close(_network_channel_reason_remote_closure);
 }
 
-int c_network_message_handler::handle_join_request(s_transport_address const* outgoing_address, s_network_message_join_request const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_join_request(s_transport_address const* outgoing_address, s_network_message_join_request const* message)
 {
     if (message->protocol_version == 9)
     {
         // TEMP HACK - TODO
         c_network_session* session = this->m_session_manager->session[0]; //this->m_session_manager->get_session(&message->session_id); // get_session is returning null! TODO - investigate why
         if (session)
-            //if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband) // HACK
-                if (session->handle_join_request(outgoing_address, message))
-                    return 1;
+            if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
+                session->handle_join_request(outgoing_address, message);
     }
     else
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
-        return 0;
     }
     const char* transport_address_string = "(null)"; // transport_address_get_string();
     const char* secure_identifier_string = "(null)"; // transport_secure_identifier_get_string((int)(message + 6));
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n", secure_identifier_string, transport_address_string);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incomming join request\n");
-    return 0;
 }
 
-int c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
+void c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message) // untested
 {
-    return 0;
+    if (message->protocol_version == 9)
+    {
+        auto* session = this->m_session_manager->get_session(&message->session_id);
+        if (session)
+            session->handle_peer_connect(outgoing_address, message);
+    }
 }
 
-int c_network_message_handler::handle_join_abort(s_transport_address const* outgoing_address, s_network_message_join_abort const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_join_abort(s_transport_address const* outgoing_address, s_network_message_join_abort const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_join_refuse(s_transport_address const* outgoing_address, s_network_message_join_refuse const* message)
+void c_network_message_handler::handle_join_refuse(s_transport_address const* outgoing_address, s_network_message_join_refuse const* message) // untested
 {
-    return 0;
+    typedef void(__fastcall* handle_join_refuse_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_join_refuse const* message);
+    auto handle_join_refuse = reinterpret_cast<handle_join_refuse_ptr>(module_base + 0x25660);
+    handle_join_refuse(this, outgoing_address, message);
 }
 
-int c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)
+void c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message) // untested
 {
-    return 0;
+    typedef void(__fastcall* handle_leave_acknowledge_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message);
+    auto handle_leave_acknowledge = reinterpret_cast<handle_leave_acknowledge_ptr>(module_base + 0x256E0);
+    return handle_leave_acknowledge(this, outgoing_address, message);
 }
 
-int c_network_message_handler::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
+void c_network_message_handler::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message) // untested
 {
-    //auto session = c_network_session_manager::get_session(this->m_session_manager, &message);
-    //if (session)
-    //    return c_network_session::handle_session_disband(session, &outgoing_address, &message);
-    // TODO - include additional logging strings
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session)
+        session->handle_session_disband(outgoing_address, message);
 }
 
-int c_network_message_handler::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
+void c_network_message_handler::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session)
+        session->handle_session_boot(outgoing_address, message);
 }
 
-int c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
+void c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session)
+        session->handle_host_decline(channel, message);
 }
 
-int c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message)
+void c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message) // untested
 {
-    return 0;
+    typedef void(__fastcall* handle_peer_establish_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_peer_establish const* message);
+    auto handle_peer_establish = reinterpret_cast<handle_peer_establish_ptr>(module_base + 0x25730);
+    return handle_peer_establish(this, channel, message);
 }
 
-int c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message)
+void c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session)
+        session->handle_time_synchronize(outgoing_address, message);
 }
 
-int c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update const* message)
+void c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->channel_is_authoritative(channel))
+        session->handle_membership_update(message);
 }
 
-int c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_delegate_leadership(c_network_channel* channel, s_network_message_delegate_leadership const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_delegate_leadership(c_network_channel* channel, s_network_message_delegate_leadership const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_boot_machine(c_network_channel* channel, s_network_message_boot_machine const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_boot_machine(c_network_channel* channel, s_network_message_boot_machine const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_player_add(c_network_channel* channel, s_network_message_player_add const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_player_add(c_network_channel* channel, s_network_message_player_add const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
+void c_network_message_handler::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->channel_is_authoritative(channel))
+        session->handle_player_refuse(channel, message);
 }
 
-int c_network_message_handler::handle_player_remove(c_network_channel* channel, s_network_message_player_remove const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_player_remove(c_network_channel* channel, s_network_message_player_remove const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message)
+void c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message) // untested
 {
-    return 0;
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->channel_is_authoritative(channel))
+        session->handle_parameters_update(message);
 }
 
-int c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
+// MISSING FROM MS29 CLIENT
+void c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
 {
-    return 0;
+    
 }
 
-int c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
+void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message) // untested
 {
-    return 0;
+    typedef void(__fastcall* handle_view_establishment_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message);
+    auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(module_base + 0x257B0);
+    return handle_view_establishment(this, channel, message);
 }
 
-int c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message)
+void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message) // untested
 {
-    return 0;
+    typedef void(__fastcall* handle_player_acknowledge_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_player_acknowledge const* message);
+    auto handle_player_acknowledge = reinterpret_cast<handle_player_acknowledge_ptr>(module_base + 0x25810);
+    return handle_player_acknowledge(this, channel, message);
+}
+
+void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_synchronous_gamestate(c_network_channel* channel, s_network_message_synchronous_gamestate const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
+{
+    // TODO
+}
+
+void c_network_message_handler::handle_game_results(c_network_channel* channel, s_network_message_game_results const* message)
+{
+    // TODO
 }
 
 void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)
@@ -268,37 +328,133 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
                 log_received_over_non_connected_channel(channel, _network_message_type_membership_update);
             break;
 
-        case _network_message_type_peer_properties:
+        //case _network_message_type_peer_properties:
+        //    if (channel->connected())
+        //        this->handle_peer_properties(channel, (s_network_message_peer_properties*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_peer_properties);
+        //    break;
+
+        //case _network_message_type_delegate_leadership:
+        //    if (channel->connected())
+        //        this->handle_delegate_leadership(channel, (s_network_message_delegate_leadership*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_delegate_leadership);
+        //    break;
+
+        //case _network_message_type_boot_machine:
+        //    if (channel->connected())
+        //        this->handle_boot_machine(channel, (s_network_message_boot_machine*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_boot_machine);
+        //    break;
+
+        //case _network_message_type_player_add:
+        //    if (channel->connected())
+        //        this->handle_player_add(channel, (s_network_message_player_add*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_player_add);
+        //    break;
+
+        case _network_message_type_player_refuse:
             if (channel->connected())
-                this->handle_peer_properties(channel, (s_network_message_peer_properties*)message);
+                this->handle_player_refuse(channel, (s_network_message_player_refuse*)message);
             else
-                log_received_over_non_connected_channel(channel, _network_message_type_peer_properties);
+                log_received_over_non_connected_channel(channel, _network_message_type_player_refuse);
             break;
 
-        case _network_message_type_delegate_leadership:
+        //case _network_message_type_player_remove:
+        //    if (channel->connected())
+        //        this->handle_player_remove(channel, (s_network_message_player_remove*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_player_remove);
+        //    break;
+
+        //case _network_message_type_player_properties:
+        //    if (channel->connected())
+        //        this->handle_player_properties(channel, (s_network_message_player_properties*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_player_properties);
+        //    break;
+
+        case _network_message_type_parameters_update:
             if (channel->connected())
-                this->handle_delegate_leadership(channel, (s_network_message_delegate_leadership*)message);
+                this->handle_parameters_update(channel, (s_network_message_parameters_update*)message);
             else
-                log_received_over_non_connected_channel(channel, _network_message_type_delegate_leadership);
+                log_received_over_non_connected_channel(channel, _network_message_type_parameters_update);
             break;
 
-        case _network_message_type_boot_machine:
+        //case _network_message_type_parameters_request:
+        //    if (channel->connected())
+        //        this->handle_parameters_request(channel, (s_network_message_parameters_request*)message);
+        //    else
+        //        log_received_over_non_connected_channel(channel, _network_message_type_parameters_request);
+        //    break;
+
+        case _network_message_type_view_establishment:
             if (channel->connected())
-                this->handle_boot_machine(channel, (s_network_message_boot_machine*)message);
+                this->handle_view_establishment(channel, (s_network_message_view_establishment*)message);
             else
-                log_received_over_non_connected_channel(channel, _network_message_type_boot_machine);
+                log_received_over_non_connected_channel(channel, _network_message_type_view_establishment);
             break;
 
-        case _network_message_type_player_add:
+        case _network_message_type_player_acknowledge:
             if (channel->connected())
-                this->handle_player_add(channel, (s_network_message_player_add*)message);
+                this->handle_player_acknowledge(channel, (s_network_message_player_acknowledge*)message);
             else
-                log_received_over_non_connected_channel(channel, _network_message_type_player_add);
+                log_received_over_non_connected_channel(channel, _network_message_type_player_acknowledge);
+            break;
+        // UNIMPLEMENTED! TODO
+        /*
+        case _network_message_type_synchronous_update:
+            if (channel->connected())
+                this->handle_synchronous_update(channel, (s_network_message_synchronous_update*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_update);
             break;
 
-        default:
-
+        case _network_message_type_synchronous_playback_control:
+            if (channel->connected())
+                this->handle_synchronous_playback_control(channel, (s_network_message_synchronous_playback_control*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_playback_control);
             break;
+
+        case _network_message_type_synchronous_actions:
+            if (channel->connected())
+                this->handle_synchronous_actions(channel, (s_network_message_synchronous_actions*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_actions);
+            break;
+
+        case _network_message_type_synchronous_acknowledge:
+            if (channel->connected())
+                this->handle_synchronous_acknowledge(channel, (s_network_message_synchronous_acknowledge*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_acknowledge);
+            break;
+
+        case _network_message_type_synchronous_gamestate:
+            if (channel->connected())
+                this->handle_synchronous_gamestate(channel, (s_network_message_synchronous_gamestate*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_gamestate);
+            break;
+
+        case _network_message_type_synchronous_client_ready:
+            if (channel->connected())
+                this->handle_synchronous_client_ready(channel, (s_network_message_synchronous_client_ready*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_synchronous_client_ready);
+            break;
+
+        case _network_message_type_game_results:
+            if (channel->connected())
+                this->handle_game_results(channel, (s_network_message_game_results*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_game_results);
+            break;
+        */
     }
 }
 

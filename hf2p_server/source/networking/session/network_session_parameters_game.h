@@ -23,13 +23,19 @@ enum e_network_game_privacy
 	k_network_game_privacy_count
 };
 
+enum e_network_session_closed
+{
+
+};
+
 struct s_network_session_privacy_mode
 {
 	e_network_game_privacy privacy_mode;
-	int : 32;
-	int : 32;
-	int : 32;
+	e_network_session_closed closed_mode;
+	long maximum_player_count;
+	bool is_closed_by_user;
 };
+static_assert(sizeof(s_network_session_privacy_mode) == 0x10);
 
 struct c_generic_network_session_parameter_privacy_mode : c_network_session_parameter_base
 {
@@ -80,11 +86,11 @@ struct c_network_session_parameter_initial_participants : c_network_session_para
 	int m_next_request_chunk;
 	int m_expected_update_chunk;
 	int m_expected_change_chunk;
-	char chunked_update_data[129024];
+	char chunked_update_data[0x1F800];
 	int chunked_update_data_size;
 	int chunked_update_data_checksum;
 	int chunked_update_data_chunk_count;
-	char chunked_change_data[129024];
+	char chunked_change_data[0x1F800];
 	int chunked_change_data_size;
 	int chunked_change_data_checksum;
 	int chunked_change_data_chunk_count;
@@ -94,10 +100,12 @@ struct c_network_session_parameter_initial_participants : c_network_session_para
 
 struct s_network_session_parameter_game_start_status
 {
-	long : 32;
-	long : 32;
-	long : 32;
+	long game_start_status;
+	long game_start_error;
+	unsigned short player_error_mask;
+	unsigned short map_load_progress;
 };
+static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 
 struct c_network_session_parameter_game_start_status : c_network_session_parameter_base
 {
@@ -119,8 +127,9 @@ struct c_network_session_parameter_countdown_timer : c_network_session_parameter
 
 struct s_network_session_parameter_voice_repeater
 {
-	long : 32;
+	long peer_index;
 };
+static_assert(sizeof(s_network_session_parameter_voice_repeater) == 0x4);
 
 struct c_network_session_parameter_voice_repeater : c_network_session_parameter_base
 {
@@ -141,9 +150,10 @@ struct c_network_session_parameter_synchronous_out_of_sync : c_network_session_p
 
 struct s_network_session_parameter_request_campaign_quit
 {
-	int unknown0;
-	int unknown4;
+	long campaign_quit_reason;
+	long campaign_quitting_peer;
 };
+static_assert(sizeof(s_network_session_parameter_request_campaign_quit) == 0x8);
 
 struct c_network_session_parameter_request_campaign_quit : c_network_session_parameter_base
 {

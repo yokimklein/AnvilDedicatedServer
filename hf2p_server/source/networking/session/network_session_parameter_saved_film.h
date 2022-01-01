@@ -31,11 +31,11 @@ struct c_network_session_parameter_saved_film_game_options : c_network_session_p
 	int m_next_request_chunk;
 	int m_expected_update_chunk;
 	int m_expected_change_chunk;
-	char chunked_update_data[34816];
+	char chunked_update_data[0x8800];
 	int chunked_update_data_size;
 	int chunked_update_data_checksum;
 	int chunked_update_data_chunk_count;
-	char chunked_change_data[34816];
+	char chunked_change_data[0x8800];
 	int chunked_change_data_size;
 	int chunked_change_data_checksum;
 	int chunked_change_data_chunk_count;

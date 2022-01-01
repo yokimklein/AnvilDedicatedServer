@@ -4,26 +4,26 @@
 
 struct s_transport_secure_address
 {
-	long : 32;
-	long : 32;
-	long : 32;
-	long : 32;
+	unsigned long  data1;
+	unsigned short data2;
+	unsigned short data3;
+	unsigned char data4[8];
 };
 
 struct s_transport_secure_identifier
 {
-	long : 32;
-	long : 32;
-	long : 32;
-	long : 32;
+	unsigned long  data1;
+	unsigned short data2;
+	unsigned short data3;
+	unsigned char data4[8];
 };
 
 struct s_transport_secure_key
 {
-	long : 32;
-	long : 32;
-	long : 32;
-	long : 32;
+	unsigned long  data1;
+	unsigned short data2;
+	unsigned short data3;
+	unsigned char data4[8];
 };
 
 struct s_transport_address
