@@ -1,6 +1,4 @@
-#include <cstdint>
 #include "transport_address.h"
-#include "..\..\dllmain.h"
 /*
 enum
 {

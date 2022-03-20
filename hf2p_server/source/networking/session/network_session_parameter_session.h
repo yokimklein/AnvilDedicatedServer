@@ -99,7 +99,7 @@ struct s_remote_session_join_data
 {
 	long join_state;
 	long join_to;
-	unsigned __int64 join_nonce;
+	int64_t join_nonce;
 	int transport_platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key key;

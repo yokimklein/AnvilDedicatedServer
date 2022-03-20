@@ -64,8 +64,14 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
         // TEMP HACK - TODO
         c_network_session* session = this->m_session_manager->session[0]; //this->m_session_manager->get_session(&message->session_id); // get_session is returning null! TODO - investigate why
         if (session)
+        {
             if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
+            {
                 session->handle_join_request(outgoing_address, message);
+                return;
+            }
+    
+        }
     }
     else
     {
@@ -286,12 +292,12 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             this->handle_connect_establish(channel, (s_network_message_connect_establish*)message);
             break;
 
-        case _network_message_type_leave_session: // TODO - removed by saber in client builds
-            if (channel->connected() && channel->get_remote_address(&remote_address))
-                this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
-            else
-                log_received_over_closed_channel(channel, _network_message_type_leave_session);
-            break;
+        //case _network_message_type_leave_session: // TODO - removed by saber in client builds
+        //    if (channel->connected() && channel->get_remote_address(&remote_address))
+        //        this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
+        //    else
+        //        log_received_over_closed_channel(channel, _network_message_type_leave_session);
+        //    break;
 
         case _network_message_type_session_disband:
             if (channel->connected() && channel->get_remote_address(&remote_address))

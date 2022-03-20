@@ -7,6 +7,7 @@
 #include "networking\session\network_session.h"
 #include "networking\messages\network_message_handler.h"
 #include "interface\user_interface_networking.h"
+#include "networking\network_globals.h"
 
 void UnprotectMemory(uintptr_t base)
 {

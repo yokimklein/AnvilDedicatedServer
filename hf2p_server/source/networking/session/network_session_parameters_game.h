@@ -25,7 +25,11 @@ enum e_network_game_privacy
 
 enum e_network_session_closed
 {
-
+	_network_session_closed_none,
+	_network_session_closed_campaign_in_progress,
+	_network_session_closed_film_in_progress,
+	_network_session_closed_in_matchmaking,
+	_network_session_closed_survival_in_progress
 };
 
 struct s_network_session_privacy_mode

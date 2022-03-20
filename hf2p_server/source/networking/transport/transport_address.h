@@ -2,28 +2,9 @@
 #include <cstdint>
 #include <windows.h>
 
-struct s_transport_secure_address
+enum e_transport_platform : long
 {
-	unsigned long  data1;
-	unsigned short data2;
-	unsigned short data3;
-	unsigned char data4[8];
-};
 
-struct s_transport_secure_identifier
-{
-	unsigned long  data1;
-	unsigned short data2;
-	unsigned short data3;
-	unsigned char data4[8];
-};
-
-struct s_transport_secure_key
-{
-	unsigned long  data1;
-	unsigned short data2;
-	unsigned short data3;
-	unsigned char data4[8];
 };
 
 struct s_transport_address

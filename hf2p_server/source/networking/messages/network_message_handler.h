@@ -1,5 +1,6 @@
 #pragma once
 #include "network_message_type_collection.h"
+#include "..\transport\transport_address.h"
 
 class c_network_channel;
 class c_network_link;

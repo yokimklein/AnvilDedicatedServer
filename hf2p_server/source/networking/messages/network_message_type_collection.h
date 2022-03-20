@@ -1,5 +1,7 @@
 #pragma once
-#include "..\transport\transport_address.h"
+#include "..\transport\transport_security.h"
+#include "..\session\network_session_membership.h"
+#include "..\network_globals.h"
 
 enum e_network_message_type : long
 {
@@ -87,6 +89,17 @@ enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whet
 	k_network_join_refuse_reason_count
 };
 
+enum e_network_join_mode : long // unofficial name, i couldn't find the original
+{
+	_network_join_closed_to_all_joins, // these are official though
+	_network_join_open_to_join_squad,
+	_network_join_queue_joins_to_group,
+	_network_join_process_queued_group_joins,
+	_network_join_queue_closed_while_in_match,
+
+	k_network_join_status_count
+};
+
 struct s_network_message
 {
 	// leftover notes
@@ -142,13 +155,15 @@ static_assert(sizeof(s_network_message_connect_closed) == 0xC);
 
 struct s_network_message_join_request : s_network_message
 {
-	unsigned short protocol_version;
-	short : 16;
-
-	long : 32;
-	long : 32;
-	s_transport_secure_identifier session_id;
+	unsigned short protocol_version; // 0
+	short executable_type; // 2
+	long executable_version; // 4
+	long compatible_version; // 8
+	s_transport_secure_identifier session_id; // 12
+	long unknown; // 28
+	s_network_session_join_request data;
 };
+// sizeof = 0x258?
 
 struct s_network_message_peer_connect : s_network_message
 {
@@ -156,7 +171,7 @@ struct s_network_message_peer_connect : s_network_message
 	short : 16;
 	s_transport_secure_identifier session_id;
 	long : 32;
-	long long join_nonce;
+	int64_t join_nonce;
 };
 static_assert(sizeof(s_network_message_peer_connect) == 0x20);
 
@@ -227,7 +242,10 @@ struct s_network_message_membership_update : s_network_message
 
 struct s_network_message_peer_properties : s_network_message
 {
+	s_transport_secure_identifier session_id;
+	s_transport_secure_address secure_address;
 
+	s_network_session_peer_properties peer_properties;
 };
 
 struct s_network_message_delegate_leadership : s_network_message
