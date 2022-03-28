@@ -116,23 +116,23 @@ struct s_network_message
 
 struct s_network_message_ping : s_network_message
 {
-	unsigned long id;
-	unsigned long timestamp;
-	unsigned long request_qos;
+	uint32_t id;
+	uint32_t timestamp;
+	uint32_t request_qos;
 };
 
 struct s_network_message_pong : s_network_message
 {
-	unsigned long id;
-	unsigned long timestamp;
-	unsigned long request_qos;
+	uint32_t id;
+	uint32_t timestamp;
+	uint32_t request_qos;
 };
 static_assert(sizeof(s_network_message_pong) == 0xC);
 
 struct s_network_message_connect_request : s_network_message
 {
-	unsigned long identifier;
-	unsigned long flags;
+	uint32_t identifier;
+	uint32_t flags;
 };
 
 struct s_network_message_connect_refuse : s_network_message
@@ -147,31 +147,31 @@ struct s_network_message_connect_establish : s_network_message
 
 struct s_network_message_connect_closed : s_network_message
 {
-	unsigned long identifier;
-	unsigned long remote_identifier;
-	unsigned long closure_reason;
+	uint32_t identifier;
+	uint32_t remote_identifier;
+	uint32_t closure_reason;
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);
 
 struct s_network_message_join_request : s_network_message
 {
-	unsigned short protocol_version; // 0
-	short executable_type; // 2
-	long executable_version; // 4
-	long compatible_version; // 8
-	s_transport_secure_identifier session_id; // 12
-	long unknown; // 28
+	uint16_t protocol_version;
+	short executable_type;
+	long executable_version;
+	long compatible_version;
+	s_transport_secure_identifier session_id;
+	long unknown;
 	s_network_session_join_request data;
 };
-// sizeof = 0x258?
+static_assert(sizeof(s_network_message_join_request) == 0x258);
 
 struct s_network_message_peer_connect : s_network_message
 {
-	unsigned short protocol_version;
+	uint16_t protocol_version;
 	short : 16;
 	s_transport_secure_identifier session_id;
 	long : 32;
-	int64_t join_nonce;
+	uint64_t join_nonce;
 };
 static_assert(sizeof(s_network_message_peer_connect) == 0x20);
 
@@ -205,7 +205,7 @@ struct s_network_message_session_disband : s_network_message
 struct s_network_message_session_boot : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	unsigned long reason;
+	uint32_t reason;
 };
 
 struct s_network_message_host_decline : s_network_message
@@ -228,9 +228,9 @@ struct s_network_message_peer_establish : s_network_message
 struct s_network_message_time_synchronize : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	unsigned long client_timestamp[2];
-	unsigned long authority_timestamp[2];
-	unsigned long synchronization_stage;
+	uint32_t client_timestamp[2];
+	uint32_t authority_timestamp[2];
+	uint32_t synchronization_stage;
 };
 //static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
 
@@ -267,8 +267,8 @@ struct s_network_message_player_refuse : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	s_transport_secure_identifier player_identifier;
-	unsigned long user_index;
-	unsigned long refuse_reason;
+	uint32_t user_index;
+	uint32_t refuse_reason;
 };
 
 struct s_network_message_player_remove : s_network_message
@@ -290,8 +290,8 @@ struct s_network_message_parameters_update : s_network_message
 	short : 16;
 	long : 32;
 
-	unsigned long long cleared_parameters;
-	unsigned long long updated_parameters;
+	uint64_t cleared_parameters;
+	uint64_t updated_parameters;
 
 	char parameters[6144];
 };
@@ -350,9 +350,9 @@ struct c_network_message_type
 {
 	bool __unknown0;
 	const char* message_type_name;
-	unsigned int flags;
-	unsigned int message_size;
-	unsigned int message_size_maximum;
+	uint32_t flags;
+	uint32_t message_size;
+	uint32_t message_size_maximum;
 	void* encode_function;
 	void* decode_function;
 	void* compare_function;

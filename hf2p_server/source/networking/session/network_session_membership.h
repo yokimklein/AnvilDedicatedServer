@@ -89,8 +89,8 @@ struct s_network_session_peer
 	int join_start_time;
 	long unknown;
 	s_network_session_peer_properties properties;
-	int64_t unknown_nonce;
-	int64_t join_nonce;
+	uint64_t unknown_nonce;
+	uint64_t join_nonce;
 	uint32_t player_mask;
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);

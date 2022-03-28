@@ -7,6 +7,7 @@
 #include "..\session\network_session_manager.h"
 #include "..\session\network_session.h"
 #include "..\transport\transport_address.h"
+#include "..\network_globals.h"
 
 // inlined in the ms29 client
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message) // untested
@@ -23,12 +24,10 @@ void c_network_message_handler::handle_ping(s_transport_address const* outgoing_
 // MISSING FROM MS29 CLIENT
 void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
 {
-    bool* network_time_locked = (bool*)(module_base + 0x1038344);
-    DWORD* g_network_locked_time = (DWORD*)(module_base + 0x1038348);
-    DWORD time;
+    uint32_t time;
 
     if (network_time_locked)
-        time = *g_network_locked_time; // ms23: 19E8D50 (0x400000 base)
+        time = *g_network_locked_time;
     else
         time = timeGetTime();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 

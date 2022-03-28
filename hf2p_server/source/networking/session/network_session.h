@@ -73,7 +73,7 @@ public:
 	long : 32;
 	int m_managed_session_index;
 	int m_join_refuse_reason;
-	int64_t m_host_join_nonce;
+	uint64_t m_host_join_nonce;
 	long : 32;
 	uint32_t m_disconnection_policy;
 	s_player_identifier m_player_add_single_player_identifier;

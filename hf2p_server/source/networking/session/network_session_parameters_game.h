@@ -106,8 +106,8 @@ struct s_network_session_parameter_game_start_status
 {
 	long game_start_status;
 	long game_start_error;
-	unsigned short player_error_mask;
-	unsigned short map_load_progress;
+	uint16_t player_error_mask;
+	uint16_t map_load_progress;
 };
 static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 
