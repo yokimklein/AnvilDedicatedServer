@@ -124,6 +124,9 @@ int MainThread()
             user_interface_set_desired_multiplayer_mode(_desired_multiplayer_mode_custom_games);
             std::cout << "Multiplayer mode set to custom-games\n";
 
+            // open queue to joins -- I shouldn't need to do this, the above functions should handle it fine?
+            g_network_join_data->join_queue_mode = _network_join_open_to_join_squad;
+
             // TODO: fix map & game variant code
             c_game_variant* game_variant = new c_game_variant;
             c_game_variant__get(game_variant); // subtype index is specified by the wezr tag? function currently broken

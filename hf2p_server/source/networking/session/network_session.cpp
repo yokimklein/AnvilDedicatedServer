@@ -214,15 +214,13 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
                 return;
             }
         }
-
     }
 
     // add entry to the queue
     auto queue_entry = &g_network_join_data->join_queue[g_network_join_data->join_queue_entry_count];
     memset(queue_entry, 0, sizeof(s_join_queue_entry)); // clear entry
-    queue_entry->address.address = address->address;
-    queue_entry->address.port = address->port;
-    queue_entry->address.address_size = address->address_size;
+    queue_entry->address = *address;
+    queue_entry->join_nonce = join_request->join_nonce;
     queue_entry->join_request = *join_request;
     uint32_t time;
     if (network_time_locked)
