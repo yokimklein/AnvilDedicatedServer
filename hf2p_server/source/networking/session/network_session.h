@@ -50,8 +50,10 @@ public:
 	bool handle_membership_update(s_network_message_membership_update const* message);
 	bool handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message);
 	bool handle_parameters_update(s_network_message_parameters_update const* message);
-
+	void join_accept(s_network_session_join_request const* join_request, s_transport_address const* address);
+	e_network_join_refuse_reason can_accept_join_request(s_network_session_join_request const* join_request);
 	e_network_join_refuse_reason get_closure_reason();
+	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -72,7 +74,7 @@ public:
 	uint32_t m_time;
 	long : 32;
 	int m_managed_session_index;
-	int m_join_refuse_reason;
+	e_network_join_refuse_reason m_join_refuse_reason;
 	uint64_t m_host_join_nonce;
 	long : 32;
 	uint32_t m_disconnection_policy;
@@ -80,13 +82,10 @@ public:
 	s_transport_secure_address m_player_add_secure_address;
 	long m_player_add_peer_index;
 	s_player_identifier m_player_add_player_identifier;
-	uint32_t m_player_add_join_refuse_reason;
+	e_network_join_refuse_reason m_player_add_join_refuse_reason;
 	uint32_t m_player_add_time;
 
 private:
 
 };
 //static_assert(sizeof(c_network_session_membership) == 0x1AC098);
-
-void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request);
-bool network_join_process_joins_from_queue();

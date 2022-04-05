@@ -4,7 +4,7 @@
 #include "..\messages\network_message_gateway.h"
 #include "..\messages\network_message_handler.h"
 #include "..\network_utilities.h"
-#include "..\network_globals.h"
+#include "..\logic\network_join.h"
 
 bool c_network_session::acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason)
 {
@@ -146,113 +146,29 @@ e_network_join_refuse_reason c_network_session::get_closure_reason()
     return get_closure_reason(this);
 }
 
-void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request)
+// WIP
+void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
-    // init
-    s_networking_join_data* data = g_network_join_data;
-    e_network_join_mode join_status = data->join_queue_mode;
-    e_network_join_refuse_reason closure_reason = session->get_closure_reason();
+    printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] processing join request from %s\n",
+        "(null)",/*managed_session_get_id_string(this->m_managed_session_index) TODO */
+        "(null)"/*transport_address_get_string(address) TODO */);
 
-    // make sure join isn't closed
-    if (closure_reason != _network_join_refuse_reason_none)
+    e_network_join_refuse_reason refuse_reason = this->can_accept_join_request(join_request);
+    if (refuse_reason != _network_join_refuse_reason_none)
     {
-        session->acknowledge_join_request(address, closure_reason);
-        return;
-    }
-
-    // check join status
-    switch (join_status)
-    {
-    case _network_join_closed_to_all_joins:
-        printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: attempted to join while in _network_join_closed_to_all_joins\n");
-        session->acknowledge_join_request(address, _network_join_refuse_reason_not_joinable);
-        return;
-    case _network_join_open_to_join_squad:
-        if (session->m_session_type != _network_session_type_group)
-        {
-            printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a group session while joining is in _network_join_open_to_join_squad\n");
-            session->acknowledge_join_request(address, _network_join_refuse_reason_in_matchmaking);
-            return;
-        }
-        break;
-    case _network_join_queue_joins_to_group:
-    case _network_join_process_queued_group_joins:
-        if (session->m_session_type != _network_session_type_squad)
-        {
-            printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a squad session while in matchmaking\n");
-            session->acknowledge_join_request(address, _network_join_refuse_reason_in_matchmaking);
-            return;
-        }
-        break;
-    case _network_join_queue_closed_while_in_match:
-        printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join while in matchmaking\n");
-        session->acknowledge_join_request(address, _network_join_refuse_reason_in_matchmaking);
-        return;
-    }
-
-    // ensure join request isn't already a session member
-    int peer_index = session->m_session_membership.get_first_peer();
-    while (peer_index != -1)
-    {
-        if (join_request->join_nonce == session->m_session_membership.m_peers[peer_index].join_nonce)
-        {
-            printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n",
-                "(null)"/* TODO: transport_address_get_string(address) */);
-            return;
-        }
-        peer_index = session->m_session_membership.get_next_peer(peer_index);
-    }
-
-    // make sure the request entry isn't already in the queue (if the queue has entries)
-    if (g_network_join_data->join_queue_entry_count != 0)
-    {
-        for (long i = 0; i < g_network_join_data->join_queue_entry_count; i++)
-        {
-            if (join_request->join_nonce == g_network_join_data->join_queue[i].join_nonce)
-            {
-                printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it is already being processed\n", "(null)"); // TODO: transport_address_get_string(address)
-                return;
-            }
-        }
-    }
-
-    // add entry to the queue
-    auto queue_entry = &g_network_join_data->join_queue[g_network_join_data->join_queue_entry_count];
-    memset(queue_entry, 0, sizeof(s_join_queue_entry)); // clear entry
-    queue_entry->address = *address;
-    queue_entry->join_nonce = join_request->join_nonce;
-    queue_entry->join_request = *join_request;
-    uint32_t time;
-    if (network_time_locked)
-        time = *g_network_locked_time;
-    else
-        time = timeGetTime();
-    queue_entry->times[0] = time;
-    queue_entry->times[1] = -1;
-    printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was added to the join queue\n", "(null)"); // TODO: transport_address_get_string(address)
-    g_network_join_data->join_queue_entry_count++;
-
-    // if the queue is now full (max 32), remove the entry that entered first to free up space
-    if (g_network_join_data->join_queue_entry_count == 32)
-    {
-        // i'm ignoring the latency field here (time[2]) as HO no longer updates it, so it'll always be 0 and unaccounted for
-        auto entry_to_delete = &g_network_join_data->join_queue[0];
-        auto previous_entry_enter_time = g_network_join_data->join_queue[0].times[0];
-        for (size_t i = 1; i < 32; i++)
-        {
-            // if the current queue entry was added first, mark it for deletion
-            if (previous_entry_enter_time > g_network_join_data->join_queue[i].times[0])
-                entry_to_delete = &g_network_join_data->join_queue[i];
-        }
-        printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was removed from the join queue because the queue was full\n", "(null)"); // TODO: transport_address_get_string(address)
-        session->acknowledge_join_request(address, _network_join_refuse_reason_rejected_by_host);
-        s_join_queue_entry* default_queue_entry_array = (s_join_queue_entry*)(module_base + 0x1039908);
-        memcpy(entry_to_delete, &default_queue_entry_array[g_network_join_data->join_queue_entry_count--], sizeof(s_join_queue_entry));
+        this->acknowledge_join_request(address, refuse_reason);
+        this->abort_pending_join(join_request, join_request->join_nonce);
     }
 }
 
 // TODO
-bool network_join_process_joins_from_queue()
+e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
-    return true;
+    return _network_join_refuse_reason_none;
+}
+
+// TODO
+void c_network_session::abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce)
+{
+
 }

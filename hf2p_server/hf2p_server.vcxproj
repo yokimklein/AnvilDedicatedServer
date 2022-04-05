@@ -109,8 +109,8 @@
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.dll" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"
-copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,8 +135,8 @@ copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Docu
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.dll" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"
-copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -174,6 +174,7 @@ copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Docu
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\networking\logic\network_join.h" />
     <ClInclude Include="source\networking\network_globals.h" />
     <ClInclude Include="source\networking\network_utilities.h" />
     <ClInclude Include="source\patch\Patch.hpp" />
@@ -216,6 +217,7 @@ copy /Y "$(SolutionDir)\bin\Debug\hf2p_dedicated_server.pdb" "C:\Users\toby\Docu
     <ClInclude Include="source\interface\user_interface_networking.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\networking\logic\network_join.cpp" />
     <ClCompile Include="source\networking\network_globals.cpp" />
     <ClCompile Include="source\networking\network_utilities.cpp" />
     <ClCompile Include="source\patch\Patch.cpp" />
