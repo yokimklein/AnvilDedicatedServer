@@ -111,7 +111,7 @@ struct s_networking_join_data
     s_network_session_remote_session_join_data join_data;
     e_network_join_mode join_queue_mode; // 0x1039B60
     long join_queue_entry_count; // 0x1039B64
-    s_join_queue_entry join_queue[32];
+    s_join_queue_entry join_queue[32]; // 32 - queue for channels?
 };
 static_assert(sizeof(s_networking_join_data) == 0x4C68); // ?
 #pragma pack(pop)

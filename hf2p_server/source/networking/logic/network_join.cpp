@@ -48,7 +48,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     }
 
     // ensure join request isn't already a session member
-    int peer_index = session->m_session_membership.get_first_peer();
+    long peer_index = session->m_session_membership.get_first_peer();
     while (peer_index != -1)
     {
         if (join_request->join_nonce == session->m_session_membership.m_peers[peer_index].join_nonce)

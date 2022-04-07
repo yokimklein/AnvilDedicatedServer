@@ -2,7 +2,7 @@
 #include "transport_security.h"
 #include "..\..\dllmain.h"
 
-int transport_secure_address_get(GUID* transport_secure_address)
+long transport_secure_address_get(GUID* transport_secure_address)
 {
     byte* unknown_struct = (byte*)(module_base + 0x4EBE8F4);
 

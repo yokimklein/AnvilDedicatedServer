@@ -13,7 +13,7 @@ class c_bitstream
 	uint32_t unknown18;
 	uint32_t position;
 	uint64_t window;
-	int windowBitsUsed;
+	long windowBitsUsed;
 	c_bitstream* currentPtr;
 	uint32_t unknown30;
 	uint32_t unknown34;

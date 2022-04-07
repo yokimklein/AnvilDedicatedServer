@@ -55,14 +55,14 @@ struct c_network_session_parameter_ui_game_mode: c_network_session_parameter_bas
 
 struct c_generic_network_session_parameter_dedicated_server_session_state: c_network_session_parameter_base
 {
-	int m_data;
-	int m_requested_data;
+	long m_data;
+	long m_requested_data;
 };
 
 struct s_network_session_parameter_map
 {
-	int campaign_id;
-	int map_id;
+	long campaign_id;
+	long map_id;
 	char map_name[128];
 	byte campagin_arguments[120];
 	uint32_t game_progression_bit_vector[64];
@@ -86,19 +86,19 @@ struct c_network_session_parameter_initial_participants : c_network_session_para
 {
 	s_network_session_parameter_initial_participants m_data;
 	s_network_session_parameter_initial_participants m_requested_data;
-	int m_peer_consumed_chunks[k_network_maximum_machines_per_session];
-	int m_next_request_chunk;
-	int m_expected_update_chunk;
-	int m_expected_change_chunk;
+	long m_peer_consumed_chunks[k_network_maximum_machines_per_session];
+	long m_next_request_chunk;
+	long m_expected_update_chunk;
+	long m_expected_change_chunk;
 	char chunked_update_data[0x1F800];
-	int chunked_update_data_size;
-	int chunked_update_data_checksum;
-	int chunked_update_data_chunk_count;
+	long chunked_update_data_size;
+	long chunked_update_data_checksum;
+	long chunked_update_data_chunk_count;
 	char chunked_change_data[0x1F800];
-	int chunked_change_data_size;
-	int chunked_change_data_checksum;
-	int chunked_change_data_chunk_count;
-	int m_max_chunk_count;
+	long chunked_change_data_size;
+	long chunked_change_data_checksum;
+	long chunked_change_data_chunk_count;
+	long m_max_chunk_count;
 	long : 32;
 };
 

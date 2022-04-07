@@ -26,9 +26,9 @@ enum e_network_session_state : uint32_t
 	_network_session_state_peer_leaving,
 	_network_session_state_host_established,
 	_network_session_state_host_disband,
-	_network_session_state_host_handoff,
-	_network_session_state_host_reestablish,
-	_network_session_state_election,
+	//_network_session_state_host_handoff,
+	//_network_session_state_host_reestablish,
+	//_network_session_state_election,
 
 	k_network_session_state_count
 };
@@ -54,6 +54,11 @@ public:
 	e_network_join_refuse_reason can_accept_join_request(s_network_session_join_request const* join_request);
 	e_network_join_refuse_reason get_closure_reason();
 	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
+	bool is_host();
+	bool join_allowed_by_privacy();
+	e_network_join_refuse_reason can_accept_player_join_request(uint64_t const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
+	bool session_is_full(long joining_peer_count, long joining_player_count);
+	void disconnect();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -73,7 +78,7 @@ public:
 	bool m_time_exists;
 	uint32_t m_time;
 	long : 32;
-	int m_managed_session_index;
+	long m_managed_session_index;
 	e_network_join_refuse_reason m_join_refuse_reason;
 	uint64_t m_host_join_nonce;
 	long : 32;

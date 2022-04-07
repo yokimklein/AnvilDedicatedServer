@@ -23,10 +23,10 @@ struct s_map_variant_placement_properties
 struct s_map_variant_placement
 {
 	uint16_t flags;
-	__int16 : 16;
-	int object_index;
-	int editor_object_index;
-	int budget_index;
+	short : 16;
+	long object_index;
+	long editor_object_index;
+	long budget_index;
 	real_point3d position;
 	real_vector3d right;
 	real_vector3d up;
@@ -36,7 +36,7 @@ struct s_map_variant_placement
 
 struct s_map_variant_budget_entry
 {
-	int tag_index;
+	long tag_index;
 	uint8_t runtime_minimum;
 	uint8_t runtime_maximum;
 	uint8_t runtime_current;
@@ -47,15 +47,15 @@ struct s_map_variant_budget_entry
 struct c_map_variant
 {
 	s_content_item_metadata base;
-	__int16 : 16;
+	short : 16;
 	uint16_t total_placements_count;
 	uint16_t used_placements_count;
 	uint16_t budget_entry_count;
-	int map_id;
+	long map_id;
 	real_bounds world_x_bounds;
 	real_bounds world_y_bounds;
 	real_bounds world_z_bounds;
-	int content_type;
+	long content_type;
 	real maximum_budget;
 	real current_budget;
 	long : 32;

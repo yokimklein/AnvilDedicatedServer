@@ -36,14 +36,14 @@ void c_network_message_handler::handle_pong(s_transport_address const* outgoing_
 
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message) // tested - seems to work
 {
-    typedef int(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
+    typedef long(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
     auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(module_base + 0x25AC0);
     handle_connect_refuse(channel, message);
 }
 
 void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message) // untested
 {
-    typedef int(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
+    typedef long(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
     auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0x25B10);
     handle_connect_establish(channel, message);
 }

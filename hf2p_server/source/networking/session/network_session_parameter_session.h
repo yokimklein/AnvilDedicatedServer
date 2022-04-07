@@ -73,8 +73,8 @@ struct c_generic_network_session_parameter_ulong : c_network_session_parameter_b
 
 struct c_generic_network_session_parameter_long : c_network_session_parameter_base
 {
-	int m_data;
-	int m_requested_data;
+	long m_data;
+	long m_requested_data;
 };
 
 struct c_generic_network_session_parameter_short : c_network_session_parameter_base
@@ -100,7 +100,7 @@ struct s_remote_session_join_data
 	long join_state;
 	long join_to;
 	uint64_t join_nonce;
-	int transport_platform;
+	long transport_platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key key;
 	s_transport_secure_address host_address;

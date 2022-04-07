@@ -31,9 +31,9 @@ bool c_network_channel::get_remote_address(s_transport_address* remote_address) 
 	return true;
 }
 
-int c_network_channel::close(e_network_channel_closure_reason reason)
+long c_network_channel::close(e_network_channel_closure_reason reason)
 {
-	typedef int(__fastcall* network_channel__close_ptr)(c_network_channel* channel, e_network_channel_closure_reason reason);
+	typedef long(__fastcall* network_channel__close_ptr)(c_network_channel* channel, e_network_channel_closure_reason reason);
 	auto network_channel__close = reinterpret_cast<network_channel__close_ptr>(module_base + 0xC310);
 	return network_channel__close(this, reason);
 }

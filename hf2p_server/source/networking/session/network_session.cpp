@@ -8,7 +8,7 @@
 
 bool c_network_session::acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason)
 {
-    typedef char(__fastcall* managed_session_get_id_ptr)(int session_index, s_transport_secure_identifier* secure_identifier);
+    typedef char(__fastcall* managed_session_get_id_ptr)(long session_index, s_transport_secure_identifier* secure_identifier);
     auto managed_session_get_id = reinterpret_cast<managed_session_get_id_ptr>(module_base + 0x28AE0);
 
     const char* transport_address_string = "(null)"; // (const char*)transport_address_get_string();
@@ -29,9 +29,9 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
 
 bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
 {
-    int executable_type;
-    int executable_version;
-    int compatible_version;
+    long executable_type;
+    long executable_version;
+    long compatible_version;
     network_get_build_identifiers(&executable_type, &executable_version, &compatible_version);
 
     if (message->compatible_version >= compatible_version)
@@ -161,14 +161,120 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
     }
 }
 
-// TODO
+// TEST THIS
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
-    return _network_join_refuse_reason_none;
+    typedef long(__cdecl* bit_check_ptr)(long mask, long index); // test calling this
+    auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
+
+    if (!this->is_host())
+        return _network_join_refuse_reason_not_joinable;
+    if (!this->join_allowed_by_privacy())
+        return _network_join_refuse_reason_privacy_mode;
+
+    e_network_join_refuse_reason refuse_reason = _network_join_refuse_reason_none;
+    long joining_peer_count = join_request->joining_peer_count;
+    long joining_player_count = 0;
+    bool has_players = false;
+
+    for (long i = 0; i < join_request->joining_peer_count; i++)
+    {
+        long peer_index = this->m_session_membership.get_peer_from_secure_address(&join_request->joining_peers[i].joining_peer_address);
+        long user_player_index = join_request->joining_peers[i].user_player_index;
+        if (join_request->joining_players[user_player_index] != 0) // player_identifier_is_valid
+        {
+            joining_player_count++;
+            has_players = true;
+            refuse_reason = this->can_accept_player_join_request(&join_request->joining_players[user_player_index], join_request->joining_peers[i].joining_peer_address, peer_index, false);
+        }
+        else
+        {
+            has_players = false;
+        }
+
+        if (refuse_reason == _network_join_refuse_reason_none)
+        {
+            if (peer_index != -1)
+            {
+                joining_peer_count--;
+                long peer_player_count = bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16);
+                has_players = true;
+                joining_player_count -= peer_player_count;
+            }
+            if (!has_players)
+                refuse_reason = _network_join_refuse_reason_player_count_zero;
+        }
+        if (refuse_reason != _network_join_refuse_reason_none)
+            return refuse_reason;
+    }
+
+    if (this->m_local_state <= _network_session_state_peer_join_abort) // session is_established
+        return refuse_reason;
+
+    if (this->session_is_full(joining_peer_count, joining_player_count))
+        return _network_join_refuse_reason_session_full;
+
+    return refuse_reason;
 }
 
 // TODO
 void c_network_session::abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce)
 {
+    if (this->m_session_membership.m_peers[this->m_session_membership.m_host_peer_index].join_nonce == join_nonce)
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] the aborted join [%s] contains the host peer, disconnecting the session\n",
+            "(null)" /*managed_session_get_id_string() TODO*/,
+            "(null)" /*transport_secure_nonce_get_string() TODO*/);
+        this->disconnect();
+    }
+}
 
+// TEST THIS
+bool c_network_session::is_host()
+{
+    return this->m_local_state == _network_session_state_host_established || this->m_local_state == _network_session_state_host_disband;
+}
+
+// TEST THIS
+bool c_network_session::join_allowed_by_privacy()
+{
+    if (!this->m_session_parameters.privacy_mode.get_allowed())
+        return true;
+
+    if (this->m_session_parameters.privacy_mode.get_allowed())
+    {
+        s_network_session_privacy_mode* privacy_parameter = &this->m_session_parameters.privacy_mode.m_data;
+        return this->m_session_parameters.privacy_mode.m_data.closed_mode != _network_session_closed_none
+            && this->m_session_parameters.privacy_mode.m_data.is_closed_by_user == false;
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_generic_network_session_parameter<struct s_network_session_privacy_mode>::get: [%s] failed to get parameter %d [%s], data not available\n",
+            "UNKNOWN", // TODO: c_network_session_parameter_base::get_session_description(privacy_base_parameter)
+            this->m_session_parameters.privacy_mode.m_type,
+            this->m_session_parameters.privacy_mode.m_name);
+        return false;
+    }
+}
+
+// TEST THIS
+e_network_join_refuse_reason c_network_session::can_accept_player_join_request(uint64_t const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown)
+{
+    typedef e_network_join_refuse_reason(__fastcall* can_accept_player_join_request_ptr)(c_network_session* session, uint64_t const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
+    auto can_accept_player_join_request = reinterpret_cast<can_accept_player_join_request_ptr>(module_base + 0x22F30);
+    return can_accept_player_join_request(this, player_identifier, joining_peer_address, peer_index, unknown);
+}
+
+bool c_network_session::session_is_full(long joining_peer_count, long joining_player_count)
+{
+    typedef bool(__fastcall* session_is_full_ptr)(c_network_session* session, long joining_peer_count, long joining_player_count);
+    auto session_is_full = reinterpret_cast<session_is_full_ptr>(module_base + 0x22330);
+    return session_is_full(this, joining_peer_count, joining_player_count);
+}
+
+void c_network_session::disconnect()
+{
+    typedef void(__fastcall* disconnect_ptr)(c_network_session* session);
+    auto disconnect = reinterpret_cast<disconnect_ptr>(module_base + 0x21CC0);
+    return disconnect(this);
 }

@@ -127,7 +127,7 @@ public:
 	// allocated()
 	// allocate()
 	// closed()
-	int close(e_network_channel_closure_reason reason);
+	long close(e_network_channel_closure_reason reason);
 	// simulation_can_be_established()
 	// is_voice_only()
 	// is_receive_only()

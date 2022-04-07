@@ -36,11 +36,11 @@ struct s_game_options
 	uint8_t network_type;
 	short tick_length;
 	uint64_t game_id;
-	int random_seed;
-	int lanquage_id;
-	int determinism_version;
-	int campaign_id;
-	int map_id;
+	long random_seed;
+	long lanquage_id;
+	long determinism_version;
+	long campaign_id;
+	long map_id;
 	char scenario_path[260];
 	short zoneset_group_index;
 	uint8_t __unnknown12A[4];
@@ -49,8 +49,8 @@ struct s_game_options
 	uint16_t game_playback;
 	bool record_saved_film;
 	char : 8;
-	int playback_start_in_ticks;
-	int playback_length_in_ticks;
+	long playback_start_in_ticks;
+	long playback_length_in_ticks;
 	uint16_t campaign_difficulty;
 	uint16_t campaign_insertion_index;
 	uint16_t campaign_metagame_scoring;

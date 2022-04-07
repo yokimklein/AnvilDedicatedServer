@@ -95,7 +95,7 @@ static_assert(sizeof(c_game_engine_variant_social_settings) == 0x4);
 
 struct c_game_engine_variant_map_overrides
 {
-	int m_flags;
+	long m_flags;
 	c_player_traits m_base_traits;
 	short m_weapon_set;
 	short m_vehicle_set;
@@ -113,7 +113,7 @@ struct c_game_engine_variant_vtbl;
 struct c_game_engine_base_variant
 {
 	c_game_engine_variant_vtbl* vftable;
-	int* SHA1_C;
+	long* SHA1_C;
 	char m_variant_backend_name[32];
 	s_content_item_metadata m_content_header;
 	c_game_engine_variant_general_settings m_general_settings;
@@ -140,15 +140,15 @@ static_assert(sizeof(c_game_variant) == 0x264);
 
 struct c_game_engine_variant_vtbl
 {
-	int(__cdecl* get_name)();
-	int(__thiscall* get_description)(c_game_engine_variant*);
-	int(__thiscall* make_default)(c_game_engine_variant*);
+	long(__cdecl* get_name)();
+	long(__thiscall* get_description)(c_game_engine_variant*);
+	long(__thiscall* make_default)(c_game_engine_variant*);
 	void(__thiscall* build_settings)(c_game_engine_variant*);
 	void* backend_encode;
 	void(__thiscall* backend_decode)(c_game_engine_variant*, c_bitstream*);
-	int(__cdecl* func06)();
-	int(__thiscall* score_to_win)(c_game_engine_variant*);
-	int(__thiscall* func08)(c_game_engine_variant*);
+	long(__cdecl* func06)();
+	long(__thiscall* score_to_win)(c_game_engine_variant*);
+	long(__thiscall* func08)(c_game_engine_variant*);
 	void(__stdcall* get_engine)(c_game_engine_variant*, e_engine_variant, c_game_engine_variant**);
-	int(__stdcall* func10)(int, int, int);
+	long(__stdcall* func10)(long, long, long);
 };

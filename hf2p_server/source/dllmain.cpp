@@ -30,7 +30,7 @@ void UnprotectMemory(uintptr_t base)
     printf("Done! Unprotected %u bytes of memory\n", Total);
 }
 
-int MainThread()
+long MainThread()
 {
     AllocConsole();
     UnprotectMemory(module_base);
@@ -41,20 +41,20 @@ int MainThread()
     printf("Base address: %p\n", (void*)module_base);
 
     // INIT
-    typedef int(__cdecl* _network_life_cycle_end_ptr)();
+    typedef long(__cdecl* _network_life_cycle_end_ptr)();
     auto network_life_cycle_end = reinterpret_cast<_network_life_cycle_end_ptr>(module_base + 0x311720);
 
     typedef char(__thiscall* network_life_cycle_create_local_squad_ptr)(e_network_session_class session_class); // 0 = offline, 1 = online, 2 = xbl
     auto network_life_cycle_create_local_squad = reinterpret_cast<network_life_cycle_create_local_squad_ptr>(module_base + 0x2AD00);
 
-    typedef char(__thiscall* user_interface_squad_set_ui_game_mode_ptr)(int* this_ptr, e_gui_game_mode start_mode); // 0 = campaign, 1 = matchmaking, 2 = customs, 3 = forge, 4 = theater, 5 = firefight
+    typedef char(__thiscall* user_interface_squad_set_ui_game_mode_ptr)(long* this_ptr, e_gui_game_mode start_mode); // 0 = campaign, 1 = matchmaking, 2 = customs, 3 = forge, 4 = theater, 5 = firefight
     auto user_interface_squad_set_ui_game_mode = reinterpret_cast<user_interface_squad_set_ui_game_mode_ptr>(module_base + 0xC00 + 0x3A8D0);
 
     typedef char(__thiscall* user_interface_set_desired_multiplayer_mode_ptr)(e_desired_multiplayer_mode desired_multiplayer_mode);
     auto user_interface_set_desired_multiplayer_mode = reinterpret_cast<user_interface_set_desired_multiplayer_mode_ptr>(module_base + 0xC00 + 0x3A9BD0);
 
     typedef char(__cdecl* c_game_variant__get_ptr)(c_game_variant* output); // ms23 version took in e_engine_variant & engine_subtype_index
-    // TODO: c_game_variant::get(void *this, int output_variant) - actual args? where this is e_engine_variant - alternatively rewrite function from scratch
+    // TODO: c_game_variant::get(void *this, long output_variant) - actual args? where this is e_engine_variant - alternatively rewrite function from scratch
     auto c_game_variant__get = reinterpret_cast<c_game_variant__get_ptr>(module_base + 0xC00 + 0xE9210); // function doesn't exist in the h3 debug build so this name is made up
 
     typedef bool(__thiscall* user_interface_squad_set_game_variant_ptr)(c_game_variant* game_variant);
@@ -66,16 +66,16 @@ int MainThread()
     typedef void*(__thiscall* c_map_variant__c_map_variant_ptr)(c_map_variant* map_variant);
     auto c_map_variant__c_map_variant = reinterpret_cast<c_map_variant__c_map_variant_ptr>(module_base + 0xC00 + 0xAA6F0);
 
-    typedef char(__thiscall* c_map_variant__create_default_ptr)(c_map_variant* map_variant, int map_id);
+    typedef char(__thiscall* c_map_variant__create_default_ptr)(c_map_variant* map_variant, long map_id);
     auto c_map_variant__create_default = reinterpret_cast<c_map_variant__create_default_ptr>(module_base + 0xC00 + 0xAA780); // c_map_variant_initialize
 
     typedef char(__thiscall* user_interface_squad_set_multiplayer_map_ptr)(c_map_variant* map_variant);
     auto user_interface_squad_set_multiplayer_map = reinterpret_cast<user_interface_squad_set_multiplayer_map_ptr>(module_base + 0xC00 + 0x3AB060);
 
-    //typedef char(__cdecl* levels_get_path_ptr)(int campaign_id, int map_id, char* output, rsize_t size_in_bytes);
+    //typedef char(__cdecl* levels_get_path_ptr)(long campaign_id, long map_id, char* output, rsize_t size_in_bytes);
     //auto levels_get_path = reinterpret_cast<levels_get_path_ptr>(0x68D7C0);
     //
-    //typedef bool(__cdecl* network_squad_session_set_map_ptr)(int campaign_id, int map_id, char* map_path);
+    //typedef bool(__cdecl* network_squad_session_set_map_ptr)(long campaign_id, long map_id, char* map_path);
     //auto network_squad_session_set_map = reinterpret_cast<network_squad_session_set_map_ptr>(0x5DDEC0);
     //
     //typedef char(__cdecl* network_squad_session_set_map_variant_ptr)(void* map_variant);
@@ -84,14 +84,14 @@ int MainThread()
     typedef char(__thiscall* c_network_session_parameter_session_mode__set_ptr)(c_network_session_parameters* session_parameters, e_network_session_mode session_mode);
     auto c_network_session_parameter_session_mode__set = reinterpret_cast<c_network_session_parameter_session_mode__set_ptr>(module_base + 0xC00 + 0x2CC20);
 
-    typedef char(__fastcall* managed_session_get_id_ptr)(int index, GUID* transport_secure_identifier);
+    typedef char(__fastcall* managed_session_get_id_ptr)(long index, GUID* transport_secure_identifier);
     auto managed_session_get_id = reinterpret_cast<managed_session_get_id_ptr>(module_base + 0x28AE0);
 
     c_network_session* network_session = (c_network_session*)(module_base + 0xC00 + 0x396F568);
     c_network_session_manager* session_manager = network_session->m_session_manager;
 
-    int* life_cycle_state_unknown = (int*)((int)network_session + 0xE1D68);
-    int c_life_cycle_state_handler = (module_base + 0x3EADFAC); // 0x3EAE010[2]
+    long* life_cycle_state_unknown = (long*)((long)network_session + 0xE1D68);
+    long c_life_cycle_state_handler = (module_base + 0x3EADFAC); // 0x3EAE010[2]
     short* g_game_port = (short*)(module_base + 0xE9B7A0);
     c_network_session_parameters* network_session_parameters = &network_session->m_session_parameters; //  (c_network_session_parameters*)((int)network_session + 0xE1C90); // c_life_cycle_state + 0xE1C90
 
@@ -111,7 +111,7 @@ int MainThread()
     {
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP
         {
-            int map_id = 31; // s3d_turf map id
+            long map_id = 31; // s3d_turf map id
 
             network_life_cycle_end();
             std::cout << "Destroying current session...\n";

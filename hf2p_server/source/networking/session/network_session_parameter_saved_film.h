@@ -18,8 +18,8 @@ struct c_generic_network_session_parameter_saved_film_description : c_network_se
 
 struct s_network_session_parameter_saved_film_game_options
 {
-	int playback_length_in_ticks;
-	int playback_start_tick;
+	long playback_length_in_ticks;
+	long playback_start_tick;
 	s_game_options game_options;
 };
 
@@ -27,18 +27,18 @@ struct c_network_session_parameter_saved_film_game_options : c_network_session_p
 {
 	s_network_session_parameter_saved_film_game_options m_data;
 	s_network_session_parameter_saved_film_game_options m_requested_data;
-	int m_peer_consumed_chunks[k_network_maximum_machines_per_session];
-	int m_next_request_chunk;
-	int m_expected_update_chunk;
-	int m_expected_change_chunk;
+	long m_peer_consumed_chunks[k_network_maximum_machines_per_session];
+	long m_next_request_chunk;
+	long m_expected_update_chunk;
+	long m_expected_change_chunk;
 	char chunked_update_data[0x8800];
-	int chunked_update_data_size;
-	int chunked_update_data_checksum;
-	int chunked_update_data_chunk_count;
+	long chunked_update_data_size;
+	long chunked_update_data_checksum;
+	long chunked_update_data_chunk_count;
 	char chunked_change_data[0x8800];
-	int chunked_change_data_size;
-	int chunked_change_data_checksum;
-	int chunked_change_data_chunk_count;
-	int m_max_chunk_count;
+	long chunked_change_data_size;
+	long chunked_change_data_checksum;
+	long chunked_change_data_chunk_count;
+	long m_max_chunk_count;
 	long : 32;
 };
