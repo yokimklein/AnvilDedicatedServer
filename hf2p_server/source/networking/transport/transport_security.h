@@ -23,4 +23,9 @@ struct s_transport_secure_key
 	char data[16];
 };
 
+struct s_transport_session_description
+{
+	char data[16];
+};
+
 long transport_secure_address_get(GUID* transport_secure_address);

@@ -109,6 +109,7 @@ long MainThread()
 
     while (true)
     {
+        // create new host session & setup game settings - TODO: see how saber handles this in hf2p_join_game (base + 0x319880)
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP
         {
             long map_id = 31; // s3d_turf map id

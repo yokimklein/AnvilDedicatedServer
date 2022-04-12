@@ -72,7 +72,7 @@ struct s_network_session_join_request
     int32_t joining_peer_count;
     s_joining_peer joining_peers[k_network_maximum_machines_per_session];
     int32_t joining_player_count;
-    uint64_t joining_players[k_network_maximum_players_per_session];
+    s_player_identifier joining_players[k_network_maximum_players_per_session];
     bool join_from_recruiting;
     uint32_t payload_type;
 };
@@ -117,5 +117,7 @@ static_assert(sizeof(s_networking_join_data) == 0x4C68); // ?
 #pragma pack(pop)
 
 static s_networking_join_data* g_network_join_data = (s_networking_join_data*)(module_base + 0x1039AFC);
+
+// belongs in network_time.h
 static bool* network_time_locked = (bool*)(module_base + 0x1038344);
 static uint32_t* g_network_locked_time = (uint32_t*)(module_base + 0x1038348);

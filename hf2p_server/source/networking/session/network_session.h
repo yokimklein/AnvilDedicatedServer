@@ -33,6 +33,25 @@ enum e_network_session_state : uint32_t
 	k_network_session_state_count
 };
 
+enum e_network_session_boot_reason // from ms23/ED
+{
+	_network_session_boot_reason_player_booted_player,
+	_network_session_boot_reason_unknown1,
+	_network_session_boot_reason_failed_to_load_map,
+	_network_session_boot_reason_write_stats_grief_time,
+	_network_session_boot_reason_unknown4,
+	_network_session_boot_reason_unknown5,
+	_network_session_boot_reason_recreating_session,
+	_network_session_boot_reason_join_aborted,
+	_network_session_boot_reason_simulation_aborted,
+	_network_session_boot_reason_unknown9,
+	_network_session_boot_reason_unknown10,
+	_network_session_boot_reason_unknown11,
+	_network_session_boot_reason_unknown12,
+
+	k_network_session_boot_reason_count
+};
+
 class c_network_message_gateway;
 class c_network_observer;
 class c_network_session_manager;
@@ -56,9 +75,11 @@ public:
 	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
 	bool is_host();
 	bool join_allowed_by_privacy();
-	e_network_join_refuse_reason can_accept_player_join_request(uint64_t const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
+	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
 	bool session_is_full(long joining_peer_count, long joining_player_count);
 	void disconnect();
+	void disband_peer();
+	void boot_peer(long peer_index, e_network_session_boot_reason boot_reason);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

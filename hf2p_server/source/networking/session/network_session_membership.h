@@ -19,7 +19,7 @@ struct s_player_configuration_from_client
 {
 	wchar_t player_name[16];
 	byte multiplayer_team;
-	byte unknown21;
+	byte unknown_team;
 	byte active_armor_loadout;
 	byte active_weapon_loadout;
 	uint32_t hopper_access_flags;

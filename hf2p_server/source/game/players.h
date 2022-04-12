@@ -10,6 +10,5 @@ struct s_machine_identifier
 
 struct s_player_identifier
 {
-	long : 32;
-	long : 32;
+	long long data;
 };

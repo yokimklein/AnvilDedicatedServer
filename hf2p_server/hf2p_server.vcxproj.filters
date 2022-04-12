@@ -138,6 +138,9 @@
     <ClInclude Include="source\networking\logic\network_join.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\session\network_managed_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -264,6 +267,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\logic\network_join.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\session\network_managed_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
