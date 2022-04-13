@@ -141,6 +141,9 @@
     <ClInclude Include="source\networking\session\network_managed_session.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\transport\transport_shim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -270,6 +273,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\session\network_managed_session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\transport\transport_shim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

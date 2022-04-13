@@ -12,7 +12,7 @@
 // inlined in the ms29 client
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message) // untested
 {
-    const char* address_string = "(null)"; // transport_address_get_string(&outgoing_address); TODO
+    const char* address_string = transport_address_get_string(outgoing_address);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, address_string, timeGetTime());
     s_network_message_pong response;
     response.id = message->id;
@@ -31,7 +31,7 @@ void c_network_message_handler::handle_pong(s_transport_address const* outgoing_
     else
         time = timeGetTime();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 
-        message->id, "(null)"/*transport_address_get_string(&outgoing_address)*/, timeGetTime(), time - message->timestamp);
+        message->id, transport_address_get_string(outgoing_address), timeGetTime(), time - message->timestamp);
 }
 
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message) // tested - seems to work
@@ -76,9 +76,10 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
     }
-    const char* transport_address_string = "(null)"; // transport_address_get_string();
     const char* secure_identifier_string = "(null)"; // transport_secure_identifier_get_string((int)(message + 6));
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n", secure_identifier_string, transport_address_string);
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
+        secure_identifier_string,
+        transport_address_get_string(outgoing_address));
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incomming join request\n");
 }
 
@@ -230,39 +231,46 @@ void c_network_message_handler::handle_player_acknowledge(c_network_channel* cha
     return handle_player_acknowledge(this, channel, message);
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_gamestate(c_network_channel* channel, s_network_message_synchronous_gamestate const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
 {
-    // TODO
+    
 }
 
+// FUNC TODO
 void c_network_message_handler::handle_game_results(c_network_channel* channel, s_network_message_game_results const* message)
 {
-    // TODO
+    
 }
 
 void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)

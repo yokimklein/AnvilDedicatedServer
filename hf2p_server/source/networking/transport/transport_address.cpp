@@ -1,18 +1,22 @@
 #include "transport_address.h"
-/*
+
 enum
 {
 	k_maxmum_ipv4_string_length = 16
 };
 char* transport_address_get_string(s_transport_address const* address)
 {
-	char* address_string;
+	char* address_string = nullptr;
 	transport_address_to_string(address, 0, address_string, 256, false, true);
 	return address_string;
 }
 
-char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool append_port_info, bool append_security_info)
+// FUNC TODO
+const char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool append_port_info, bool append_security_info)
 {
+	const char* address_str = "(null)";
+	return address_str;
+	/*
 	char secure_address_string[256];
 	char secure_identifier_string[256];
 	s_transport_secure_address secure_address_2;
@@ -73,5 +77,5 @@ char* transport_address_to_string(s_transport_address const* address, s_transpor
 		csstrnzcpy(string, "NULL_ADDRESS", maximum_string_length);
 
 	return string;
+	*/
 }
-*/

@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <windows.h>
+#include "transport_security.h"
 
 enum e_transport_platform : long
 {
@@ -18,5 +18,5 @@ struct s_transport_address
 };
 static_assert(sizeof(s_transport_address) == 0x14);
 
-//char* transport_address_get_string(s_transport_address const* address);
-//char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool append_port_info, bool append_security_info);
+char* transport_address_get_string(s_transport_address const* address);
+const char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool append_port_info, bool append_security_info);

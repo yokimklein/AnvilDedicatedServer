@@ -18,3 +18,17 @@ long transport_secure_address_get(GUID* transport_secure_address)
         return 0;
     return 1;
 }
+
+// FUNC TODO
+const char* transport_secure_nonce_get_string(const uint64_t* secure_nonce)
+{
+    const char* secure_nonce_string = "00000000-00000000";
+    return secure_nonce_string;
+}
+
+// FUNC TODO
+const char* transport_secure_address_get_string(const s_transport_secure_address* secure_address)
+{
+    const char* secure_address_string = "00000000-00000-0000-0000-000000000000";
+    return secure_address_string;
+}

@@ -216,12 +216,14 @@
     <ClInclude Include="source\networking\transport\transport_security.h" />
     <ClInclude Include="source\networking\transport\transport_address.h" />
     <ClInclude Include="source\interface\user_interface_networking.h" />
+    <ClInclude Include="source\networking\transport\transport_shim.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\networking\session\network_managed_session.cpp" />
     <ClCompile Include="source\networking\logic\network_join.cpp" />
     <ClCompile Include="source\networking\network_globals.cpp" />
     <ClCompile Include="source\networking\network_utilities.cpp" />
+    <ClCompile Include="source\networking\transport\transport_shim.cpp" />
     <ClCompile Include="source\patch\Patch.cpp" />
     <ClCompile Include="source\patch\Pointer.cpp" />
     <ClCompile Include="source\simulation\simulation.cpp" />

@@ -1,6 +1,6 @@
 #pragma once
 #include <windows.h>
-#include "transport_address.h"
+#include <cstdint>
 
 struct s_transport_secure_address
 {
@@ -29,3 +29,5 @@ struct s_transport_session_description
 };
 
 long transport_secure_address_get(GUID* transport_secure_address);
+const char* transport_secure_nonce_get_string(const uint64_t* secure_nonce);
+const char* transport_secure_address_get_string(const s_transport_secure_address* secure_address);

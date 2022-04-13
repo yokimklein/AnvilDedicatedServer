@@ -95,6 +95,7 @@ struct s_network_session_peer
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);
 
+#pragma pack(push, 4)
 struct s_network_session_player
 {
 	long desired_configuration_version;
@@ -107,6 +108,7 @@ struct s_network_session_player
 	uint32_t voice_settings;
 };
 static_assert(sizeof(s_network_session_player) == 0xB90);
+#pragma pack(pop)
 
 struct s_network_session_peer_channel
 {

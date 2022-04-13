@@ -72,6 +72,8 @@ public:
 	void join_accept(s_network_session_join_request const* join_request, s_transport_address const* address);
 	e_network_join_refuse_reason can_accept_join_request(s_network_session_join_request const* join_request);
 	e_network_join_refuse_reason get_closure_reason();
+	const char* get_type_string(e_network_session_type session_type);
+	const char* get_peer_description(long peer_index);
 	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
 	bool is_host();
 	bool join_allowed_by_privacy();

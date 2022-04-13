@@ -4,14 +4,16 @@
 #include "..\delivery\network_channel.h"
 #include "..\delivery\network_link.h"
 #include "network_message_gateway.h"
+#include "..\transport\transport_address.h"
 #include <iostream>
 
 void c_network_message_handler::handle_out_of_band_message(s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     c_network_channel* channel;
-    char const* transport_address_string = "(null)"; // TODO transport_address_get_string()
-    char const* message_type_name = this->m_message_type_collection->get_message_type_name(message_type);
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s received out-of-band from '%s'\n", message_type, message_type_name, transport_address_string);
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s received out-of-band from '%s'\n",
+        message_type,
+        this->m_message_type_collection->get_message_type_name(message_type),
+        transport_address_get_string(address));
     
     switch (message_type)
     {
@@ -67,9 +69,10 @@ void c_network_message_handler::handle_out_of_band_message(s_transport_address c
             this->handle_time_synchronize(address, (s_network_message_time_synchronize*)message);
             break;
         default:
-            char const* transport_address_string = "(null)"; // TODO transport_address_get_string()
-            char const* message_type_name = this->m_message_type_collection->get_message_type_name(message_type);
-            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s from '%s' cannot be handled out-of-band, discarding\n", message_type, message_type_name, transport_address_string);
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s from '%s' cannot be handled out-of-band, discarding\n",
+                message_type,
+                this->m_message_type_collection->get_message_type_name(message_type),
+                transport_address_get_string(address));
             break;
     }
 }

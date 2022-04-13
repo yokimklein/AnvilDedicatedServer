@@ -10,6 +10,7 @@ class c_network_session_parameter_base
 {
 public:
 	bool get_allowed();
+	const char* get_session_description();
 
 	c_network_session_parameter_base_vtbl* vftable;
 	uint32_t m_type;

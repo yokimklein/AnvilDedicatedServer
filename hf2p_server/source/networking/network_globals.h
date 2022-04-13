@@ -3,6 +3,7 @@
 #include "transport\transport_address.h"
 #include "transport\transport_security.h"
 #include "..\simulation\simulation.h"
+#include "..\game\players.h"
 
 enum e_network_session_type;
 enum e_network_join_mode;

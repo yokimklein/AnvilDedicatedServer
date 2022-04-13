@@ -8,3 +8,10 @@ bool managed_session_get_security_information(long managed_session_index, bool u
 
 	return managed_session_get_security_information_call(managed_session_index, unknown, session_description, transport_platform);
 }
+
+// FUNC TODO
+const char* managed_session_get_id_string(long managed_session_index)
+{
+	const char* managed_session_id = "00:00:00:00:00:00:00:00";
+	return managed_session_id;
+}

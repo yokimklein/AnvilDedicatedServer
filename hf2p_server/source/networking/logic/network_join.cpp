@@ -53,8 +53,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     {
         if (join_request->join_nonce == session->m_session_membership.m_peers[peer_index].join_nonce)
         {
-            printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n",
-                "(null)"/* TODO: transport_address_get_string(address) */);
+            printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n", transport_address_get_string(address));
             return;
         }
         peer_index = session->m_session_membership.get_next_peer(peer_index);
@@ -67,7 +66,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
         {
             if (join_request->join_nonce == g_network_join_data->join_queue[i].join_nonce)
             {
-                printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it is already being processed\n", "(null)"); // TODO: transport_address_get_string(address)
+                printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it is already being processed\n", transport_address_get_string(address));
                 return;
             }
         }
@@ -86,7 +85,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
         time = timeGetTime();
     queue_entry->times[0] = time;
     queue_entry->times[1] = -1;
-    printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was added to the join queue\n", "(null)"); // TODO: transport_address_get_string(address)
+    printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was added to the join queue\n", transport_address_get_string(address));
     g_network_join_data->join_queue_entry_count++;
 
     // if the queue is now full (max 32), remove the entry that entered first to free up space
@@ -101,7 +100,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
             if (previous_entry_enter_time > g_network_join_data->join_queue[i].times[0])
                 entry_to_delete = &g_network_join_data->join_queue[i];
         }
-        printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was removed from the join queue because the queue was full\n", "(null)"); // TODO: transport_address_get_string(address)
+        printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was removed from the join queue because the queue was full\n", transport_address_get_string(address));
         session->acknowledge_join_request(address, _network_join_refuse_reason_rejected_by_host);
 
         // replace entry to delete w/ last entry, and decrement queue entry count
