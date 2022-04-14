@@ -2,10 +2,10 @@
 
 struct s_machine_identifier
 {
-	long : 32;
-	long : 32;
-	long : 32;
-	long : 32;
+	long data1;
+	long data2;
+	long data3;
+	long data4;
 };
 
 struct s_player_identifier

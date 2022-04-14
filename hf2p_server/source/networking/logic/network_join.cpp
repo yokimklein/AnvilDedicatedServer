@@ -110,11 +110,8 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
 
 // WIP - needs testing
 // this still exists in ms29, but we need to hook this function to add back the missing c_network_session::join_accept call
-bool network_join_process_joins_from_queue()
+bool network_join_process_joins_from_queue() // runs every tick the session is open & has queue entries
 {
-    typedef bool(__fastcall* network_session_unknown_ptr)(c_network_session* session_ptr);
-    auto network_session_unknown = reinterpret_cast<network_session_unknown_ptr>(module_base + 0x2A640);
-
     bool is_success = false;
     c_network_session* session = nullptr;
     bool life_cycle_initialised = *(bool*)(module_base + 0x3EADFA8);
@@ -122,7 +119,7 @@ bool network_join_process_joins_from_queue()
     void* life_cycle_unknown = (void*)(module_base + 0x3EADFD8);
 
     if (g_network_join_data->join_queue_mode == _network_join_open_to_join_squad && life_cycle_initialised) // c_network_life_cycle::get_session()
-        session = (c_network_session*)(module_base + 0x3EADFD0); // life_cycle_session
+        session = (c_network_session*)(module_base + 0x3970168/*0x3EADFD0*/); // life_cycle_session
     if (life_cycle_initialised && life_cycle_unknown)
         bandwidth_is_stable = *(bool*)((long)life_cycle_unknown + 0x23748) == 0;
 
@@ -139,16 +136,16 @@ bool network_join_process_joins_from_queue()
     if (session->m_local_state == _network_session_state_host_disband)
         return false;
 
-    bool unknown_bool = network_session_unknown(session);
-    is_success = unknown_bool;
-    if (unknown_bool && !bandwidth_is_stable)
+    bool is_peer_joining = session->is_peer_joining_this_session();
+    is_success = is_peer_joining;
+    if (is_peer_joining && !bandwidth_is_stable)
     {
-        if (g_network_join_data->join_queue_entry_count && !unknown_bool)
+        if (g_network_join_data->join_queue_entry_count && !is_peer_joining)
             printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: Warning. unabled to process join because our bandwidth is not stable (stable=%d)\n", bandwidth_is_stable);
         return is_success;
     }
 
-    if (g_network_join_data->join_queue_entry_count)
+    if (g_network_join_data->join_queue_entry_count != 0)
     {
         s_join_queue_entry* queue_entry = &g_network_join_data->join_queue[0];
         session->join_accept(&queue_entry->join_request, &queue_entry->address);

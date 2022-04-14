@@ -109,12 +109,13 @@ struct s_networking_join_data
     uint32_t local_join_result;
     uint32_t time;
     uint32_t unknown1; // maybe bool created_session_for_remote_join
+    uint32_t unknown2;
     s_network_session_remote_session_join_data join_data;
     e_network_join_mode join_queue_mode; // 0x1039B60
     long join_queue_entry_count; // 0x1039B64
     s_join_queue_entry join_queue[32]; // 32 - queue for channels?
 };
-static_assert(sizeof(s_networking_join_data) == 0x4C68); // ?
+static_assert(sizeof(s_networking_join_data) == 0x4C6C); // ?
 #pragma pack(pop)
 
 static s_networking_join_data* g_network_join_data = (s_networking_join_data*)(module_base + 0x1039AFC);

@@ -5,6 +5,7 @@
 #include "network_session_parameters.h"
 #include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
+#include "network_observer.h"
 #include "..\..\dllmain.h"
 
 enum e_network_session_type
@@ -52,8 +53,8 @@ enum e_network_session_boot_reason // from ms23/ED
 	k_network_session_boot_reason_count
 };
 
+#pragma pack(push, 4)
 class c_network_message_gateway;
-class c_network_observer;
 class c_network_session_manager;
 class c_network_session : c_network_channel_owner
 {
@@ -77,11 +78,13 @@ public:
 	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
 	bool is_host();
 	bool join_allowed_by_privacy();
-	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
+	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
 	bool session_is_full(long joining_peer_count, long joining_player_count);
 	void disconnect();
 	void disband_peer();
 	void boot_peer(long peer_index, e_network_session_boot_reason boot_reason);
+	const char* get_id_string();
+	bool is_peer_joining_this_session();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -92,6 +95,7 @@ public:
 	long : 32;
 	c_network_session_membership m_session_membership;
 	c_network_session_parameters m_session_parameters;
+	long : 32;
 	e_network_session_state m_local_state; // this should be + 0x1ABDA8
 	long : 32;
 	char m_local_state_data[648];
@@ -103,12 +107,13 @@ public:
 	long : 32;
 	long m_managed_session_index;
 	e_network_join_refuse_reason m_join_refuse_reason;
-	uint64_t m_host_join_nonce;
+	int64_t m_host_join_nonce;
 	long : 32;
 	uint32_t m_disconnection_policy;
 	s_player_identifier m_player_add_single_player_identifier;
 	s_transport_secure_address m_player_add_secure_address;
 	long m_player_add_peer_index;
+	__int32 : 32;
 	s_player_identifier m_player_add_player_identifier;
 	e_network_join_refuse_reason m_player_add_join_refuse_reason;
 	uint32_t m_player_add_time;
@@ -116,4 +121,5 @@ public:
 private:
 
 };
-//static_assert(sizeof(c_network_session_membership) == 0x1AC098);
+static_assert(sizeof(c_network_session) == 0x1AC098);
+#pragma pack(pop)

@@ -11,14 +11,13 @@
 // non-original names, may be incorrect
 enum e_network_game_privacy
 {
+	_network_game_privacy_system_link,
+	_network_game_privacy_offline,
+	_network_game_privacy_full,
 	_network_game_privacy_open_to_public,
 	_network_game_privacy_open_to_friends,
 	_network_game_privacy_invite_only,
 	_network_game_privacy_closed,
-
-	//_network_game_privacy_full?
-	//_network_game_privacy_offline?
-	//_network_game_privacy_system_link?
 
 	k_network_game_privacy_count
 };

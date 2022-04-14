@@ -4,6 +4,33 @@
 #include "game_engine_player_traits.h"
 #include "..\memory\bitstream.h"
 
+enum e_map_id : long
+{
+	_mainmenu = 0,
+	_zanzibar = 30,
+	_s3d_turf = 31,
+	_deadlock = 310,
+	_guardian = 320,
+	_riverworld = 340,
+	_chill = 380,
+	_cyberdyne = 390,
+	_bunkerworld = 410,
+	_s3d_reactor = 700,
+	_s3d_edge = 703,
+	_s3d_avalanche = 705
+
+	/*
+	_s3d_waterfall = 706
+	s3d_beachhead
+	s3d_cold_storage
+	s3d_dry_dock
+	s3d_lockout
+	s3d_tutorial
+	s3d_powerhouse
+	s3d_sky_bridgenew
+	*/
+};
+
 enum e_engine_variant : long
 {
 	_engine_variant_base,

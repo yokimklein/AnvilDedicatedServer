@@ -152,7 +152,7 @@ e_network_join_refuse_reason c_network_session::get_closure_reason()
 // WIP - unfinished function calls, needing testing
 void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
-    typedef long(__cdecl* bit_check_ptr)(long mask, long index); // test calling this
+    typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO TEST CALL
     auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
 
     printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] processing join request from %s\n",
@@ -195,12 +195,12 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
             {
                 s_transport_session_description session_description;
                 e_transport_platform transport_platform = (e_transport_platform)0;
-                if (managed_session_get_security_information(this->m_session_membership.m_host_peer_index, false, &session_description, &transport_platform)
-                    && this->m_session_membership.add_peer(peer_index, 2, &join_request->joining_peers[i].joining_network_version_number,
-                        &join_request->joining_peers[i].joining_peer_address, &join_request->join_party_nonce, &join_request->join_nonce))
+                if (managed_session_get_security_information(this->m_managed_session_index, &session_description, &transport_platform)
+                    && this->m_session_membership.add_peer(peer_index, _network_session_peer_state_reserved, join_request->joining_peers[i].joining_network_version_number,
+                        &join_request->joining_peers[i].joining_peer_address, join_request->join_party_nonce, join_request->join_nonce))
                 {
-                    xnet_shim_table_add(address, &join_request->joining_peers[i].joining_peer_address, &session_description);
-                    this->m_observer.observer_channel_initiate_connection(this->m_session_index, this->m_session_membership.m_peer_channels[peer_index].channel_index);
+                    xnet_shim_table_add(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
+                    this->m_observer->observer_channel_initiate_connection((e_network_observer_owner)this->m_session_index, this->m_session_membership.m_peer_channels[peer_index].channel_index);
 
                     // if not refused
                     if (refuse_reason == _network_join_refuse_reason_none)
@@ -208,21 +208,23 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                         long user_player_index = join_request->joining_peers[i].user_player_index;
                         if (user_player_index != -1)
                         {
-                            long player_index = this->m_session_membership.find_or_add_player(peer_index, join_request->joining_players[user_player_index], join_request->join_from_recruiting);
-                            s_player_configuration player_config = {};
-                            player_config.client.multiplayer_team = -1;
-                            player_config.client.unknown_team = -1;
-                            s_machine_identifier host_identifier = {};
-                            player_config.host.machine_identifier = host_identifier;
-                            player_config.host.team = -1;
-                            player_config.host.player_assigned_team = -1;
-                            this->m_session_membership.update_player_data(player_index, &player_config);
+                            long player_index = this->m_session_membership.find_or_add_player(peer_index, &join_request->joining_players[user_player_index], join_request->join_from_recruiting);
+                            s_player_configuration* player_config = new s_player_configuration;
+                            memset(player_config, 0, sizeof(s_player_configuration));
+                            player_config->client.multiplayer_team = -1;
+                            player_config->client.unknown_team = -1;
+                            s_machine_identifier* player_xuid = new s_machine_identifier;
+                            memset(player_xuid, 0, sizeof(s_machine_identifier));
+                            player_config->host.player_xuid = *player_xuid;
+                            player_config->host.team = -1;
+                            player_config->host.player_assigned_team = -1;
+                            this->m_session_membership.update_player_data(player_index, player_config);
                         }
                         printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] '%s' session accepted a new peer %s with %d users\n",
                             managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
                             this->get_type_string(this->m_session_type),
                             this->get_peer_description(peer_index),
-                            bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16));
+                            this->m_session_membership.m_peers[peer_index].player_mask/*bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16)*/); // TODO - wtf is bit check actually meant to do?
                     }
                 }
                 else
@@ -254,7 +256,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
     if (peer_from_address == -1)
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: Warning. [%s] lost connect to peer %s during join_accept\n",
-            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+            managed_session_get_id_string(this->m_managed_session_index),
             this->get_peer_description(peer_from_address));
         this->acknowledge_join_request(address, _network_join_refuse_reason_address_invalid);
         this->abort_pending_join(join_request, join_request->join_nonce); // unfinished function
@@ -271,9 +273,9 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         return;
     }
 
-    if (this->m_session_membership.m_peers[peer_from_address].connection_state == (e_network_session_peer_state)2)
-        this->m_session_membership.set_peer_connection_state(peer_from_address, (e_network_session_peer_state)4);
-    this->m_observer.observer_channel_initiate_connection(this->m_session_index, observer_channel_index);
+    if (this->m_session_membership.m_peers[peer_from_address].connection_state == _network_session_peer_state_reserved)
+        this->m_session_membership.set_peer_connection_state(peer_from_address, _network_session_peer_state_connected);
+    this->m_observer->observer_channel_initiate_connection((e_network_observer_owner)this->m_session_index, observer_channel_index);
 }
 
 // TEST THIS
@@ -300,7 +302,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
         {
             joining_player_count++;
             has_players = true;
-            refuse_reason = this->can_accept_player_join_request(&join_request->joining_players[user_player_index], join_request->joining_peers[i].joining_peer_address, peer_index, false);
+            refuse_reason = this->can_accept_player_join_request(&join_request->joining_players[user_player_index], &join_request->joining_peers[i].joining_peer_address, peer_index, false);
         }
         else
         {
@@ -312,7 +314,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
             if (peer_index != -1)
             {
                 joining_peer_count--;
-                long peer_player_count = bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16);
+                long peer_player_count = this->m_session_membership.m_peers[peer_index].player_mask; // bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16); // TODO - wtf is bit_check actually meant to do?
                 has_players = true;
                 joining_player_count -= peer_player_count;
             }
@@ -371,8 +373,8 @@ bool c_network_session::join_allowed_by_privacy()
     if (this->m_session_parameters.privacy_mode.get_allowed())
     {
         s_network_session_privacy_mode* privacy_parameter = &this->m_session_parameters.privacy_mode.m_data;
-        return this->m_session_parameters.privacy_mode.m_data.closed_mode != _network_session_closed_none
-            && this->m_session_parameters.privacy_mode.m_data.is_closed_by_user == false;
+        return this->m_session_parameters.privacy_mode.m_data.closed_mode == _network_session_closed_none
+            && !this->m_session_parameters.privacy_mode.m_data.is_closed_by_user;
     }
     else
     {
@@ -384,17 +386,18 @@ bool c_network_session::join_allowed_by_privacy()
     }
 }
 
-// TEST THIS
-e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown)
+// __thiscall seems to work over __fastcall - TODO VERIFY
+e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown)
 {
-    typedef e_network_join_refuse_reason(__fastcall* can_accept_player_join_request_ptr)(c_network_session* session, s_player_identifier const* player_identifier, s_transport_secure_address joining_peer_address, long peer_index, bool unknown);
+    typedef e_network_join_refuse_reason(__thiscall* can_accept_player_join_request_ptr)(c_network_session* session, s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
     auto can_accept_player_join_request = reinterpret_cast<can_accept_player_join_request_ptr>(module_base + 0x22F30);
     return can_accept_player_join_request(this, player_identifier, joining_peer_address, peer_index, unknown);
 }
 
+// __thiscall seems to work over __fastcall - TODO VERIFY
 bool c_network_session::session_is_full(long joining_peer_count, long joining_player_count)
 {
-    typedef bool(__fastcall* session_is_full_ptr)(c_network_session* session, long joining_peer_count, long joining_player_count);
+    typedef bool(__thiscall* session_is_full_ptr)(c_network_session* session, long joining_peer_count, long joining_player_count);
     auto session_is_full = reinterpret_cast<session_is_full_ptr>(module_base + 0x22330);
     return session_is_full(this, joining_peer_count, joining_player_count);
 }
@@ -439,7 +442,19 @@ const char* c_network_session::get_type_string(e_network_session_type session_ty
 // FUNC TODO: mac address & unknown peer field
 const char* c_network_session::get_peer_description(long peer_index)
 {
-    char peer_description[51];
+    static char peer_description[51];
     sprintf_s(peer_description, "#%02d", peer_index);
     return peer_description;
+}
+
+const char* c_network_session::get_id_string()
+{
+    return managed_session_get_id_string(this->m_managed_session_index);
+}
+
+bool c_network_session::is_peer_joining_this_session()
+{
+    typedef bool(__fastcall* is_peer_joining_this_session_ptr)(c_network_session* session_ptr);
+    auto is_peer_joining_this_session = reinterpret_cast<is_peer_joining_this_session_ptr>(module_base + 0x224F0);
+    return is_peer_joining_this_session(this);
 }

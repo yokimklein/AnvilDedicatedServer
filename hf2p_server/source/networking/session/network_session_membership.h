@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <windows.h>
-#include "..\transport\transport_security.h"
+#include "..\transport\transport_address.h"
 #include "..\..\game\players.h"
 #include "..\..\simulation\simulation.h"
 
@@ -12,8 +12,31 @@ enum e_peer_map_status : long
 
 enum e_network_session_peer_state : long
 {
+	_network_session_peer_state_none,
+	_network_session_peer_state_rejoining,
+	_network_session_peer_state_reserved,
+	_network_session_peer_state_disconnected,
+	_network_session_peer_state_connected,
+	_network_session_peer_state_joining,
+	_network_session_peer_state_joined,
+	_network_session_peer_state_waiting,
+	_network_session_peer_state_established,
 
+	k_network_session_peer_state_count
 };
+
+static const char* network_session_peer_states[k_network_session_peer_state_count] = {
+	"_none",
+	"_rejoining",
+	"_reserved",
+	"_disconnected",
+	"_connected",
+	"_joining",
+	"_joined",
+	"_waiting",
+	"_established",
+};
+const char* network_session_peer_state_get_string(e_network_session_peer_state state);
 
 struct s_player_configuration_from_client
 {
@@ -30,7 +53,7 @@ static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 
 struct s_player_configuration_from_host
 {
-	s_machine_identifier machine_identifier;
+	s_machine_identifier player_xuid;
 	wchar_t player_name[16];
 	long team;
 	long player_assigned_team;
@@ -85,9 +108,9 @@ struct s_network_session_peer
 {
 	s_transport_secure_address secure_address;
 	e_network_session_peer_state connection_state;
-	long version;
-	long join_start_time;
-	long unknown;
+	uint32_t version;
+	uint32_t join_start_time;
+	uint32_t unknown;
 	s_network_session_peer_properties properties;
 	uint64_t unknown_nonce;
 	uint64_t join_nonce;
@@ -99,6 +122,7 @@ static_assert(sizeof(s_network_session_peer) == 0xE0);
 struct s_network_session_player
 {
 	long desired_configuration_version;
+	long : 32;
 	s_player_identifier player_identifier;
 	long peer_index;
 	long player_sequence_number;
@@ -106,8 +130,9 @@ struct s_network_session_player
 	long controller_index;
 	s_player_configuration configuration;
 	uint32_t voice_settings;
+	long : 32;
 };
-static_assert(sizeof(s_network_session_player) == 0xB90);
+static_assert(sizeof(s_network_session_player) == 0xB98);
 #pragma pack(pop)
 
 struct s_network_session_peer_channel
@@ -118,6 +143,7 @@ struct s_network_session_peer_channel
 };
 static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 
+#pragma pack(push, 4)
 class c_network_session;
 class c_network_session_membership
 {
@@ -125,6 +151,15 @@ public:
 	long get_first_peer();
 	long get_next_peer(long peer_index);
 	long get_peer_from_secure_address(s_transport_secure_address const* secure_address);
+	bool is_peer_valid(long peer_index);
+	bool add_peer(long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce);
+	long find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
+	void update_player_data(long player_index, s_player_configuration const* player_config);
+	long get_peer_from_incoming_address(s_transport_address const* incoming_address);
+	void set_peer_connection_state(long peer_index, e_network_session_peer_state state);
+	s_network_session_peer* get_peer(long peer_index);
+	void set_join_nonce(long peer_index, int64_t join_nonce);
+	void increment_update();
 
 	c_network_session* m_session;
 	long : 32;
@@ -142,7 +177,7 @@ public:
 	s_network_session_player m_players[k_network_maximum_players_per_session];
 	long m_player_sequence_number;
 	long : 32;
-	char m_incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
+	byte m_incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
 	long m_incremental_updates[k_network_maximum_machines_per_session];
 	long : 32;
 	long m_local_peer_index;
@@ -151,6 +186,7 @@ public:
 	s_player_add_queue_entry m_player_add_queue[4];
 	long m_player_add_queue_current_index;
 	long m_player_add_queue_count;
-	byte size_hack[0x80]; // TODO - complete this struct properly
+	__int32 : 32;
 };
-static_assert(sizeof(c_network_session_membership) == 0xE1C70); // missing an extra 0x80 bytes (currently 0xE1AE0 w/o the hack)
+static_assert(sizeof(c_network_session_membership) == 0xE1C70);
+#pragma pack(pop)

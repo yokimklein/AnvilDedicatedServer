@@ -1,7 +1,4 @@
 #pragma once
-#include "..\delivery\network_channel.h"
-#include "..\delivery\network_link.h"
-#include "..\messages\network_message_type_collection.h"
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
@@ -18,11 +15,18 @@ enum e_network_observer_owner : long
 	k_network_observer_owner_count = 4
 };
 
+struct s_network_message_connect_request;
+struct s_transport_address;
+class c_network_message_type_collection;
+class c_network_message_gateway;
+class c_network_message_handler;
 class c_network_session;
+class c_network_link;
 class c_network_observer
 {
 	public:
 		char handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
+		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
 
 		//struct s_channel_observer
 		//{
