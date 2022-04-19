@@ -11,6 +11,7 @@
 #include "networking\logic\network_join.h"
 #include "networking\session\network_managed_session.h"
 #include "networking\transport\transport_shim.h"
+#include "networking\messages\network_message_gateway.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -55,6 +56,14 @@ bool __fastcall create_local_online_squad(e_network_session_class ignore) // may
     return network_life_cycle_create_local_squad(_network_session_class_online);
 }
 
+void __stdcall send_message_hook(void* stream, e_network_message_type message_type, long unknown)
+{
+    void(__stdcall * send_message)(void* stream, e_network_message_type message_type, long unknown) = reinterpret_cast<decltype(send_message)>(module_base + 0x387A0);
+
+    printf("SEND: %s\n", network_session->m_message_gateway->m_message_type_collection->get_message_type_name(message_type));
+    return send_message(stream, message_type, unknown);
+}
+
 long MainThread()
 {
     AllocConsole();
@@ -72,6 +81,8 @@ long MainThread()
     Hook(0x2A580, network_join_process_joins_from_queue).Apply();
     // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
+    // output the message type for debugging
+    Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 

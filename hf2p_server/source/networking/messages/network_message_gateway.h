@@ -13,7 +13,6 @@ public:
 	c_network_link* get_network_link();
 	bool send_message_directed(s_transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 
-private:
 	struct c_network_message_gateway_vtbl* __vftable /*VFT*/;
 	bool m_initialized;
 	c_network_link* m_link;

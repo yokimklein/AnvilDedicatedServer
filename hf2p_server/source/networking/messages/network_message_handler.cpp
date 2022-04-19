@@ -289,6 +289,14 @@ void log_received_over_non_connected_channel(c_network_channel* channel, e_netwo
 // might need a return code?
 void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
+    // non-original log but its useful to know when channel messages arrive
+    //s_transport_address remote_address_log;
+    //channel->get_remote_address(&remote_address_log);
+    //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
+    //    message_type,
+    //    this->m_message_type_collection->get_message_type_name(message_type),
+    //    transport_address_get_string(&remote_address_log));
+
     s_transport_address remote_address;
     switch (message_type)
     {
@@ -296,12 +304,12 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             this->handle_connect_establish(channel, (s_network_message_connect_establish*)message);
             break;
 
-        //case _network_message_type_leave_session: // TODO - removed by saber in client builds
-        //    if (channel->connected() && channel->get_remote_address(&remote_address))
-        //        this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
-        //    else
-        //        log_received_over_closed_channel(channel, _network_message_type_leave_session);
-        //    break;
+        case _network_message_type_leave_session: // TODO - removed by saber in client builds
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
+            else
+                log_received_over_closed_channel(channel, _network_message_type_leave_session);
+            break;
 
         case _network_message_type_session_disband:
             if (channel->connected() && channel->get_remote_address(&remote_address))
@@ -338,33 +346,33 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
                 log_received_over_non_connected_channel(channel, _network_message_type_membership_update);
             break;
 
-        //case _network_message_type_peer_properties:
-        //    if (channel->connected())
-        //        this->handle_peer_properties(channel, (s_network_message_peer_properties*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_peer_properties);
-        //    break;
+        case _network_message_type_peer_properties:
+            if (channel->connected())
+                this->handle_peer_properties(channel, (s_network_message_peer_properties*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_peer_properties);
+            break;
 
-        //case _network_message_type_delegate_leadership:
-        //    if (channel->connected())
-        //        this->handle_delegate_leadership(channel, (s_network_message_delegate_leadership*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_delegate_leadership);
-        //    break;
+        case _network_message_type_delegate_leadership:
+            if (channel->connected())
+                this->handle_delegate_leadership(channel, (s_network_message_delegate_leadership*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_delegate_leadership);
+            break;
 
-        //case _network_message_type_boot_machine:
-        //    if (channel->connected())
-        //        this->handle_boot_machine(channel, (s_network_message_boot_machine*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_boot_machine);
-        //    break;
+        case _network_message_type_boot_machine:
+            if (channel->connected())
+                this->handle_boot_machine(channel, (s_network_message_boot_machine*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_boot_machine);
+            break;
 
-        //case _network_message_type_player_add:
-        //    if (channel->connected())
-        //        this->handle_player_add(channel, (s_network_message_player_add*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_player_add);
-        //    break;
+        case _network_message_type_player_add:
+            if (channel->connected())
+                this->handle_player_add(channel, (s_network_message_player_add*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_player_add);
+            break;
 
         case _network_message_type_player_refuse:
             if (channel->connected())
@@ -373,19 +381,19 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
                 log_received_over_non_connected_channel(channel, _network_message_type_player_refuse);
             break;
 
-        //case _network_message_type_player_remove:
-        //    if (channel->connected())
-        //        this->handle_player_remove(channel, (s_network_message_player_remove*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_player_remove);
-        //    break;
+        case _network_message_type_player_remove:
+            if (channel->connected())
+                this->handle_player_remove(channel, (s_network_message_player_remove*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_player_remove);
+            break;
 
-        //case _network_message_type_player_properties:
-        //    if (channel->connected())
-        //        this->handle_player_properties(channel, (s_network_message_player_properties*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_player_properties);
-        //    break;
+        case _network_message_type_player_properties:
+            if (channel->connected())
+                this->handle_player_properties(channel, (s_network_message_player_properties*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_player_properties);
+            break;
 
         case _network_message_type_parameters_update:
             if (channel->connected())
@@ -394,12 +402,12 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
                 log_received_over_non_connected_channel(channel, _network_message_type_parameters_update);
             break;
 
-        //case _network_message_type_parameters_request:
-        //    if (channel->connected())
-        //        this->handle_parameters_request(channel, (s_network_message_parameters_request*)message);
-        //    else
-        //        log_received_over_non_connected_channel(channel, _network_message_type_parameters_request);
-        //    break;
+        case _network_message_type_parameters_request:
+            if (channel->connected())
+                this->handle_parameters_request(channel, (s_network_message_parameters_request*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_parameters_request);
+            break;
 
         case _network_message_type_view_establishment:
             if (channel->connected())

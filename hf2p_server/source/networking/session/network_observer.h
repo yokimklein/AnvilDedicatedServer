@@ -25,7 +25,7 @@ class c_network_link;
 class c_network_observer
 {
 	public:
-		char handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
+		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
 
 		//struct s_channel_observer
