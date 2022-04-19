@@ -6,7 +6,6 @@
 #include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
 #include "network_observer.h"
-#include "..\..\dllmain.h"
 
 enum e_network_session_type
 {

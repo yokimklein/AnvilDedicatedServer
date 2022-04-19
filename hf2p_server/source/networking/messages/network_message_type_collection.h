@@ -7,8 +7,8 @@ enum e_network_message_type : long
 {
 	_network_message_type_ping,
 	_network_message_type_pong,
-	//_network_message_type_broadcast_search, // saber removed most of the matchmaking related sections of the networking
-	//_network_message_type_broadcast_reply,
+	//_network_message_type_broadcast_search, // removed in ms29
+	//_network_message_type_broadcast_reply, // removed in ms29
 	_network_message_type_connect_request,
 	_network_message_type_connect_refuse,
 	_network_message_type_connect_establish,
@@ -41,7 +41,7 @@ enum e_network_message_type : long
 	_network_message_type_synchronous_actions,
 	_network_message_type_synchronous_acknowledge,
 	_network_message_type_synchronous_gamestate,
-	//_network_message_type_distributed_game_results, // not sure if this one still exists in ms29
+	//_network_message_type_distributed_game_results, // removed in ms29
 	_network_message_type_synchronous_client_ready,
 	_network_message_type_game_results,
 	_network_message_type_test,

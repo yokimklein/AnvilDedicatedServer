@@ -1,19 +1,15 @@
-#include <iostream>
 #include "network_session.h"
-#include "..\..\dllmain.h"
+#include <iostream>
 #include "..\messages\network_message_gateway.h"
 #include "..\messages\network_message_handler.h"
 #include "..\network_utilities.h"
 #include "..\logic\network_join.h"
 #include "network_managed_session.h"
-#include "../transport/transport_shim.h"
+#include "..\transport\transport_shim.h"
 
 bool c_network_session::acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason)
 {
-    typedef char(__fastcall* managed_session_get_id_ptr)(long session_index, s_transport_secure_identifier* secure_identifier);
-    auto managed_session_get_id = reinterpret_cast<managed_session_get_id_ptr>(module_base + 0x28AE0);
-
-    const char* managed_session_index_string = managed_session_get_id_string(this->m_managed_session_index); // managed_session_get_id_string(session[618236]) - what field is this?
+    const char* managed_session_index_string = managed_session_get_id_string(this->m_managed_session_index);
     printf("MP/NET/SESSION,CTRL: c_network_session::acknowledge_join_request: [%s] join failed, sending refusal (%s - possibly inaccurate) to '%s'\n",
         managed_session_index_string,
         network_message_join_refuse_get_reason_string(reason),
@@ -22,12 +18,6 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
     managed_session_get_id(this->m_managed_session_index, &message.session_id); // returning null? client doesn't seem to listen to the response - TODO, this->m_managed_session_index might be the wrong field
     message.reason = reason;
     return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, 20, &message);
-
-    // TEMP HACK - TODO REMOVE
-    //s_network_message_connect_request message;
-    //message.identifier = 1;
-    //message.flags = 0;
-    //return this->m_message_gateway->send_message_directed(address, _network_message_type_connect_request, 8, &message);
 }
 
 bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
@@ -44,7 +34,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
             if (executable_type == message->executable_type)
             {
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] received for %d peers, adding to the join queue\n",
-                    managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                    managed_session_get_id_string(this->m_managed_session_index),
                     transport_secure_nonce_get_string(&message->data.join_nonce),
                     message->data.joining_peer_count);
                 network_join_add_join_to_queue(this, address, &message->data);
@@ -52,7 +42,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
             else
             {
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] executable type mismatch, peer: %d, host: %d\n",
-                    managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                    managed_session_get_id_string(this->m_managed_session_index),
                     transport_secure_nonce_get_string(&message->data.join_nonce),
                     message->executable_type, executable_type);
                 this->acknowledge_join_request(address, _network_join_refuse_reason_executable_type_mismatch);
@@ -61,7 +51,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
         else
         {
             printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] version mismatch, peer: %d->%d, host: %d->%d\n",
-                managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                managed_session_get_id_string(this->m_managed_session_index),
                 transport_secure_nonce_get_string(&message->data.join_nonce),
                 message->executable_version, message->compatible_version, compatible_version, executable_version);
             this->acknowledge_join_request(address, _network_join_refuse_reason_host_version_too_low);
@@ -70,7 +60,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
     else
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] version mismatch, peer: %d->%d, host: %d->%d\n",
-            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+            managed_session_get_id_string(this->m_managed_session_index),
             transport_secure_nonce_get_string(&message->data.join_nonce),
             message->executable_version, message->compatible_version, compatible_version, executable_version);
         this->acknowledge_join_request(address, _network_join_refuse_reason_peer_version_too_low);
@@ -152,18 +142,18 @@ e_network_join_refuse_reason c_network_session::get_closure_reason()
 // WIP - unfinished function calls, needing testing
 void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
-    typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO TEST CALL
-    auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
+    //typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO - CALL FAILS, REWRITE THIS
+    //auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
 
     printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] processing join request from %s\n",
-        managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+        managed_session_get_id_string(this->m_managed_session_index),
         transport_address_get_string(address));
 
     e_network_join_refuse_reason refuse_reason = this->can_accept_join_request(join_request);
     if (refuse_reason != _network_join_refuse_reason_none)
     {
         this->acknowledge_join_request(address, refuse_reason);
-        this->abort_pending_join(join_request, join_request->join_nonce); // unfinished function
+        this->abort_pending_join(join_request, join_request->join_nonce); // TODO unfinished function call
         return;
     }
 
@@ -174,7 +164,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         if (peer_index == -1)
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] -- joining with peer %s\n",
-                managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                managed_session_get_id_string(this->m_managed_session_index),
                 transport_secure_address_get_string(&join_request->joining_peers[i].joining_peer_address));
             
             for (long j = 0; j < k_network_maximum_machines_per_session; j++)
@@ -221,7 +211,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                             this->m_session_membership.update_player_data(player_index, player_config);
                         }
                         printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] '%s' session accepted a new peer %s with %d users\n",
-                            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                            managed_session_get_id_string(this->m_managed_session_index),
                             this->get_type_string(this->m_session_type),
                             this->get_peer_description(peer_index),
                             this->m_session_membership.m_peers[peer_index].player_mask/*bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16)*/); // TODO - wtf is bit check actually meant to do?
@@ -230,7 +220,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                 else
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: Error. [%s] host failed to create observer when adding peer [%s] at peer #%d\n",
-                        managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+                        managed_session_get_id_string(this->m_managed_session_index),
                         transport_secure_address_get_string(&join_request->joining_peers[i].joining_peer_address),
                         peer_index);
                     refuse_reason = _network_join_refuse_reason_too_many_observers;
@@ -240,14 +230,14 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         else
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] peer tried to join a session that it's already in\n",
-                managed_session_get_id_string(this->m_managed_session_index)); // TODO - field might be wrong here
+                managed_session_get_id_string(this->m_managed_session_index));
             refuse_reason = _network_join_refuse_reason_address_invalid;
         }
 
         if (refuse_reason != _network_join_refuse_reason_none)
         {
             this->acknowledge_join_request(address, refuse_reason);
-            this->abort_pending_join(join_request, join_request->join_nonce); // unfinished function
+            this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
             return;
         }
     }
@@ -259,17 +249,17 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
             managed_session_get_id_string(this->m_managed_session_index),
             this->get_peer_description(peer_from_address));
         this->acknowledge_join_request(address, _network_join_refuse_reason_address_invalid);
-        this->abort_pending_join(join_request, join_request->join_nonce); // unfinished function
+        this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
         return;
     }
     long observer_channel_index = this->m_session_membership.m_peer_channels[peer_from_address].channel_index;
     if (observer_channel_index == -1)
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: Error. [%s] peer %s has invalid observer channel index\n",
-            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+            managed_session_get_id_string(this->m_managed_session_index),
             this->get_peer_description(peer_from_address));
         this->acknowledge_join_request(address, _network_join_refuse_reason_too_many_observers);
-        this->abort_pending_join(join_request, join_request->join_nonce); // unfinished function
+        this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
         return;
     }
 
@@ -281,8 +271,8 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
 // TEST THIS
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
-    typedef long(__cdecl* bit_check_ptr)(long mask, long index); // test calling this
-    auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
+    //typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO - call fails, rewrite this
+    //auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
 
     if (!this->is_host())
         return _network_join_refuse_reason_not_joinable;
@@ -340,14 +330,14 @@ void c_network_session::abort_pending_join(s_network_session_join_request const*
     if (this->m_session_membership.m_peers[this->m_session_membership.m_host_peer_index].join_nonce == join_nonce)
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] the aborted join [%s] contains the host peer, disconnecting the session\n",
-            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+            managed_session_get_id_string(this->m_managed_session_index),
             transport_secure_nonce_get_string(&join_nonce));
         this->disconnect();
     }
     else
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] aborting join [%s]\n",
-            managed_session_get_id_string(this->m_managed_session_index), // TODO - field might be wrong here
+            managed_session_get_id_string(this->m_managed_session_index),
             transport_secure_nonce_get_string(&join_nonce));
 
         for (long i = this->m_session_membership.get_first_peer(); i != -1; i = this->m_session_membership.get_next_peer(i))
@@ -358,13 +348,11 @@ void c_network_session::abort_pending_join(s_network_session_join_request const*
     }
 }
 
-// TEST THIS
 bool c_network_session::is_host()
 {
     return this->m_local_state == _network_session_state_host_established || this->m_local_state == _network_session_state_host_disband;
 }
 
-// TEST THIS
 bool c_network_session::join_allowed_by_privacy()
 {
     if (!this->m_session_parameters.privacy_mode.get_allowed())
@@ -386,7 +374,6 @@ bool c_network_session::join_allowed_by_privacy()
     }
 }
 
-// __thiscall seems to work over __fastcall - TODO VERIFY
 e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown)
 {
     typedef e_network_join_refuse_reason(__thiscall* can_accept_player_join_request_ptr)(c_network_session* session, s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
@@ -394,7 +381,6 @@ e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s
     return can_accept_player_join_request(this, player_identifier, joining_peer_address, peer_index, unknown);
 }
 
-// __thiscall seems to work over __fastcall - TODO VERIFY
 bool c_network_session::session_is_full(long joining_peer_count, long joining_player_count)
 {
     typedef bool(__thiscall* session_is_full_ptr)(c_network_session* session, long joining_peer_count, long joining_player_count);

@@ -3,7 +3,6 @@
 #include "network_message_type_collection.h"
 #include "..\transport\transport_address.h"
 #include "..\..\memory\bitstream.h"
-#include "..\..\dllmain.h"
 
 class c_network_link;
 class c_network_message_handler;

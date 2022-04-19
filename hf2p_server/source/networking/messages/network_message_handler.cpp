@@ -21,7 +21,6 @@ void c_network_message_handler::handle_ping(s_transport_address const* outgoing_
     this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), &response);
 }
 
-// MISSING FROM MS29 CLIENT
 void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
 {
     uint32_t time;
@@ -55,13 +54,11 @@ void c_network_message_handler::handle_connect_closed(c_network_channel* channel
         channel->close(_network_channel_reason_remote_closure);
 }
 
-// MISSING FROM MS29 CLIENT
 void c_network_message_handler::handle_join_request(s_transport_address const* outgoing_address, s_network_message_join_request const* message)
 {
     if (message->protocol_version == 9)
     {
-        // TEMP HACK - TODO
-        c_network_session* session = this->m_session_manager->session[0]; //this->m_session_manager->get_session(&message->session_id); // get_session is returning null! TODO - investigate why
+        c_network_session* session = this->m_session_manager->get_session(&message->session_id); // if this returns null its likely the API using an old lobby/secure id
         if (session)
         {
             if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
@@ -80,7 +77,7 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
         secure_identifier_string,
         transport_address_get_string(outgoing_address));
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incomming join request\n");
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incoming join request\n");
 }
 
 void c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message) // untested
@@ -93,7 +90,7 @@ void c_network_message_handler::handle_peer_connect(s_transport_address const* o
     }
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_join_abort(s_transport_address const* outgoing_address, s_network_message_join_abort const* message)
 {
     
@@ -106,7 +103,7 @@ void c_network_message_handler::handle_join_refuse(s_transport_address const* ou
     handle_join_refuse(this, outgoing_address, message);
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
 {
     
@@ -161,25 +158,25 @@ void c_network_message_handler::handle_membership_update(c_network_channel* chan
         session->handle_membership_update(message);
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
 {
     
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_delegate_leadership(c_network_channel* channel, s_network_message_delegate_leadership const* message)
 {
     
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_boot_machine(c_network_channel* channel, s_network_message_boot_machine const* message)
 {
     
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_player_add(c_network_channel* channel, s_network_message_player_add const* message)
 {
     
@@ -192,13 +189,13 @@ void c_network_message_handler::handle_player_refuse(c_network_channel* channel,
         session->handle_player_refuse(channel, message);
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_player_remove(c_network_channel* channel, s_network_message_player_remove const* message)
 {
     
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
     
@@ -211,7 +208,7 @@ void c_network_message_handler::handle_parameters_update(c_network_channel* chan
         session->handle_parameters_update(message);
 }
 
-// MISSING FROM MS29 CLIENT
+// TODO
 void c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
 {
     

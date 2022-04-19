@@ -8,7 +8,9 @@
 #include "networking\messages\network_message_handler.h"
 #include "interface\user_interface_networking.h"
 #include "networking\network_globals.h"
-#include "networking/logic/network_join.h"
+#include "networking\logic\network_join.h"
+#include "networking\session\network_managed_session.h"
+#include "networking\transport\transport_shim.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -46,7 +48,6 @@ char(__thiscall* user_interface_squad_set_multiplayer_map)(c_map_variant* map_va
 //bool(__cdecl* network_squad_session_set_map)(long campaign_id, long map_id, char* map_path) = reinterpret_cast<decltype(network_squad_session_set_map)>(module_base + 0x5DDEC0);
 //char(__cdecl* network_squad_session_set_map_variant)(c_map_variant* map_variant) = reinterpret_cast<decltype(network_squad_session_set_map_variant)>(module_base + 0x95BC60);
 char(__thiscall* c_network_session_parameter_session_mode__set)(c_network_session_parameters* session_parameters, e_network_session_mode session_mode) = reinterpret_cast<decltype(c_network_session_parameter_session_mode__set)>(module_base + 0x2D820);
-char(__fastcall* managed_session_get_id)(long index, GUID* transport_secure_identifier) = reinterpret_cast<decltype(managed_session_get_id)>(module_base + 0x28AE0);
 bool(__fastcall* hf2p_setup_session)() = reinterpret_cast<decltype(hf2p_setup_session)>(module_base + 0x3AAF10);
 
 bool __fastcall create_local_online_squad(e_network_session_class ignore) // may have thiscall for life cycle
@@ -86,7 +87,7 @@ long MainThread()
 
     while (true)
     {
-        if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP
+        if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP - create session
         {
             // SESSION DETAILS
             auto map_id = _s3d_turf;
@@ -121,11 +122,16 @@ long MainThread()
             //levels_get_path(-1, map_id, map_path, MAX_PATH); // get path to map on disk, eg maps\\s3d_turf
             //network_squad_session_set_map(-1, map_id, map_path); // set the map to use for the session
             //network_squad_session_set_map_variant(&map_variant[0]); // set the map variant to use for the session
+        }
+        else if (GetKeyState(VK_END) & 0x8000) // END - get session info
+        {
+            auto test = online_session_manager_globals;
+            auto test2 = g_xnet_shim_table;
 
             // GET SECURE ID
             GUID server_secure_identifier;
             LPOLESTR secure_identifier_str;
-            if (managed_session_get_id(network_session->m_managed_session_index, &server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK))
+            if (managed_session_get_id(network_session->m_managed_session_index, (s_transport_secure_identifier*)&server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK))
                 printf("\nSecure id: %ls\n", secure_identifier_str);
             else
                 printf("Failed to get secure identifier\n");
@@ -137,7 +143,7 @@ long MainThread()
             else
                 printf("Failed to get secure address\n\n");
         }
-        else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN
+        else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN - launch session
         {
             printf("Launching session...\n");
             c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_setup);

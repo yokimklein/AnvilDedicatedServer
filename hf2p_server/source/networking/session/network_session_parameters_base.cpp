@@ -1,5 +1,4 @@
 #include "network_session_parameters_base.h"
-#include "network_managed_session.h"
 
 bool c_network_session_parameter_base::get_allowed()
 {

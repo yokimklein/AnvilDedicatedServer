@@ -1,6 +1,5 @@
 #pragma once
 #include "network_message_type_collection.h"
-#include "..\transport\transport_address.h"
 
 class c_network_channel;
 class c_network_link;
@@ -38,6 +37,7 @@ class c_network_session_manager;
 //struct s_network_message_view_establishment;
 //struct s_network_message_player_acknowledge;
 
+struct s_transport_address;
 class c_network_message_handler
 {
 public:

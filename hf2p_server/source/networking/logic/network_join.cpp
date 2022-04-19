@@ -121,7 +121,7 @@ bool network_join_process_joins_from_queue() // runs every tick the session is o
     if (g_network_join_data->join_queue_mode == _network_join_open_to_join_squad && life_cycle_initialised) // c_network_life_cycle::get_session()
         session = (c_network_session*)(module_base + 0x3970168/*0x3EADFD0*/); // life_cycle_session
     if (life_cycle_initialised && life_cycle_unknown)
-        bandwidth_is_stable = *(bool*)((long)life_cycle_unknown + 0x23748) == 0;
+        bandwidth_is_stable = *(bool*)((long)life_cycle_unknown + 0x23748) == 0; // network_life_cycle_get_squad_session_for_join
 
     if (session == nullptr)
         return false;

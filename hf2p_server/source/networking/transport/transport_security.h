@@ -4,10 +4,7 @@
 
 struct s_transport_secure_address
 {
-	uint32_t data1;
-	uint16_t data2;
-	uint16_t data3;
-	byte data4[8];
+	byte data[16];
 };
 
 struct s_transport_secure_identifier

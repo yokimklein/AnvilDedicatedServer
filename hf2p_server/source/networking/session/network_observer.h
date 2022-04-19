@@ -7,7 +7,7 @@ enum e_observer_state : long
 	_observer_state_none,
 	_observer_state_connected = 7,
 
-	k_observer_state_count
+	k_observer_state_count = 10
 };
 
 enum e_network_observer_owner : long
