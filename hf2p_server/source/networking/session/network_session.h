@@ -26,9 +26,9 @@ enum e_network_session_state : uint32_t
 	_network_session_state_peer_leaving,
 	_network_session_state_host_established,
 	_network_session_state_host_disband,
-	//_network_session_state_host_handoff,
-	//_network_session_state_host_reestablish,
-	//_network_session_state_election,
+	//_network_session_state_host_handoff, // removed in ms29
+	//_network_session_state_host_reestablish, // removed in ms29
+	//_network_session_state_election, // removed in ms29
 
 	k_network_session_state_count
 };
@@ -80,15 +80,33 @@ public:
 	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
 	bool session_is_full(long joining_peer_count, long joining_player_count);
 	void disconnect();
-	void disband_peer();
+	void disband_peer(long peer_index);
 	void boot_peer(long peer_index, e_network_session_boot_reason boot_reason);
 	const char* get_id_string();
 	bool is_peer_joining_this_session();
+	void idle();
+	e_network_session_state current_local_state();
+	bool disconnected();
+	bool established();
+	bool membership_is_locked();
+	c_network_session_membership* get_session_membership();
+	void idle_peer_creating();
+	void idle_peer_joining();
+	void idle_peer_join_abort();
+	void idle_peer_leaving();
+	void process_pending_joins();
+	e_network_observer_owner observer_owner();
+	long get_maximum_player_count();
+	void handle_disconnection();
+	void check_to_send_time_synchronization();
+	void idle_observer_state();
+	void check_to_send_membership_update();
+	long managed_session_index();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
 	c_network_session_manager* m_session_manager;
-	long m_session_index;
+	e_network_observer_owner m_session_index;
 	e_network_session_type m_session_type;
 	e_network_session_class m_session_class;
 	long : 32;

@@ -16,6 +16,10 @@ class c_network_observer;
 class c_network_session_parameters
 {
 public:
+	void check_to_send_updates();
+	void check_to_send_change_requests();
+	void update();
+
 	c_network_session_parameter_session_mode session_mode;
 	c_network_session_parameter_session_size session_size;
 	c_generic_network_session_parameter_privacy_mode privacy_mode;

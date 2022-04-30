@@ -3,14 +3,15 @@
 #include <windows.h>
 #include "..\..\simulation\simulation.h"
 
-class c_network_session;
 struct c_network_session_parameter_base_vtbl;
 
+class c_network_session;
 class c_network_session_parameter_base
 {
 public:
 	bool get_allowed();
 	const char* get_session_description();
+	bool set_allowed();
 
 	c_network_session_parameter_base_vtbl* vftable;
 	uint32_t m_type;

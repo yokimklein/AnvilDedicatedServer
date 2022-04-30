@@ -11,7 +11,7 @@ struct s_network_session_parameter_map_variant
 	c_map_variant map_variant;
 };
 
-struct c_network_session_parameter_map_variant : c_network_session_parameter_base
+class c_network_session_parameter_map_variant : public c_network_session_parameter_base
 {
 	s_network_session_parameter_map_variant m_data;
 	s_network_session_parameter_map_variant m_requested_data;

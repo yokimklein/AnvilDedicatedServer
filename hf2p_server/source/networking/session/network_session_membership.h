@@ -160,6 +160,17 @@ public:
 	s_network_session_peer* get_peer(long peer_index);
 	void set_join_nonce(long peer_index, int64_t join_nonce);
 	void increment_update();
+	long get_player_count();
+	void idle();
+	bool all_peers_established();
+	long get_observer_channel_index(long observer_channel_index);
+	long get_host_observer_channel_index();
+	long host_peer_index();
+	long private_slot_count();
+	long public_slot_count();
+	bool friends_only();
+	c_network_session* get_session();
+	void set_slot_counts(long private_slot_count, long public_slot_count, bool friends_only);
 
 	c_network_session* m_session;
 	long : 32;

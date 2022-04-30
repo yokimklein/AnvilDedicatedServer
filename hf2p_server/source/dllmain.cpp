@@ -56,12 +56,17 @@ bool __fastcall create_local_online_squad(e_network_session_class ignore) // may
     return network_life_cycle_create_local_squad(_network_session_class_online);
 }
 
-void __stdcall send_message_hook(void* stream, e_network_message_type message_type, long unknown)
+void __stdcall send_message_hook(void* stream, e_network_message_type message_type, long message_storage_size)
 {
-    void(__stdcall * send_message)(void* stream, e_network_message_type message_type, long unknown) = reinterpret_cast<decltype(send_message)>(module_base + 0x387A0);
+    void(__stdcall * send_message)(void* stream, e_network_message_type message_type, long message_storage_size) = reinterpret_cast<decltype(send_message)>(module_base + 0x387A0);
 
     printf("SEND: %s\n", network_session->m_message_gateway->m_message_type_collection->get_message_type_name(message_type));
-    return send_message(stream, message_type, unknown);
+    return send_message(stream, message_type, message_storage_size);
+}
+
+void __fastcall session_idle_hook(c_network_session* session)
+{
+    session->idle();
 }
 
 long MainThread()
@@ -83,6 +88,8 @@ long MainThread()
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
+    // add back missing join processing functions & misc host tasks
+    Hook(0x21AB0, session_idle_hook).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 

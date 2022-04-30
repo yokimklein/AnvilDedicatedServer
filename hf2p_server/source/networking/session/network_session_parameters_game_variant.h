@@ -10,7 +10,7 @@ struct s_network_session_parameter_game_variant
 };
 static_assert(sizeof(s_network_session_parameter_game_variant) == 0x268);
 
-struct c_network_session_parameter_game_variant : c_network_session_parameter_base
+class c_network_session_parameter_game_variant : public c_network_session_parameter_base
 {
 	s_network_session_parameter_game_variant m_data;
 	s_network_session_parameter_game_variant m_requested_data;

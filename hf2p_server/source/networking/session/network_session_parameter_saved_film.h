@@ -10,7 +10,7 @@ struct s_saved_film_description
 	byte data[796];
 };
 
-struct c_generic_network_session_parameter_saved_film_description : c_network_session_parameter_base
+class c_generic_network_session_parameter_saved_film_description : public c_network_session_parameter_base
 {
 	s_saved_film_description m_data;
 	s_saved_film_description m_requested_data;
@@ -23,7 +23,7 @@ struct s_network_session_parameter_saved_film_game_options
 	s_game_options game_options;
 };
 
-struct c_network_session_parameter_saved_film_game_options : c_network_session_parameter_base
+class c_network_session_parameter_saved_film_game_options : public c_network_session_parameter_base
 {
 	s_network_session_parameter_saved_film_game_options m_data;
 	s_network_session_parameter_saved_film_game_options m_requested_data;

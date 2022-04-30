@@ -3,6 +3,14 @@
 #include "..\..\simulation\simulation.h"
 #include "..\..\dllmain.h"
 
+enum e_online_context_id : uint32_t
+{
+	_online_context_id_game_mode = 0,
+	_online_context_id_game_type,
+
+	k_online_context_id_count
+};
+
 struct s_online_session_player
 {
 	byte flags;
@@ -44,7 +52,7 @@ static_assert(sizeof(c_managed_session_overlapped_task) == 0x100);
 
 struct s_online_context
 {
-	uint32_t id;
+	e_online_context_id id;
 	uint32_t value;
 };
 static_assert(sizeof(s_online_context) == 0x8);
@@ -84,3 +92,4 @@ static s_online_session_manager_globals* online_session_manager_globals = reinte
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform);
 const char* managed_session_get_id_string(long managed_session_index);
 bool managed_session_get_id(long index, s_transport_secure_identifier* secure_id);
+void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count);

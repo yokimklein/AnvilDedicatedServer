@@ -1,4 +1,5 @@
 #include "network_session_parameters_base.h"
+#include "network_session.h"
 
 bool c_network_session_parameter_base::get_allowed()
 {
@@ -12,4 +13,9 @@ const char* c_network_session_parameter_base::get_session_description()
 	//	return managed_session_get_id_string(this->m_session.m_managed_session_index);
 	//else
 	return "UNKNOWN";
+}
+
+bool c_network_session_parameter_base::set_allowed()
+{
+	return this->m_session->established() && this->m_session->is_host();
 }

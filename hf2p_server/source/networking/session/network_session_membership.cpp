@@ -1,7 +1,10 @@
 #include "network_session_membership.h"
 #include "..\..\dllmain.h"
-#include "../network_globals.h"
+#include "..\network_globals.h"
 #include <iostream>
+#include "..\network_utilities.h"
+#include "network_session.h"
+#include "network_managed_session.h"
 
 long c_network_session_membership::get_first_peer()
 {
@@ -69,12 +72,7 @@ void c_network_session_membership::set_peer_connection_state(long peer_index, e_
 {
     s_network_session_peer* session_peer = this->get_peer(peer_index);
     session_peer->connection_state = state;
-    uint32_t time;
-    if (network_time_locked)
-        time = *g_network_locked_time;
-    else
-        time = timeGetTime();
-    uint32_t time_elapsed = time - session_peer->join_start_time;
+    uint32_t time_elapsed = network_get_time() - session_peer->join_start_time;
     printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_connection_state: [%s] peer #%d [%s] set to state %s (%d msec from start)\n",
         "00:00:00:00:00:00:00:00", // TODO - not sure how to include network_session.h to network_session_membership.h without causing errors to allow this method to run here
         peer_index,
@@ -106,4 +104,71 @@ void c_network_session_membership::increment_update()
 {
     this->m_baseline_update_number++;
     this->m_player_configuration_version++;
+}
+
+long c_network_session_membership::get_player_count()
+{
+    return this->m_player_count;
+}
+
+void c_network_session_membership::idle()
+{
+    void(__thiscall * idle)(c_network_session_membership* membership) = reinterpret_cast<decltype(idle)>(module_base + 0x328E0);
+    idle(this);
+}
+
+bool c_network_session_membership::all_peers_established()
+{
+    bool(__thiscall * all_peers_established)(c_network_session_membership* membership) = reinterpret_cast<decltype(all_peers_established)>(module_base + 0x20E50);
+    return all_peers_established(this);
+}
+
+long c_network_session_membership::get_observer_channel_index(long observer_channel_index)
+{
+    // TODO ASSERTS
+    return m_peer_channels[observer_channel_index].channel_index;
+}
+
+long c_network_session_membership::get_host_observer_channel_index()
+{
+    // TODO ASSERTS
+    long host_peer_index = this->host_peer_index();
+    return this->get_observer_channel_index(host_peer_index);
+}
+
+long c_network_session_membership::host_peer_index()
+{
+    return this->m_host_peer_index;
+}
+
+long c_network_session_membership::private_slot_count()
+{
+    return this->m_private_slot_count;
+}
+
+long c_network_session_membership::public_slot_count()
+{
+    return this->m_public_slot_count;
+}
+
+bool c_network_session_membership::friends_only()
+{
+    return this->m_friends_only;
+}
+
+c_network_session* c_network_session_membership::get_session()
+{
+    return this->m_session;
+}
+
+void c_network_session_membership::set_slot_counts(long private_slot_count, long public_slot_count, bool friends_only)
+{
+    auto session = this->get_session();
+    long managed_session_index = session->managed_session_index();
+    this->m_private_slot_count = private_slot_count;
+    this->m_public_slot_count = public_slot_count;
+    this->m_friends_only = friends_only;
+    if (session)
+        managed_session_modify_slot_counts(managed_session_index, private_slot_count, public_slot_count, friends_only, this->m_peer_count);
+    this->increment_update();
 }

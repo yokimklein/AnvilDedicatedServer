@@ -2,6 +2,8 @@
 #include <cstdint>
 #include "..\..\dllmain.h"
 #include "transport_address.h"
+#include "..\network_globals.h"
+#include "..\..\simulation\simulation.h"
 
 struct s_xnet_shim_table_row
 {
@@ -14,7 +16,7 @@ static_assert(sizeof(s_xnet_shim_table_row) == 0x38);
 
 struct s_xnet_shim_table
 {
-	s_xnet_shim_table_row rows[51]; // k_network_maximum_machines_per_session * 3? 3 rows per peer?
+	s_xnet_shim_table_row rows[k_network_maximum_machines_per_session * k_network_maximum_sessions]; // 51 entries
 };
 static_assert(sizeof(s_xnet_shim_table) == 0xB28);
 

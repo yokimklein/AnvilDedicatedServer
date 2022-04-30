@@ -11,9 +11,6 @@
 // non-original names, may be incorrect
 enum e_network_game_privacy
 {
-	_network_game_privacy_system_link,
-	_network_game_privacy_offline,
-	_network_game_privacy_full,
 	_network_game_privacy_open_to_public,
 	_network_game_privacy_open_to_friends,
 	_network_game_privacy_invite_only,
@@ -22,7 +19,7 @@ enum e_network_game_privacy
 	k_network_game_privacy_count
 };
 
-enum e_network_session_closed
+enum e_network_session_closed_status
 {
 	_network_session_closed_none,
 	_network_session_closed_campaign_in_progress,
@@ -34,25 +31,27 @@ enum e_network_session_closed
 struct s_network_session_privacy_mode
 {
 	e_network_game_privacy privacy_mode;
-	e_network_session_closed closed_mode;
+	e_network_session_closed_status closed_mode;
 	long maximum_player_count;
 	bool is_closed_by_user;
 };
 static_assert(sizeof(s_network_session_privacy_mode) == 0x10);
 
-struct c_generic_network_session_parameter_privacy_mode : c_network_session_parameter_base
+class c_generic_network_session_parameter_privacy_mode : public c_network_session_parameter_base
 {
+public:
+
 	s_network_session_privacy_mode m_data;
 	s_network_session_privacy_mode m_requested_data;
 };
 
-struct c_network_session_parameter_ui_game_mode: c_network_session_parameter_base
+class c_network_session_parameter_ui_game_mode: public c_network_session_parameter_base
 {
 	e_gui_game_mode m_data;
 	e_gui_game_mode m_requested_data;
 };
 
-struct c_generic_network_session_parameter_dedicated_server_session_state: c_network_session_parameter_base
+class c_generic_network_session_parameter_dedicated_server_session_state: public c_network_session_parameter_base
 {
 	long m_data;
 	long m_requested_data;
@@ -67,7 +66,7 @@ struct s_network_session_parameter_map
 	uint32_t game_progression_bit_vector[64];
 };
 
-struct c_network_session_parameter_map : c_network_session_parameter_base
+class c_network_session_parameter_map : public c_network_session_parameter_base
 {
 	s_network_session_parameter_map m_data;
 	s_network_session_parameter_map m_requested_data;
@@ -81,7 +80,7 @@ struct s_network_session_parameter_initial_participants
 	s_game_player_options player_options[k_network_maximum_players_per_session];
 };
 
-struct c_network_session_parameter_initial_participants : c_network_session_parameter_base
+class c_network_session_parameter_initial_participants : public c_network_session_parameter_base
 {
 	s_network_session_parameter_initial_participants m_data;
 	s_network_session_parameter_initial_participants m_requested_data;
@@ -110,7 +109,7 @@ struct s_network_session_parameter_game_start_status
 };
 static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 
-struct c_network_session_parameter_game_start_status : c_network_session_parameter_base
+class c_network_session_parameter_game_start_status : public c_network_session_parameter_base
 {
 	s_network_session_parameter_game_start_status m_data;
 	s_network_session_parameter_game_start_status m_requested_data;
@@ -122,7 +121,7 @@ struct s_network_session_parameter_countdown_timer
 	long : 32;
 };
 
-struct c_network_session_parameter_countdown_timer : c_network_session_parameter_base
+class c_network_session_parameter_countdown_timer : public c_network_session_parameter_base
 {
 	s_network_session_parameter_countdown_timer m_data;
 	s_network_session_parameter_countdown_timer m_requested_data;
@@ -134,7 +133,7 @@ struct s_network_session_parameter_voice_repeater
 };
 static_assert(sizeof(s_network_session_parameter_voice_repeater) == 0x4);
 
-struct c_network_session_parameter_voice_repeater : c_network_session_parameter_base
+class c_network_session_parameter_voice_repeater : public c_network_session_parameter_base
 {
 	s_network_session_parameter_voice_repeater m_data;
 	s_network_session_parameter_voice_repeater m_requested_data;
@@ -145,7 +144,7 @@ struct s_network_session_parameter_synchronous_out_of_sync
 	short : 16;
 };
 
-struct c_network_session_parameter_synchronous_out_of_sync : c_network_session_parameter_base
+class c_network_session_parameter_synchronous_out_of_sync : public c_network_session_parameter_base
 {
 	s_network_session_parameter_synchronous_out_of_sync m_data;
 	s_network_session_parameter_synchronous_out_of_sync m_requested_data;
@@ -158,7 +157,7 @@ struct s_network_session_parameter_request_campaign_quit
 };
 static_assert(sizeof(s_network_session_parameter_request_campaign_quit) == 0x8);
 
-struct c_network_session_parameter_request_campaign_quit : c_network_session_parameter_base
+class c_network_session_parameter_request_campaign_quit : public c_network_session_parameter_base
 {
 	s_network_session_parameter_request_campaign_quit m_data;
 	s_network_session_parameter_request_campaign_quit m_requested_data;

@@ -134,16 +134,21 @@ struct s_network_message_connect_request : s_network_message
 	uint32_t identifier;
 	uint32_t flags;
 };
+static_assert(sizeof(s_network_message_connect_request) == 0x8);
 
 struct s_network_message_connect_refuse : s_network_message
 {
-
+	uint32_t remote_identifier;
+	long reason;
 };
+static_assert(sizeof(s_network_message_connect_refuse) == 0x8);
 
 struct s_network_message_connect_establish : s_network_message
 {
-
+	uint32_t identifier;
+	uint32_t remote_identifier;
 };
+static_assert(sizeof(s_network_message_connect_establish) == 0x8);
 
 struct s_network_message_connect_closed : s_network_message
 {
@@ -177,15 +182,17 @@ static_assert(sizeof(s_network_message_peer_connect) == 0x20);
 
 struct s_network_message_join_abort : s_network_message
 {
-
+	uint64_t session_id;
+	uint64_t join_nonce;
 };
+static_assert(sizeof(s_network_message_join_abort) == 0x10);
 
 struct s_network_message_join_refuse : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	e_network_join_refuse_reason reason;
 };
-//static_assert(sizeof(s_network_message_join_refuse) == 0x20);
+static_assert(sizeof(s_network_message_join_refuse) == 0x14); // might only be 12 bytes long?
 
 struct s_network_message_leave_session : s_network_message
 {

@@ -5,6 +5,8 @@
 #include "..\simulation\simulation.h"
 #include "..\game\players.h"
 
+constexpr long k_network_maximum_sessions = 3;
+
 enum e_network_session_type;
 enum e_network_join_mode;
 

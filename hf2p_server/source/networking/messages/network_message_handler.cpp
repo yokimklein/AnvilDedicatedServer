@@ -8,6 +8,7 @@
 #include "..\session\network_session.h"
 #include "..\transport\transport_address.h"
 #include "..\network_globals.h"
+#include "..\network_utilities.h"
 
 // inlined in the ms29 client
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message) // untested
@@ -23,14 +24,8 @@ void c_network_message_handler::handle_ping(s_transport_address const* outgoing_
 
 void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
 {
-    uint32_t time;
-
-    if (network_time_locked)
-        time = *g_network_locked_time;
-    else
-        time = timeGetTime();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 
-        message->id, transport_address_get_string(outgoing_address), timeGetTime(), time - message->timestamp);
+        message->id, transport_address_get_string(outgoing_address), timeGetTime(), network_get_time() - message->timestamp);
 }
 
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message) // tested - seems to work
@@ -304,7 +299,7 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             this->handle_connect_establish(channel, (s_network_message_connect_establish*)message);
             break;
 
-        case _network_message_type_leave_session: // TODO - removed by saber in client builds
+        case _network_message_type_leave_session:
             if (channel->connected() && channel->get_remote_address(&remote_address))
                 this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
             else

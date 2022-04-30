@@ -1,10 +1,12 @@
 #pragma once
+#include <windows.h>
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
 enum e_observer_state : long
 {
 	_observer_state_none,
+	_observer_state_dead,
 	_observer_state_connected = 7,
 
 	k_observer_state_count = 10
@@ -13,6 +15,11 @@ enum e_observer_state : long
 enum e_network_observer_owner : long
 {
 	k_network_observer_owner_count = 4
+};
+
+struct s_observer_configuration
+{
+
 };
 
 struct s_network_message_connect_request;
@@ -25,36 +32,38 @@ class c_network_link;
 class c_network_observer
 {
 	public:
+		struct s_channel_observer_owner
+		{
+			e_network_observer_owner owner;
+			long managed_session_index;
+		};
+		static_assert(sizeof(s_channel_observer_owner) == 0x8);
+
+		struct s_channel_observer
+		{
+			byte unknown_data[0xA74];
+			e_observer_state state;
+			byte unknown_data2[0x660];
+		};
+		static_assert(sizeof(s_channel_observer) == 0x10D8);
+
 		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
-
-		//struct s_channel_observer
-		//{
-		//	// starts with c_network_channel?
-		//	c_network_channel channel;
-		//	byte __data[0x62C];
-		//};
-		//static_assert(sizeof(s_channel_observer) == 0x10A8);
+		const char* get_name(long observer_index);
+		bool observer_channel_dead(e_network_observer_owner owner_type, long observer_index);
+		s_channel_observer* get_observer(e_network_observer_owner owner_type, long observer_index);
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;
 		c_network_message_handler* m_message_handler;
 		c_network_message_type_collection* m_message_type_collection;
-		void* m_unknown;
+		s_observer_configuration* m_configuration;
 		c_network_session* m_session;
-		long m_unknown2; // e_network_observer_owner? managed_session_index?
-		void* m_unknown3;
-		void* m_unknown4; // null?
-		void* m_unknown5;
-		void* m_unknown6; // null?
-		long* m_unknown7;
-		void* m_unknown8; // null?
-
-		//s_channel_observer channels[k_network_maximum_observers];
-		//byte __data[0x62C];
+		s_channel_observer_owner m_owners[k_network_observer_owner_count];
+		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
+		byte unknown_data[0x238]; // time statistics etc
 };
-//static_assert(sizeof(c_network_observer) == 0x23C7C); // TODO - verify if this size is accurate 
-
+static_assert(sizeof(c_network_observer) == 0x23F20);
 /*
 
 class c_network_observer : c_network_channel

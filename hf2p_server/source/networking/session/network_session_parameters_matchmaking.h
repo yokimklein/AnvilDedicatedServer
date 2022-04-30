@@ -9,7 +9,7 @@ struct s_network_session_parameter_matchmaking_messaging
 };
 static_assert(sizeof(s_network_session_parameter_matchmaking_messaging) == 0xC);
 
-struct c_network_session_parameter_matchmaking_messaging : c_network_session_parameter_base
+class c_network_session_parameter_matchmaking_messaging : public c_network_session_parameter_base
 {
 	s_network_session_parameter_matchmaking_messaging m_data;
 	s_network_session_parameter_matchmaking_messaging m_requested_data;

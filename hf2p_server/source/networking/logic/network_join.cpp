@@ -2,6 +2,7 @@
 #include "..\messages\network_message_type_collection.h"
 #include "..\session\network_session.h"
 #include <iostream>
+#include "..\network_utilities.h"
 
 void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request)
 {
@@ -78,12 +79,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     queue_entry->address = *address;
     queue_entry->join_nonce = join_request->join_nonce;
     queue_entry->join_request = *join_request;
-    uint32_t time;
-    if (network_time_locked)
-        time = *g_network_locked_time;
-    else
-        time = timeGetTime();
-    queue_entry->times[0] = time;
+    queue_entry->times[0] = network_get_time();
     queue_entry->times[1] = -1;
     printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was added to the join queue\n", transport_address_get_string(address));
     g_network_join_data->join_queue_entry_count++;

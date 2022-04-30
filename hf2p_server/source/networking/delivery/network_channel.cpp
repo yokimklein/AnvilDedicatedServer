@@ -3,14 +3,14 @@
 #include "..\messages\network_message_type_collection.h"
 #include "..\transport\transport_address.h"
 
-bool c_network_channel::connected() // TODO - needs testing
+bool c_network_channel::connected()
 {
 	return this->get_state() == _network_channel_state_connected;
 }
 
-char* c_network_channel::get_name() // TODO - non crucial, used for logging only
+char* c_network_channel::get_name()
 {
-	return 0;
+	return 0; // TODO once the field is mapped out
 }
 
 e_network_channel_state c_network_channel::get_state()
