@@ -85,10 +85,37 @@ void c_network_message_handler::handle_peer_connect(s_transport_address const* o
     }
 }
 
-// TODO
 void c_network_message_handler::handle_join_abort(s_transport_address const* outgoing_address, s_network_message_join_abort const* message)
 {
-    
+    auto session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->established() && session->is_host())
+    {
+        e_network_join_refuse_reason refuse_reason = _network_join_refuse_reason_none;
+        if (session->join_abort(outgoing_address, message->join_nonce))
+        {
+            refuse_reason = _network_join_refuse_reason_aborted;
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: ignoring unknown abort from '%s'\n",
+                transport_address_get_string(outgoing_address));
+            refuse_reason = _network_join_refuse_reason_abort_ignored;
+        }
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: received abort, sending join-refusal (%s) to '%s'\n",
+            network_message_join_refuse_get_reason_string(refuse_reason),
+            transport_address_get_string(outgoing_address));
+        auto message_gateway = this->get_message_gateway();
+        s_network_message_join_refuse refuse_message;
+        memset(&refuse_message, 0, sizeof(s_network_message_join_refuse));
+        refuse_message.session_id = message->session_id;
+        refuse_message.reason = refuse_reason;
+        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &refuse_message);
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: no session, ignoring join abort from '%s'\n",
+            transport_address_get_string(outgoing_address));
+    }
 }
 
 void c_network_message_handler::handle_join_refuse(s_transport_address const* outgoing_address, s_network_message_join_refuse const* message) // untested
@@ -485,116 +512,4 @@ void __fastcall handle_channel_message_hook(c_network_message_handler* message_h
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unknown, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     message_handler->handle_out_of_band_message(address, message_type, message_storage_size, message);
-}
-
-const char* network_message_join_refuse_get_reason_string(e_network_join_refuse_reason reason)
-{
-    // TODO: original logic
-    const char* name = "<unknown>";
-    if (reason <= k_network_join_refuse_reason_count)
-    {
-        switch (reason)
-        {
-        case _network_join_refuse_reason_none:
-            name = "no-reason-given";
-            break;
-        case _network_join_refuse_reason_tried_to_join_self:
-            name = "tried-to-join-self";
-            break;
-        case _network_join_refuse_reason_could_not_connect:
-            name = "could-not-connect";
-            break;
-        case _network_join_refuse_reason_join_timed_out:
-            name = "join-timed-out";
-            break;
-        case _network_join_refuse_reason_not_found:
-            name = "not-found";
-            break;
-        case _network_join_refuse_reason_privacy_mode:
-            name = "privacy-mode";
-            break;
-        case _network_join_refuse_reason_not_joinable:
-            name = "not-joinable";
-            break;
-        case _network_join_refuse_reason_session_full:
-            name = "session-full";
-            break;
-        case _network_join_refuse_reason_alpha_split_screen:
-            name = "alpha-split-screen";
-            break;
-        case _network_join_refuse_reason_session_disband:
-            name = "session-disband";
-            break;
-        case _network_join_refuse_reason_session_booted:
-            name = "session-booted";
-            break;
-        case _network_join_refuse_reason_address_invalid:
-            name = "address-invalid";
-            break;
-        case _network_join_refuse_reason_address_failed:
-            name = "address-failed";
-            break;
-        case _network_join_refuse_reason_too_many_observers:
-            name = "too-many-observers";
-            break;
-        case _network_join_refuse_reason_aborted:
-            name = "aborted";
-            break;
-        case _network_join_refuse_reason_abort_ignored:
-            name = "abort-ignored";
-            break;
-        case _network_join_refuse_reason_wrong_payload_type:
-            name = "wrong-payload-type";
-            break;
-        case _network_join_refuse_reason_no_reservation:
-            name = "no-reservation";
-            break;
-        case _network_join_refuse_reason_in_matchmaking:
-            name = "in-matchmaking";
-            break;
-        case _network_join_refuse_reason_player_count_zero:
-            name = "player-count-zero";
-            break;
-        case _network_join_refuse_reason_player_not_online_enabled:
-            name = "player-not-online-enabled";
-            break;
-        case _network_join_refuse_reason_player_add_pending:
-            name = "player-add-pending";
-            break;
-        case _network_join_refuse_reason_player_add_failed:
-            name = "player-add-failed";
-            break;
-        case _network_join_refuse_reason_host_time_out:
-            name = "host-time-out";
-            break;
-        case _network_join_refuse_reason_rejected_by_host:
-            name = "rejected-by-host";
-            break;
-        case _network_join_refuse_reason_peer_version_too_low:
-            name = "peer-version-too-low";
-            break;
-        case _network_join_refuse_reason_host_version_too_low:
-            name = "host-version-too-low";
-            break;
-        case _network_join_refuse_reason_holding_in_queue:
-            name = "holding-in-queue";
-            break;
-        case _network_join_refuse_reason_film_in_progress:
-            name = "film-in-progress";
-            break;
-        case _network_join_refuse_reason_campaign_in_progress:
-            name = "campaign-in-progress";
-            break;
-        case _network_join_refuse_reason_user_content_not_allowed:
-            name = "user-content-not-allowed";
-            break;
-        case _network_join_refuse_reason_survival_in_progress:
-            name = "survival-in-progress";
-            break;
-        case _network_join_refuse_reason_executable_type_mismatch:
-            name = "executable-type-mismatch";
-            break;
-        }
-    }
-    return name;
 }

@@ -49,6 +49,7 @@ enum e_network_message_type : long
 	k_network_message_type_count
 };
 
+// TODO - update k_join_refuse_reason_strings whenever this is updated
 // verified against ms23, not ms29 - INACCURATE! TODO will produce invalid error logs!
 enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whether these are correct for ms29, ms29's differs from mcc's slightly (check mcc odst's when it releases?)
 {
@@ -84,7 +85,7 @@ enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whet
 	_network_join_refuse_reason_campaign_in_progress, // verified (verified in ms29 too)
 	_network_join_refuse_reason_user_content_not_allowed,
 	_network_join_refuse_reason_survival_in_progress, // verified
-	_network_join_refuse_reason_executable_type_mismatch, // verified
+	_network_join_refuse_reason_executable_type_mismatch, // verified? did this move? TODO - verify
 
 	k_network_join_refuse_reason_count
 };
@@ -182,26 +183,27 @@ static_assert(sizeof(s_network_message_peer_connect) == 0x20);
 
 struct s_network_message_join_abort : s_network_message
 {
-	uint64_t session_id;
+	s_transport_secure_identifier session_id;
 	uint64_t join_nonce;
 };
-static_assert(sizeof(s_network_message_join_abort) == 0x10);
+static_assert(sizeof(s_network_message_join_abort) == 0x18);
 
 struct s_network_message_join_refuse : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	e_network_join_refuse_reason reason;
 };
-static_assert(sizeof(s_network_message_join_refuse) == 0x14); // might only be 12 bytes long?
+static_assert(sizeof(s_network_message_join_refuse) == 0x14);
 
 struct s_network_message_leave_session : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
 };
+static_assert(sizeof(s_network_message_leave_session) == 0x10);
 
 struct s_network_message_leave_acknowledge : s_network_message
 {
-	s_transport_secure_identifier session_id;
+	uint64_t session_id;
 };
 
 struct s_network_message_session_disband : s_network_message
@@ -212,8 +214,9 @@ struct s_network_message_session_disband : s_network_message
 struct s_network_message_session_boot : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	uint32_t reason;
+	enum e_network_session_boot_reason reason;
 };
+static_assert(sizeof(s_network_message_session_boot) == 0x14);
 
 struct s_network_message_host_decline : s_network_message
 {
@@ -365,6 +368,7 @@ struct c_network_message_type
 	void* compare_function;
 	void* dispose_function;
 };
+static_assert(sizeof(c_network_message_type) == 0x24);
 
 class c_network_message_type_collection
 {
@@ -384,3 +388,83 @@ private:
 	// type names?
 
 };
+
+/*
+static const char* k_message_type_names[k_network_message_type_count] = { // update this whenever the enum updates
+	"ping",
+	"pong",
+	"connect_request",
+	"connect_refuse",
+	"connect_establish",
+	"connect_closed",
+	"join_request",
+	"peer_connect",
+	"join_abort",
+	"join_refuse",
+	"leave_session",
+	"leave_acknowledge",
+	"session_disband",
+	"session_boot",
+	"host_decline",
+	"peer_establish",
+	"time_synchronize",
+	"membership_update",
+	"peer_properties",
+	"delegate_leadership",
+	"boot_machine",
+	"player_add",
+	"player_refuse",
+	"player_remove",
+	"player_properties",
+	"parameters_update",
+	"parameters_request",
+	"view_establishment",
+	"player_acknowledge",
+	"synchronous_update",
+	"synchronous_playback_control",
+	"synchronous_actions",
+	"synchronous_acknowledge",
+	"synchronous_gamestate",
+	"synchronous_client_ready",
+	"game_results",
+	"test"
+};
+*/
+
+static const char* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = { // TODO - update this whenever the enum updates
+	"no-reason-given",
+	"tried-to-join-self",
+	"could-not-connect",
+	"join-timed-out",
+	"not-found",
+	"privacy-mode",
+	"not-joinable",
+	"session-full",
+	"alpha-split-screen",
+	"session-disbanded",
+	"session-booted",
+	"address-invalid",
+	"address-failed",
+	"too-many-observers",
+	"aborted",
+	"abort-ignored",
+	"wrong-payload-type",
+	"no-reservation",
+	"in-matchmaking",
+	"player-count-zero",
+	"player-not-online-enabled",
+	"player-add-pending",
+	"player-add-failed",
+	"host-time-out",
+	"rejected-by-host",
+	"peer-version-too-low",
+	"host-version-too-low",
+	"holding-in-queue",
+	"film-in-progress",
+	"campaign-in-progress",
+	"user-content-not-allowed",
+	"survival-in-progress", // interestingly enough this refuse reason is in h3 too
+	"executable-type-mismatch"
+};
+
+const char* network_message_join_refuse_get_reason_string(e_network_join_refuse_reason refuse_reason);

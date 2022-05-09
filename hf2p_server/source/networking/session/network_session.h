@@ -33,7 +33,7 @@ enum e_network_session_state : uint32_t
 	k_network_session_state_count
 };
 
-enum e_network_session_boot_reason // from ms23/ED
+enum e_network_session_boot_reason : long // from ms23/ED
 {
 	_network_session_boot_reason_player_booted_player,
 	_network_session_boot_reason_unknown1,
@@ -74,7 +74,7 @@ public:
 	e_network_join_refuse_reason get_closure_reason();
 	const char* get_type_string(e_network_session_type session_type);
 	const char* get_peer_description(long peer_index);
-	void abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce);
+	void abort_pending_join(uint64_t join_nonce);
 	bool is_host();
 	bool join_allowed_by_privacy();
 	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
@@ -102,6 +102,8 @@ public:
 	void idle_observer_state();
 	void check_to_send_membership_update();
 	long managed_session_index();
+	bool join_abort(s_transport_address const* incoming_address, int64_t join_nonce);
+	c_network_session_parameters* get_session_parameters();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

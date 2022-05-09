@@ -153,7 +153,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
     if (refuse_reason != _network_join_refuse_reason_none)
     {
         this->acknowledge_join_request(address, refuse_reason);
-        this->abort_pending_join(join_request, join_request->join_nonce); // TODO unfinished function call
+        this->abort_pending_join(join_request->join_nonce);
         return;
     }
 
@@ -237,7 +237,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         if (refuse_reason != _network_join_refuse_reason_none)
         {
             this->acknowledge_join_request(address, refuse_reason);
-            this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
+            this->abort_pending_join(join_request->join_nonce);
             return;
         }
     }
@@ -249,7 +249,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
             this->get_id_string(),
             this->get_peer_description(peer_from_address));
         this->acknowledge_join_request(address, _network_join_refuse_reason_address_invalid);
-        this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
+        this->abort_pending_join(join_request->join_nonce);
         return;
     }
     long observer_channel_index = this->m_session_membership.get_observer_channel_index(peer_from_address);
@@ -259,7 +259,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
             this->get_id_string(),
             this->get_peer_description(peer_from_address));
         this->acknowledge_join_request(address, _network_join_refuse_reason_too_many_observers);
-        this->abort_pending_join(join_request, join_request->join_nonce); // TODO - unfinished function call
+        this->abort_pending_join(join_request->join_nonce);
         return;
     }
 
@@ -315,7 +315,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
             return refuse_reason;
     }
 
-    if (this->m_local_state <= _network_session_state_peer_join_abort) // session is_established
+    if (!this->established()) // this->m_local_state <= _network_session_state_peer_join_abort
         return refuse_reason;
 
     if (this->session_is_full(joining_peer_count, joining_player_count))
@@ -325,7 +325,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
 }
 
 // TEST THIS ONCE boot_peer IS IMPLEMENTED
-void c_network_session::abort_pending_join(s_network_session_join_request const* join_request, uint64_t join_nonce)
+void c_network_session::abort_pending_join(uint64_t join_nonce)
 {
     if (this->m_session_membership.m_peers[this->m_session_membership.m_host_peer_index].join_nonce == join_nonce)
     {
@@ -395,16 +395,63 @@ void c_network_session::disconnect()
     return disconnect(this);
 }
 
-// FUNC TODO
 void c_network_session::disband_peer(long peer_index)
 {
-    
+    if (this->get_session_membership()->has_peer_ever_been_established(peer_index))
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::disband_peer: [%s] disbanding peer [%s]\n",
+            this->get_id_string(),
+            this->get_peer_description(peer_index));
+        s_network_message_session_disband disband_message;
+        memset(&disband_message, 0, sizeof(s_network_message_session_disband));
+        managed_session_get_id(this->managed_session_index(), &disband_message.session_id);
+        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
+        if (observer_index != -1)
+        {
+            auto observer = this->m_observer;
+            if (observer->observer_channel_connected(this->m_session_index, observer_index))
+                this->m_observer->observer_channel_send_message(this->m_session_index, observer_index, false, _network_message_type_session_disband, sizeof(s_network_message_session_disband), &disband_message);
+            this->m_observer->observer_channel_send_message(this->m_session_index, observer_index, true, _network_message_type_session_disband, sizeof(s_network_message_session_disband), &disband_message);
+        }
+        this->get_session_membership()->remove_peer(peer_index);
+    }
+    else
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::disband_peer: [%s] marking joining peer [%s] for future disbandment\n",
+            this->get_id_string(),
+            this->get_peer_description(peer_index));
+        this->get_session_membership()->set_peer_connection_state(peer_index, _network_session_peer_state_disconnected);
+    }
 }
 
-// FUNC TODO
 void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason boot_reason)
 {
-
+    if (this->membership_is_locked())
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::boot_peer: [%s] unable to boot peer [#%d] membership is locked\n",
+            this->get_id_string(),
+            peer_index);
+    }
+    else
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::boot_peer: [%s] booting peer [#%d] [reason %d]\n",
+            this->get_id_string(),
+            peer_index,
+            boot_reason);
+        s_network_message_session_boot boot_message;
+        memset(&boot_message, 0, sizeof(s_network_message_session_boot));
+        managed_session_get_id(this->managed_session_index(), &boot_message.session_id);
+        boot_message.reason = boot_reason;
+        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
+        if (observer_index != -1)
+        {
+            auto observer = this->m_observer;
+            if (observer->observer_channel_connected(this->m_session_index, observer_index))
+                this->m_observer->observer_channel_send_message(this->m_session_index, observer_index, false, _network_message_type_session_boot, sizeof(s_network_message_session_boot), &boot_message);
+            this->m_observer->observer_channel_send_message(this->m_session_index, observer_index, true, _network_message_type_session_boot, sizeof(s_network_message_session_boot), &boot_message);
+        }
+        this->get_session_membership()->remove_peer(peer_index);
+    }
 }
 
 const char* c_network_session::get_type_string(e_network_session_type session_type)
@@ -448,8 +495,6 @@ bool c_network_session::is_peer_joining_this_session()
 // WIP FUNCTION
 void c_network_session::idle()
 {
-    void(__cdecl * hf2p_handle_disconnection)() = reinterpret_cast<decltype(hf2p_handle_disconnection)>(module_base + 0x2F29C0);
-
     if (!this->disconnected())
     {
         this->m_session_membership.idle();
@@ -491,7 +536,7 @@ void c_network_session::idle()
                         printf("MP/NET/SESSION,CTRL: c_network_session::idle: [%s] peer [%s]/%s channel died, disbanding\n",
                             this->get_id_string(), this->get_peer_description(i), this->m_observer->get_name(observer_channel_index));
                     }
-                    this->disband_peer(i); // MISSING FUNC TODO
+                    this->disband_peer(i);
                 }
             }
 
@@ -557,7 +602,6 @@ void c_network_session::idle()
             long observer_channel_index = this->m_session_membership.get_host_observer_channel_index();
             if (this->m_observer->observer_channel_dead(this->observer_owner(), observer_channel_index))
             {
-                hf2p_handle_disconnection(); // unknown saber function, wasn't in ms23
                 this->handle_disconnection();
             }
         }
@@ -670,9 +714,12 @@ long c_network_session::get_maximum_player_count()
 
 void c_network_session::handle_disconnection()
 {
+    void(__cdecl * hf2p_handle_disconnection)() = reinterpret_cast<decltype(hf2p_handle_disconnection)>(module_base + 0x2F29C0);
+
     printf("MP/NET/SESSION,CTRL: c_network_session::handle_disconnection: [%s] disconnected from session host. Session Type %s\n",
         this->get_id_string(),
         get_type_string(this->m_session_type));
+    hf2p_handle_disconnection(); // unknown saber function, wasn't in ms23
     this->disconnect();
 }
 
@@ -698,4 +745,18 @@ long c_network_session::managed_session_index()
 {
     // TODO ASSERTS
     return this->m_managed_session_index;
+}
+
+bool c_network_session::join_abort(s_transport_address const* incoming_address, int64_t join_nonce)
+{
+    network_join_remove_join_from_queue(join_nonce);
+    if (this->membership_is_locked())
+        return false;
+    this->abort_pending_join(join_nonce);
+    return true;
+}
+
+c_network_session_parameters* c_network_session::get_session_parameters()
+{
+    return &this->m_session_parameters;
 }

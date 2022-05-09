@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include "..\messages\network_message_type_collection.h"
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
@@ -52,6 +53,8 @@ class c_network_observer
 		const char* get_name(long observer_index);
 		bool observer_channel_dead(e_network_observer_owner owner_type, long observer_index);
 		s_channel_observer* get_observer(e_network_observer_owner owner_type, long observer_index);
+		void observer_channel_send_message(e_network_observer_owner owner_type, long observer_index, bool disconnected, e_network_message_type message_type, long message_size, s_network_message* message);
+		bool observer_channel_connected(e_network_observer_owner owner_type, long observer_index);
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;

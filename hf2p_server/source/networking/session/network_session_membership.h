@@ -171,6 +171,10 @@ public:
 	bool friends_only();
 	c_network_session* get_session();
 	void set_slot_counts(long private_slot_count, long public_slot_count, bool friends_only);
+	bool has_peer_ever_been_established(long peer_index);
+	s_network_session_peer* get_raw_peer(long peer_index);
+	e_network_session_peer_state get_peer_connection_state(long peer_index);
+	void remove_peer(long peer_index);
 
 	c_network_session* m_session;
 	long : 32;

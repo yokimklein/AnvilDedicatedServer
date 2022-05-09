@@ -158,3 +158,21 @@ void network_join_flush_join_queue()
 
     network_join_flush_join_queue_call();
 }
+
+void network_join_remove_join_from_queue(int64_t join_nonce)
+{
+    long* entry_count = &g_network_join_data->join_queue_entry_count;
+    for (long i = 0; i < *entry_count; i++)
+    {
+        auto queue_entry = &g_network_join_data->join_queue[i];
+        if (queue_entry->join_nonce == join_nonce)
+        {
+            printf("MP/NET/JOIN,CTRL: network_join_remove_join_from_queue: %s was removed from the join queue by request\n",
+                transport_address_get_string(&queue_entry->address));
+            // overwrite queue entry with last entry & decrease entry count
+            memcpy(queue_entry, &g_network_join_data->join_queue[--*entry_count], sizeof(s_join_queue_entry));
+            // do not increment counter
+            i--;
+        }
+    }
+}

@@ -172,3 +172,56 @@ void c_network_session_membership::set_slot_counts(long private_slot_count, long
         managed_session_modify_slot_counts(managed_session_index, private_slot_count, public_slot_count, friends_only, this->m_peer_count);
     this->increment_update();
 }
+
+bool c_network_session_membership::has_peer_ever_been_established(long peer_index)
+{
+    auto peer = this->get_peer(peer_index);
+    return (peer->connection_state == _network_session_peer_state_established || peer->connection_state == _network_session_peer_state_rejoining);
+}
+
+s_network_session_peer* c_network_session_membership::get_raw_peer(long peer_index)
+{
+    // same thing as get_peer w/o the asserts
+    return &this->m_peers[peer_index];
+}
+
+e_network_session_peer_state c_network_session_membership::get_peer_connection_state(long peer_index)
+{
+    return this->get_peer(peer_index)->connection_state;
+}
+
+void c_network_session_membership::remove_peer(long peer_index)
+{
+    auto raw_peer = this->get_raw_peer(peer_index);
+    auto session = this->get_session();
+    // char* peer_name_ascii; // TODO
+    // wchar_string_to_ascii_string(raw_peer->properties.peer_name, peer_name_ascii, 256, 0); // TODO - convert from wchar to char
+    printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::remove_peer: [%s] removing peer #%d [%s] name [%s]\n", // this log doesn't exist in ms23
+        session->get_id_string(),
+        peer_index,
+        transport_secure_address_get_string(&raw_peer->secure_address),
+        /*peer_name_ascii*/"unknown_peer");
+
+    void(__thiscall * remove_peer)(c_network_session_membership* membership, long peer_index) = reinterpret_cast<decltype(remove_peer)>(module_base + 0x30E50);
+    return remove_peer(this, peer_index);
+
+    /* UNFINISHED - i discovered the function still exists midway through rewriting it
+    if (this->get_peer_connection_state(peer_index) >= _network_session_peer_state_connected || this->get_peer_connection_state(peer_index) == _network_session_peer_state_rejoining)
+    {
+        auto peer = this->get_peer(peer_index);
+
+    }
+
+    this->remove_peer_internal(peer_index);
+    auto session_parameters = session->get_session_parameters();
+    session_parameters->reset_peer_state(peer_index);
+    if (session->established())
+    {
+        session_parameters->countdown_timer.set(0, 0, 0, 0);
+    }
+
+    // check if host peer is being removed and migrate to a new host functionality not required for HO
+
+    this->increment_update();
+    */
+}

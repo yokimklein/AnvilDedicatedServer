@@ -47,9 +47,9 @@ void c_network_message_handler::handle_out_of_band_message(s_transport_address c
         case _network_message_type_peer_connect:
             this->handle_peer_connect(address, (s_network_message_peer_connect*)message);
             break;
-        //case _network_message_type_join_abort:
-        //    this->handle_join_abort(address, (s_network_message_join_abort*)message);
-        //    break;
+        case _network_message_type_join_abort:
+            this->handle_join_abort(address, (s_network_message_join_abort*)message);
+            break;
         case _network_message_type_join_refuse:
             this->handle_join_refuse(address, (s_network_message_join_refuse*)message);
             break;
