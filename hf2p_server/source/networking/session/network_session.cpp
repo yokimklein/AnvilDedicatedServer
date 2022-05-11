@@ -139,7 +139,6 @@ e_network_join_refuse_reason c_network_session::get_closure_reason()
     return get_closure_reason(this);
 }
 
-// WIP - unfinished function calls, needing testing
 void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
     //typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO - CALL FAILS, REWRITE THIS
@@ -203,10 +202,10 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                             memset(player_config, 0, sizeof(s_player_configuration));
                             player_config->client.multiplayer_team = -1;
                             player_config->client.unknown_team = -1;
-                            s_machine_identifier* player_xuid = new s_machine_identifier;
-                            memset(player_xuid, 0, sizeof(s_machine_identifier));
+                            s_player_identifier* player_xuid = new s_player_identifier;
+                            memset(player_xuid, 0, sizeof(s_player_identifier));
                             player_config->host.player_xuid = *player_xuid;
-                            player_config->host.team = -1;
+                            player_config->host.player_team = -1;
                             player_config->host.player_assigned_team = -1;
                             this->m_session_membership.update_player_data(player_index, player_config);
                         }
@@ -214,7 +213,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                             this->get_id_string(),
                             this->get_type_string(this->m_session_type),
                             this->get_peer_description(peer_index),
-                            this->m_session_membership.m_peers[peer_index].player_mask/*bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16)*/); // TODO - wtf is bit check actually meant to do?
+                            this->m_session_membership.m_baseline.peers[peer_index].player_mask/*bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16)*/); // TODO - wtf is bit check actually meant to do?
                     }
                 }
                 else
@@ -263,12 +262,11 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         return;
     }
 
-    if (this->m_session_membership.m_peers[peer_from_address].connection_state == _network_session_peer_state_reserved)
+    if (this->m_session_membership.m_baseline.peers[peer_from_address].connection_state == _network_session_peer_state_reserved)
         this->m_session_membership.set_peer_connection_state(peer_from_address, _network_session_peer_state_connected);
     this->m_observer->observer_channel_initiate_connection((e_network_observer_owner)this->m_session_index, observer_channel_index);
 }
 
-// TEST THIS
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
     //typedef long(__cdecl* bit_check_ptr)(long mask, long index); // TODO - call fails, rewrite this
@@ -304,7 +302,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
             if (peer_index != -1)
             {
                 joining_peer_count--;
-                long peer_player_count = this->m_session_membership.m_peers[peer_index].player_mask; // bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16); // TODO - wtf is bit_check actually meant to do?
+                long peer_player_count = this->m_session_membership.m_baseline.peers[peer_index].player_mask; // bit_check(this->m_session_membership.m_peers[peer_index].player_mask, 16); // TODO - wtf is bit_check actually meant to do?
                 has_players = true;
                 joining_player_count -= peer_player_count;
             }
@@ -324,10 +322,9 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
     return refuse_reason;
 }
 
-// TEST THIS ONCE boot_peer IS IMPLEMENTED
 void c_network_session::abort_pending_join(uint64_t join_nonce)
 {
-    if (this->m_session_membership.m_peers[this->m_session_membership.m_host_peer_index].join_nonce == join_nonce)
+    if (this->m_session_membership.m_baseline.peers[this->m_session_membership.m_baseline.host_peer_index].join_nonce == join_nonce)
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] the aborted join [%s] contains the host peer, disconnecting the session\n",
             this->get_id_string(),
@@ -342,7 +339,7 @@ void c_network_session::abort_pending_join(uint64_t join_nonce)
 
         for (long i = this->m_session_membership.get_first_peer(); i != -1; i = this->m_session_membership.get_next_peer(i))
         {
-            if (this->m_session_membership.m_peers[i].join_nonce == join_nonce)
+            if (this->m_session_membership.m_baseline.peers[i].join_nonce == join_nonce)
                 this->boot_peer(i, _network_session_boot_reason_join_aborted);
         }
     }
@@ -405,7 +402,7 @@ void c_network_session::disband_peer(long peer_index)
         s_network_message_session_disband disband_message;
         memset(&disband_message, 0, sizeof(s_network_message_session_disband));
         managed_session_get_id(this->managed_session_index(), &disband_message.session_id);
-        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
+        long observer_index = this->m_session_membership.m_baseline.peer_channels[peer_index].channel_index;
         if (observer_index != -1)
         {
             auto observer = this->m_observer;
@@ -442,7 +439,7 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
         memset(&boot_message, 0, sizeof(s_network_message_session_boot));
         managed_session_get_id(this->managed_session_index(), &boot_message.session_id);
         boot_message.reason = boot_reason;
-        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
+        long observer_index = this->m_session_membership.m_baseline.peer_channels[peer_index].channel_index;
         if (observer_index != -1)
         {
             auto observer = this->m_observer;
@@ -492,13 +489,12 @@ bool c_network_session::is_peer_joining_this_session()
     return is_peer_joining_this_session(this);
 }
 
-// WIP FUNCTION
 void c_network_session::idle()
 {
     if (!this->disconnected())
     {
-        this->m_session_membership.idle();
-        if (this->established() && this->m_session_membership.all_peers_established() && !this->m_disconnection_policy)
+        this->get_session_membership()->idle();
+        if (this->established() && this->get_session_membership()->all_peers_established() && !this->m_disconnection_policy)
             this->m_disconnection_policy = 1;
         switch (this->current_local_state())
         {
@@ -525,9 +521,9 @@ void c_network_session::idle()
             this->process_pending_joins(); // MISSING FUNC TODO
         if (this->established())
         {
-            for (long i = this->m_session_membership.get_first_peer(); i != -1; i = this->m_session_membership.get_next_peer(i))
+            for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
             {
-                long observer_channel_index = this->m_session_membership.get_observer_channel_index(i);
+                long observer_channel_index = this->get_session_membership()->get_observer_channel_index(i);
                 if (observer_channel_index != -1)
                 {
                     e_network_observer_owner observer_owner = this->observer_owner();
@@ -738,7 +734,35 @@ void c_network_session::idle_observer_state()
 // FUNC TODO
 void c_network_session::check_to_send_membership_update()
 {
-    
+    for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
+    {
+        auto peer_channel = &this->get_session_membership()->m_baseline.peer_channels[i];
+        if (peer_channel->channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && !peer_channel->flags)
+        {
+            auto observer = this->m_observer;
+            auto channel_observer = &observer->m_channel_observers[peer_channel->channel_index];
+            if (observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+            {
+                if (peer_channel->expected_update_number != this->get_session_membership()->m_baseline.update_number)
+                {
+                    if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+                    {
+                        observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+                    }
+                    else
+                    {
+                        // fucky shit resides here - TODO
+
+                        this->get_session_membership()->build_membership_update(i, membership, baseline, update_message); // TODO - the rest of these args
+                        // const struct s_network_session_shared_membership *membership
+                        // const struct s_network_session_shared_membership *baseline
+                        // struct s_network_message_membership_update *message)
+
+                    }
+                }
+            }
+        }
+    }
 }
 
 long c_network_session::managed_session_index()

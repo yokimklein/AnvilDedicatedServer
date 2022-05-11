@@ -52,7 +52,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     long peer_index = session->m_session_membership.get_first_peer();
     while (peer_index != -1)
     {
-        if (join_request->join_nonce == session->m_session_membership.m_peers[peer_index].join_nonce)
+        if (join_request->join_nonce == session->m_session_membership.m_baseline.peers[peer_index].join_nonce)
         {
             printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n", transport_address_get_string(address));
             return;

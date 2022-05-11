@@ -20,7 +20,7 @@ long c_network_session_membership::get_next_peer(long peer_index)
         return -1;
     while (true)
     {
-        if (_bittest((long*)&this->m_valid_peer_mask, next_index))
+        if (_bittest((long*)&this->m_baseline.valid_peer_mask, next_index))
             break;
         if (++next_index >= k_network_maximum_machines_per_session)
             return -1;
@@ -37,7 +37,7 @@ long c_network_session_membership::get_peer_from_secure_address(s_transport_secu
 
 bool c_network_session_membership::is_peer_valid(long peer_index)
 {
-    return (m_valid_peer_mask >> peer_index) & 1;
+    return (m_baseline.valid_peer_mask >> peer_index) & 1;
 }
 
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce)
@@ -56,7 +56,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
 
 void c_network_session_membership::update_player_data(long player_index, s_player_configuration const* player_config)
 {
-    memmove(&this->m_players[player_index].configuration, player_config, sizeof(s_player_configuration));
+    memmove(&this->m_baseline.players[player_index].configuration, player_config, sizeof(s_player_configuration));
     this->increment_update();
 }
 
@@ -87,7 +87,7 @@ void c_network_session_membership::set_peer_connection_state(long peer_index, e_
 s_network_session_peer* c_network_session_membership::get_peer(long peer_index)
 {
     // TODO - assert here w/ is_peer_valid
-    return &this->m_peers[peer_index];
+    return &this->m_baseline.peers[peer_index];
 }
 
 const char* network_session_peer_state_get_string(e_network_session_peer_state state)
@@ -102,13 +102,13 @@ void c_network_session_membership::set_join_nonce(long peer_index, int64_t join_
 
 void c_network_session_membership::increment_update()
 {
-    this->m_baseline_update_number++;
-    this->m_player_configuration_version++;
+    this->m_baseline.update_number++;
+    this->m_baseline.player_configuration_version++;
 }
 
 long c_network_session_membership::get_player_count()
 {
-    return this->m_player_count;
+    return this->m_baseline.player_count;
 }
 
 void c_network_session_membership::idle()
@@ -126,7 +126,7 @@ bool c_network_session_membership::all_peers_established()
 long c_network_session_membership::get_observer_channel_index(long observer_channel_index)
 {
     // TODO ASSERTS
-    return m_peer_channels[observer_channel_index].channel_index;
+    return m_baseline.peer_channels[observer_channel_index].channel_index;
 }
 
 long c_network_session_membership::get_host_observer_channel_index()
@@ -138,22 +138,22 @@ long c_network_session_membership::get_host_observer_channel_index()
 
 long c_network_session_membership::host_peer_index()
 {
-    return this->m_host_peer_index;
+    return this->m_baseline.host_peer_index;
 }
 
 long c_network_session_membership::private_slot_count()
 {
-    return this->m_private_slot_count;
+    return this->m_baseline.private_slot_count;
 }
 
 long c_network_session_membership::public_slot_count()
 {
-    return this->m_public_slot_count;
+    return this->m_baseline.public_slot_count;
 }
 
 bool c_network_session_membership::friends_only()
 {
-    return this->m_friends_only;
+    return this->m_baseline.friends_only;
 }
 
 c_network_session* c_network_session_membership::get_session()
@@ -165,11 +165,11 @@ void c_network_session_membership::set_slot_counts(long private_slot_count, long
 {
     auto session = this->get_session();
     long managed_session_index = session->managed_session_index();
-    this->m_private_slot_count = private_slot_count;
-    this->m_public_slot_count = public_slot_count;
-    this->m_friends_only = friends_only;
+    this->m_baseline.private_slot_count = private_slot_count;
+    this->m_baseline.public_slot_count = public_slot_count;
+    this->m_baseline.friends_only = friends_only;
     if (session)
-        managed_session_modify_slot_counts(managed_session_index, private_slot_count, public_slot_count, friends_only, this->m_peer_count);
+        managed_session_modify_slot_counts(managed_session_index, private_slot_count, public_slot_count, friends_only, this->m_baseline.peer_count);
     this->increment_update();
 }
 
@@ -182,7 +182,7 @@ bool c_network_session_membership::has_peer_ever_been_established(long peer_inde
 s_network_session_peer* c_network_session_membership::get_raw_peer(long peer_index)
 {
     // same thing as get_peer w/o the asserts
-    return &this->m_peers[peer_index];
+    return &this->m_baseline.peers[peer_index];
 }
 
 e_network_session_peer_state c_network_session_membership::get_peer_connection_state(long peer_index)
@@ -224,4 +224,9 @@ void c_network_session_membership::remove_peer(long peer_index)
 
     this->increment_update();
     */
+}
+
+s_network_session_shared_membership* c_network_session_membership::get_current_membership()
+{
+    return &this->m_baseline;
 }

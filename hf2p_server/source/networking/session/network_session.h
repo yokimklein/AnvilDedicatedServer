@@ -117,7 +117,7 @@ public:
 	long : 32;
 	e_network_session_state m_local_state; // this should be + 0x1ABDA8
 	long : 32;
-	char m_local_state_data[648];
+	char m_local_state_data[0x288];
 	uint32_t m_connection_identifier;
 	uint32_t m_time_synchronization_end_time;
 	uint32_t m_time_synchronization_start_time;

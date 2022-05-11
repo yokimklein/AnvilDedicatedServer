@@ -1,6 +1,5 @@
 #include "network_message_type_collection.h"
 
-// TODO - test logic
 const char* c_network_message_type_collection::get_message_type_name(e_network_message_type message_type)
 {
     const char* message_name = "<unknown>";

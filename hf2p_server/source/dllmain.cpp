@@ -35,7 +35,7 @@ void UnprotectMemory(uintptr_t base)
 }
 
 // INIT
-static c_network_session* network_session = (c_network_session*)(module_base + 0x3970168);
+static c_network_session* network_session = (c_network_session*)(module_base + 0x3970168); // one of many sessions
 static short* g_game_port = (short*)(module_base + 0xE9B7A0);
 
 char(__thiscall* network_life_cycle_create_local_squad)(e_network_session_class session_class) = reinterpret_cast<decltype(network_life_cycle_create_local_squad)>(module_base + 0x2AD00);
@@ -99,7 +99,7 @@ long MainThread()
     
     printf("\n");
     printf("Base address: %p\n", (void*)module_base);
-    printf("c_network_session address: %p\n", network_session);
+    //printf("c_network_session address: %p\n", network_session);
     printf("Game port: %hi\n", *g_game_port);
     printf("\n");
 

@@ -42,7 +42,7 @@ struct s_player_configuration_from_client
 {
 	wchar_t player_name[16];
 	byte multiplayer_team;
-	byte unknown_team;
+	byte unknown_team; // swap with active_armor_loadout?
 	byte active_armor_loadout;
 	byte active_weapon_loadout;
 	uint32_t hopper_access_flags;
@@ -53,11 +53,24 @@ static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 
 struct s_player_configuration_from_host
 {
-	s_machine_identifier player_xuid;
+	s_player_identifier player_xuid;
 	wchar_t player_name[16];
-	long team;
+	long player_team;
 	long player_assigned_team;
-	byte data[0xB08];
+	byte unknown_data1[0x660]; // s_player_appearance
+		// what this data is: (maybe)
+	//byte gender;
+	//byte player_model;
+	//byte unknown_data1[0x324];
+	//byte unknown_data2[0x324];
+	//
+	//
+	//wchar_t service_tag[5]; // offset 0x654 from start of unknown data
+	//uint32_t unknown3;
+	//uint32_t unknown4;
+
+	byte unknown_data2[0x494]; // saber stuff?
+	byte unknown_data3[0x1C]; // size 0x24?
 };
 static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
 
@@ -79,6 +92,7 @@ struct s_player_configuration
 };
 static_assert(sizeof(s_player_configuration) == 0xB70);
 
+// this struct shrunk in later builds vs ms23
 struct s_network_session_peer_properties
 {
 	wchar_t peer_name[16];
@@ -144,6 +158,35 @@ struct s_network_session_peer_channel
 static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 
 #pragma pack(push, 4)
+struct s_network_session_shared_membership
+{
+	long update_number;
+	long leader_peer_index;
+	long host_peer_index;
+	long private_slot_count;
+	long public_slot_count;
+	bool friends_only;
+	long peer_count;
+	uint32_t valid_peer_mask;
+	s_network_session_peer peers[k_network_maximum_machines_per_session];
+	long player_count;
+	uint32_t valid_player_mask;
+	s_network_session_player players[k_network_maximum_players_per_session];
+	long player_sequence_number;
+	long : 32;
+	byte incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
+	long incremental_updates[k_network_maximum_machines_per_session];
+	long : 32;
+	long local_peer_index;
+	long player_configuration_version;
+	s_network_session_peer_channel peer_channels[k_network_maximum_machines_per_session];
+	s_player_add_queue_entry player_add_queue[4];
+	long player_add_queue_current_index;
+	long player_add_queue_count;
+	__int32 : 32;
+};
+static_assert(sizeof(s_network_session_shared_membership) == 0xE1C68);
+
 class c_network_session;
 class c_network_session_membership
 {
@@ -175,33 +218,12 @@ public:
 	s_network_session_peer* get_raw_peer(long peer_index);
 	e_network_session_peer_state get_peer_connection_state(long peer_index);
 	void remove_peer(long peer_index);
+	s_network_session_shared_membership* get_current_membership();
 
 	c_network_session* m_session;
 	long : 32;
-	long m_baseline_update_number;
-	long m_leader_peer_index;
-	long m_host_peer_index;
-	long m_private_slot_count;
-	long m_public_slot_count;
-	bool m_friends_only;
-	long m_peer_count;
-	uint32_t m_valid_peer_mask;
-	s_network_session_peer m_peers[k_network_maximum_machines_per_session];
-	long m_player_count;
-	uint32_t m_valid_player_mask;
-	s_network_session_player m_players[k_network_maximum_players_per_session];
-	long m_player_sequence_number;
-	long : 32;
-	byte m_incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
-	long m_incremental_updates[k_network_maximum_machines_per_session];
-	long : 32;
-	long m_local_peer_index;
-	long m_player_configuration_version;
-	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session];
-	s_player_add_queue_entry m_player_add_queue[4];
-	long m_player_add_queue_current_index;
-	long m_player_add_queue_count;
-	__int32 : 32;
+	s_network_session_shared_membership m_baseline;
+	// s_network_session_shared_membership m_transmitted; // in debug builds only
 };
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
 #pragma pack(pop)

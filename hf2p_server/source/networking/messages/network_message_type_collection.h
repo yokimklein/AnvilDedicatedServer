@@ -244,11 +244,97 @@ struct s_network_message_time_synchronize : s_network_message
 };
 //static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
 
-struct s_network_message_membership_update : s_network_message
+struct s_network_message_membership_update_player
+{
+	uint32_t player_index;
+	uint32_t update_type;
+	bool player_location_updated;
+	uint64_t identifier;
+	uint16_t peer_index;
+	uint16_t peer_user_index;
+	bool player_occupies_a_public_slot;
+	uint32_t player_update_number;
+	uint32_t controller_index;
+	s_player_configuration configuration;
+	uint32_t player_voice;
+};
+static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
+
+struct s_network_message_membership_update_peer_properties
+{
+	bool peer_name_updated;
+	wchar_t peer_name[16]; // offset 60? code uses 58
+	wchar_t peer_session_name[32]; // offset 92? code uses 90
+	uint32_t game_start_error;
+	bool peer_map_id_updated;
+	uint32_t peer_map_id;
+	bool peer_map_updated;
+	uint32_t peer_map_status; // 0-4
+	uint32_t peer_map_progress_percentage; // 0-100
+	bool peer_game_instance_exists;
+	uint64_t peer_game_instance;
+	bool available_multiplayer_map_mask_updated;
+	uint32_t available_multiplayer_map_mask;
+	bool peer_connection_updated;
+	uint32_t connectivity_badness_rating;
+	uint32_t host_badness_rating;
+	uint32_t client_badness_rating;
+	uint32_t nat_type; // or language? probably not
+	uint16_t peer_connectivity_mask;
+	uint16_t peer_probe_mask;
+	uint32_t peer_latency_min;
+	uint32_t peer_latency_est;
+	uint32_t peer_latency_max;
+	bool versions_updated;
+	uint32_t determinism_version;
+	uint32_t determinism_compatible_version;
+	bool flags_updated;
+	uint32_t flags;
+};
+static_assert(sizeof(s_network_message_membership_update_peer_properties) == 0xC8);
+
+struct s_network_message_membership_update_peer
+{
+	uint32_t peer_index;
+	uint32_t peer_update_type;
+	uint32_t peer_connection_state;
+	bool peer_info_updated;
+	s_transport_secure_address peer_address;
+	uint64_t peer_party_nonce;
+	uint64_t peer_join_nonce;
+	uint32_t network_version_number;
+	uint32_t peer_creation_timestamp;
+	bool peer_properties_updated;
+	uint32_t unknown; // weird gap in struct here, what is this?
+	s_network_message_membership_update_peer_properties peer_properties_update;
+};
+static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
+
+struct s_network_message_membership_update : s_network_message // this is actually a class?
 {
 	s_transport_secure_identifier session_id;
-	char __data[10712];
+	uint32_t update_number;
+	uint32_t incremental_update_number;
+	uint32_t baseline_checksum;
+	uint16_t peer_count; // max 34?
+	uint16_t player_count; // max 32?
+	s_network_message_membership_update_peer peer_update[k_network_maximum_machines_per_session];
+	s_network_message_membership_update_player player_update[k_network_maximum_players_per_session];
+	bool player_addition_number_updated;
+	uint32_t player_addition_number;
+	bool leader_updated;
+	uint32_t leader_peer_index;
+	bool host_updated;
+	uint32_t host_peer_index;
+	bool slot_counts_updated;
+	uint32_t private_slot_count;
+	uint32_t public_slot_count;
+	byte friends_only;
+	byte are_slots_locked;
+	byte padding[2];
+	uint32_t checksum;
 };
+static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
 
 struct s_network_message_peer_properties : s_network_message
 {
