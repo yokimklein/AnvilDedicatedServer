@@ -103,7 +103,7 @@ void c_network_session_membership::set_join_nonce(long peer_index, int64_t join_
 void c_network_session_membership::increment_update()
 {
     this->m_baseline.update_number++;
-    this->m_baseline.player_configuration_version++;
+    this->m_player_configuration_version++;
 }
 
 long c_network_session_membership::get_player_count()
@@ -126,7 +126,7 @@ bool c_network_session_membership::all_peers_established()
 long c_network_session_membership::get_observer_channel_index(long observer_channel_index)
 {
     // TODO ASSERTS
-    return m_baseline.peer_channels[observer_channel_index].channel_index;
+    return this->m_peer_channels[observer_channel_index].channel_index;
 }
 
 long c_network_session_membership::get_host_observer_channel_index()
@@ -229,4 +229,15 @@ void c_network_session_membership::remove_peer(long peer_index)
 s_network_session_shared_membership* c_network_session_membership::get_current_membership()
 {
     return &this->m_baseline;
+}
+
+s_network_session_shared_membership* c_network_session_membership::get_transmitted_membership(long peer_index)
+{
+    return &this->m_transmitted_shared_network_membership[peer_index];
+}
+
+void c_network_session_membership::set_membership_update_number(long peer_index, long update_number)
+{
+    // TODO - is_peer_valid assert
+    this->m_transmitted_shared_network_membership[peer_index].update_number = update_number;
 }

@@ -144,6 +144,12 @@
     <ClInclude Include="source\networking\transport\transport_shim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\player_appearance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\player_configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -276,6 +282,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\transport\transport_shim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\player_appearance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\player_configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

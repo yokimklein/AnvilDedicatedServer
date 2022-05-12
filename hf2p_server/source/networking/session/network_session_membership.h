@@ -4,6 +4,7 @@
 #include "..\transport\transport_address.h"
 #include "..\..\game\players.h"
 #include "..\..\simulation\simulation.h"
+#include "..\..\game\player_configuration.h"
 
 enum e_peer_map_status : long
 {
@@ -38,42 +39,6 @@ static const char* network_session_peer_states[k_network_session_peer_state_coun
 };
 const char* network_session_peer_state_get_string(e_network_session_peer_state state);
 
-struct s_player_configuration_from_client
-{
-	wchar_t player_name[16];
-	byte multiplayer_team;
-	byte unknown_team; // swap with active_armor_loadout?
-	byte active_armor_loadout;
-	byte active_weapon_loadout;
-	uint32_t hopper_access_flags;
-	uint32_t cheating_flags;
-	uint32_t user_experience_flags;
-};
-static_assert(sizeof(s_player_configuration_from_client) == 0x30);
-
-struct s_player_configuration_from_host
-{
-	s_player_identifier player_xuid;
-	wchar_t player_name[16];
-	long player_team;
-	long player_assigned_team;
-	byte unknown_data1[0x660]; // s_player_appearance
-		// what this data is: (maybe)
-	//byte gender;
-	//byte player_model;
-	//byte unknown_data1[0x324];
-	//byte unknown_data2[0x324];
-	//
-	//
-	//wchar_t service_tag[5]; // offset 0x654 from start of unknown data
-	//uint32_t unknown3;
-	//uint32_t unknown4;
-
-	byte unknown_data2[0x494]; // saber stuff?
-	byte unknown_data3[0x1C]; // size 0x24?
-};
-static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
-
 struct s_player_add_queue_entry
 {
 	s_player_identifier player_identifier;
@@ -84,13 +49,6 @@ struct s_player_add_queue_entry
 	uint32_t voice_settings;
 };
 static_assert(sizeof(s_player_add_queue_entry) == 0x48);
-
-struct s_player_configuration
-{
-	s_player_configuration_from_client client;
-	s_player_configuration_from_host host;
-};
-static_assert(sizeof(s_player_configuration) == 0xB70);
 
 // this struct shrunk in later builds vs ms23
 struct s_network_session_peer_properties
@@ -153,7 +111,7 @@ struct s_network_session_peer_channel
 {
 	uint32_t flags;
 	long channel_index;
-	uint32_t expected_update_number;
+	uint32_t expected_update_number; // membership_update_number?
 };
 static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 
@@ -174,18 +132,8 @@ struct s_network_session_shared_membership
 	s_network_session_player players[k_network_maximum_players_per_session];
 	long player_sequence_number;
 	long : 32;
-	byte incremental_update_buffers[k_network_maximum_machines_per_session][0xC890];
-	long incremental_updates[k_network_maximum_machines_per_session];
-	long : 32;
-	long local_peer_index;
-	long player_configuration_version;
-	s_network_session_peer_channel peer_channels[k_network_maximum_machines_per_session];
-	s_player_add_queue_entry player_add_queue[4];
-	long player_add_queue_current_index;
-	long player_add_queue_count;
-	__int32 : 32;
 };
-static_assert(sizeof(s_network_session_shared_membership) == 0xE1C68);
+static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
 
 class c_network_session;
 class c_network_session_membership
@@ -219,11 +167,22 @@ public:
 	e_network_session_peer_state get_peer_connection_state(long peer_index);
 	void remove_peer(long peer_index);
 	s_network_session_shared_membership* get_current_membership();
+	s_network_session_shared_membership* get_transmitted_membership(long peer_index);
+	void set_membership_update_number(long peer_index, long update_number);
 
 	c_network_session* m_session;
-	long : 32;
+	long unknown1;
 	s_network_session_shared_membership m_baseline;
-	// s_network_session_shared_membership m_transmitted; // in debug builds only
+	s_network_session_shared_membership m_transmitted_shared_network_membership[k_network_maximum_machines_per_session];
+	long m_incremental_update_numbers[k_network_maximum_machines_per_session]; // real name?
+	long unknown2;
+	long m_local_peer_index;
+	long m_player_configuration_version;
+	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session]; // local_peer?
+	s_player_add_queue_entry m_player_add_queue[4];
+	long m_player_add_queue_current_index;
+	long m_player_add_queue_count;
+	long unknown3;
 };
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
 #pragma pack(pop)

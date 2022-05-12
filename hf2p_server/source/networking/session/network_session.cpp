@@ -402,7 +402,7 @@ void c_network_session::disband_peer(long peer_index)
         s_network_message_session_disband disband_message;
         memset(&disband_message, 0, sizeof(s_network_message_session_disband));
         managed_session_get_id(this->managed_session_index(), &disband_message.session_id);
-        long observer_index = this->m_session_membership.m_baseline.peer_channels[peer_index].channel_index;
+        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
         if (observer_index != -1)
         {
             auto observer = this->m_observer;
@@ -439,7 +439,7 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
         memset(&boot_message, 0, sizeof(s_network_message_session_boot));
         managed_session_get_id(this->managed_session_index(), &boot_message.session_id);
         boot_message.reason = boot_reason;
-        long observer_index = this->m_session_membership.m_baseline.peer_channels[peer_index].channel_index;
+        long observer_index = this->m_session_membership.m_peer_channels[peer_index].channel_index;
         if (observer_index != -1)
         {
             auto observer = this->m_observer;
@@ -736,7 +736,7 @@ void c_network_session::check_to_send_membership_update()
 {
     for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
     {
-        auto peer_channel = &this->get_session_membership()->m_baseline.peer_channels[i];
+        auto peer_channel = &this->get_session_membership()->m_peer_channels[i];
         if (peer_channel->channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && !peer_channel->flags)
         {
             auto observer = this->m_observer;
@@ -751,13 +751,79 @@ void c_network_session::check_to_send_membership_update()
                     }
                     else
                     {
-                        // fucky shit resides here - TODO
+                        s_network_session_shared_membership shared_membership{};
+                        // this is meant to be a constructor but I don't understand how those work in c++ yet lol
+                        for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+                            shared_membership.peers[j].properties.flags = 0;
+                        for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+                        {
+                            memset(&shared_membership.players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+                            memset(&shared_membership.players[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+                            memset(&shared_membership.players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+                            shared_membership.players[j].configuration.host.player_assigned_team = -1;
+                            shared_membership.players[j].configuration.host.player_team = -1;
+                        }
+                        // end of s_network_session_shared_membership constructor
 
-                        this->get_session_membership()->build_membership_update(i, membership, baseline, update_message); // TODO - the rest of these args
-                        // const struct s_network_session_shared_membership *membership
-                        // const struct s_network_session_shared_membership *baseline
-                        // struct s_network_message_membership_update *message)
+                        memmove(&shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
 
+                        // TODO - that one fucky part of the function i don't understand
+
+                        s_network_message_membership_update membership_update_message{};
+                        // this is meant to be a constructor but I don't understand how those work in c++ yet lol
+                        for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+                            membership_update_message.peer_update[j].peer_properties_update.flags = 0;
+                        for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+                        {
+                            memset(&membership_update_message.player_update[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+                            memset(&membership_update_message.player_update[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+                            memset(&membership_update_message.player_update[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+                            membership_update_message.player_update[j].configuration.host.player_assigned_team = -1;
+                            membership_update_message.player_update[j].configuration.host.player_team = -1;
+                        }
+                        // end of s_network_message_membership_update constructor
+                        bool send_complete_update = false;
+                        auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(i);
+                        if (peer_channel->expected_update_number == -1 || peer_channel->expected_update_number != transmitted_membership->update_number)
+                        {
+                            send_complete_update = true;
+                            transmitted_membership = nullptr;
+                        }
+                        this->get_session_membership()->build_membership_update(i, shared_membership, transmitted_membership, membership_update_message); // TODO - the rest of these args
+                        if (send_complete_update)
+                        {
+                            printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending complete update #-1->[#%d] to peer [#%d]\n",
+                                this->get_id_string(),
+                                this->get_session_membership()->get_current_membership()->update_number,
+                                i);
+                        }
+                        else
+                        {
+                            printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending incremental update [#%d]->[#%d] to peer [#%d]\n",
+                                this->get_id_string(),
+                                peer_channel->expected_update_number,
+                                this->get_session_membership()->get_current_membership()->update_number,
+                                i);
+                        }
+                        if (this->m_observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+                        {
+                            if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+                            {
+                                observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+                            }
+                            else
+                            {
+                                long update_number = this->get_session_membership()->get_current_membership()->update_number;
+                                this->get_session_membership()->set_membership_update_number(i, update_number);
+                                long observer_index = this->get_session_membership()->get_observer_channel_index(i);
+                                if (observer_index != -1)
+                                {
+                                    // send_message_to_peer
+                                    observer->observer_channel_send_message(this->observer_owner(), observer_index, false, _network_message_type_membership_update, sizeof(s_network_message_membership_update), &membership_update_message);
+                                }
+                            }
+                        }
+                        // TODO - checksum function call
                     }
                 }
             }

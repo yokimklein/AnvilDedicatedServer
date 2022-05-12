@@ -253,6 +253,7 @@ struct s_network_message_membership_update_player
 	uint16_t peer_index;
 	uint16_t peer_user_index;
 	bool player_occupies_a_public_slot;
+	bool player_properties_updated;
 	uint32_t player_update_number;
 	uint32_t controller_index;
 	s_player_configuration configuration;
@@ -279,7 +280,7 @@ struct s_network_message_membership_update_peer_properties
 	uint32_t connectivity_badness_rating;
 	uint32_t host_badness_rating;
 	uint32_t client_badness_rating;
-	uint32_t nat_type; // or language? probably not
+	uint32_t language; // or nat_type? probably not
 	uint16_t peer_connectivity_mask;
 	uint16_t peer_probe_mask;
 	uint32_t peer_latency_min;
@@ -329,9 +330,8 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	bool slot_counts_updated;
 	uint32_t private_slot_count;
 	uint32_t public_slot_count;
-	byte friends_only;
-	byte are_slots_locked;
-	byte padding[2];
+	bool friends_only;
+	bool are_slots_locked;
 	uint32_t checksum;
 };
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
