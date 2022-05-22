@@ -12,6 +12,8 @@
 #include "networking\session\network_managed_session.h"
 #include "networking\transport\transport_shim.h"
 #include "networking\messages\network_message_gateway.h"
+#include "networking\session\network_session_manager.h"
+#include "networking\logic\network_session_interface.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -34,10 +36,10 @@ void UnprotectMemory(uintptr_t base)
     printf("Done! Unprotected %u bytes of memory\n", Total);
 }
 
-// INIT
+// GLOBALS
 static c_network_session* network_session = (c_network_session*)(module_base + 0x3970168); // one of many sessions
 static short* g_game_port = (short*)(module_base + 0xE9B7A0);
-
+// FUNCTIONS - TODO: sort these into their proper file locations
 char(__thiscall* network_life_cycle_create_local_squad)(e_network_session_class session_class) = reinterpret_cast<decltype(network_life_cycle_create_local_squad)>(module_base + 0x2AD00);
 void(__thiscall* game_variant_ctor)(c_game_variant* variant) = reinterpret_cast<decltype(game_variant_ctor)>(module_base + 0xC3460);
 void(__fastcall* build_default_game_variant)(c_game_variant* out_variant, long game_engine_type) = reinterpret_cast<decltype(build_default_game_variant)>(module_base + 0xE9BE0);
@@ -50,12 +52,30 @@ char(__thiscall* user_interface_squad_set_multiplayer_map)(c_map_variant* map_va
 //char(__cdecl* network_squad_session_set_map_variant)(c_map_variant* map_variant) = reinterpret_cast<decltype(network_squad_session_set_map_variant)>(module_base + 0x95BC60);
 char(__thiscall* c_network_session_parameter_session_mode__set)(c_network_session_parameters* session_parameters, e_network_session_mode session_mode) = reinterpret_cast<decltype(c_network_session_parameter_session_mode__set)>(module_base + 0x2D820);
 bool(__fastcall* hf2p_setup_session)() = reinterpret_cast<decltype(hf2p_setup_session)>(module_base + 0x3AAF10);
+void(__fastcall* user_interface_set_desired_multiplayer_mode)(e_desired_multiplayer_mode multiplayer_mode) = reinterpret_cast<decltype(user_interface_set_desired_multiplayer_mode)>(module_base + 0x3AA7D0);
+bool(__thiscall* c_network_session_parameter_ui_game_mode__request_change)(c_network_session_parameter_ui_game_mode* parameter, e_gui_game_mode gui_gamemode) = reinterpret_cast<decltype(c_network_session_parameter_ui_game_mode__request_change)>(module_base + 0x3B4D0);
+void(__fastcall* network_life_cycle_end)() = reinterpret_cast<decltype(network_life_cycle_end)>(module_base + 0x2AC20);
 
+// HOOK FUNCTIONS
+// add back missing message handlers
+void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unknown, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
+{
+    message_handler->handle_out_of_band_message(address, message_type, message_storage_size, message);
+}
+
+// add back missing message handlers
+void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
+{
+    message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
+}
+
+// create online squad when calling hf2p_setup_session
 bool __fastcall create_local_online_squad(e_network_session_class ignore) // may have thiscall for life cycle
 {
     return network_life_cycle_create_local_squad(_network_session_class_online);
 }
 
+// print to console whenever a message packet is sent
 void __stdcall send_message_hook(void* stream, e_network_message_type message_type, long message_storage_size)
 {
     void(__stdcall * send_message)(void* stream, e_network_message_type message_type, long message_storage_size) = reinterpret_cast<decltype(send_message)>(module_base + 0x387A0);
@@ -64,9 +84,24 @@ void __stdcall send_message_hook(void* stream, e_network_message_type message_ty
     return send_message(stream, message_type, message_storage_size);
 }
 
+// add back missing host code, process_pending_joins & check_to_send_membership_update
 void __fastcall session_idle_hook(c_network_session* session)
 {
     session->idle();
+}
+
+// I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
+// add back set_peer_address & set_peer_properties to peer_request_properties_update
+void __fastcall network_session_update_peer_properties_hook(c_network_session* session, s_network_session_peer* peer)
+{
+    network_session_update_peer_properties(session, peer);
+}
+
+// add debug print back to before life cycle end is called in c_gui_location_manager::update
+void __fastcall network_life_cycle_end_hook()
+{
+    printf("Resetting network location.  If you got here and didn't just issue a console command, this is a bug.\n");
+    network_life_cycle_end();
 }
 
 long MainThread()
@@ -80,16 +115,17 @@ long MainThread()
     printf("\n");
 
     //=== HOOKS ===//
-    // replace existing functions with missing code
+    // add back missing host code by replacing existing stripped down functions
     Hook(0x25110, handle_out_of_band_message_hook).Apply();
     Hook(0x252F0, handle_channel_message_hook).Apply();
     Hook(0x2A580, network_join_process_joins_from_queue).Apply();
+    Hook(0x21AB0, session_idle_hook).Apply();
+    Hook(0x2F48E, network_session_update_peer_properties_hook, HookFlags::IsCall).Apply();
+    Hook(0x3EEE1F, network_life_cycle_end_hook, HookFlags::IsCall).Apply();
     // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
-    // add back missing join processing functions & misc host tasks
-    Hook(0x21AB0, session_idle_hook).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 
@@ -99,17 +135,34 @@ long MainThread()
     
     printf("\n");
     printf("Base address: %p\n", (void*)module_base);
-    //printf("c_network_session address: %p\n", network_session);
     printf("Game port: %hi\n", *g_game_port);
     printf("\n");
 
+    e_session_game_start_status previous_start_status = _start_status_none;
+    e_session_game_start_error previous_start_error = _start_error_none;
+
     while (true)
     {
+        // IF the life cycle session exists, print the it's status and error whenever they update
+        if (network_session->current_local_state() != _network_session_state_none)
+        {
+            e_session_game_start_status start_status = network_session->get_session_parameters()->game_start_status.m_data.game_start_status;
+            e_session_game_start_error start_error = network_session->get_session_parameters()->game_start_status.m_data.game_start_error;
+
+            if (start_status != previous_start_status || start_error != previous_start_error)
+                printf("start status updated: %s (error: %s)\n", multiplayer_game_start_status_to_string(start_status), multiplayer_game_start_error_to_string(start_error));
+
+            previous_start_status = start_status;
+            previous_start_error = start_error;
+        }
+
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP - create session
         {
             // SESSION DETAILS
             auto map_id = _s3d_turf;
             auto engine_variant = _engine_variant_slayer;
+            auto multiplayer_mode = _desired_multiplayer_mode_custom_games;
+            auto gui_gamemode = _gui_game_mode_multiplayer;
 
             // CREATE SESSION
             std::cout << "Setting up session...\n";
@@ -117,6 +170,16 @@ long MainThread()
                 std::cout << "Session created!\n";
             else
                 std::cout << "Session creation failed!\n";
+
+            // SET START MODE
+            user_interface_set_desired_multiplayer_mode(multiplayer_mode);
+            std::cout << "Multiplayer mode set\n";
+
+            // SET UI MODE
+            if (c_network_session_parameter_ui_game_mode__request_change(&network_session->get_session_parameters()->ui_game_mode, gui_gamemode))
+                std::cout << "UI game mode set\n";
+            else
+                std::cout << "Failed to set UI game mode!\n";
 
             // SET GAME VARIANT
             c_game_variant game_variant;
@@ -154,9 +217,9 @@ long MainThread()
             else
                 printf("Failed to get secure identifier\n");
             // GET SECURE ADDRESS
-            GUID server_secure_address;
             LPOLESTR secure_address_str;
-            if (transport_secure_address_get(&server_secure_address) && (StringFromCLSID(server_secure_address, &secure_address_str) == S_OK))
+            s_transport_secure_address* server_secure_address = (s_transport_secure_address*)(module_base + 0x4EBE9D2);
+            if (/*transport_secure_address_get(server_secure_address) && */(StringFromCLSID(*(GUID*)server_secure_address, &secure_address_str) == S_OK))
                 printf("Secure address: %ls\n\n", secure_address_str);
             else
                 printf("Failed to get secure address\n\n");
@@ -166,6 +229,12 @@ long MainThread()
             printf("Launching session...\n");
             c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_setup);
         }
+        //else if (GetKeyState(VK_HOME) & 0x8000) // HOME - debug breakpoint
+        //{
+        //    printf("Breaking...\n");
+        //    c_network_session* sessions = *network_session->m_session_manager->session;
+        //    printf("Finished.\n");
+        //}
         Sleep(100);
     }
 

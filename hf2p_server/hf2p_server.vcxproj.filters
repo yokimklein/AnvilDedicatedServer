@@ -150,6 +150,9 @@
     <ClInclude Include="source\game\player_configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\logic\network_session_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -288,6 +291,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\player_configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\logic\network_session_interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -731,104 +731,114 @@ void c_network_session::idle_observer_state()
     idle_observer_state(this);
 }
 
-// FUNC TODO
+// WIP FUNC - TODO TEST THIS
 void c_network_session::check_to_send_membership_update()
 {
-    for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
-    {
-        auto peer_channel = &this->get_session_membership()->m_peer_channels[i];
-        if (peer_channel->channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && !peer_channel->flags)
-        {
-            auto observer = this->m_observer;
-            auto channel_observer = &observer->m_channel_observers[peer_channel->channel_index];
-            if (observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
-            {
-                if (peer_channel->expected_update_number != this->get_session_membership()->m_baseline.update_number)
-                {
-                    if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
-                    {
-                        observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
-                    }
-                    else
-                    {
-                        s_network_session_shared_membership shared_membership{};
-                        // this is meant to be a constructor but I don't understand how those work in c++ yet lol
-                        for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
-                            shared_membership.peers[j].properties.flags = 0;
-                        for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
-                        {
-                            memset(&shared_membership.players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-                            memset(&shared_membership.players[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
-                            memset(&shared_membership.players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
-                            shared_membership.players[j].configuration.host.player_assigned_team = -1;
-                            shared_membership.players[j].configuration.host.player_team = -1;
-                        }
-                        // end of s_network_session_shared_membership constructor
-
-                        memmove(&shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
-
-                        // TODO - that one fucky part of the function i don't understand
-
-                        s_network_message_membership_update membership_update_message{};
-                        // this is meant to be a constructor but I don't understand how those work in c++ yet lol
-                        for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
-                            membership_update_message.peer_update[j].peer_properties_update.flags = 0;
-                        for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
-                        {
-                            memset(&membership_update_message.player_update[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-                            memset(&membership_update_message.player_update[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
-                            memset(&membership_update_message.player_update[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
-                            membership_update_message.player_update[j].configuration.host.player_assigned_team = -1;
-                            membership_update_message.player_update[j].configuration.host.player_team = -1;
-                        }
-                        // end of s_network_message_membership_update constructor
-                        bool send_complete_update = false;
-                        auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(i);
-                        if (peer_channel->expected_update_number == -1 || peer_channel->expected_update_number != transmitted_membership->update_number)
-                        {
-                            send_complete_update = true;
-                            transmitted_membership = nullptr;
-                        }
-                        this->get_session_membership()->build_membership_update(i, shared_membership, transmitted_membership, membership_update_message); // TODO - the rest of these args
-                        if (send_complete_update)
-                        {
-                            printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending complete update #-1->[#%d] to peer [#%d]\n",
-                                this->get_id_string(),
-                                this->get_session_membership()->get_current_membership()->update_number,
-                                i);
-                        }
-                        else
-                        {
-                            printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending incremental update [#%d]->[#%d] to peer [#%d]\n",
-                                this->get_id_string(),
-                                peer_channel->expected_update_number,
-                                this->get_session_membership()->get_current_membership()->update_number,
-                                i);
-                        }
-                        if (this->m_observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
-                        {
-                            if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
-                            {
-                                observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
-                            }
-                            else
-                            {
-                                long update_number = this->get_session_membership()->get_current_membership()->update_number;
-                                this->get_session_membership()->set_membership_update_number(i, update_number);
-                                long observer_index = this->get_session_membership()->get_observer_channel_index(i);
-                                if (observer_index != -1)
-                                {
-                                    // send_message_to_peer
-                                    observer->observer_channel_send_message(this->observer_owner(), observer_index, false, _network_message_type_membership_update, sizeof(s_network_message_membership_update), &membership_update_message);
-                                }
-                            }
-                        }
-                        // TODO - checksum function call
-                    }
-                }
-            }
-        }
-    }
+    //for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
+    //{
+    //    auto peer_channel = &this->get_session_membership()->m_peer_channels[i];
+    //    if (peer_channel->channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && !peer_channel->flags)
+    //    {
+    //        auto observer = this->m_observer;
+    //        auto channel_observer = &observer->m_channel_observers[peer_channel->channel_index];
+    //        if (observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+    //        {
+    //            if (peer_channel->expected_update_number != this->get_session_membership()->m_baseline.update_number)
+    //            {
+    //                if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+    //                {
+    //                    observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+    //                }
+    //                else
+    //                {
+    //                    s_network_session_shared_membership shared_membership{};
+    //                    // this is meant to be a constructor but I don't understand how those work in c++ yet lol
+    //                    for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+    //                        shared_membership.peers[j].properties.flags = 0;
+    //                    for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+    //                    {
+    //                        memset(&shared_membership.players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+    //                        memset(&shared_membership.players[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+    //                        memset(&shared_membership.players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+    //                        shared_membership.players[j].configuration.host.player_assigned_team = -1;
+    //                        shared_membership.players[j].configuration.host.player_team = -1;
+    //                    }
+    //                    // end of s_network_session_shared_membership constructor
+    //                    memmove(&shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
+    //                    shared_membership.leader_peer_index = shared_membership.host_peer_index;
+    //                    shared_membership.peer_count = 2; // 1 for the host, 1 for the client. we don't sync other peers to clients
+    //                    shared_membership.valid_peer_mask = 0;
+    //                    // TODO - fucky peer mask stuff here
+    //                    for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+    //                    {
+    //                        if (/*TODO - is this is_peer_valid? some peer mask check here*/)
+    //                            memset(&shared_membership.peers[j], 0, sizeof(s_network_session_peer));
+    //                    }
+    //                    for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+    //                    {
+    //                        // TODO - player mask stuff here?
+    //                    }
+    //
+    //                    s_network_message_membership_update membership_update_message{};
+    //                    // this is meant to be a constructor but I don't understand how those work in c++ yet lol
+    //                    for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+    //                        membership_update_message.peer_updates[j].peer_properties_update.flags = 0;
+    //                    for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+    //                    {
+    //                        memset(&membership_update_message.player_updates[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+    //                        memset(&membership_update_message.player_updates[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+    //                        memset(&membership_update_message.player_updates[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+    //                        membership_update_message.player_updates[j].configuration.host.player_assigned_team = -1;
+    //                        membership_update_message.player_updates[j].configuration.host.player_team = -1;
+    //                    }
+    //                    // end of s_network_message_membership_update constructor
+    //                    bool send_complete_update = false;
+    //                    auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(i);
+    //                    if (peer_channel->expected_update_number == -1 || peer_channel->expected_update_number != transmitted_membership->update_number)
+    //                    {
+    //                        send_complete_update = true;
+    //                        transmitted_membership = nullptr;
+    //                    }
+    //                    this->get_session_membership()->build_membership_update(i, &shared_membership, transmitted_membership, &membership_update_message);
+    //                    if (send_complete_update)
+    //                    {
+    //                        printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending complete update #-1->[#%d] to peer [#%d]\n",
+    //                            this->get_id_string(),
+    //                            this->get_session_membership()->get_current_membership()->update_number,
+    //                            i);
+    //                    }
+    //                    else
+    //                    {
+    //                        printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending incremental update [#%d]->[#%d] to peer [#%d]\n",
+    //                            this->get_id_string(),
+    //                            peer_channel->expected_update_number,
+    //                            this->get_session_membership()->get_current_membership()->update_number,
+    //                            i);
+    //                    }
+    //                    if (this->m_observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+    //                    {
+    //                        if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+    //                        {
+    //                            observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+    //                        }
+    //                        else
+    //                        {
+    //                            long update_number = this->get_session_membership()->get_current_membership()->update_number;
+    //                            this->get_session_membership()->set_membership_update_number(i, update_number);
+    //                            long observer_index = this->get_session_membership()->get_observer_channel_index(i);
+    //                            if (observer_index != -1)
+    //                            {
+    //                                // send_message_to_peer
+    //                                observer->observer_channel_send_message(this->observer_owner(), observer_index, false, _network_message_type_membership_update, sizeof(s_network_message_membership_update), &membership_update_message);
+    //                            }
+    //                        }
+    //                    }
+    //                    // TODO - checksum function call
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 long c_network_session::managed_session_index()
@@ -849,4 +859,45 @@ bool c_network_session::join_abort(s_transport_address const* incoming_address, 
 c_network_session_parameters* c_network_session::get_session_parameters()
 {
     return &this->m_session_parameters;
+}
+
+// FUNC TODO
+bool c_network_session::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
+{
+    return false;
+}
+
+bool c_network_session::peer_request_properties_update(s_transport_secure_address const* secure_address, s_network_session_peer_properties const* peer_properties)
+{
+    if (this->established())
+    {
+        if (this->is_host())
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::peer_request_properties_update: [%s] applying peer-properties locally\n", this->get_id_string());
+            this->get_session_membership()->set_peer_address(this->get_session_membership()->m_local_peer_index, secure_address); // c_network_session_membership::local_peer_index
+            this->get_session_membership()->set_peer_properties(this->get_session_membership()->m_local_peer_index, peer_properties); // c_network_session_membership::local_peer_index
+        }
+        else
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::peer_request_properties_update: [%s] sending peer-properties request\n", this->get_id_string());
+            s_network_message_peer_properties message;
+            memset(&message, 0, sizeof(s_network_message_peer_properties));
+            managed_session_get_id(this->managed_session_index(), &message.session_id);
+            message.secure_address = *secure_address;
+            memcpy(&message.peer_properties, peer_properties, sizeof(s_network_session_peer_properties));
+            long channel_index = this->get_session_membership()->m_peer_channels[this->get_session_membership()->m_baseline.host_peer_index].channel_index;
+            if (channel_index != -1)
+                this->m_observer->observer_channel_send_message(this->m_session_index, channel_index, false, _network_message_type_peer_properties, sizeof(s_network_message_peer_properties), &message);
+        }
+        return true;
+    }
+    return false;
+}
+
+c_network_session_membership* c_network_session::get_session_membership_unsafe()
+{
+    if (this->current_local_state() == _network_session_state_none || this->get_session_membership()->get_current_membership()->update_number == -1)
+        return nullptr;
+    else
+        return this->get_session_membership();
 }

@@ -57,6 +57,7 @@ class c_network_observer
 		bool observer_channel_connected(e_network_observer_owner owner_type, long observer_index);
 		bool observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
 		void observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
+		void quality_statistics_get_ratings(uint32_t* connectivity_badness_rating, uint32_t* host_badness_rating, uint32_t* client_badness_rating);
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;

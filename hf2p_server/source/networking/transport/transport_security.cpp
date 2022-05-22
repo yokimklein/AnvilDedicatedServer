@@ -2,33 +2,43 @@
 #include "transport_security.h"
 #include "..\..\dllmain.h"
 
-long transport_secure_address_get(GUID* transport_secure_address)
+long transport_secure_address_get(s_transport_secure_address* secure_address)
 {
-    byte* unknown_struct = (byte*)(module_base + 0x4EBE8F4);
-
-    if (unknown_struct[221] && transport_secure_address)
+    if (secure_address) // why check the pointer?
     {
-        // i fucking hate pointers
-        memcpy(&transport_secure_address->Data1, &unknown_struct[222], 4);
-        memcpy(&transport_secure_address->Data2, &unknown_struct[222 + 4], 2);
-        memcpy(&transport_secure_address->Data3, &unknown_struct[222 + 6], 2);
-        memcpy(&transport_secure_address->Data4, &unknown_struct[222 + 8], 8);
+        s_transport_secure_address* unknown_secure_address = (s_transport_secure_address*)(module_base + 0x4EBE9D2);
+        memcpy(secure_address, unknown_secure_address, sizeof(s_transport_secure_address));
     }
-    else
-        return 0;
-    return 1;
+    return *(long*)(module_base + 0x4EBE9D1);
 }
 
 // FUNC TODO
-const char* transport_secure_nonce_get_string(const uint64_t* secure_nonce)
+const char* transport_secure_nonce_get_string(uint64_t const* secure_nonce)
 {
     const char* secure_nonce_string = "00000000-00000000";
     return secure_nonce_string;
 }
 
 // FUNC TODO
-const char* transport_secure_address_get_string(const s_transport_secure_address* secure_address)
+const char* transport_secure_address_get_string(s_transport_secure_address const* secure_address)
 {
     const char* secure_address_string = "00000000-00000-0000-0000-000000000000";
     return secure_address_string;
+}
+
+// FUNC TODO
+const char* transport_secure_identifier_get_string(s_transport_secure_identifier const* secure_identifier)
+{
+    const char* secure_identifier_string = "00000000-00000-0000-0000-000000000000";
+    return secure_identifier_string;
+}
+
+const s_transport_unique_identifier* transport_unique_identifier_get()
+{
+    return (s_transport_unique_identifier*)(module_base + 0x4EBEA08);
+}
+
+void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address)
+{
+    memcpy(&secure_address->data, &unique_identifier->data, 16);
 }

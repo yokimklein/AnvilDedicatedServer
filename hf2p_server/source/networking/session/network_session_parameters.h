@@ -39,7 +39,7 @@ public:
 	c_generic_network_session_parameter_short campaign_insertion_point;
 	c_generic_network_session_parameter_uchar ui_state;
 	c_generic_network_session_parameter_bool end_game;
-	c_generic_network_session_parameter_ulong start_mode;
+	c_generic_network_session_parameter_start_mode start_mode;
 	c_network_session_parameter_game_variant game_variant;
 	c_network_session_parameter_map_variant map_variant;
 	c_generic_network_session_parameter_saved_film_description saved_film;

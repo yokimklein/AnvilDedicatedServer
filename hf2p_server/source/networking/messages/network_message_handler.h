@@ -89,7 +89,3 @@ public:
 	c_network_observer* m_observer;
 	c_network_session_manager* m_session_manager;
 };
-
-// hooks
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
-void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unknown, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);

@@ -5,6 +5,7 @@
 #include "..\network_utilities.h"
 #include "network_session.h"
 #include "network_managed_session.h"
+#include "..\messages\network_message_type_collection.h"
 
 long c_network_session_membership::get_first_peer()
 {
@@ -240,4 +241,235 @@ void c_network_session_membership::set_membership_update_number(long peer_index,
 {
     // TODO - is_peer_valid assert
     this->m_transmitted_shared_network_membership[peer_index].update_number = update_number;
+}
+
+// TODO - test this
+void c_network_session_membership::build_membership_update(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message)
+{
+    uint32_t unknown1 = 0;
+    uint32_t unknown2 = 1;
+    uint32_t unknown3 = 0;
+    
+    printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: [%s] building new update\n",
+        this->get_session()->get_id_string());
+    memset(message, 0, sizeof(s_network_message_membership_update));
+    managed_session_get_id(this->get_session()->managed_session_index(), &message->session_id);
+    message->update_number = membership->update_number;
+    message->incremental_update_number = -1;
+    if (baseline)
+    {
+        message->incremental_update_number = baseline->update_number;
+        message->baseline_checksum = this->m_transmitted_checksums[peer_index];
+    }
+    
+    // loops copied from h3debug & reach tag debug, because ms23's decompiled code is an unabstracted mess
+    for (size_t i = 0; i < k_network_maximum_machines_per_session; i++)
+    {
+        s_network_session_peer* membership_peer = &membership->peers[i];
+        s_network_session_peer* baseline_peer = nullptr;
+        if (baseline && ((baseline->valid_peer_mask >> i) & 1)) // test peer bit
+            baseline_peer = &baseline->peers[i];
+    
+        if (!baseline_peer || ((membership->valid_peer_mask >> i) & 1))
+        {
+            if ((membership->valid_peer_mask >> i) & 1)
+            {
+                bool peer_info_updated = (!baseline_peer
+                    || membership_peer->party_nonce != baseline_peer->party_nonce
+                    || membership_peer->join_nonce != baseline_peer->join_nonce
+                    || membership_peer->join_start_time != baseline_peer->join_start_time);
+                bool peer_properties_updated = peer_info_updated || memcmp(&membership_peer->properties, &baseline_peer->properties, sizeof(s_network_session_peer));
+                if (peer_info_updated || peer_properties_updated || membership_peer->version != baseline_peer->version)
+                {
+                    s_network_message_membership_update_peer* update_data = &message->peer_updates[i];
+                    update_data->peer_index = i;
+                    update_data->peer_update_type = 1;
+                    update_data->peer_connection_state = membership_peer->connection_state;
+                    update_data->peer_info_updated = peer_info_updated;
+                    if (peer_info_updated)
+                    {
+                        update_data->network_version_number = membership_peer->version;
+                        update_data->peer_address = membership_peer->secure_address;
+                        update_data->peer_party_nonce = membership_peer->party_nonce;
+                        update_data->peer_join_nonce = membership_peer->join_nonce;
+                        update_data->peer_creation_timestamp = membership_peer->join_start_time;
+                        unknown1 |= unknown2;
+                    }
+                    update_data->peer_properties_updated = peer_properties_updated;
+                    if (peer_properties_updated)
+                    {
+                        s_network_session_peer_properties* peer_properties = nullptr;
+                        if (!peer_info_updated)
+                            peer_properties = &baseline_peer->properties;
+                        this->build_peer_properties_update(&membership_peer->properties, peer_properties, &update_data->peer_properties_update);
+                    }
+                }
+            }
+        }
+        else
+        {
+            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: removing peer #%d [%s]\n",
+                i,
+                transport_secure_address_get_string(&membership_peer->secure_address));
+            long last_peer_update_index = message->peer_count;
+            message->peer_count++; // add 1 peer update
+            message->peer_updates[last_peer_update_index].peer_index = i;
+            message->peer_updates[last_peer_update_index].peer_update_type = 0;
+            unknown3 |= unknown2;
+        }
+        unknown2 *= 2;
+    }
+    for (size_t i = 0; i < k_network_maximum_players_per_session; i++)
+    {
+        s_network_session_player* membership_player = &membership->players[i];
+        s_network_session_player* baseline_player = nullptr;
+        if (baseline && ((baseline->valid_player_mask >> i) & 1)) // test player bit
+            baseline_player = &baseline->players[i];
+    
+        long unknown4 = 1 << membership_player->peer_index;
+        if (!baseline_player || ((membership->valid_player_mask >> i) & 1))
+        {
+            if (((membership->valid_player_mask >> i) & 1) && (!baseline_player || (unknown1 & unknown4) != 0) || memcmp(membership_player, baseline_player, ))
+            {
+                // TODO
+            }
+        }
+    }
+    
+    if (!baseline || membership->player_sequence_number != baseline->player_sequence_number)
+    {
+        message->player_addition_number_updated = true;
+        message->player_addition_number = membership->player_sequence_number;
+    }
+    if (!baseline || membership->leader_peer_index != baseline->leader_peer_index)
+    {
+        message->leader_updated = true;
+        message->leader_peer_index = membership->leader_peer_index;
+    }
+    if (!baseline || membership->host_peer_index != baseline->host_peer_index)
+    {
+        message->host_updated = true;
+        message->host_peer_index = membership->host_peer_index;
+    }
+    if (!baseline
+        || membership->private_slot_count != baseline->private_slot_count
+        || membership->public_slot_count != baseline->public_slot_count
+        || membership->friends_only != baseline->friends_only
+        || membership->are_slots_locked != baseline->are_slots_locked)
+    {
+        message->slot_counts_updated = true;
+        message->private_slot_count = membership->private_slot_count;
+        message->public_slot_count = membership->public_slot_count;
+        message->friends_only = membership->friends_only;
+        message->are_slots_locked = membership->are_slots_locked;
+    }
+    
+    // TODO - checksum function here
+}
+
+void c_network_session_membership::build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update)
+{
+    if (!baseline_properties
+        || wcsncmp(membership_properties->peer_name, baseline_properties->peer_name, 16)
+        || wcsncmp(membership_properties->peer_session_name, baseline_properties->peer_session_name, 32))
+    {
+        peer_properties_update->peer_name_updated = true;
+        memcpy(peer_properties_update->peer_name, membership_properties->peer_name, 16);
+        memcpy(peer_properties_update->peer_session_name, membership_properties->peer_session_name, 32);
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties names changed\n");
+    }
+    peer_properties_update->game_start_error = membership_properties->game_start_error;
+    if (!baseline_properties || membership_properties->peer_map != baseline_properties->peer_map)
+    {
+        peer_properties_update->peer_map_id_updated = true;
+        peer_properties_update->peer_map_id = membership_properties->peer_map;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties map id changed\n");
+    }
+    if (!baseline_properties
+        || membership_properties->peer_map_status != baseline_properties->peer_map_status
+        || membership_properties->peer_map_progress_percentage != baseline_properties->peer_map_progress_percentage)
+    {
+        peer_properties_update->peer_map_updated = true;
+        peer_properties_update->peer_map_status = membership_properties->peer_map_status;
+        peer_properties_update->peer_map_progress_percentage = membership_properties->peer_map_progress_percentage;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties map changed\n");
+    }
+    if (!baseline_properties || membership_properties->peer_mp_map_mask != baseline_properties->peer_mp_map_mask)
+    {
+        peer_properties_update->available_multiplayer_map_mask_updated = true;
+        peer_properties_update->available_multiplayer_map_mask = membership_properties->peer_mp_map_mask;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: available peer properties map mask changed\n");
+    }
+    if (!baseline_properties || membership_properties->peer_game_instance != baseline_properties->peer_game_instance)
+    {
+        peer_properties_update->peer_game_instance_exists = true;
+        peer_properties_update->peer_game_instance = membership_properties->peer_game_instance;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer game instance changed\n");
+    }
+    if (baseline_properties
+        || membership_properties->connectivity_badness_rating != baseline_properties->connectivity_badness_rating
+        || membership_properties->host_badness_rating != baseline_properties->host_badness_rating
+        || membership_properties->client_badness_rating != baseline_properties->client_badness_rating)
+    {
+        peer_properties_update->peer_connection_updated = true;
+        peer_properties_update->connectivity_badness_rating = membership_properties->connectivity_badness_rating;
+        peer_properties_update->host_badness_rating = membership_properties->host_badness_rating;
+        peer_properties_update->client_badness_rating = membership_properties->client_badness_rating;
+        peer_properties_update->peer_connectivity_mask = membership_properties->peer_connectivity_mask;
+        peer_properties_update->peer_latency_est = membership_properties->peer_latency_est;
+        peer_properties_update->language = membership_properties->language;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties connectivity changed\n");
+    }
+
+    if (!baseline_properties
+        || membership_properties->determinism_version != baseline_properties->determinism_version
+        || membership_properties->determinism_compatible_version != baseline_properties->determinism_compatible_version)
+    {
+        peer_properties_update->versions_updated = true;
+        peer_properties_update->determinism_version = membership_properties->determinism_version;
+        peer_properties_update->determinism_compatible_version = membership_properties->determinism_compatible_version;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties versions changed\n");
+    }
+    if (!baseline_properties || membership_properties->flags != baseline_properties->flags)
+    {
+        peer_properties_update->flags_updated = true;
+        peer_properties_update->flags = membership_properties->flags;
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: flags changed\n");
+    }
+}
+
+void c_network_session_membership::set_peer_address(long peer_index, s_transport_secure_address const* secure_address)
+{
+    auto peer = this->get_peer(peer_index);
+    if (memcmp(&peer->secure_address, secure_address, sizeof(s_transport_secure_address)))
+    {
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_address: [%s] secure address for peer #%d changed to [%s]\n",
+            this->get_session()->get_id_string(),
+            peer_index,
+            transport_secure_address_get_string(secure_address));
+        memcpy(&peer->secure_address, secure_address, sizeof(s_transport_secure_address));
+        this->increment_update();
+    }
+}
+
+void c_network_session_membership::set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties)
+{
+    auto peer = this->get_peer(peer_index);
+    auto id_string = "shadow";
+    if (this->get_session())
+        id_string = this->get_session()->get_id_string();
+    if (memcmp(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties)))
+    {
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties\n");
+        memcpy(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties));
+        // observer quality_statistics_notify_established_connectivity removed as estimated bandwidth fields were removed from s_network_session_peer_properties
+        this->increment_update();
+    }
+    else
+    {
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties: [%s] peer-properties discarded as irrelevant (from peer #%d [%s])\n",
+            id_string,
+            peer_index,
+            transport_secure_address_get_string(&peer->secure_address));
+    }
 }

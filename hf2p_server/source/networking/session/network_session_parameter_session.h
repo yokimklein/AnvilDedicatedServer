@@ -20,14 +20,14 @@ enum e_network_session_mode
 	_network_session_mode_in_game,
 	_network_session_mode_end_game,
 	_network_session_mode_post_game,
-	// matchmaking enums may not exist in ms29
-	_network_session_mode_matchmaking_start,
-	_network_session_mode_matchmaking_searching,
-	_network_session_mode_matchmaking_gathering,
-	_network_session_mode_matchmaking_slave,
-	_network_session_mode_matchmaking_disbanding,
-	_network_session_mode_matchmaking_arbitrating,
-	_network_session_mode_matchmaking_choosing_game,
+	// matchmaking enums likely don't exist in ms29
+	//_network_session_mode_matchmaking_start,
+	//_network_session_mode_matchmaking_searching,
+	//_network_session_mode_matchmaking_gathering,
+	//_network_session_mode_matchmaking_slave,
+	//_network_session_mode_matchmaking_disbanding,
+	//_network_session_mode_matchmaking_arbitrating,
+	//_network_session_mode_matchmaking_choosing_game,
 
 	k_network_session_mode_count
 };
@@ -71,6 +71,7 @@ class c_generic_network_session_parameter_qword : public c_network_session_param
 
 class c_generic_network_session_parameter_ulong : public c_network_session_parameter_base
 {
+public:
 	uint32_t m_data;
 	uint32_t m_requested_data;
 };

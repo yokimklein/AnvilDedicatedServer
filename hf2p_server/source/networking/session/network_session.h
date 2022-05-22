@@ -26,9 +26,10 @@ enum e_network_session_state : uint32_t
 	_network_session_state_peer_leaving,
 	_network_session_state_host_established,
 	_network_session_state_host_disband,
-	//_network_session_state_host_handoff, // removed in ms29
-	//_network_session_state_host_reestablish, // removed in ms29
-	//_network_session_state_election, // removed in ms29
+	// removed in ms29
+	//_network_session_state_host_handoff,
+	//_network_session_state_host_reestablish,
+	//_network_session_state_election,
 
 	k_network_session_state_count
 };
@@ -104,6 +105,9 @@ public:
 	long managed_session_index();
 	bool join_abort(s_transport_address const* incoming_address, int64_t join_nonce);
 	c_network_session_parameters* get_session_parameters();
+	bool handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message);
+	bool peer_request_properties_update(s_transport_secure_address const* secure_address, s_network_session_peer_properties const* peer_properties);
+	c_network_session_membership* get_session_membership_unsafe();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

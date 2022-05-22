@@ -280,7 +280,7 @@ struct s_network_message_membership_update_peer_properties
 	uint32_t connectivity_badness_rating;
 	uint32_t host_badness_rating;
 	uint32_t client_badness_rating;
-	uint32_t language; // or nat_type? probably not
+	uint32_t language;
 	uint16_t peer_connectivity_mask;
 	uint16_t peer_probe_mask;
 	uint32_t peer_latency_min;
@@ -317,10 +317,10 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	uint32_t update_number;
 	uint32_t incremental_update_number;
 	uint32_t baseline_checksum;
-	uint16_t peer_count; // max 34?
-	uint16_t player_count; // max 32?
-	s_network_message_membership_update_peer peer_update[k_network_maximum_machines_per_session];
-	s_network_message_membership_update_player player_update[k_network_maximum_players_per_session];
+	uint16_t peer_count; // max 34? number of updates rather than peers
+	uint16_t player_count; // max 32? ditto
+	s_network_message_membership_update_peer peer_updates[k_network_maximum_machines_per_session];
+	s_network_message_membership_update_player player_updates[k_network_maximum_players_per_session];
 	bool player_addition_number_updated;
 	uint32_t player_addition_number;
 	bool leader_updated;
@@ -340,9 +340,9 @@ struct s_network_message_peer_properties : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	s_transport_secure_address secure_address;
-
 	s_network_session_peer_properties peer_properties;
 };
+static_assert(sizeof(s_network_message_peer_properties) == 0xC8);
 
 struct s_network_message_delegate_leadership : s_network_message
 {
@@ -474,48 +474,6 @@ private:
 	// type names?
 
 };
-
-/*
-static const char* k_message_type_names[k_network_message_type_count] = { // update this whenever the enum updates
-	"ping",
-	"pong",
-	"connect_request",
-	"connect_refuse",
-	"connect_establish",
-	"connect_closed",
-	"join_request",
-	"peer_connect",
-	"join_abort",
-	"join_refuse",
-	"leave_session",
-	"leave_acknowledge",
-	"session_disband",
-	"session_boot",
-	"host_decline",
-	"peer_establish",
-	"time_synchronize",
-	"membership_update",
-	"peer_properties",
-	"delegate_leadership",
-	"boot_machine",
-	"player_add",
-	"player_refuse",
-	"player_remove",
-	"player_properties",
-	"parameters_update",
-	"parameters_request",
-	"view_establishment",
-	"player_acknowledge",
-	"synchronous_update",
-	"synchronous_playback_control",
-	"synchronous_actions",
-	"synchronous_acknowledge",
-	"synchronous_gamestate",
-	"synchronous_client_ready",
-	"game_results",
-	"test"
-};
-*/
 
 static const char* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = { // TODO - update this whenever the enum updates
 	"no-reason-given",

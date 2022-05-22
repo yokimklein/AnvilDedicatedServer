@@ -68,9 +68,8 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
     }
-    const char* secure_identifier_string = "(null)"; // transport_secure_identifier_get_string((int)(message + 6));
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
-        secure_identifier_string,
+        transport_secure_identifier_get_string(&message->session_id),
         transport_address_get_string(outgoing_address));
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incoming join request\n");
 }
@@ -180,10 +179,24 @@ void c_network_message_handler::handle_membership_update(c_network_channel* chan
         session->handle_membership_update(message);
 }
 
-// TODO
 void c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
 {
-    
+    auto session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->is_host())
+    {
+        if (!session->handle_peer_properties(channel, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_properties: session failed to handle peer-properties (%s) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_properties: channel '%s' ignoring peer-properties (%s) (not host)\n",
+            channel->get_name(),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
 // TODO
@@ -501,15 +514,4 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
 c_network_message_gateway* c_network_message_handler::get_message_gateway()
 {
     return this->m_message_gateway;
-}
-
-// hooks
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
-{
-    message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
-}
-// DWORD *this, int network_channel, int network_message_type, int a4, int message
-void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unknown, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
-{
-    message_handler->handle_out_of_band_message(address, message_type, message_storage_size, message);
 }

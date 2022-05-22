@@ -7,6 +7,7 @@
 #include "..\..\game\players.h"
 #include "..\..\simulation\simulation.h"
 #include "..\..\interface\gui_pregame_setup_manager.h"
+#include "..\..\interface\user_interface_networking.h"
 
 // non-original names, may be incorrect
 enum e_network_game_privacy
@@ -26,6 +27,73 @@ enum e_network_session_closed_status
 	_network_session_closed_film_in_progress,
 	_network_session_closed_in_matchmaking,
 	_network_session_closed_survival_in_progress
+};
+
+// non original names based on how they're used
+enum e_session_game_start_status
+{
+	_start_status_none,
+	_start_status_not_pre_game = 1,
+	_start_status_not_leader = 2,
+	_start_status_join_in_progress = 3,
+	_start_status_loading = 4,
+	_start_status_ready = 5,
+	_start_status_countdown = 6,
+	_start_status_countdown_unknown = 7,
+	_start_status_error = 8,
+
+	k_start_status_count
+};
+
+static const char* k_game_start_status_strings[k_start_status_count] = {
+	"none",
+	"not pre game",
+	"not leader",
+	"join in progress",
+	"loading",
+	"ready",
+	"countdown",
+	"countdown unknown",
+	"error"
+};
+
+// non-original names based off strings in multiplayer_game_start_error_to_string
+enum e_session_game_start_error
+{
+	_start_error_none = 0,
+	_start_error_no_map_selected = 1,
+	_start_error_map_load_failure = 2,
+	_start_error_map_load_precaching = 3,
+	_start_error_invalid_film_selected = 4,
+	_start_error_no_film_selected = 5,
+	_start_error_too_many_teams = 6,
+	_start_error_too_many_for_local_coop = 7,
+	_start_error_too_many_for_net_coop = 8,
+	_start_error_incompatible_for_net_coop = 9,
+	_start_error_theater_too_many_players = 10,
+	_start_error_theater_leader_must_be_host = 11,
+	_start_error_theater_all_not_compatible = 12,
+	_start_error_too_many_players_in_forge = 13,
+
+	k_session_game_start_error_count
+};
+
+// update this whenever the enum updates
+static const char* k_game_start_error_strings[k_session_game_start_error_count] = {
+	"none",
+	"no map selected",
+	"map load failure",
+	"map load precaching",
+	"invalid film selected",
+	"no film selected",
+	"too many teams",
+	"too many for local coop",
+	"too many for net coop",
+	"incompatible for net coop",
+	"theater too many players",
+	"theater leader must be host",
+	"theater all not compatible",
+	"too many players in forge"
 };
 
 struct s_network_session_privacy_mode
@@ -53,7 +121,7 @@ class c_network_session_parameter_ui_game_mode: public c_network_session_paramet
 
 class c_generic_network_session_parameter_dedicated_server_session_state: public c_network_session_parameter_base
 {
-	long m_data;
+	long m_data; // value between 0-10
 	long m_requested_data;
 };
 
@@ -100,10 +168,16 @@ class c_network_session_parameter_initial_participants : public c_network_sessio
 	long : 32;
 };
 
+class c_generic_network_session_parameter_start_mode : public c_network_session_parameter_base
+{
+	e_desired_multiplayer_mode m_data;
+	e_desired_multiplayer_mode m_requested_data;
+};
+
 struct s_network_session_parameter_game_start_status
 {
-	long game_start_status;
-	long game_start_error;
+	e_session_game_start_status game_start_status;
+	e_session_game_start_error game_start_error;
 	uint16_t player_error_mask;
 	uint16_t map_load_progress;
 };
@@ -111,6 +185,7 @@ static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 
 class c_network_session_parameter_game_start_status : public c_network_session_parameter_base
 {
+public:
 	s_network_session_parameter_game_start_status m_data;
 	s_network_session_parameter_game_start_status m_requested_data;
 };
@@ -162,3 +237,6 @@ class c_network_session_parameter_request_campaign_quit : public c_network_sessi
 	s_network_session_parameter_request_campaign_quit m_data;
 	s_network_session_parameter_request_campaign_quit m_requested_data;
 };
+
+const char* multiplayer_game_start_error_to_string(e_session_game_start_error start_error);
+const char* multiplayer_game_start_status_to_string(e_session_game_start_status start_status);

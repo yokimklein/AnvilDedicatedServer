@@ -41,29 +41,40 @@ struct s_player_appearance // lives in player_appearance.h?
 };
 static_assert(sizeof(s_player_appearance) == 0x660);
 
-struct s_s3d_player_appearance_unknown1 // sizeof=0xA - ED PlayerCustomization?
+struct s_s3d_player_loadout
 {
-	byte __unknown0;
-	byte __unknown1;
-	byte __unknown2;
-	byte __unknown3;
-	byte __unknown4;
-	byte __unknown5;
-	byte __unknown6[4];
+	byte flags; // gender
+	byte armor;
+	byte primary_weapon;
+	byte secondary_weapon;
+	byte grenade;
+	byte support_pack;
+	byte tactical_packs[4];
 };
-static_assert(sizeof(s_s3d_player_appearance_unknown1) == 0xA);
+static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 
-struct s_s3d_player_appearance_unknown2
+struct s_s3d_player_armor
 {
-	uint32_t unknown[95];
+	uint32_t armor_indices[95];
 };
-static_assert(sizeof(s_s3d_player_appearance_unknown2) == 0x17C);
+static_assert(sizeof(s_s3d_player_armor) == 0x17C);
 
 struct s_s3d_player_appearance
 {
-	byte unknown1; // index or count
-	s_s3d_player_appearance_unknown1 unknown2[3]; // colors?
+	byte unknown; // has loadouts? current loadout?
+	s_s3d_player_loadout loadouts[3]; // 3 loadout sets
 	byte align1F[1];
-	s_s3d_player_appearance_unknown2 unknown3[3]; // armor tagblock indices?
+	s_s3d_player_armor armors[3]; // 3 armour sets
 };
 static_assert(sizeof(s_s3d_player_appearance) == 0x494);
+
+struct s_s3d_player_customization
+{
+	byte unknown0;
+	byte unknown1;
+	byte nameplate;
+	byte emblem;
+	uint32_t colours[5]; // primary, secondary, visor, lights, holo? real_argb
+	byte data[4];
+};
+static_assert(sizeof(s_s3d_player_customization) == 0x1C);

@@ -60,7 +60,7 @@ struct s_network_session_peer_properties
 	e_peer_map_status peer_map_status;
 	uint32_t peer_map_progress_percentage;
 	int64_t peer_game_instance;
-	uint32_t nat_type;
+	uint32_t game_start_error; // originally written as nat_type, but c_network_session_membership::apply_peer_properties_update sets it to update peer properties' game_start_error
 	uint32_t connectivity_badness_rating;
 	uint32_t host_badness_rating;
 	uint32_t client_badness_rating;
@@ -83,8 +83,8 @@ struct s_network_session_peer
 	uint32_t version;
 	uint32_t join_start_time;
 	uint32_t unknown;
-	s_network_session_peer_properties properties;
-	uint64_t unknown_nonce;
+	s_network_session_peer_properties properties; // 8?
+	uint64_t party_nonce;
 	uint64_t join_nonce;
 	uint32_t player_mask; // contains player count
 };
@@ -94,15 +94,15 @@ static_assert(sizeof(s_network_session_peer) == 0xE0);
 struct s_network_session_player
 {
 	long desired_configuration_version;
-	long : 32;
+	long unknown1;
 	s_player_identifier player_identifier;
 	long peer_index;
 	long player_sequence_number;
-	long : 32;
+	long unknown2;
 	long controller_index;
 	s_player_configuration configuration;
 	uint32_t voice_settings;
-	long : 32;
+	long unknown3;
 };
 static_assert(sizeof(s_network_session_player) == 0xB98);
 #pragma pack(pop)
@@ -124,6 +124,7 @@ struct s_network_session_shared_membership
 	long private_slot_count;
 	long public_slot_count;
 	bool friends_only;
+	bool are_slots_locked;
 	long peer_count;
 	uint32_t valid_peer_mask;
 	s_network_session_peer peers[k_network_maximum_machines_per_session];
@@ -136,6 +137,8 @@ struct s_network_session_shared_membership
 static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
 
 class c_network_session;
+struct s_network_message_membership_update;
+struct s_network_message_membership_update_peer_properties;
 class c_network_session_membership
 {
 public:
@@ -169,12 +172,16 @@ public:
 	s_network_session_shared_membership* get_current_membership();
 	s_network_session_shared_membership* get_transmitted_membership(long peer_index);
 	void set_membership_update_number(long peer_index, long update_number);
+	void build_membership_update(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message);
+	void build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update);
+	void set_peer_address(long peer_index, s_transport_secure_address const* secure_address);
+	void set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties);
 
 	c_network_session* m_session;
 	long unknown1;
 	s_network_session_shared_membership m_baseline;
 	s_network_session_shared_membership m_transmitted_shared_network_membership[k_network_maximum_machines_per_session];
-	long m_incremental_update_numbers[k_network_maximum_machines_per_session]; // real name?
+	long m_transmitted_checksums[k_network_maximum_machines_per_session];
 	long unknown2;
 	long m_local_peer_index;
 	long m_player_configuration_version;
