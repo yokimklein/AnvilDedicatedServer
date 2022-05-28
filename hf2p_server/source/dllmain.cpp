@@ -104,6 +104,22 @@ void __fastcall network_life_cycle_end_hook()
     network_life_cycle_end();
 }
 
+// contrail gpu freeze fix
+__declspec(naked) void ContrailFixHook()
+{
+    __asm
+    {
+        add edx, [0x0068A38A]
+        cmp edx, -1
+        jg render
+        push 0x68A3E3
+        retn
+        render :
+        push 0x68A390
+            retn
+    }
+}
+
 long MainThread()
 {
     AllocConsole();
@@ -111,7 +127,7 @@ long MainThread()
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
     printf("Anvil Station Dedicated Server\n");
-    printf("Build date: " __DATE__ " @ " __TIME__ "\n");
+    printf("Build date: " __DATE__ " @ " __TIME__ "\n"); // TODO - list debug/release info w/ branch here
     printf("\n");
 
     //=== HOOKS ===//
@@ -126,10 +142,18 @@ long MainThread()
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
+    // contrail gpu freeze fix - twister
+    Hook(0x28A38A, ContrailFixHook).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 
     //== PATCHES ==//
+    // enable tag edits
+    Patch(0x082DB4, { 0xEB }).Apply();
+    Patch::NopFill(Pointer::Base(0x083120), 2);
+    Patch::NopFill(Pointer::Base(0x083AFC), 2);
+    // contrail gpu freeze fix - twister
+    Patch(0x1D6B70, { 0xC3 }).Apply();
     printf("Patches applied\n");
     //== ======= ==//
     
@@ -159,10 +183,10 @@ long MainThread()
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP - create session
         {
             // SESSION DETAILS
-            auto map_id = _s3d_turf;
-            auto engine_variant = _engine_variant_slayer;
-            auto multiplayer_mode = _desired_multiplayer_mode_custom_games;
-            auto gui_gamemode = _gui_game_mode_multiplayer;
+            auto map_id = _riverworld;
+            auto engine_variant = _engine_variant_ctf;
+            auto multiplayer_mode = _desired_multiplayer_mode_custom_games; // I'm not sure if this actually matters anymore
+            auto gui_gamemode = _gui_game_mode_multiplayer; // or this
 
             // CREATE SESSION
             std::cout << "Setting up session...\n";
@@ -204,7 +228,7 @@ long MainThread()
             //network_squad_session_set_map(-1, map_id, map_path); // set the map to use for the session
             //network_squad_session_set_map_variant(&map_variant[0]); // set the map variant to use for the session
         }
-        else if (GetKeyState(VK_END) & 0x8000) // END - get session info
+        else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN - get session info
         {
             auto test = online_session_manager_globals;
             auto test2 = g_xnet_shim_table;
@@ -224,17 +248,40 @@ long MainThread()
             else
                 printf("Failed to get secure address\n\n");
         }
-        else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN - launch session
+        else if (GetKeyState(VK_HOME) & 0x8000) // HOME - launch session
         {
             printf("Launching session...\n");
             c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_setup);
         }
-        //else if (GetKeyState(VK_HOME) & 0x8000) // HOME - debug breakpoint
-        //{
-        //    printf("Breaking...\n");
-        //    c_network_session* sessions = *network_session->m_session_manager->session;
-        //    printf("Finished.\n");
-        //}
+        else if (GetKeyState(VK_END) & 0x8000) // END - end game
+        {
+            printf("Ending game...\n");
+            c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_end_game);
+        }
+        else if (GetKeyState(VK_INSERT) & 0x8000) // INSERT - debug breakpoint
+        {
+            printf("Breaking...\n");
+            c_network_session* sessions = *network_session->m_session_manager->session;
+            sessions[0].get_session_parameters()->game_simulation_protocol.m_data = _simulation_protocol_synchronous; // temporarily set to synchronous as distributed currently has issues. synchronous will likely crash in a real net game
+            sessions[0].get_session_membership()->get_current_membership()->players[0].controller_index = 0;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_assigned_team = 1; // blue team
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_team = 1; // blue team
+            wchar_t player_name[16] = L"JocKe";
+            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_name, player_name, 32);
+            wchar_t service_tag[5] = L"A013";
+            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_appearance.service_tag, service_tag, 10);
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_recon;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[0] = 1184274;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[3] = 1184274;
+        }
         Sleep(100);
     }
 

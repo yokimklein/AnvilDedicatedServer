@@ -58,6 +58,7 @@ static const char* k_game_start_status_strings[k_start_status_count] = {
 };
 
 // non-original names based off strings in multiplayer_game_start_error_to_string
+// this may be incorrect
 enum e_session_game_start_error
 {
 	_start_error_none = 0,
@@ -94,6 +95,15 @@ static const char* k_game_start_error_strings[k_session_game_start_error_count] 
 	"theater leader must be host",
 	"theater all not compatible",
 	"too many players in forge"
+};
+
+enum e_network_game_simulation_protocol
+{
+	_simulation_protocol_local,
+	_simulation_protocol_synchronous,
+	_simulation_protocol_distributed,
+
+	k_simulation_protocol_count
 };
 
 struct s_network_session_privacy_mode
@@ -236,6 +246,13 @@ class c_network_session_parameter_request_campaign_quit : public c_network_sessi
 {
 	s_network_session_parameter_request_campaign_quit m_data;
 	s_network_session_parameter_request_campaign_quit m_requested_data;
+};
+
+class c_network_session_parameter_game_simulation_protocol : public c_network_session_parameter_base
+{
+public:
+	e_network_game_simulation_protocol m_data;
+	e_network_game_simulation_protocol m_requested_data;
 };
 
 const char* multiplayer_game_start_error_to_string(e_session_game_start_error start_error);

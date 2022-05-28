@@ -17,6 +17,7 @@ struct s_game_machine_options
 	long : 32;
 	long : 32;
 };
+static_assert(sizeof(s_game_machine_options) == 0x128);
 
 struct s_game_player_options
 {
@@ -28,6 +29,7 @@ struct s_game_player_options
 	uint64_t player_identifier;
 	s_player_configuration player_configuration;
 };
+static_assert(sizeof(s_game_player_options) == 0xB90);
 
 struct s_game_options
 {

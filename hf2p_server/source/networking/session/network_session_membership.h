@@ -94,12 +94,12 @@ static_assert(sizeof(s_network_session_peer) == 0xE0);
 struct s_network_session_player
 {
 	long desired_configuration_version;
-	long unknown1;
 	s_player_identifier player_identifier;
-	long peer_index;
+	long peer_index; // peer index & peer user index as 2 shorts like membership update player?
 	long player_sequence_number;
-	long unknown2;
+	bool player_occupies_a_public_slot;
 	long controller_index;
+	long unknown2;
 	s_player_configuration configuration;
 	uint32_t voice_settings;
 	long unknown3;
@@ -176,11 +176,12 @@ public:
 	void build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update);
 	void set_peer_address(long peer_index, s_transport_secure_address const* secure_address);
 	void set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties);
+	void copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership);
 
 	c_network_session* m_session;
 	long unknown1;
 	s_network_session_shared_membership m_baseline;
-	s_network_session_shared_membership m_transmitted_shared_network_membership[k_network_maximum_machines_per_session];
+	s_network_session_shared_membership m_transmitted[k_network_maximum_machines_per_session];
 	long m_transmitted_checksums[k_network_maximum_machines_per_session];
 	long unknown2;
 	long m_local_peer_index;
@@ -193,3 +194,6 @@ public:
 };
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
 #pragma pack(pop)
+
+long fast_checksum_new();
+long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership);

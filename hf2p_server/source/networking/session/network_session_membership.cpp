@@ -234,16 +234,16 @@ s_network_session_shared_membership* c_network_session_membership::get_current_m
 
 s_network_session_shared_membership* c_network_session_membership::get_transmitted_membership(long peer_index)
 {
-    return &this->m_transmitted_shared_network_membership[peer_index];
+    return &this->m_transmitted[peer_index];
 }
 
 void c_network_session_membership::set_membership_update_number(long peer_index, long update_number)
 {
     // TODO - is_peer_valid assert
-    this->m_transmitted_shared_network_membership[peer_index].update_number = update_number;
+    this->m_transmitted[peer_index].update_number = update_number;
 }
 
-// TODO - test this
+// TODO - test this, especially with the null pointer stuff going on, make sure to confirm that
 void c_network_session_membership::build_membership_update(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message)
 {
     uint32_t unknown1 = 0;
@@ -270,11 +270,11 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         if (baseline && ((baseline->valid_peer_mask >> i) & 1)) // test peer bit
             baseline_peer = &baseline->peers[i];
     
-        if (!baseline_peer || ((membership->valid_peer_mask >> i) & 1))
+        if (baseline_peer == nullptr || ((membership->valid_peer_mask >> i) & 1))
         {
             if ((membership->valid_peer_mask >> i) & 1)
             {
-                bool peer_info_updated = (!baseline_peer
+                bool peer_info_updated = (baseline_peer == nullptr
                     || membership_peer->party_nonce != baseline_peer->party_nonce
                     || membership_peer->join_nonce != baseline_peer->join_nonce
                     || membership_peer->join_start_time != baseline_peer->join_start_time);
@@ -327,31 +327,66 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
             baseline_player = &baseline->players[i];
     
         long unknown4 = 1 << membership_player->peer_index;
-        if (!baseline_player || ((membership->valid_player_mask >> i) & 1))
+        if (baseline_player == nullptr || ((membership->valid_player_mask >> i) & 1))
         {
-            if (((membership->valid_player_mask >> i) & 1) && (!baseline_player || (unknown1 & unknown4) != 0) || memcmp(membership_player, baseline_player, ))
+            if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0) || memcmp(membership_player, baseline_player, sizeof(s_network_session_player)))
             {
-                // TODO
+                s_network_message_membership_update_player* update_player = &message->player_updates[message->player_count];
+                message->player_count++;
+                update_player->player_index = i;
+                update_player->update_type = 1;
+                update_player->player_location_updated = (baseline_player == nullptr
+                                                      || (unknown1 & unknown4) != 0
+                                                      || membership_player->player_identifier.data != baseline_player->player_identifier.data
+                                                      || membership_player->peer_index != baseline_player->peer_index
+                                                      || membership_player->player_sequence_number != baseline_player->player_sequence_number
+                                                      || membership_player->player_occupies_a_public_slot != baseline_player->player_occupies_a_public_slot);
+                if (update_player->player_location_updated)
+                {
+                    update_player->identifier.data = membership_player->player_identifier.data;
+                    update_player->peer_index = membership_player->peer_index;
+                    update_player->player_occupies_a_public_slot = membership_player->player_occupies_a_public_slot;
+                }
+
+                update_player->player_properties_updated = (membership_player->desired_configuration_version != baseline_player->desired_configuration_version
+                                                         || membership_player->controller_index != baseline_player->controller_index
+                                                         || memcmp(&membership_player->configuration, &baseline_player->configuration, sizeof(s_player_configuration))
+                                                         || membership_player->voice_settings != baseline_player->voice_settings);
+                if (update_player->player_properties_updated)
+                {
+                    update_player->player_update_number = membership_player->desired_configuration_version;
+                    update_player->controller_index = membership_player->controller_index;
+                    memmove(&update_player->configuration, &membership_player->configuration, sizeof(s_player_configuration));
+                    update_player->player_voice = membership_player->voice_settings;
+                }
+                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]", i);
+            }
+            else if ((unknown4 & unknown3) == 0 && (unknown4 & unknown1) == 0)
+            {
+                s_network_message_membership_update_player* player_update = &message->player_updates[message->player_count];
+                message->player_count++;
+                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]", i);
+                player_update->player_index = i;
+                player_update->update_type = 0;
             }
         }
     }
-    
-    if (!baseline || membership->player_sequence_number != baseline->player_sequence_number)
+    if (baseline == nullptr || membership->player_sequence_number != baseline->player_sequence_number)
     {
         message->player_addition_number_updated = true;
         message->player_addition_number = membership->player_sequence_number;
     }
-    if (!baseline || membership->leader_peer_index != baseline->leader_peer_index)
+    if (baseline == nullptr || membership->leader_peer_index != baseline->leader_peer_index)
     {
         message->leader_updated = true;
         message->leader_peer_index = membership->leader_peer_index;
     }
-    if (!baseline || membership->host_peer_index != baseline->host_peer_index)
+    if (baseline == nullptr || membership->host_peer_index != baseline->host_peer_index)
     {
         message->host_updated = true;
         message->host_peer_index = membership->host_peer_index;
     }
-    if (!baseline
+    if (baseline == nullptr
         || membership->private_slot_count != baseline->private_slot_count
         || membership->public_slot_count != baseline->public_slot_count
         || membership->friends_only != baseline->friends_only
@@ -364,7 +399,8 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         message->are_slots_locked = membership->are_slots_locked;
     }
     
-    // TODO - checksum function here
+    auto fast_checksum = fast_checksum_new();
+    message->checksum = fast_checksum_s_network_session_shared_membership(fast_checksum, membership);
 }
 
 void c_network_session_membership::build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update)
@@ -472,4 +508,25 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
             peer_index,
             transport_secure_address_get_string(&peer->secure_address));
     }
+}
+
+// FUNC TODO
+void c_network_session_membership::copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership)
+{
+    memmove(&this->m_transmitted[peer_index], current_membership, sizeof(s_network_session_shared_membership));
+    auto fast_checksum = fast_checksum_new();
+    this->m_transmitted_checksums[peer_index] = fast_checksum_s_network_session_shared_membership(fast_checksum, &this->m_transmitted[peer_index]);
+}
+
+long fast_checksum_new()
+{
+    return -1;
+}
+
+// TODO FUNCTION
+long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership) // fast_checksum<s_network_session_shared_membership>
+{
+    //long unknown1 = fast_checksum -
+    
+    return -1;
 }

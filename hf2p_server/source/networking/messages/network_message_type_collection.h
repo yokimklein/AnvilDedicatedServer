@@ -244,12 +244,12 @@ struct s_network_message_time_synchronize : s_network_message
 };
 //static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
 
-struct s_network_message_membership_update_player
+struct s_network_message_membership_update_player // pragma pack 4 in ms23 maybe not? TODO - confirm structure by analysing decode function in ms29
 {
 	uint32_t player_index;
 	uint32_t update_type;
 	bool player_location_updated;
-	uint64_t identifier;
+	s_player_identifier identifier;
 	uint16_t peer_index;
 	uint16_t peer_user_index;
 	bool player_occupies_a_public_slot;
