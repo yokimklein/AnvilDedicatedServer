@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <StartupObject>hf2p_launcher.Program</StartupObject>
+    <Nullable>disable</Nullable>
+    <Description>Halo: Online dedicated server launcher + injector</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Lunar">
+      <HintPath>ref\Lunar.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
