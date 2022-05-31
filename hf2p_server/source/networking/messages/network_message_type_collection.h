@@ -313,6 +313,8 @@ static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
 
 struct s_network_message_membership_update : s_network_message // this is actually a class?
 {
+	s_network_message_membership_update();
+
 	s_transport_secure_identifier session_id;
 	uint32_t update_number;
 	uint32_t incremental_update_number;

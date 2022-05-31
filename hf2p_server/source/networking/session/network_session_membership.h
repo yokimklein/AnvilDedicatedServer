@@ -118,6 +118,8 @@ static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 #pragma pack(push, 4)
 struct s_network_session_shared_membership
 {
+	s_network_session_shared_membership();
+
 	long update_number;
 	long leader_peer_index;
 	long host_peer_index;

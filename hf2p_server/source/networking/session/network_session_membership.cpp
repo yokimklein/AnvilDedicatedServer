@@ -256,7 +256,7 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
     managed_session_get_id(this->get_session()->managed_session_index(), &message->session_id);
     message->update_number = membership->update_number;
     message->incremental_update_number = -1;
-    if (baseline)
+    if (baseline != nullptr)
     {
         message->incremental_update_number = baseline->update_number;
         message->baseline_checksum = this->m_transmitted_checksums[peer_index];
@@ -267,7 +267,7 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
     {
         s_network_session_peer* membership_peer = &membership->peers[i];
         s_network_session_peer* baseline_peer = nullptr;
-        if (baseline && ((baseline->valid_peer_mask >> i) & 1)) // test peer bit
+        if (baseline != nullptr && ((baseline->valid_peer_mask >> i) & 1)) // test peer bit
             baseline_peer = &baseline->peers[i];
     
         if (baseline_peer == nullptr || ((membership->valid_peer_mask >> i) & 1))
@@ -323,12 +323,13 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
     {
         s_network_session_player* membership_player = &membership->players[i];
         s_network_session_player* baseline_player = nullptr;
-        if (baseline && ((baseline->valid_player_mask >> i) & 1)) // test player bit
+        if (baseline != nullptr && ((baseline->valid_player_mask >> i) & 1)) // test player bit
             baseline_player = &baseline->players[i];
     
         long unknown4 = 1 << membership_player->peer_index;
         if (baseline_player == nullptr || ((membership->valid_player_mask >> i) & 1))
         {
+            // blam uses csmemcmp here, which asserts if one of the pointers is null, we're not so we're getting a warning
             if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0) || memcmp(membership_player, baseline_player, sizeof(s_network_session_player)))
             {
                 s_network_message_membership_update_player* update_player = &message->player_updates[message->player_count];
@@ -530,3 +531,17 @@ long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_net
     
     return -1;
 }
+
+s_network_session_shared_membership::s_network_session_shared_membership()
+{
+    for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
+        peers[j].properties.flags = 0;
+    for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
+    {
+        memset(&players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+        memset(&players[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+        memset(&players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+        players[j].configuration.host.player_assigned_team = -1;
+        players[j].configuration.host.player_team = -1;
+    }
+};
