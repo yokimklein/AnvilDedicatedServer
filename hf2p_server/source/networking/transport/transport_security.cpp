@@ -42,3 +42,10 @@ void transport_secure_address_build_from_identifier(s_transport_unique_identifie
 {
     memcpy(&secure_address->data, &unique_identifier->data, 16);
 }
+
+// FUNC TODO
+const char* transport_session_description_get_string(s_transport_session_description const* session_description)
+{
+    const char* session_description_str = "00000000-00000-0000-0000-000000000000-00000000-00000-0000-0000-000000000000";
+    return session_description_str;
+}

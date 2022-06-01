@@ -15,7 +15,7 @@ struct s_online_session_player
 {
 	byte flags;
 	byte __align1[7];
-	int64_t xuid;
+	uint64_t xuid;
 };
 static_assert(sizeof(s_online_session_player) == 0x10);
 
@@ -27,7 +27,7 @@ struct s_online_session
 	long public_slot_count;
 	long private_slot_count;
 	s_transport_session_description description;
-	int64_t nonce;
+	uint64_t nonce;
 	HANDLE handle;
 	s_online_session_player players[k_network_maximum_players_per_session];
 };
@@ -70,7 +70,7 @@ struct c_managed_session // 0x5D0
 	s_online_session desired_online_session_state;
 	s_online_session transitory_online_session_state;
 	s_online_session actual_online_session_state;
-	int64_t xuids[16];
+	uint64_t xuids[16];
 	byte xuid_flags[16];
 	byte xuid_next_flags[16];
 	long session_player_operation_count;
@@ -93,3 +93,8 @@ bool managed_session_get_security_information(long managed_session_index, s_tran
 const char* managed_session_get_id_string(long managed_session_index);
 bool managed_session_get_id(long index, s_transport_secure_identifier* secure_id);
 void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count);
+short* managed_session_get_status(short* managed_session_status, long managed_session_index);
+bool managed_session_is_master_session(long managed_session_index);
+void managed_session_reset_session(long managed_session_index, bool use_session_time);
+void managed_session_remove_players(long managed_session_index, uint64_t xuids, long xuid_count);
+void managed_session_reset_players_add_status(long managed_session_index);

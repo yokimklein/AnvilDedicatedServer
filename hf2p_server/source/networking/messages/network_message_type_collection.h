@@ -361,13 +361,15 @@ struct s_network_message_player_add : s_network_message
 
 };
 
+#pragma pack(push, 4)
 struct s_network_message_player_refuse : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	s_transport_secure_identifier player_identifier;
-	uint32_t user_index;
-	uint32_t refuse_reason;
+	s_player_identifier player_identifier;
+	e_network_join_refuse_reason refuse_reason;
 };
+static_assert(sizeof(s_network_message_player_refuse) == 0x1C);
+#pragma pack(pop)
 
 struct s_network_message_player_remove : s_network_message
 {

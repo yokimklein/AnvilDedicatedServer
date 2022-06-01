@@ -159,7 +159,7 @@ void network_join_flush_join_queue()
     network_join_flush_join_queue_call();
 }
 
-void network_join_remove_join_from_queue(int64_t join_nonce)
+void network_join_remove_join_from_queue(uint64_t join_nonce)
 {
     long* entry_count = &g_network_join_data->join_queue_entry_count;
     for (long i = 0; i < *entry_count; i++)

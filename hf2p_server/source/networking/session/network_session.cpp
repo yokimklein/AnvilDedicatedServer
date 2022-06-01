@@ -286,7 +286,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
     {
         long peer_index = this->m_session_membership.get_peer_from_secure_address(&join_request->joining_peers[i].joining_peer_address);
         long user_player_index = join_request->joining_peers[i].user_player_index;
-        if (join_request->joining_players[user_player_index].data != 0) // player_identifier_is_valid
+        if (player_identifier_is_valid(&join_request->joining_players[user_player_index]))
         {
             joining_player_count++;
             has_players = true;
@@ -690,10 +690,134 @@ void c_network_session::idle_peer_leaving()
     idle_peer_leaving(this);
 }
 
-// FUNC TODO
+// WIP FUNC TODO/TEST
 void c_network_session::process_pending_joins()
 {
-
+    e_network_join_refuse_reason refuse_reason = _network_join_refuse_reason_none;
+    short managed_session_status = 0;
+    managed_session_get_status(&managed_session_status, this->managed_session_index());
+    if ((managed_session_status & 0x40) != 0 || *((byte*)&managed_session_status) < 0)
+    {
+        managed_session_reset_players_add_status(this->managed_session_index());
+        if (player_identifier_is_valid(&this->m_player_add_single_player_identifier))
+        {
+            refuse_reason = _network_join_refuse_reason_player_add_failed;
+            if ((managed_session_status & 0x40) != 0)
+            {
+                refuse_reason = this->can_accept_player_join_request(&this->m_player_add_single_player_identifier, &this->m_player_add_secure_address, this->m_player_add_peer_index, true);
+                if (refuse_reason == _network_join_refuse_reason_none && !this->get_session_membership()->is_player_in_player_add_queue(&this->m_player_add_single_player_identifier))
+                {
+                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] player '%s' went missing from our add queue\n",
+                        managed_session_get_id_string(this->managed_session_index()),
+                        player_identifier_get_string(&this->m_player_add_single_player_identifier));
+                    refuse_reason = _network_join_refuse_reason_player_add_failed;
+                }
+                if (refuse_reason != _network_join_refuse_reason_none)
+                {
+                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] single player '%s' added but can no longer join because %s, removing\n",
+                        managed_session_get_id_string(this->managed_session_index()),
+                        player_identifier_get_string(&this->m_player_add_single_player_identifier),
+                        network_message_join_refuse_get_reason_string(refuse_reason));
+                    managed_session_remove_players(this->managed_session_index(), (uint64_t)&this->m_player_add_player_identifier.data, 1); // TODO - test this is casting properly
+                }
+                else
+                {
+                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] single player '%s' added\n",
+                        managed_session_get_id_string(this->managed_session_index()),
+                        player_identifier_get_string(&this->m_player_add_single_player_identifier));
+                    this->get_session_membership()->commit_player_from_player_add_queue(&this->m_player_add_single_player_identifier);
+                }
+            }
+            else
+            {
+                printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] XSessionJoinRemote failed for single player add\n",
+                    managed_session_get_id_string(this->managed_session_index()));
+            }
+            this->finalize_single_player_add(refuse_reason);
+        }
+        else
+        {
+            long peer_index = -1;
+            for (peer_index = this->get_session_membership()->get_first_peer(); peer_index != -1; peer_index = this->get_session_membership()->get_next_peer(peer_index))
+            {
+                if (peer_index == -1)
+                    break;
+                if (this->get_session_membership()->get_peer_connection_state(peer_index) == _network_session_peer_state_joining)
+                    break;
+            }
+            if (peer_index != -1)
+            {
+                uint64_t join_nonce = this->get_session_membership()->get_join_nonce(peer_index);
+                if ((managed_session_status & 0x40) != 0)
+                {
+                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as joined\n",
+                        managed_session_get_id_string(this->managed_session_index()),
+                        transport_secure_nonce_get_string(&join_nonce));
+                    for (peer_index = this->get_session_membership()->get_first_peer(); peer_index != -1; peer_index = this->get_session_membership()->get_next_peer(peer_index))
+                    {
+                        if (this->get_session_membership()->get_peer_connection_state(peer_index) == _network_session_peer_state_joining && join_nonce == this->get_session_membership()->get_join_nonce(peer_index))
+                        {
+                            if (peer_index == this->get_session_membership()->host_peer_index()) // host_peer_index
+                                this->get_session_membership()->set_peer_connection_state(peer_index, _network_session_peer_state_waiting);
+                            else
+                                this->get_session_membership()->set_peer_connection_state(peer_index, _network_session_peer_state_joined);
+                        }
+                    }
+                }
+                else
+                {
+                    if (!this->join_nonce_is_from_clone_join_or_is_hosts(join_nonce) || managed_session_is_master_session(this->managed_session_index()))
+                    {
+                        if (this->join_nonce_is_from_clone_join_or_is_hosts(join_nonce))
+                        {
+                            printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in local host join [%s] could not be added, recreating the session\n",
+                                managed_session_get_id_string(this->managed_session_index()),
+                                transport_secure_nonce_get_string(&join_nonce));
+                            for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
+                            {
+                                if (i == this->get_session_membership()->host_peer_index())
+                                    this->get_session_membership()->set_peer_connection_state(i, _network_session_peer_state_connected);
+                                else
+                                    this->boot_peer(i, _network_session_boot_reason_recreating_session);
+                            }
+                            managed_session_reset_session(this->managed_session_index(), true);
+                        }
+                        else
+                        {
+                            printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] XSessionJoinRemote failed, aborting join\n",
+                                managed_session_get_id_string(this->managed_session_index()));
+                            this->abort_pending_join(join_nonce);
+                        }
+                    }
+                    else
+                    {
+                        printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in squad host join [%s] could not be added, disconnecting\n",
+                            managed_session_get_id_string(this->managed_session_index()),
+                            transport_secure_nonce_get_string(&join_nonce));
+                        this->disconnect();
+                    }
+                }
+            }
+            else
+            {
+                printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] we completed a player modify that we didn't request\n",
+                    managed_session_get_id_string(this->managed_session_index()));
+            }
+        }
+    }
+    if (!this->disconnected())
+    {
+        long unknown1 = 0;
+        for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
+        {
+            auto connection_state = this->get_session_membership()->get_peer_connection_state(i);
+            if (connection_state == _network_session_peer_state_waiting || connection_state == _network_session_peer_state_connected && (managed_session_status & 0x20) == 0)
+            {
+                unknown1 |= 1 << i;
+            }
+        }
+        // TODO
+    }
 }
 
 e_network_observer_owner c_network_session::observer_owner()
@@ -837,7 +961,7 @@ long c_network_session::managed_session_index()
     return this->m_managed_session_index;
 }
 
-bool c_network_session::join_abort(s_transport_address const* incoming_address, int64_t join_nonce)
+bool c_network_session::join_abort(s_transport_address const* incoming_address, uint64_t join_nonce)
 {
     network_join_remove_join_from_queue(join_nonce);
     if (this->membership_is_locked())
@@ -890,4 +1014,61 @@ c_network_session_membership* c_network_session::get_session_membership_unsafe()
         return nullptr;
     else
         return this->get_session_membership();
+}
+
+bool c_network_session::join_nonce_is_from_clone_join_or_is_hosts(uint64_t join_nonce)
+{
+    return join_nonce == this->m_host_join_nonce;
+}
+
+// TODO TEST FUNC
+void c_network_session::finalize_single_player_add(e_network_join_refuse_reason refuse_reason)
+{
+    if (refuse_reason != _network_join_refuse_reason_none)
+        this->get_session_membership()->remove_player_from_player_add_queue(&this->m_player_add_single_player_identifier);
+    if (this->m_player_add_peer_index == this->get_session_membership()->host_peer_index())
+    {
+        if (refuse_reason != _network_join_refuse_reason_none)
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: Warning [%s] host player '%s' add failed because of '%s'\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                player_identifier_get_string(&this->m_player_add_single_player_identifier),
+                network_message_join_refuse_get_reason_string(refuse_reason));
+            this->m_player_add_join_refuse_reason = refuse_reason;
+        }
+        else
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: [%s] host player '%s' add succeeded\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                player_identifier_get_string(&this->m_player_add_single_player_identifier));
+            this->m_player_add_join_refuse_reason = _network_join_refuse_reason_none;
+        }
+    }
+    else
+    {
+        s_network_message_player_refuse* message = new s_network_message_player_refuse();
+        managed_session_get_id(this->managed_session_index(), &message->session_id);
+        long channel_index = this->m_session_membership.m_peer_channels[this->m_player_add_peer_index].channel_index;
+        if (channel_index != -1)
+            this->m_observer->observer_channel_send_message(this->m_session_index, channel_index, false, _network_message_type_player_refuse, sizeof(s_network_message_player_refuse), message);
+        if (refuse_reason != _network_join_refuse_reason_none)
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: Warning. [%s] informing peer %d that its player '%s' add failed because '%s'\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                this->m_player_add_peer_index,
+                player_identifier_get_string(&this->m_player_add_single_player_identifier),
+                network_message_join_refuse_get_reason_string(refuse_reason));
+        }
+        else
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: [%s] informing peer %d that its player '%s' add succeeded\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                this->m_player_add_peer_index,
+                player_identifier_get_string(&this->m_player_add_single_player_identifier));
+        }
+    }
+    // TODO - verify this is what the original code does
+    memset(&this->m_player_add_single_player_identifier, 0, sizeof(s_player_identifier));
+    memset(&this->m_player_add_secure_address, 0, sizeof(s_transport_secure_address));
+    this->m_player_add_peer_index = 0;
 }

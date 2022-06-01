@@ -96,7 +96,7 @@ const char* network_session_peer_state_get_string(e_network_session_peer_state s
     return network_session_peer_states[state];
 }
 
-void c_network_session_membership::set_join_nonce(long peer_index, int64_t join_nonce)
+void c_network_session_membership::set_join_nonce(long peer_index, uint64_t join_nonce)
 {
     this->get_peer(peer_index)->join_nonce = join_nonce;
 }
@@ -545,3 +545,49 @@ s_network_session_shared_membership::s_network_session_shared_membership()
         players[j].configuration.host.player_team = -1;
     }
 };
+
+uint64_t c_network_session_membership::get_join_nonce(long peer_index)
+{
+    return this->get_peer(peer_index)->join_nonce;
+}
+
+bool c_network_session_membership::is_player_in_player_add_queue(s_player_identifier const* player_identifier)
+{
+    // TODO - asserts here
+    return this->find_player_in_player_add_queue(player_identifier) != -1;
+}
+
+long c_network_session_membership::find_player_in_player_add_queue(s_player_identifier const* player_identifier)
+{
+    long(__thiscall * find_player_in_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(find_player_in_player_add_queue)>(module_base + 0x32D90);
+    return find_player_in_player_add_queue(this, player_identifier);
+}
+
+// TODO - test call
+void c_network_session_membership::remove_player_from_player_add_queue(s_player_identifier const* player_identifier)
+{
+    void(__thiscall * remove_player_from_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(remove_player_from_player_add_queue)>(module_base + 0x32C00);
+    return remove_player_from_player_add_queue(this, player_identifier);
+}
+
+void c_network_session_membership::commit_player_from_player_add_queue(s_player_identifier const* player_identifier)
+{
+    //  TODO - test call here, maybe the other check bit function needed a pointer passed which is why it crashed?
+    long(__fastcall* player_mask_check_unknown)(uint32_t* player_mask, long number_of_bits) = reinterpret_cast<decltype(player_mask_check_unknown)>(module_base + 0xC3C10);
+
+    auto queue_entry = &this->m_player_add_queue[this->m_player_add_queue_current_index];
+    bool sequence_number_not_zero = false;
+    long mask_player_index = player_mask_check_unknown(&this->m_baseline.peers[queue_entry->player_index].player_mask, 16);
+    if (mask_player_index != -1)
+        sequence_number_not_zero = this->m_baseline.players[mask_player_index].player_sequence_number != 0;
+    long player_index = this->find_or_add_player(queue_entry->player_index, &queue_entry->player_identifier, sequence_number_not_zero);
+    this->set_player_properties(player_index, queue_entry->output_user_index, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
+    this->m_player_add_queue_current_index = (this->m_player_add_queue_current_index + 1) % 4;
+}
+
+// TODO - test call
+void c_network_session_membership::set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
+{
+    void(__thiscall * set_player_properties)(c_network_session_membership* thisptr, long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(set_player_properties)>(module_base + 0x31C10);
+    return set_player_properties(this, player_index, desired_configuration_version, controller_index, player_data_from_client, voice_settings);
+}

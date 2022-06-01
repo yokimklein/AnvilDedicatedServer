@@ -43,7 +43,7 @@ struct s_player_add_queue_entry
 {
 	s_player_identifier player_identifier;
 	long player_index;
-	long output_user_index;
+	long output_user_index; // is this desired_configuration_version?
 	long controller_index;
 	s_player_configuration_from_client client_configuration;
 	uint32_t voice_settings;
@@ -154,7 +154,7 @@ public:
 	long get_peer_from_incoming_address(s_transport_address const* incoming_address);
 	void set_peer_connection_state(long peer_index, e_network_session_peer_state state);
 	s_network_session_peer* get_peer(long peer_index);
-	void set_join_nonce(long peer_index, int64_t join_nonce);
+	void set_join_nonce(long peer_index, uint64_t join_nonce);
 	void increment_update();
 	long get_player_count();
 	void idle();
@@ -179,6 +179,12 @@ public:
 	void set_peer_address(long peer_index, s_transport_secure_address const* secure_address);
 	void set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties);
 	void copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership);
+	uint64_t get_join_nonce(long peer_index);
+	bool is_player_in_player_add_queue(s_player_identifier const* player_identifier);
+	long find_player_in_player_add_queue(s_player_identifier const* player_identifier);
+	void remove_player_from_player_add_queue(s_player_identifier const* player_identifier);
+	void commit_player_from_player_add_queue(s_player_identifier const* player_identifier);
+	void set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings);
 
 	c_network_session* m_session;
 	long unknown1;

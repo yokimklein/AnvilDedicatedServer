@@ -1,4 +1,6 @@
 #include "network_managed_session.h"
+#include "network_session.h"
+#include <iostream>
 
 // TEST THIS - function exists in ms29 but I couldn't get it to call correctly
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
@@ -58,4 +60,98 @@ void managed_session_modify_slot_counts(long managed_session_index, long private
 		if ((managed_session->flags & 2) == 0 && (managed_session->flags & 0x40000) == 0)
 			managed_session->flags = managed_session->flags | 0x20000;
 	}
+}
+
+short* managed_session_get_status(short* managed_session_status, long managed_session_index)
+{
+	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	auto flags = managed_session->flags;
+	*managed_session_status = 0;
+	if ((flags & 0x10) != 0)
+		*managed_session_status = 2;
+	if ((flags & 0x20) != 0)
+		*managed_session_status |= 4u;
+	if ((managed_session->current_operation_flags & 4) != 0 || (managed_session->pending_operation_flags & 4) != 0)
+		*managed_session_status |= 1u;
+	if ((flags & 0x40) != 0)
+		*managed_session_status |= 8u;
+	if ((flags & 0x80) != 0)
+		*managed_session_status |= 0x10u;
+	if ((managed_session->current_operation_flags & 0x10) != 0 || (managed_session->pending_operation_flags & 0x10) != 0)
+		*managed_session_status |= 8u;
+	if ((flags & 0x800) != 0)
+		*managed_session_status |= 0x40u;
+	if ((flags & 0x1000) != 0)
+		*managed_session_status |= 0x80u;
+	if ((flags & 0x400) != 0)
+		*managed_session_status |= 0x20u;
+	if ((managed_session->current_operation_flags & 0x400) != 0 || (managed_session->pending_operation_flags & 0x400) != 0)
+		*managed_session_status |= 0x100u;
+	if ((flags & 0x2000) != 0)
+		*managed_session_status |= 0x200u;
+	if ((flags & 0x4000) != 0)
+		*managed_session_status |= 0x400u;
+	if ((managed_session->current_operation_flags & 0x200) != 0 || (managed_session->pending_operation_flags & 0x200) != 0)
+		*managed_session_status |= 0x800u;
+	if ((flags & 0x8000) != 0)
+		*managed_session_status |= 0x1000u;
+	if ((flags & 0x10000) != 0)
+		*managed_session_status |= 0x2000u;
+	return managed_session_status;
+}
+
+bool managed_session_is_master_session(long managed_session_index)
+{
+	if (managed_session_index == -1)
+		return false;
+	else
+	{
+		auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+		auto flags = managed_session->flags;
+		return (flags & 2) != 0;
+	}
+}
+
+void managed_session_reset_session(long managed_session_index, bool use_session_time)
+{
+	c_network_session* life_cycle_session = (c_network_session*)(module_base + 0x3EADFD0); // life cycle session 0 - desired state session?
+
+	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_reset_session: [%s]:%08X reset session\n",
+		transport_session_description_get_string(&managed_session->desired_online_session_state.description),
+		managed_session_index);
+	managed_session->pending_operation_flags |= 1u;
+	managed_session->desired_online_session_state.public_slots_flags |= 1u;
+	managed_session->creation_contexts[0].id = _online_context_id_game_type;
+	managed_session->pending_operation_flags = managed_session->pending_operation_flags & 0xFFEF | 0x184;
+	if (use_session_time)
+	{
+		managed_session->flags |= 4u;
+		if (life_cycle_session->m_time_exists)
+			managed_session->creation_time = life_cycle_session->m_time;
+		else
+			managed_session->creation_time = timeGetTime();
+	}
+	else
+	{
+		managed_session->flags &= 0xFFFFFFFB;
+		managed_session->creation_time = 0;
+	}
+}
+
+void managed_session_remove_players(long managed_session_index, uint64_t* xuids, long xuid_count)
+{
+	void(__fastcall * remove_from_player_list)(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
+	
+	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
+	managed_session->pending_operation_flags |= 0xC0u;
+	managed_session->flags &= 0xFFFFFFFB;
+	managed_session->creation_time = 0;
+}
+
+void managed_session_reset_players_add_status(long managed_session_index)
+{
+	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	managed_session->flags &= 0xFFFFE7FF;
 }

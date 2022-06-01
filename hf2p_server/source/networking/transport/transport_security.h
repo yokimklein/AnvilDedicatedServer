@@ -36,3 +36,4 @@ const char* transport_secure_address_get_string(s_transport_secure_address const
 const char* transport_secure_identifier_get_string(s_transport_secure_identifier const* secure_identifier);
 const s_transport_unique_identifier* transport_unique_identifier_get();
 void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address);
+const char* transport_session_description_get_string(s_transport_session_description const* session_description);

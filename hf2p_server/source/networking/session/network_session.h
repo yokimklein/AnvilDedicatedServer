@@ -103,11 +103,13 @@ public:
 	void idle_observer_state();
 	void check_to_send_membership_update();
 	long managed_session_index();
-	bool join_abort(s_transport_address const* incoming_address, int64_t join_nonce);
+	bool join_abort(s_transport_address const* incoming_address, uint64_t join_nonce);
 	c_network_session_parameters* get_session_parameters();
 	bool handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message);
 	bool peer_request_properties_update(s_transport_secure_address const* secure_address, s_network_session_peer_properties const* peer_properties);
 	c_network_session_membership* get_session_membership_unsafe();
+	bool join_nonce_is_from_clone_join_or_is_hosts(uint64_t join_nonce);
+	void finalize_single_player_add(e_network_join_refuse_reason refuse_reason);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -119,7 +121,7 @@ public:
 	c_network_session_membership m_session_membership;
 	c_network_session_parameters m_session_parameters;
 	long : 32;
-	e_network_session_state m_local_state; // this should be + 0x1ABDA8
+	e_network_session_state m_local_state;
 	long : 32;
 	char m_local_state_data[0x288];
 	uint32_t m_connection_identifier;
@@ -130,7 +132,7 @@ public:
 	long : 32;
 	long m_managed_session_index;
 	e_network_join_refuse_reason m_join_refuse_reason;
-	int64_t m_host_join_nonce;
+	uint64_t m_host_join_nonce;
 	long : 32;
 	uint32_t m_disconnection_policy;
 	s_player_identifier m_player_add_single_player_identifier;

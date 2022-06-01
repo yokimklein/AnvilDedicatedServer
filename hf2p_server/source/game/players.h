@@ -12,3 +12,6 @@ struct s_player_identifier
 {
 	long long data;
 };
+
+bool player_identifier_is_valid(s_player_identifier const* identifier);
+const char* player_identifier_get_string(s_player_identifier const* identifier);
