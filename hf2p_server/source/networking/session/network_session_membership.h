@@ -148,12 +148,15 @@ public:
 	long get_next_peer(long peer_index);
 	long get_peer_from_secure_address(s_transport_secure_address const* secure_address);
 	bool is_peer_valid(long peer_index);
+	bool is_player_valid(long player_index);
 	bool add_peer(long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce);
 	long find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
+	s_network_session_player* add_player_internal(long player_index, s_player_identifier const* player_identifier, long peer_index, long player_sequence_number, bool player_occupies_a_public_slot);
 	void update_player_data(long player_index, s_player_configuration const* player_config);
 	long get_peer_from_incoming_address(s_transport_address const* incoming_address);
 	void set_peer_connection_state(long peer_index, e_network_session_peer_state state);
 	s_network_session_peer* get_peer(long peer_index);
+	s_network_session_player* get_player(long player_index);
 	void set_join_nonce(long peer_index, uint64_t join_nonce);
 	void increment_update();
 	long get_player_count();
@@ -185,6 +188,11 @@ public:
 	void remove_player_from_player_add_queue(s_player_identifier const* player_identifier);
 	void commit_player_from_player_add_queue(s_player_identifier const* player_identifier);
 	void set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings);
+	long get_creation_timestamp(long peer_index);
+	s_player_add_queue_entry* get_first_player_from_player_add_queue();
+	void remove_player(long player_index);
+	void remove_player_internal(long player_index);
+	long get_player_from_identifier(s_player_identifier const* player_identifier);
 
 	c_network_session* m_session;
 	long unknown1;
@@ -194,7 +202,7 @@ public:
 	long unknown2;
 	long m_local_peer_index;
 	long m_player_configuration_version;
-	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session]; // local_peer?
+	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session];
 	s_player_add_queue_entry m_player_add_queue[4];
 	long m_player_add_queue_current_index;
 	long m_player_add_queue_count;

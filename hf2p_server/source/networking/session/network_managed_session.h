@@ -96,5 +96,7 @@ void managed_session_modify_slot_counts(long managed_session_index, long private
 short* managed_session_get_status(short* managed_session_status, long managed_session_index);
 bool managed_session_is_master_session(long managed_session_index);
 void managed_session_reset_session(long managed_session_index, bool use_session_time);
-void managed_session_remove_players(long managed_session_index, uint64_t xuids, long xuid_count);
+void managed_session_remove_players(long managed_session_index, uint64_t* xuids, long xuid_count);
 void managed_session_reset_players_add_status(long managed_session_index);
+void managed_session_add_players(long managed_session_index, uint64_t* xuids, bool* player_bools, long player_count);
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, uint64_t* player_xuids, bool* player_bools, long xuid_count);

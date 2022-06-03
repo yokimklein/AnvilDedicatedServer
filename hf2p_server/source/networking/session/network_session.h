@@ -110,6 +110,10 @@ public:
 	c_network_session_membership* get_session_membership_unsafe();
 	bool join_nonce_is_from_clone_join_or_is_hosts(uint64_t join_nonce);
 	void finalize_single_player_add(e_network_join_refuse_reason refuse_reason);
+	e_network_session_type session_type();
+	bool host_join_nonce_valid();
+	void add_pending_join_to_session(uint64_t join_nonce);
+	e_network_observer_owner session_index();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

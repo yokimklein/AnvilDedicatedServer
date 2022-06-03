@@ -66,37 +66,38 @@ short* managed_session_get_status(short* managed_session_status, long managed_se
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	auto flags = managed_session->flags;
-	*managed_session_status = 0;
+	short status = 0;
 	if ((flags & 0x10) != 0)
-		*managed_session_status = 2;
+		status = 2;
 	if ((flags & 0x20) != 0)
-		*managed_session_status |= 4u;
+		status |= 4u;
 	if ((managed_session->current_operation_flags & 4) != 0 || (managed_session->pending_operation_flags & 4) != 0)
-		*managed_session_status |= 1u;
+		status |= 1u;
 	if ((flags & 0x40) != 0)
-		*managed_session_status |= 8u;
+		status |= 8u;
 	if ((flags & 0x80) != 0)
-		*managed_session_status |= 0x10u;
+		status |= 0x10u;
 	if ((managed_session->current_operation_flags & 0x10) != 0 || (managed_session->pending_operation_flags & 0x10) != 0)
-		*managed_session_status |= 8u;
+		status |= 8u;
 	if ((flags & 0x800) != 0)
-		*managed_session_status |= 0x40u;
+		status |= 0x40u;
 	if ((flags & 0x1000) != 0)
-		*managed_session_status |= 0x80u;
+		status |= 0x80u;
 	if ((flags & 0x400) != 0)
-		*managed_session_status |= 0x20u;
+		status |= 0x20u;
 	if ((managed_session->current_operation_flags & 0x400) != 0 || (managed_session->pending_operation_flags & 0x400) != 0)
-		*managed_session_status |= 0x100u;
+		status |= 0x100u;
 	if ((flags & 0x2000) != 0)
-		*managed_session_status |= 0x200u;
+		status |= 0x200u;
 	if ((flags & 0x4000) != 0)
-		*managed_session_status |= 0x400u;
+		status |= 0x400u;
 	if ((managed_session->current_operation_flags & 0x200) != 0 || (managed_session->pending_operation_flags & 0x200) != 0)
-		*managed_session_status |= 0x800u;
+		status |= 0x800u;
 	if ((flags & 0x8000) != 0)
-		*managed_session_status |= 0x1000u;
+		status |= 0x1000u;
 	if ((flags & 0x10000) != 0)
-		*managed_session_status |= 0x2000u;
+		status |= 0x2000u;
+	*managed_session_status = status;
 	return managed_session_status;
 }
 
@@ -126,7 +127,7 @@ void managed_session_reset_session(long managed_session_index, bool use_session_
 	managed_session->pending_operation_flags = managed_session->pending_operation_flags & 0xFFEF | 0x184;
 	if (use_session_time)
 	{
-		managed_session->flags |= 4u;
+		managed_session->flags |= (1 << 2);
 		if (life_cycle_session->m_time_exists)
 			managed_session->creation_time = life_cycle_session->m_time;
 		else
@@ -134,7 +135,7 @@ void managed_session_reset_session(long managed_session_index, bool use_session_
 	}
 	else
 	{
-		managed_session->flags &= 0xFFFFFFFB;
+		managed_session->flags &= ~(1 << 2);
 		managed_session->creation_time = 0;
 	}
 }
@@ -154,4 +155,34 @@ void managed_session_reset_players_add_status(long managed_session_index)
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	managed_session->flags &= 0xFFFFE7FF;
+}
+
+void managed_session_add_players(long managed_session_index, uint64_t* player_xuids, bool* player_bools, long xuid_count)
+{
+	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, player_bools, xuid_count); // non-original function name
+	managed_session->flags |= 0x400u;
+	managed_session->pending_operation_flags |= 0x180u;
+	managed_session->flags &= 0xFFFFFFFB;
+	managed_session->creation_time = 0;
+}
+
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, uint64_t* player_xuids, bool* player_bools, long xuid_count)
+{
+	for (long i = 0; i < player_count; i++)
+	{
+		long player_index = -1;
+		for (player_index = 0; player_index < player_count; player_index++)
+		{
+			if (players[player_index].flags & 1 && player_xuids[i] == players[player_index].xuid)
+				break;
+		}
+		if (player_index == player_count)
+		{
+			players[player_index].xuid = player_xuids[i];
+			players[player_index].flags |= 1u;
+			if (player_bools[i])
+				players[player_index].flags |= 2u;
+		}
+	}
 }

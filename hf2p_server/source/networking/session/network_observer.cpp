@@ -46,14 +46,12 @@ bool c_network_observer::observer_channel_connected(e_network_observer_owner own
 	return this->get_observer(owner_type, observer_index)->state == _observer_state_connected;
 }
 
-// TODO - test call
 bool c_network_observer::observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
 	bool(__thiscall* observer_channel_backlogged)(c_network_observer* observer, e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type) = reinterpret_cast<decltype(observer_channel_backlogged)>(module_base + 0xF880);
 	return observer_channel_backlogged(this, owner_type, observer_index, message_type);
 }
 
-// TODO - test call
 void c_network_observer::observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
 	void(__thiscall* observer_channel_set_waiting_on_backlog)(c_network_observer* observer, e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type) = reinterpret_cast<decltype(observer_channel_set_waiting_on_backlog)>(module_base + 0xF900);

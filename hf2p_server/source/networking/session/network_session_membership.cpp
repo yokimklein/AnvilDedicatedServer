@@ -41,6 +41,12 @@ bool c_network_session_membership::is_peer_valid(long peer_index)
     return (m_baseline.valid_peer_mask >> peer_index) & 1;
 }
 
+// TODO - test this
+bool c_network_session_membership::is_player_valid(long player_index)
+{
+    return ((1 << (player_index & 0x1F)) & *(&this->get_current_membership()->valid_player_mask + (player_index >> 5)));
+}
+
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce)
 {
     typedef long(__thiscall* add_peer_ptr)(c_network_session_membership* session_membership, long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce);
@@ -50,9 +56,77 @@ bool c_network_session_membership::add_peer(long peer_index, e_network_session_p
 
 long c_network_session_membership::find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting)
 {
-    typedef long(__thiscall* find_or_add_player_ptr)(c_network_session_membership* session_membership, long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
-    auto find_or_add_player_call = reinterpret_cast<find_or_add_player_ptr>(module_base + 0x31950);
-    return find_or_add_player_call(this, peer_index, player_identifier, join_from_recruiting);
+    // rewritten because the existing find_or_add_player method has peer index 0 baked into it and will ignore the actual peer index arg
+    //typedef long(__thiscall* find_or_add_player_ptr)(c_network_session_membership* session_membership, long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
+    //auto find_or_add_player_call = reinterpret_cast<find_or_add_player_ptr>(module_base + 0x31950);
+    //return find_or_add_player_call(this, peer_index, player_identifier, join_from_recruiting);
+
+    long(__fastcall * get_player_index_from_mask)(uint32_t * player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    auto peer = this->get_peer(peer_index);
+    long player_index = get_player_index_from_mask(&peer->player_mask, 16);
+    if (player_index != -1)
+    {
+        if (this->get_player(player_index)->player_identifier.data == player_identifier->data)
+        {
+            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: peer #%d [%s] already has correct player [#%d]\n",
+                this->get_session()->get_id_string(),
+                peer_index,
+                transport_secure_address_get_string(&peer->secure_address),
+                player_index);
+            return player_index;
+        }
+        else
+        {
+            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: peer #%d [%s] already has player [#%d] with different identifier, removing\n",
+                this->get_session()->get_id_string(), 
+                peer_index,
+                transport_secure_address_get_string(&peer->secure_address),
+                player_index);
+            this->remove_player(player_index);
+            player_index = -1;
+        }
+    }
+    long player_index_from_identifier = this->get_player_from_identifier(player_identifier);
+    if (player_index_from_identifier != -1)
+    {
+        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: player index %d has the same player identifier as the one we're adding, removing them\n",
+            this->get_session()->get_id_string(),
+            player_index_from_identifier);
+        this->remove_player(player_index_from_identifier);
+    }
+    long next_player_index;
+    for (next_player_index = 0; next_player_index < k_network_maximum_players_per_session; next_player_index++)
+    {
+        if (!this->is_player_valid(next_player_index))
+            break;
+    }
+    this->add_player_internal(next_player_index, player_identifier, peer_index, this->get_current_membership()->player_sequence_number, join_from_recruiting);
+    this->get_current_membership()->player_sequence_number = (this->get_current_membership()->player_sequence_number + 1) % 0x100000;
+    this->get_player(next_player_index)->configuration.client.multiplayer_team = -1;
+    this->get_player(next_player_index)->configuration.client.active_armor_loadout = -1;
+    this->get_player(next_player_index)->configuration.client.hopper_access_flags = 0;
+    this->get_player(next_player_index)->configuration.host.player_team = -1;
+    this->get_player(next_player_index)->configuration.host.player_assigned_team = -1;
+    this->increment_update();
+    return next_player_index;
+}
+
+s_network_session_player* c_network_session_membership::add_player_internal(long player_index, s_player_identifier const* player_identifier, long peer_index, long player_sequence_number, bool player_occupies_a_public_slot)
+{
+    long mask_unknown = 1 << (player_index & 0x1F);
+    *(&this->get_current_membership()->valid_player_mask + (player_index >> 5)) |= mask_unknown;
+    this->get_current_membership()->player_count++;
+    auto player = &this->get_current_membership()->players[player_index];
+    player->player_identifier.data = player_identifier->data;
+    player->player_sequence_number = player_sequence_number;
+    player->peer_index = peer_index;
+    player->player_occupies_a_public_slot = player_occupies_a_public_slot;
+    player->controller_index = -1;
+    if (peer_index != -1)
+        *(&this->get_peer(peer_index)->player_mask + (player_index >> 5)) |= mask_unknown;
+    player->configuration.host.player_team = -1;
+    player->configuration.host.player_assigned_team = -1;
+    return player;
 }
 
 void c_network_session_membership::update_player_data(long player_index, s_player_configuration const* player_config)
@@ -89,6 +163,12 @@ s_network_session_peer* c_network_session_membership::get_peer(long peer_index)
 {
     // TODO - assert here w/ is_peer_valid
     return &this->m_baseline.peers[peer_index];
+}
+
+s_network_session_player* c_network_session_membership::get_player(long player_index)
+{
+    // TODO - asserts
+    return &this->m_baseline.players[player_index];
 }
 
 const char* network_session_peer_state_get_string(e_network_session_peer_state state)
@@ -511,7 +591,6 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
     }
 }
 
-// FUNC TODO
 void c_network_session_membership::copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership)
 {
     memmove(&this->m_transmitted[peer_index], current_membership, sizeof(s_network_session_shared_membership));
@@ -563,7 +642,6 @@ long c_network_session_membership::find_player_in_player_add_queue(s_player_iden
     return find_player_in_player_add_queue(this, player_identifier);
 }
 
-// TODO - test call
 void c_network_session_membership::remove_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
     void(__thiscall * remove_player_from_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(remove_player_from_player_add_queue)>(module_base + 0x32C00);
@@ -572,12 +650,11 @@ void c_network_session_membership::remove_player_from_player_add_queue(s_player_
 
 void c_network_session_membership::commit_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
-    //  TODO - test call here, maybe the other check bit function needed a pointer passed which is why it crashed?
-    long(__fastcall* player_mask_check_unknown)(uint32_t* player_mask, long number_of_bits) = reinterpret_cast<decltype(player_mask_check_unknown)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(uint32_t* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
 
     auto queue_entry = &this->m_player_add_queue[this->m_player_add_queue_current_index];
     bool sequence_number_not_zero = false;
-    long mask_player_index = player_mask_check_unknown(&this->m_baseline.peers[queue_entry->player_index].player_mask, 16);
+    long mask_player_index = get_player_index_from_mask(&this->m_baseline.peers[queue_entry->player_index].player_mask, 16);
     if (mask_player_index != -1)
         sequence_number_not_zero = this->m_baseline.players[mask_player_index].player_sequence_number != 0;
     long player_index = this->find_or_add_player(queue_entry->player_index, &queue_entry->player_identifier, sequence_number_not_zero);
@@ -585,9 +662,42 @@ void c_network_session_membership::commit_player_from_player_add_queue(s_player_
     this->m_player_add_queue_current_index = (this->m_player_add_queue_current_index + 1) % 4;
 }
 
-// TODO - test call
 void c_network_session_membership::set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
 {
     void(__thiscall * set_player_properties)(c_network_session_membership* thisptr, long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(set_player_properties)>(module_base + 0x31C10);
     return set_player_properties(this, player_index, desired_configuration_version, controller_index, player_data_from_client, voice_settings);
+}
+
+long c_network_session_membership::get_creation_timestamp(long peer_index)
+{
+    return this->get_peer(peer_index)->join_start_time;
+}
+
+s_player_add_queue_entry* c_network_session_membership::get_first_player_from_player_add_queue()
+{
+    if (this->m_player_add_queue_current_index == this->m_player_add_queue_count)
+        return nullptr;
+    else
+        return &this->m_player_add_queue[this->m_player_add_queue_current_index];
+}
+
+void c_network_session_membership::remove_player(long player_index)
+{
+    auto player = this->get_player(player_index);
+    if (this->get_peer_connection_state(player->peer_index) >= _network_session_peer_state_joining)
+        managed_session_remove_players(this->get_session()->managed_session_index(), (uint64_t*)&player->configuration.host.player_xuid.data, 1);
+    this->remove_player_internal(player_index);
+    this->increment_update();
+}
+
+void c_network_session_membership::remove_player_internal(long player_index)
+{
+    void(__thiscall * remove_player_internal)(c_network_session_membership* thisptr, long player_index) = reinterpret_cast<decltype(remove_player_internal)>(module_base + 0x31B80);
+    remove_player_internal(this, player_index);
+}
+
+long c_network_session_membership::get_player_from_identifier(s_player_identifier const* player_identifier)
+{
+    long(__thiscall * get_player_from_identifier)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(get_player_from_identifier)>(module_base + 0x318B0); // funny how similar the address is to the call above
+    return get_player_from_identifier(this, player_identifier);
 }

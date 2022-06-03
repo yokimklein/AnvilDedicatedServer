@@ -4,9 +4,9 @@
 
 void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
-    uint32_t(__cdecl * system_default_ui_language_to_game_language)() = reinterpret_cast<decltype(system_default_ui_language_to_game_language)>(module_base + 0xB0C00); // TODO TEST
-    void(__fastcall * network_session_peer_connectivity_unknown)(c_network_session * session, uint16_t * peer_connectivity_mask) = reinterpret_cast<decltype(network_session_peer_connectivity_unknown)>(module_base + 0x2E500); // TODO TEST
-    uint32_t(__cdecl * build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(module_base + 0xDD750); // TODO TEST
+    uint32_t(__cdecl * system_default_ui_language_to_game_language)() = reinterpret_cast<decltype(system_default_ui_language_to_game_language)>(module_base + 0xB0C00);
+    void(__fastcall * network_session_peer_connectivity_unknown)(c_network_session * session, uint16_t * peer_connectivity_mask) = reinterpret_cast<decltype(network_session_peer_connectivity_unknown)>(module_base + 0x2E500);
+    uint32_t(__cdecl * build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(module_base + 0xDD750);
 
     uint32_t unknown_time = ((uint32_t*)module_base + 0x3EB1498)[session->m_session_index];
     uint32_t current_time = timeGetTime();
