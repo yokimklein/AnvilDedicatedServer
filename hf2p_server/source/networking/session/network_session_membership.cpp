@@ -604,12 +604,44 @@ long fast_checksum_new()
     return -1;
 }
 
-// TODO FUNCTION
-long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership) // fast_checksum<s_network_session_shared_membership>
+// bless this ungodly mess
+// fast_checksum<s_network_session_shared_membership>
+long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership)
 {
-    //long unknown1 = fast_checksum -
-    
-    return -1;
+    long v4 = -558987394;
+    long v5 = -558987394;
+    long v6 = -558987394;
+    long long v24 = 0;
+    long long v26 = 0;
+    long* data_pointer = (long*)shared_membership;
+
+    long v1 = sizeof(s_network_session_shared_membership) / 12; // 0x10B6
+    for (long i = 0; i < v1; i++)
+    {
+        unsigned long v7 = data_pointer[2] + v4;
+        long v8 = data_pointer[1] + v5;
+        unsigned long v9 = (16 * v7) ^ (v7 >> 28) ^ (data_pointer[0] + v7 - v6);
+        unsigned long v10 = v8 + v7;
+        unsigned long v11 = (v9 << 6) ^ (v9 >> 26) ^ (v8 - v9);
+        unsigned long v12 = v10 + v9;
+        unsigned long v13 = (v11 << 8) ^ HIBYTE(v11) ^ (v10 - v11);
+        unsigned long v14 = v12 + v11;
+        unsigned long v15 = (v13 << 16) ^ HIWORD(v13) ^ (v12 - v13);
+        unsigned long v16 = v14 + v13;
+        unsigned long v17 = (v15 >> 13) ^ (v15 << 19) ^ (v14 - v15);
+        v6 = v16 + v15;
+        v4 = (16 * v17) ^ (v17 >> 28) ^ (v16 - v17);
+        v5 = v6 + v17;
+        data_pointer += 3;
+    }
+    long v19 = data_pointer[1] + v5;
+    unsigned long v20 = (v19 ^ v4) - ((v19 << 14) ^ ((unsigned __int64)(unsigned int)v19 >> 18));
+    unsigned long v21 = ((data_pointer[0] + v6) ^ v20) - ((v20 << 11) ^ ((unsigned __int64)v20 >> 21));
+    long v22 = (v21 ^ v19) - ((v21 >> 7) ^ (v21 << 25));
+    unsigned long v23 = (v22 ^ v20) - ((v22 << 16) ^ ((unsigned __int64)(unsigned int)v22 >> 16));
+    unsigned long v80 = (v21 ^ v23) - ((16 * v23) ^ ((unsigned __int64)v23 >> 28));
+    unsigned long v81 = (v80 ^ v22) - ((v80 << 14) ^ ((unsigned __int64)v80 >> 18));
+    return (v81 ^ v23) - ((v81 >> 8) ^ (v81 << 24));
 }
 
 s_network_session_shared_membership::s_network_session_shared_membership()
