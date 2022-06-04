@@ -35,11 +35,55 @@ void c_network_message_handler::handle_connect_refuse(c_network_channel* channel
     handle_connect_refuse(channel, message);
 }
 
-void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message) // untested
+void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message)
 {
-    typedef long(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
-    auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0x25B10);
-    handle_connect_establish(channel, message);
+    //typedef long(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
+    //auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0x25B10);
+    //handle_connect_establish(channel, message);
+
+    if (channel->closed())
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: ignoring connect establish from '%s'/%d (currently closed)\n",
+            channel->get_name(),
+            message->remote_identifier);
+        return;
+    }
+    if (channel->get_identifier() != message->identifier)
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: ignoring connect establish from '%s'/%d (establishment identifier %d != local identifier %d)\n",
+            channel->get_name(),
+            message->remote_identifier,
+            message->identifier,
+            channel->get_identifier());
+        return;
+    }
+    if (channel->established() && channel->get_remote_identifier() != message->remote_identifier)
+    {
+        long channel_identifier = -1;
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d but we are already established to %d\n",
+            channel->get_name(),
+            message->remote_identifier,
+            channel->get_remote_identifier());
+        if (!channel->m_message_queue.has_channel_been_used())
+            channel_identifier = channel->get_identifier();
+        s_transport_address* remote_address = nullptr;
+        channel->get_remote_address(remote_address);
+        channel->close(_network_channel_reason_connect_reinitiate);
+        channel->open(remote_address, false, channel_identifier);
+    }
+    if (channel->closed())
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d for local %d but the channel closed before we could establish\n",
+            channel->get_name(),
+            message->remote_identifier,
+            channel->get_identifier());
+        return;
+    }
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d for local %d\n",
+        channel->get_name(),
+        message->remote_identifier,
+        channel->get_identifier());
+    channel->send_connection_established(message->remote_identifier);
 }
 
 // inlined in the ms29 client
@@ -325,12 +369,12 @@ void log_received_over_non_connected_channel(c_network_channel* channel, e_netwo
 void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     // non-original log but its useful to know when channel messages arrive
-    //s_transport_address remote_address_log;
-    //channel->get_remote_address(&remote_address_log);
-    //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
-    //    message_type,
-    //    this->m_message_type_collection->get_message_type_name(message_type),
-    //    transport_address_get_string(&remote_address_log));
+    s_transport_address remote_address_log;
+    channel->get_remote_address(&remote_address_log);
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
+        message_type,
+        this->m_message_type_collection->get_message_type_name(message_type),
+        transport_address_get_string(&remote_address_log));
 
     s_transport_address remote_address;
     switch (message_type)

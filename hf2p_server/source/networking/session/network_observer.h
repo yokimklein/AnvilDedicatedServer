@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include "..\messages\network_message_type_collection.h"
+#include "..\delivery\network_channel.h"
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
@@ -42,11 +43,19 @@ class c_network_observer
 
 		struct s_channel_observer
 		{
-			byte unknown_data[0xA74];
+			c_network_channel channel;
+			long unknown1;
 			e_observer_state state;
-			byte unknown_data2[0x660];
+			byte unknown_data1[0x3C];
+			int unknown_flags;
+			int unknown2;
+			s_transport_secure_address secure_address;
+			long unknown3;
+			short time_unknown;
+			s_transport_address address;
+			byte unknown_data3[0x5C0];
 		};
-		static_assert(sizeof(s_channel_observer) == 0x10D8);
+		static_assert(sizeof(s_channel_observer) == 0x10A8);
 
 		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
@@ -69,7 +78,7 @@ class c_network_observer
 		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
 		byte unknown_data[0x238]; // time statistics etc
 };
-static_assert(sizeof(c_network_observer) == 0x23F20);
+static_assert(sizeof(c_network_observer) == 0x238C0); // TODO - verify size
 /*
 
 class c_network_observer : c_network_channel

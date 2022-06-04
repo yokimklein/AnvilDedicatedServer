@@ -64,8 +64,9 @@ void __fastcall handle_out_of_band_message_hook(c_network_message_handler* messa
 }
 
 // add back missing message handlers
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
+void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, bool unknown, c_network_channel* channel, e_network_message_type message_type, long message_storage_size/*, s_network_message const* message*/)
 {
+    s_network_message const* message = (s_network_message const*)(module_base + 0x4FFB090);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
 }
 

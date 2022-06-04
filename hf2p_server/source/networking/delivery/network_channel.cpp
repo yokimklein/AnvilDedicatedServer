@@ -31,9 +31,41 @@ bool c_network_channel::get_remote_address(s_transport_address* remote_address) 
 	return true;
 }
 
-long c_network_channel::close(e_network_channel_closure_reason reason)
+void c_network_channel::close(e_network_channel_closure_reason reason)
 {
-	typedef long(__fastcall* network_channel__close_ptr)(c_network_channel* channel, e_network_channel_closure_reason reason);
+	typedef void(__thiscall* network_channel__close_ptr)(c_network_channel* channel, e_network_channel_closure_reason reason);
 	auto network_channel__close = reinterpret_cast<network_channel__close_ptr>(module_base + 0xC310);
-	return network_channel__close(this, reason);
+	network_channel__close(this, reason);
+}
+
+bool c_network_channel::closed()
+{
+	return this->get_state() <= _network_channel_state_closed;
+}
+
+bool c_network_channel::established()
+{
+	return this->get_state() >= _network_channel_state_established;
+}
+
+long c_network_channel::get_identifier()
+{
+	return this->m_identifier;
+}
+
+long c_network_channel::get_remote_identifier()
+{
+	return this->m_remote_identifier;
+}
+
+void c_network_channel::open(s_transport_address const* remote_address, bool unknown, long channel_identifier)
+{
+	void(__thiscall * open)(c_network_channel* thisptr, s_transport_address const* remote_address, bool unknown, long channel_identifier) = reinterpret_cast<decltype(open)>(module_base + 0xBE20);
+	open(this, remote_address, unknown, channel_identifier);
+}
+
+void c_network_channel::send_connection_established(long remote_identifier)
+{
+	void(__thiscall * send_connection_established)(c_network_channel* thisptr, long remote_identifier) = reinterpret_cast<decltype(send_connection_established)>(module_base + 0xBF80);
+	send_connection_established(this, remote_identifier);
 }

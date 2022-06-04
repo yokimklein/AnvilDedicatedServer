@@ -133,7 +133,7 @@ public:
 	uint32_t m_time_synchronization_start_time;
 	bool m_time_exists;
 	uint32_t m_time;
-	long : 32;
+	long unknown; // recevied packet pointer?
 	long m_managed_session_index;
 	e_network_join_refuse_reason m_join_refuse_reason;
 	uint64_t m_host_join_nonce;

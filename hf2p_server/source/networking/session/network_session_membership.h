@@ -199,7 +199,7 @@ public:
 	s_network_session_shared_membership m_baseline;
 	s_network_session_shared_membership m_transmitted[k_network_maximum_machines_per_session];
 	long m_transmitted_checksums[k_network_maximum_machines_per_session];
-	long unknown2;
+	long unknown2; // baseline checksum? or membership reset bool?
 	long m_local_peer_index;
 	long m_player_configuration_version;
 	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session];
