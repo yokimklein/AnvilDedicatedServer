@@ -410,7 +410,7 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         if (baseline_player == nullptr || ((membership->valid_player_mask >> i) & 1))
         {
             // blam uses csmemcmp here, which asserts if one of the pointers is null, we're not so we're getting a warning
-            if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0) || memcmp(membership_player, baseline_player, sizeof(s_network_session_player)))
+            if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0 || memcmp(membership_player, baseline_player, sizeof(s_network_session_player))))
             {
                 s_network_message_membership_update_player* update_player = &message->player_updates[message->player_count];
                 message->player_count++;
@@ -429,7 +429,8 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                     update_player->player_occupies_a_public_slot = membership_player->player_occupies_a_public_slot;
                 }
 
-                update_player->player_properties_updated = (membership_player->desired_configuration_version != baseline_player->desired_configuration_version
+                update_player->player_properties_updated = (update_player->player_location_updated
+                                                         || membership_player->desired_configuration_version != baseline_player->desired_configuration_version
                                                          || membership_player->controller_index != baseline_player->controller_index
                                                          || memcmp(&membership_player->configuration, &baseline_player->configuration, sizeof(s_player_configuration))
                                                          || membership_player->voice_settings != baseline_player->voice_settings);
@@ -440,13 +441,13 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                     memmove(&update_player->configuration, &membership_player->configuration, sizeof(s_player_configuration));
                     update_player->player_voice = membership_player->voice_settings;
                 }
-                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]", i);
+                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]\n", i);
             }
             else if ((unknown4 & unknown3) == 0 && (unknown4 & unknown1) == 0)
             {
                 s_network_message_membership_update_player* player_update = &message->player_updates[message->player_count];
                 message->player_count++;
-                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]", i);
+                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]\n", i);
                 player_update->player_index = i;
                 player_update->update_type = 0;
             }
@@ -523,7 +524,7 @@ void c_network_session_membership::build_peer_properties_update(s_network_sessio
         peer_properties_update->peer_game_instance = membership_properties->peer_game_instance;
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer game instance changed\n");
     }
-    if (baseline_properties
+    if (!baseline_properties
         || membership_properties->connectivity_badness_rating != baseline_properties->connectivity_badness_rating
         || membership_properties->host_badness_rating != baseline_properties->host_badness_rating
         || membership_properties->client_badness_rating != baseline_properties->client_badness_rating)
