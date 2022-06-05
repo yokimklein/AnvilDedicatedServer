@@ -86,11 +86,27 @@ void c_network_message_handler::handle_connect_establish(c_network_channel* chan
     channel->send_connection_established(message->remote_identifier);
 }
 
-// inlined in the ms29 client
-void c_network_message_handler::handle_connect_closed(c_network_channel* channel, s_network_message_connect_closed const* message) // untested
+void c_network_message_handler::handle_connect_closed(c_network_channel* channel, s_network_message_connect_closed const* message)
 {
-    if (channel && channel->m_state > _network_channel_state_closed && channel->m_identifier == message->identifier)
-        channel->close(_network_channel_reason_remote_closure);
+    if (channel->closed())
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' ignoring remote closure (already closed)\n",
+            channel->get_name());
+        return;
+    }
+    if (channel->get_identifier() != message->identifier)
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' ignoring remote closure (closed identifier %d != identifier %d)\n",
+            channel->get_name(),
+            message->identifier,
+            channel->get_identifier());
+        return;
+    }
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' remotely closed (reason #%d: '%s')\n",
+        channel->get_name(),
+        message->closure_reason,
+        channel->get_closure_reason_string(message->closure_reason));
+    channel->close(_network_channel_reason_remote_closure);
 }
 
 void c_network_message_handler::handle_join_request(s_transport_address const* outgoing_address, s_network_message_join_request const* message)

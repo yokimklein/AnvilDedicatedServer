@@ -155,7 +155,7 @@ struct s_network_message_connect_closed : s_network_message
 {
 	uint32_t identifier;
 	uint32_t remote_identifier;
-	uint32_t closure_reason;
+	enum e_network_channel_closure_reason closure_reason;
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);
 

@@ -137,6 +137,7 @@ public:
 	long get_remote_identifier();
 	void open(s_transport_address const* remote_address, bool unknown, long channel_identifier);
 	void send_connection_established(long remote_identifier);
+	const char* get_closure_reason_string(e_network_channel_closure_reason reason);
 
 	c_network_link* m_link;
 	c_network_observer* m_observer;
