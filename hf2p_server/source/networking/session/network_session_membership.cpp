@@ -362,6 +362,7 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                 if (peer_info_updated || peer_properties_updated || membership_peer->version != baseline_peer->version)
                 {
                     s_network_message_membership_update_peer* update_data = &message->peer_updates[i];
+                    message->peer_count++;
                     update_data->peer_index = i;
                     update_data->peer_update_type = 1;
                     update_data->peer_connection_state = membership_peer->connection_state;
