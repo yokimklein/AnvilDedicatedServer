@@ -14,6 +14,7 @@
 #include "networking\messages\network_message_gateway.h"
 #include "networking\session\network_session_manager.h"
 #include "networking\logic\network_session_interface.h"
+#include "memory\tls.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -106,7 +107,7 @@ void __fastcall network_life_cycle_end_hook()
 }
 
 // contrail gpu freeze fix
-__declspec(naked) void ContrailFixHook()
+__declspec(naked) void contrail_fix_hook()
 {
     __asm
     {
@@ -144,7 +145,7 @@ long MainThread()
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
-    Hook(0x28A38A, ContrailFixHook).Apply();
+    Hook(0x28A38A, contrail_fix_hook).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 
@@ -259,19 +260,18 @@ long MainThread()
             printf("Ending game...\n");
             c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_end_game);
         }
-        else if (GetKeyState(VK_INSERT) & 0x8000) // INSERT - debug breakpoint
+        else if (GetKeyState(VK_INSERT) & 0x8000) // INSERT - set host player data
         {
-            printf("Breaking...\n");
+            printf("Setting host player data...\n");
             c_network_session* sessions = *network_session->m_session_manager->session;
-            sessions[0].get_session_parameters()->game_simulation_protocol.m_data = _simulation_protocol_synchronous; // temporarily set to synchronous as distributed currently has issues. synchronous will likely crash in a real net game
-            sessions[0].get_session_membership()->get_current_membership()->players[0].controller_index = 0;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].controller_index = 0; // set to -1 by default, which prevents the player from spawning
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_assigned_team = 1; // blue team
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_team = 1; // blue team
-            wchar_t player_name[16] = L"JocKe";
+            wchar_t player_name[16] = L"player";
             memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_name, player_name, 32);
-            wchar_t service_tag[5] = L"A013";
+            wchar_t service_tag[5] = L"TEST";
             memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_appearance.service_tag, service_tag, 10);
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_recon;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_scanner;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
@@ -282,6 +282,31 @@ long MainThread()
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[3] = 1184274;
+        }
+        else if (GetKeyState(VK_DELETE) & 0x8000) // DEL - test add player (buggy)
+        {
+            printf("Adding a local test player...\n");
+            c_network_session* sessions = *network_session->m_session_manager->session;
+            sessions[0].get_session_membership()->get_current_membership()->player_count = 2;
+            sessions[0].get_session_membership()->get_current_membership()->valid_player_mask = 3;
+            sessions[0].get_session_membership()->get_current_membership()->peers[0].player_mask = 3;
+
+            sessions[0].get_session_membership()->get_current_membership()->players[1].player_identifier.data = 84207682768246;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].peer_index = 0;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].controller_index = 0;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.client.multiplayer_team = -1;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.client.active_armor_loadout = -1;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_xuid.data = 84207682768246;
+
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_assigned_team = 0; // red team
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_team = 0; // red team
+            wchar_t player2_name[16] = L"empty";
+            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_name, player2_name, 32);
+            wchar_t service_tag2[5] = L"TST2";
+            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_appearance.service_tag, service_tag2, 10);
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_air_assault;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _assault_rifle;
+            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum;
         }
         Sleep(100);
     }

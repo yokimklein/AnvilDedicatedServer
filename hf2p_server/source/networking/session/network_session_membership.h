@@ -95,7 +95,8 @@ struct s_network_session_player
 {
 	long desired_configuration_version;
 	s_player_identifier player_identifier;
-	long peer_index; // peer index & peer user index as 2 shorts like membership update player?
+	uint16_t peer_index; // peer index & peer user index as 2 shorts like membership update player?
+	uint16_t peer_user_index; // TODO - test this
 	long player_sequence_number;
 	bool player_occupies_a_public_slot;
 	long controller_index;
@@ -193,6 +194,7 @@ public:
 	void remove_player(long player_index);
 	void remove_player_internal(long player_index);
 	long get_player_from_identifier(s_player_identifier const* player_identifier);
+	bool add_player_to_player_add_queue(s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings);
 
 	c_network_session* m_session;
 	long unknown1;

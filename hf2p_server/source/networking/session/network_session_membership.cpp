@@ -427,6 +427,7 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                 {
                     update_player->identifier.data = membership_player->player_identifier.data;
                     update_player->peer_index = membership_player->peer_index;
+                    update_player->peer_user_index = membership_player->peer_user_index;
                     update_player->player_occupies_a_public_slot = membership_player->player_occupies_a_public_slot;
                 }
 
@@ -734,4 +735,10 @@ long c_network_session_membership::get_player_from_identifier(s_player_identifie
 {
     long(__thiscall * get_player_from_identifier)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(get_player_from_identifier)>(module_base + 0x318B0); // funny how similar the address is to the call above
     return get_player_from_identifier(this, player_identifier);
+}
+
+bool c_network_session_membership::add_player_to_player_add_queue(s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings)
+{
+    bool(__thiscall * add_player_to_player_add_queue)(c_network_session_membership * thisptr, s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client * player_data_from_client, long voice_settings) = reinterpret_cast<decltype(add_player_to_player_add_queue)>(module_base + 0x32B40);
+    return add_player_to_player_add_queue(this, player_identifier, peer_index, peer_user_index, controller_index, player_data_from_client, voice_settings);
 }

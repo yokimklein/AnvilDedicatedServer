@@ -58,10 +58,10 @@ long c_network_channel::get_remote_identifier()
 	return this->m_remote_identifier;
 }
 
-void c_network_channel::open(s_transport_address const* remote_address, bool unknown, long channel_identifier)
+void c_network_channel::open(s_transport_address const* remote_address, bool initial_connection, long channel_identifier)
 {
-	void(__thiscall * open)(c_network_channel* thisptr, s_transport_address const* remote_address, bool unknown, long channel_identifier) = reinterpret_cast<decltype(open)>(module_base + 0xBE20);
-	open(this, remote_address, unknown, channel_identifier);
+	void(__thiscall * open)(c_network_channel* thisptr, s_transport_address const* remote_address, bool initial_connection, long channel_identifier) = reinterpret_cast<decltype(open)>(module_base + 0xBE20);
+	open(this, remote_address, initial_connection, channel_identifier);
 }
 
 void c_network_channel::send_connection_established(long remote_identifier)

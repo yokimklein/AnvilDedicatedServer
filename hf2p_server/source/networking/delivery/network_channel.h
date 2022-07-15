@@ -19,7 +19,7 @@ enum e_network_channel_activity
 	k_network_channel_activity_count = 6
 };
 
-enum e_network_channel_closure_reason
+enum e_network_channel_closure_reason : long
 {
 	_network_channel_reason_none,
 	_network_channel_reason_link_destroyed,
@@ -120,7 +120,7 @@ class c_network_channel
 {
 public:
 	bool connected();
-	char* get_name();
+	char* get_name(); // m_short_name is followed by m_name
 	e_network_channel_state get_state();
 	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
@@ -135,7 +135,7 @@ public:
 	bool established();
 	long get_identifier();
 	long get_remote_identifier();
-	void open(s_transport_address const* remote_address, bool unknown, long channel_identifier);
+	void open(s_transport_address const* remote_address, bool initial_connection, long channel_identifier);
 	void send_connection_established(long remote_identifier);
 	const char* get_closure_reason_string(e_network_channel_closure_reason reason);
 
@@ -148,13 +148,15 @@ public:
 	c_network_connection m_connection;
 	c_network_message_queue m_message_queue;
 	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper;
-	byte m_unknown[0x20];
-	long m_identifier;
-	long m_remote_identifier;
+	byte m_unknown[0x1C];
+	long m_flags;
+	long m_identifier; // 0xA08
+	long m_remote_identifier; // 0xA0C
 	e_network_channel_state m_state; // 0xA10
 	byte m_unknown3[0x18];
 	s_transport_address m_remote_address; // 0xA2C - untested
-	byte m_unknown4[0x30];
+	bool m_initial_connection; // name based on log in ms23
+	byte m_unknown4[0x2C];
 };
 static_assert(sizeof(c_network_channel) == 0xA70); // size is assumed, if there's extra fields at the end that i've cut off, they'll be in s_channel_observer
 	// 0x9EC

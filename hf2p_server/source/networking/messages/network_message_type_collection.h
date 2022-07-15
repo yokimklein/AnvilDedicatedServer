@@ -153,8 +153,8 @@ static_assert(sizeof(s_network_message_connect_establish) == 0x8);
 
 struct s_network_message_connect_closed : s_network_message
 {
-	uint32_t identifier;
 	uint32_t remote_identifier;
+	uint32_t identifier;
 	enum e_network_channel_closure_reason closure_reason;
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);
@@ -316,8 +316,8 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	s_network_message_membership_update();
 
 	s_transport_secure_identifier session_id;
-	uint32_t update_number;
-	uint32_t incremental_update_number;
+	int32_t update_number;
+	int32_t incremental_update_number;
 	uint32_t baseline_checksum;
 	uint16_t peer_count; // max 34? number of updates rather than peers
 	uint16_t player_count; // max 32? ditto

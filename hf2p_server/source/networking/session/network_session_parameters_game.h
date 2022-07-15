@@ -97,15 +97,6 @@ static const char* k_game_start_error_strings[k_session_game_start_error_count] 
 	"too many players in forge"
 };
 
-enum e_network_game_simulation_protocol
-{
-	_simulation_protocol_local,
-	_simulation_protocol_synchronous,
-	_simulation_protocol_distributed,
-
-	k_simulation_protocol_count
-};
-
 struct s_network_session_privacy_mode
 {
 	e_network_game_privacy privacy_mode;

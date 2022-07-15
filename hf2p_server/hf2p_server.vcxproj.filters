@@ -159,6 +159,12 @@
     <ClInclude Include="source\memory\ring_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\network_statistics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memory\tls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -300,6 +306,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\logic\network_session_interface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\network_statistics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\memory\tls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

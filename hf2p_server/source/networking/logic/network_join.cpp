@@ -26,7 +26,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
         session->acknowledge_join_request(address, _network_join_refuse_reason_not_joinable);
         return;
     case _network_join_open_to_join_squad:
-        if (session->m_session_type != _network_session_type_group)
+        if (session->session_type() != _network_session_type_group)
         {
             printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a group session while joining is in _network_join_open_to_join_squad\n");
             session->acknowledge_join_request(address, _network_join_refuse_reason_in_matchmaking);
@@ -35,7 +35,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
         break;
     case _network_join_queue_joins_to_group:
     case _network_join_process_queued_group_joins:
-        if (session->m_session_type != _network_session_type_squad)
+        if (session->session_type() != _network_session_type_squad)
         {
             printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a squad session while in matchmaking\n");
             session->acknowledge_join_request(address, _network_join_refuse_reason_in_matchmaking);
@@ -49,15 +49,13 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     }
 
     // ensure join request isn't already a session member
-    long peer_index = session->m_session_membership.get_first_peer();
-    while (peer_index != -1)
+    for (long i = session->get_session_membership()->get_first_peer(); i != -1; i = session->get_session_membership()->get_next_peer(i))
     {
-        if (join_request->join_nonce == session->m_session_membership.m_baseline.peers[peer_index].join_nonce)
+        if (join_request->join_nonce == session->get_session_membership()->get_join_nonce(i))
         {
             printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n", transport_address_get_string(address));
             return;
         }
-        peer_index = session->m_session_membership.get_next_peer(peer_index);
     }
 
     // make sure the request entry isn't already in the queue (if the queue has entries)
@@ -121,15 +119,15 @@ bool network_join_process_joins_from_queue() // runs every tick the session is o
 
     if (session == nullptr)
         return false;
-    if (session->m_local_state <= _network_session_state_peer_join_abort
-        || session->m_local_state != _network_session_state_host_established
-        && session->m_local_state != _network_session_state_host_disband)
+    if (session->current_local_state() <= _network_session_state_peer_join_abort
+        || session->current_local_state() != _network_session_state_host_established
+        && session->current_local_state() != _network_session_state_host_disband)
     {
         if (g_network_join_data->join_queue_entry_count)
             network_join_flush_join_queue();
         return false;
     }
-    if (session->m_local_state == _network_session_state_host_disband)
+    if (session->current_local_state() == _network_session_state_host_disband)
         return false;
 
     bool is_peer_joining = session->is_peer_joining_this_session();

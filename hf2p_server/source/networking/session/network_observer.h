@@ -2,21 +2,56 @@
 #include <windows.h>
 #include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
+#include "..\network_statistics.h"
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
 enum e_observer_state : long
 {
-	_observer_state_none,
+	_observer_state_none = 0,
 	_observer_state_dead,
-	_observer_state_connected = 7,
+	_observer_state_idle,
+	_observer_state_securing,
+	_observer_state_waiting,
+	_observer_state_ready,
+	_observer_state_connecting,
+	_observer_state_connected,
+	_observer_state_reconnecting,
+	_observer_state_disconnected,
 
-	k_observer_state_count = 10
+	k_observer_state_count
+};
+
+static const char* k_observer_state_strings[k_observer_state_count]
+{
+	"none",
+	"dead",
+	"idle",
+	"securing",
+	"waiting",
+	"ready",
+	"connecting",
+	"connected",
+	"reconnecting",
+	"disconnected"
 };
 
 enum e_network_observer_owner : long
 {
-	k_network_observer_owner_count = 4
+	_network_observer_owner_squad_one = 0,
+	_network_observer_owner_squad_two,
+	_network_observer_owner_group,
+	_network_observer_owner_simulation,
+
+	k_network_observer_owner_count
+};
+
+static const char* k_owner_type_strings[k_network_observer_owner_count]
+{
+	"squad one",
+	"squad two",
+	"group",
+	"simulation"
 };
 
 struct s_observer_configuration
@@ -52,10 +87,16 @@ class c_network_observer
 			s_transport_secure_address secure_address;
 			long unknown3;
 			short time_unknown;
-			s_transport_address address;
-			byte unknown_data3[0x5C0];
+			short unknown4; // could just be padding
+			long unknown5;
+			c_network_time_statistics time_statistics1; // non-original names
+			c_network_time_statistics time_statistics2;
+			c_network_time_statistics time_statistics3;
+			c_network_window_statistics window_statistics1;
+			c_network_window_statistics window_statistics2;
+			byte unknown_data2[0x126];
 		};
-		static_assert(sizeof(s_channel_observer) == 0x10A8);
+		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
 
 		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
@@ -76,7 +117,7 @@ class c_network_observer
 		c_network_session* m_session;
 		s_channel_observer_owner m_owners[k_network_observer_owner_count];
 		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
-		byte unknown_data[0x238]; // time statistics etc
+		byte unknown_data[0x238];
 };
 static_assert(sizeof(c_network_observer) == 0x238C0); // TODO - verify size
 /*

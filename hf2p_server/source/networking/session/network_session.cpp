@@ -189,7 +189,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                         &join_request->joining_peers[i].joining_peer_address, join_request->join_party_nonce, join_request->join_nonce))
                 {
                     xnet_shim_table_add(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
-                    this->m_observer->observer_channel_initiate_connection((e_network_observer_owner)this->session_index(), this->get_session_membership()->get_observer_channel_index(peer_index));
+                    this->m_observer->observer_channel_initiate_connection(this->session_index(), this->get_session_membership()->get_observer_channel_index(peer_index));
 
                     // if not refused
                     if (refuse_reason == _network_join_refuse_reason_none)
@@ -199,11 +199,9 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                         {
                             long player_index = this->get_session_membership()->find_or_add_player(peer_index, &join_request->joining_players[user_player_index], join_request->join_from_recruiting);
                             s_player_configuration* player_config = new s_player_configuration(); // TODO - constructor
-                            memset(player_config, 0, sizeof(s_player_configuration));
                             player_config->client.multiplayer_team = -1;
                             player_config->client.unknown_team = -1;
-                            s_player_identifier* player_xuid = new s_player_identifier;
-                            memset(player_xuid, 0, sizeof(s_player_identifier));
+                            s_player_identifier* player_xuid = new s_player_identifier();
                             player_config->host.player_xuid = *player_xuid;
                             player_config->host.player_team = -1;
                             player_config->host.player_assigned_team = -1;
@@ -264,7 +262,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
 
     if (this->get_session_membership()->get_peer_connection_state(peer_from_address) == _network_session_peer_state_reserved)
         this->get_session_membership()->set_peer_connection_state(peer_from_address, _network_session_peer_state_connected);
-    this->m_observer->observer_channel_initiate_connection((e_network_observer_owner)this->session_index(), observer_channel_index);
+    this->m_observer->observer_channel_initiate_connection(this->session_index(), observer_channel_index);
 }
 
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
@@ -606,7 +604,7 @@ void c_network_session::idle()
         this->idle_observer_state();
         // ==== SECTION CUT FROM CLIENT BUILDS ====
         if (this->is_host())
-            this->check_to_send_membership_update(); // TODO - FINISH CHECKSUM FUNCTIONS & VERIFY CODE
+            this->check_to_send_membership_update();
         // ==== END OF SECTION CUT FROM CLIENT BUILDS ====
         this->get_session_parameters()->update();
         if (this->get_session_parameters()->session_size.set_allowed())
@@ -868,6 +866,7 @@ void c_network_session::process_pending_joins()
     {
         s_player_add_queue_entry* add_queue_entry = this->get_session_membership()->get_first_player_from_player_add_queue();
         bool bool_array[1] = { true };
+        uint64_t xuids[1] = { 0 };
         if (add_queue_entry != nullptr)
         {
             this->m_player_add_single_player_identifier.data = add_queue_entry->player_identifier.data;
@@ -877,7 +876,7 @@ void c_network_session::process_pending_joins()
             if (refuse_reason != _network_join_refuse_reason_none)
                 this->finalize_single_player_add(refuse_reason);
             else
-                managed_session_add_players(this->managed_session_index(), nullptr, bool_array, 1); // nullptr where the xuid list would have been, as ms23 does
+                managed_session_add_players(this->managed_session_index(), xuids, bool_array, 1); // nullptr where the xuid list would have been, as ms23 does
         }
     }
 

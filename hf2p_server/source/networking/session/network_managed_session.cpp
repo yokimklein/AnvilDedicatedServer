@@ -142,13 +142,34 @@ void managed_session_reset_session(long managed_session_index, bool use_session_
 
 void managed_session_remove_players(long managed_session_index, uint64_t* xuids, long xuid_count)
 {
-	void(__fastcall * remove_from_player_list)(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
+	//void(__fastcall* remove_from_player_list)(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
 	
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
 	managed_session->pending_operation_flags |= 0xC0u;
 	managed_session->flags &= 0xFFFFFFFB;
 	managed_session->creation_time = 0;
+}
+
+void remove_from_player_list(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count)
+{
+	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
+	{
+		long player_index = 0;
+		for (player_index = 0; player_index < player_count; player_index++)
+		{
+			if (players[player_index].flags & 1 && players[player_index].xuid == xuids[xuid_index])
+			{
+				players[player_index].flags = 0;
+				players[player_index].xuid = 0;
+				memset(&players[player_index], 0, 0x10);
+			}
+		}
+		if (player_index == player_count)
+		{
+			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: remove_from_player_list: unable to find player [0x%I64x] in the list to remove from the session\n", xuids[player_index]); // uses 0x%Lx in ms23
+		}
+	}
 }
 
 void managed_session_reset_players_add_status(long managed_session_index)
@@ -167,22 +188,29 @@ void managed_session_add_players(long managed_session_index, uint64_t* player_xu
 	managed_session->creation_time = 0;
 }
 
+// TODO VERIFY THIS!!!!!!!
 void managed_session_add_players_internal(s_online_session_player* players, long player_count, uint64_t* player_xuids, bool* player_bools, long xuid_count)
 {
-	for (long i = 0; i < player_count; i++)
+	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{
 		long player_index = -1;
-		for (player_index = 0; player_index < player_count; player_index++)
+		if (player_xuids[xuid_index])
 		{
-			if (players[player_index].flags & 1 && player_xuids[i] == players[player_index].xuid)
-				break;
-		}
-		if (player_index == player_count)
-		{
-			players[player_index].xuid = player_xuids[i];
-			players[player_index].flags |= 1u;
-			if (player_bools[i])
-				players[player_index].flags |= 2u;
+			long player_index2 = 0;
+			for (player_index2 = 0; player_index2 < player_count; player_index2++)
+			{
+				if (((players[player_index2].flags & 1) != 0 || player_index2 != -1) && player_xuids[xuid_index] == players[player_index2].xuid)
+					break;
+				else
+					player_index = player_index2;
+			}
+			if (player_index2 == player_count)
+			{
+				players[player_index].xuid = player_xuids[xuid_index];
+				players[player_index].flags |= 1u;
+				if (player_bools[xuid_index])
+					players[player_index].flags |= 2u;
+			}
 		}
 	}
 }

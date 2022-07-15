@@ -113,7 +113,7 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
 {
     if (message->protocol_version == 9)
     {
-        c_network_session* session = this->m_session_manager->get_session(&message->session_id); // if this returns null its likely the API using an old lobby/secure id
+        c_network_session* session = this->m_session_manager->get_session(&message->session_id);
         if (session)
         {
             if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
@@ -121,13 +121,13 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
                 session->handle_join_request(outgoing_address, message);
                 return;
             }
-    
         }
     }
     else
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
     }
+    // this is likely caused by the client trying to connect with the wrong secure address/id, usually because the API server hasn't updated with the new server information
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
         transport_secure_identifier_get_string(&message->session_id),
         transport_address_get_string(outgoing_address));

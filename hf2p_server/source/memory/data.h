@@ -1,5 +1,8 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
 
-typedef uint32_t datum_index;
+struct s_datum
+{
+	short salt;
+};
+
+typedef unsigned long datum_index;
