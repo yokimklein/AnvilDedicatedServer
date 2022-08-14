@@ -95,14 +95,13 @@ struct s_network_session_player
 {
 	long desired_configuration_version;
 	s_player_identifier player_identifier;
-	uint16_t peer_index; // peer index & peer user index as 2 shorts like membership update player?
-	uint16_t peer_user_index; // TODO - test this
+	long peer_index;
 	long player_sequence_number;
 	bool player_occupies_a_public_slot;
 	long controller_index;
 	long unknown2;
 	s_player_configuration configuration;
-	uint32_t voice_settings;
+	long voice_settings;
 	long unknown3;
 };
 static_assert(sizeof(s_network_session_player) == 0xB98);

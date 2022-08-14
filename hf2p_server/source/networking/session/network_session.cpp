@@ -978,17 +978,17 @@ void c_network_session::check_to_send_membership_update()
                         shared_membership->peer_count = 2; // 1 for the host, 1 for the client. we don't sync other peers to clients
                         shared_membership->valid_peer_mask = 0;
                         
-                        // TODO - need help understanding what this is doing, preusmably checking if each peer is valid and removing the invalid ones?
+                        // TODO - need help understanding what this is doing, seems like its clearing everything that isnt the host peer and the joining peer?
                         *(&shared_membership->valid_peer_mask + (shared_membership->host_peer_index >> 5)) |= 1 << (shared_membership->host_peer_index & 0x1F);
-                        long unknown1 = shared_membership->valid_peer_mask + (i >> 5);
-                        long unknown2 = 1 << (i & 0x1F);
-                        long unknown3 = 1;
-                        unknown1 |= unknown2;
+                        long* unknown1 = (long*)&shared_membership->valid_peer_mask + (i >> 5); // 3
+                        long unknown2 = 1 << (i & 0x1F); // 0
+                        long unknown3 = 1; // 1
+                        *unknown1 |= unknown2;
                         for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
                         {
                             if ((unknown3 & *(&shared_membership->valid_peer_mask + (j >> 5))) == 0)
                                 memset(&shared_membership->peers[j], 0, sizeof(s_network_session_peer));
-                            unknown3 = (unknown3 >> 1) | (unknown3 << (32 - 1)); // rotate right by 1
+                            unknown3 = (unknown3 << 1) | (unknown3 >> (32 - 1)); // rotate left by 1 // moves from 1 to 2, 4, 8, 16 etc
                         }
                         long unknown4 = 1;
                         for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
@@ -998,7 +998,7 @@ void c_network_session::check_to_send_membership_update()
                                 *(&shared_membership->peers[shared_membership->host_peer_index].player_mask + (j >> 5)) |= unknown4;
                                 shared_membership->players[j].peer_index = shared_membership->host_peer_index;
                             }
-                            unknown4 = (unknown4 >> 1) | (unknown4 << (32 - 1)); // rotate right by 1
+                            unknown4 = (unknown4 << 1) | (unknown4 >> (32 - 1)); // rotate left by 1
                         }
                         // end of unknown peer & player mask checking code
                         
@@ -1194,7 +1194,7 @@ void c_network_session::add_pending_join_to_session(uint64_t join_nonce)
             if (mask_player_index != -1)
             {
                 player_xuids[xuid_count] = (uint64_t)this->get_session_membership()->get_player(mask_player_index)->configuration.host.player_xuid.data;
-                player_bools[xuid_count] = this->get_session_membership()->get_player(mask_player_index)->player_sequence_number == 0;
+                player_bools[xuid_count] = !this->get_session_membership()->get_player(mask_player_index)->player_occupies_a_public_slot;
                 xuid_count++;
             }
             this->get_session_membership()->set_peer_connection_state(i, _network_session_peer_state_joining);

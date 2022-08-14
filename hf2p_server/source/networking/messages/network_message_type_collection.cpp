@@ -19,13 +19,13 @@ const char* network_message_join_refuse_get_reason_string(e_network_join_refuse_
 s_network_message_membership_update::s_network_message_membership_update()
 {
 	for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
-		peer_updates[j].peer_properties_update.flags = 0;
+		peers[j].peer_properties_update.flags = 0;
 	for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
 	{
-		memset(&player_updates[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-		memset(&player_updates[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
-		memset(&player_updates[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
-		player_updates[j].configuration.host.player_assigned_team = -1;
-		player_updates[j].configuration.host.player_team = -1;
+		memset(&players[j].player_data.client, 0, sizeof(s_player_configuration_from_client));
+		memset(&players[j].player_data.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+		memset(&players[j].player_data.host, 0, sizeof(s_player_configuration_from_host));
+		players[j].player_data.host.player_assigned_team = -1;
+		players[j].player_data.host.player_team = -1;
 	}
 };

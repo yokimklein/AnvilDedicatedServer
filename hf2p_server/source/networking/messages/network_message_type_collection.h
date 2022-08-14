@@ -244,22 +244,28 @@ struct s_network_message_time_synchronize : s_network_message
 };
 //static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
 
-struct s_network_message_membership_update_player // pragma pack 4 in ms23 maybe not? TODO - confirm structure by analysing decode function in ms29
+#pragma pack(push, 1)
+struct s_network_message_membership_update_player
 {
 	uint32_t player_index;
 	uint32_t update_type;
 	bool player_location_updated;
 	s_player_identifier identifier;
+	uint8_t : 8;
 	uint16_t peer_index;
-	uint16_t peer_user_index;
+	uint32_t player_addition_number;
 	bool player_occupies_a_public_slot;
 	bool player_properties_updated;
+	uint16_t : 16;
 	uint32_t player_update_number;
 	uint32_t controller_index;
-	s_player_configuration configuration;
+	uint32_t : 32;
+	s_player_configuration player_data;
 	uint32_t player_voice;
+	uint32_t : 32;
 };
 static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
+#pragma pack(pop)
 
 struct s_network_message_membership_update_peer_properties
 {
@@ -319,10 +325,10 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	int32_t update_number;
 	int32_t incremental_update_number;
 	uint32_t baseline_checksum;
-	uint16_t peer_count; // max 34? number of updates rather than peers
-	uint16_t player_count; // max 32? ditto
-	s_network_message_membership_update_peer peer_updates[k_network_maximum_machines_per_session];
-	s_network_message_membership_update_player player_updates[k_network_maximum_players_per_session];
+	uint16_t peer_update_count; // max 34? number of updates rather than peers
+	uint16_t player_update_count; // max 32? ditto
+	s_network_message_membership_update_peer peers[k_network_maximum_machines_per_session];
+	s_network_message_membership_update_player players[k_network_maximum_players_per_session];
 	bool player_addition_number_updated;
 	uint32_t player_addition_number;
 	bool leader_updated;
@@ -335,6 +341,7 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	bool friends_only;
 	bool are_slots_locked;
 	uint32_t checksum;
+	long : 32;
 };
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
 

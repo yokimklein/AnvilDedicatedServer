@@ -118,8 +118,8 @@ s_network_session_player* c_network_session_membership::add_player_internal(long
     this->get_current_membership()->player_count++;
     auto player = &this->get_current_membership()->players[player_index];
     player->player_identifier.data = player_identifier->data;
-    player->player_sequence_number = player_sequence_number;
     player->peer_index = peer_index;
+    player->player_sequence_number = this->m_baseline.player_sequence_number;
     player->player_occupies_a_public_slot = player_occupies_a_public_slot;
     player->controller_index = -1;
     if (peer_index != -1)
@@ -361,8 +361,8 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                 bool peer_properties_updated = peer_info_updated || memcmp(&membership_peer->properties, &baseline_peer->properties, sizeof(s_network_session_peer));
                 if (peer_info_updated || peer_properties_updated || membership_peer->version != baseline_peer->version)
                 {
-                    s_network_message_membership_update_peer* update_data = &message->peer_updates[i];
-                    message->peer_count++;
+                    s_network_message_membership_update_peer* update_data = &message->peers[i];
+                    message->peer_update_count++;
                     update_data->peer_index = i;
                     update_data->peer_update_type = 1;
                     update_data->peer_connection_state = membership_peer->connection_state;
@@ -392,10 +392,10 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
             printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: removing peer #%d [%s]\n",
                 i,
                 transport_secure_address_get_string(&membership_peer->secure_address));
-            long last_peer_update_index = message->peer_count;
-            message->peer_count++; // add 1 peer update
-            message->peer_updates[last_peer_update_index].peer_index = i;
-            message->peer_updates[last_peer_update_index].peer_update_type = 0;
+            long last_peer_update_index = message->peer_update_count;
+            message->peer_update_count++; // add 1 peer update
+            message->peers[last_peer_update_index].peer_index = i;
+            message->peers[last_peer_update_index].peer_update_type = 0;
             unknown3 |= unknown2;
         }
         unknown2 *= 2;
@@ -413,8 +413,8 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
             // blam uses csmemcmp here, which asserts if one of the pointers is null, we're not so we're getting a warning
             if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0 || memcmp(membership_player, baseline_player, sizeof(s_network_session_player))))
             {
-                s_network_message_membership_update_player* update_player = &message->player_updates[message->player_count];
-                message->player_count++;
+                s_network_message_membership_update_player* update_player = &message->players[message->player_update_count];
+                message->player_update_count++;
                 update_player->player_index = i;
                 update_player->update_type = 1;
                 update_player->player_location_updated = (baseline_player == nullptr
@@ -427,28 +427,29 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                 {
                     update_player->identifier.data = membership_player->player_identifier.data;
                     update_player->peer_index = membership_player->peer_index;
-                    update_player->peer_user_index = membership_player->peer_user_index;
+                    update_player->player_addition_number = membership_player->player_sequence_number;
                     update_player->player_occupies_a_public_slot = membership_player->player_occupies_a_public_slot;
                 }
 
-                update_player->player_properties_updated = (update_player->player_location_updated
-                                                         || membership_player->desired_configuration_version != baseline_player->desired_configuration_version
+                // TODO - ensure we're doing the right thing here
+                update_player->player_properties_updated = (baseline_player != nullptr
+                                                         && (membership_player->desired_configuration_version != baseline_player->desired_configuration_version
                                                          || membership_player->controller_index != baseline_player->controller_index
                                                          || memcmp(&membership_player->configuration, &baseline_player->configuration, sizeof(s_player_configuration))
-                                                         || membership_player->voice_settings != baseline_player->voice_settings);
+                                                         || membership_player->voice_settings != baseline_player->voice_settings));
                 if (update_player->player_properties_updated)
                 {
                     update_player->player_update_number = membership_player->desired_configuration_version;
                     update_player->controller_index = membership_player->controller_index;
-                    memmove(&update_player->configuration, &membership_player->configuration, sizeof(s_player_configuration));
+                    memmove(&update_player->player_data, &membership_player->configuration, sizeof(s_player_configuration));
                     update_player->player_voice = membership_player->voice_settings;
                 }
                 printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]\n", i);
             }
             else if ((unknown4 & unknown3) == 0 && (unknown4 & unknown1) == 0)
             {
-                s_network_message_membership_update_player* player_update = &message->player_updates[message->player_count];
-                message->player_count++;
+                s_network_message_membership_update_player* player_update = &message->players[message->player_update_count];
+                message->player_update_count++;
                 printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]\n", i);
                 player_update->player_index = i;
                 player_update->update_type = 0;
@@ -536,7 +537,10 @@ void c_network_session_membership::build_peer_properties_update(s_network_sessio
         peer_properties_update->host_badness_rating = membership_properties->host_badness_rating;
         peer_properties_update->client_badness_rating = membership_properties->client_badness_rating;
         peer_properties_update->peer_connectivity_mask = membership_properties->peer_connectivity_mask;
+        peer_properties_update->peer_probe_mask = membership_properties->peer_probe_mask;
+        peer_properties_update->peer_latency_min = membership_properties->peer_latency_min;
         peer_properties_update->peer_latency_est = membership_properties->peer_latency_est;
+        peer_properties_update->peer_latency_max = membership_properties->peer_latency_max;
         peer_properties_update->language = membership_properties->language;
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties connectivity changed\n");
     }
@@ -691,7 +695,7 @@ void c_network_session_membership::commit_player_from_player_add_queue(s_player_
     bool sequence_number_not_zero = false;
     long mask_player_index = get_player_index_from_mask(&this->m_baseline.peers[queue_entry->player_index].player_mask, 16);
     if (mask_player_index != -1)
-        sequence_number_not_zero = this->m_baseline.players[mask_player_index].player_sequence_number != 0;
+        sequence_number_not_zero = this->m_baseline.players[mask_player_index].player_occupies_a_public_slot != 0;
     long player_index = this->find_or_add_player(queue_entry->player_index, &queue_entry->player_identifier, sequence_number_not_zero);
     this->set_player_properties(player_index, queue_entry->output_user_index, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
     this->m_player_add_queue_current_index = (this->m_player_add_queue_current_index + 1) % 4;

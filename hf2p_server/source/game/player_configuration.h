@@ -10,7 +10,7 @@ struct s_player_configuration_from_client
 	byte multiplayer_team;
 	byte unknown_team; // swap with active_armor_loadout?
 	byte active_armor_loadout;
-	byte active_weapon_loadout;
+	byte unknown_bool; // previously active_weapon_loadout, now some boolean?
 	uint32_t hopper_access_flags;
 	uint32_t cheating_flags;
 	uint32_t user_experience_flags;
