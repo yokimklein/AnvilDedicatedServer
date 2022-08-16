@@ -452,19 +452,16 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
 const char* c_network_session::get_type_string(e_network_session_type session_type)
 {
     const char* type_string = "<unknown>";
-    switch (session_type)
-    {
-        case _network_session_type_none:
-            type_string = "none";
-            break;
-        case _network_session_type_group:
-            type_string = "group";
-            break;
-        case _network_session_type_squad:
-            type_string = "squad";
-            break;
-    }
+    if (session_type >= _network_session_type_none && session_type <= _network_session_type_squad)
+        type_string = k_session_type_strings[session_type];
     return type_string;
+}
+
+const char* c_network_session::get_state_string()
+{
+    // TODO ASSERTS
+    e_network_session_state state = this->current_local_state();
+    return k_session_state_strings[state];
 }
 
 // FUNC TODO: mac address & unknown peer field
@@ -952,7 +949,6 @@ void c_network_session::idle_observer_state()
     idle_observer_state(this);
 }
 
-// WIP FUNC - TODO TEST THIS
 void c_network_session::check_to_send_membership_update()
 {
     for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
@@ -1085,8 +1081,8 @@ bool c_network_session::peer_request_properties_update(s_transport_secure_addres
         if (this->is_host())
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::peer_request_properties_update: [%s] applying peer-properties locally\n", this->get_id_string());
-            this->get_session_membership()->set_peer_address(this->get_session_membership()->m_local_peer_index, secure_address); // c_network_session_membership::local_peer_index
-            this->get_session_membership()->set_peer_properties(this->get_session_membership()->m_local_peer_index, peer_properties); // c_network_session_membership::local_peer_index
+            this->get_session_membership()->set_peer_address(this->get_session_membership()->local_peer_index(), secure_address);
+            this->get_session_membership()->set_peer_properties(this->get_session_membership()->local_peer_index(), peer_properties);
         }
         else
         {
@@ -1207,4 +1203,51 @@ e_network_observer_owner c_network_session::session_index()
 {
     // TODO - asserts
     return this->m_session_index;
+}
+
+bool c_network_session::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message)
+{
+    long channel_index = this->m_observer->observer_channel_find_by_network_channel(this->observer_owner(), channel);
+    long peer_index = this->get_session_membership()->get_peer_from_observer_channel(channel_index);
+    if (this->is_host())
+    {
+        if (peer_index == -1 && peer_index == this->get_session_membership()->local_peer_index())
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received as host from invalid peer [#%d] (range [0,%d-1] us [#%d])\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                peer_index,
+                this->get_session_membership()->get_peer_count(),
+                this->get_session_membership()->local_peer_index());
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received from peer [%s]\n",
+                managed_session_get_id_string(this->managed_session_index()),
+                this->get_peer_description(peer_index));
+            this->get_session_membership()->set_peer_needs_reestablishment(peer_index, false);
+            return true;
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received but not host (%s)\n",
+            managed_session_get_id_string(this->managed_session_index()),
+            this->get_state_string());
+    }
+
+    if ((this->is_host()) || (channel_index = -1))
+        return false;
+
+    s_network_message_host_decline* decline_message = new s_network_message_host_decline();
+    managed_session_get_id(this->managed_session_index(), &decline_message->session_id);
+    decline_message->peer_exists = peer_index != -1;
+    decline_message->session_exists = true;
+    if (this->established())
+    {
+        decline_message->host_exists = true;
+        auto* host_address = this->get_session_membership()->get_peer_address(this->get_session_membership()->host_peer_index());
+        memcpy(&decline_message->host_address, host_address, sizeof(s_transport_secure_address));
+    }
+    this->m_observer->observer_channel_send_message(this->observer_owner(), channel_index, false, _network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
+    return true;
 }

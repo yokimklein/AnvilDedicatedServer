@@ -79,7 +79,6 @@ class c_network_observer
 		struct s_channel_observer
 		{
 			c_network_channel channel;
-			long unknown1;
 			e_observer_state state;
 			byte unknown_data1[0x3C];
 			int unknown_flags;
@@ -108,6 +107,7 @@ class c_network_observer
 		bool observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
 		void observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
 		void quality_statistics_get_ratings(uint32_t* connectivity_badness_rating, uint32_t* host_badness_rating, uint32_t* client_badness_rating);
+		long observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel); // owner type might be a byte?
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;

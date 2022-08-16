@@ -182,6 +182,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\math\fast_checksum.h" />
     <ClInclude Include="source\networking\network_statistics.h" />
     <ClInclude Include="source\memory\ring_buffer.h" />
     <ClInclude Include="source\memory\sliding_window.h" />
@@ -234,6 +235,7 @@
     <ClInclude Include="source\memory\tls.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\math\fast_checksum.cpp" />
     <ClCompile Include="source\networking\network_statistics.cpp" />
     <ClCompile Include="source\networking\logic\network_session_interface.cpp" />
     <ClCompile Include="source\game\player_configuration.cpp" />

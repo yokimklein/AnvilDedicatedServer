@@ -5,7 +5,7 @@
 void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
     uint32_t(__cdecl * system_default_ui_language_to_game_language)() = reinterpret_cast<decltype(system_default_ui_language_to_game_language)>(module_base + 0xB0C00);
-    void(__fastcall * network_session_peer_connectivity_unknown)(c_network_session * session, uint16_t * peer_connectivity_mask) = reinterpret_cast<decltype(network_session_peer_connectivity_unknown)>(module_base + 0x2E500);
+    void(__fastcall * network_session_peer_connectivity_unknown)(c_network_session * session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_peer_connectivity_unknown)>(module_base + 0x2E500);
     uint32_t(__cdecl * build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(module_base + 0xDD750);
 
     uint32_t unknown_time = ((uint32_t*)module_base + 0x3EB1498)[session->m_session_index];
@@ -25,7 +25,7 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
         memcpy(&peer_properties.peer_name, (wchar_t*)(module_base + 0x3EAE0C2), 32);
         memcpy(&peer_properties.peer_session_name, (wchar_t*)(module_base + 0x3EAE0E2), 64);
         peer_properties.language = system_default_ui_language_to_game_language();
-        network_session_peer_connectivity_unknown(session, &peer_properties.peer_connectivity_mask);
+        network_session_peer_connectivity_unknown(session, &peer_properties.connectivity);
         observer->quality_statistics_get_ratings(&peer_properties.connectivity_badness_rating, &peer_properties.host_badness_rating, &peer_properties.client_badness_rating);
         peer_properties.peer_mp_map_mask = build_peer_mp_map_mask();
         peer_properties.peer_map = *((uint32_t*)(module_base + 0x3EAE12C));

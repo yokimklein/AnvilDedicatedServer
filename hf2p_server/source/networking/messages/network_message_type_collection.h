@@ -229,11 +229,13 @@ struct s_network_message_host_decline : s_network_message
 
 	s_transport_secure_address host_address;
 };
+static_assert(sizeof(s_network_message_host_decline) == 0x24);
 
 struct s_network_message_peer_establish : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
 };
+static_assert(sizeof(s_network_message_peer_establish) == 0x10);
 
 struct s_network_message_time_synchronize : s_network_message
 {
@@ -242,7 +244,7 @@ struct s_network_message_time_synchronize : s_network_message
 	uint32_t authority_timestamp[2];
 	uint32_t synchronization_stage;
 };
-//static_assert(sizeof(s_network_message_time_synchronize) == 0x1C);
+static_assert(sizeof(s_network_message_time_synchronize) == 0x24);
 
 #pragma pack(push, 1)
 struct s_network_message_membership_update_player
@@ -287,11 +289,7 @@ struct s_network_message_membership_update_peer_properties
 	uint32_t host_badness_rating;
 	uint32_t client_badness_rating;
 	uint32_t language;
-	uint16_t peer_connectivity_mask;
-	uint16_t peer_probe_mask;
-	uint32_t peer_latency_min;
-	uint32_t peer_latency_est;
-	uint32_t peer_latency_max;
+	s_network_session_peer_connectivity connectivity;
 	bool versions_updated;
 	uint32_t determinism_version;
 	uint32_t determinism_compatible_version;
@@ -300,6 +298,7 @@ struct s_network_message_membership_update_peer_properties
 };
 static_assert(sizeof(s_network_message_membership_update_peer_properties) == 0xC8);
 
+#pragma pack(push, 1)
 struct s_network_message_membership_update_peer
 {
 	uint32_t peer_index;
@@ -307,15 +306,22 @@ struct s_network_message_membership_update_peer
 	uint32_t peer_connection_state;
 	bool peer_info_updated;
 	s_transport_secure_address peer_address;
+	byte : 8;
+	byte : 8;
+	byte : 8;
 	uint64_t peer_party_nonce;
 	uint64_t peer_join_nonce;
 	uint32_t network_version_number;
 	uint32_t peer_creation_timestamp;
 	bool peer_properties_updated;
-	uint32_t unknown; // weird gap in struct here, what is this?
+	byte : 8;
+	byte : 8;
+	byte : 8;
+	uint32_t unknown; // just padding?
 	s_network_message_membership_update_peer_properties peer_properties_update;
 };
 static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
+#pragma pack(pop)
 
 struct s_network_message_membership_update : s_network_message // this is actually a class?
 {

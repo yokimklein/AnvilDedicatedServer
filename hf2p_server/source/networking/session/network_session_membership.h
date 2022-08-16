@@ -50,6 +50,16 @@ struct s_player_add_queue_entry
 };
 static_assert(sizeof(s_player_add_queue_entry) == 0x48);
 
+struct s_network_session_peer_connectivity
+{
+	uint16_t peer_connectivity_mask;
+	uint16_t peer_probe_mask;
+	uint32_t peer_latency_min;
+	uint32_t peer_latency_est;
+	uint32_t peer_latency_max;
+};
+static_assert(sizeof(s_network_session_peer_connectivity) == 0x10);
+
 // this struct shrunk in later builds vs ms23
 struct s_network_session_peer_properties
 {
@@ -64,11 +74,7 @@ struct s_network_session_peer_properties
 	uint32_t connectivity_badness_rating;
 	uint32_t host_badness_rating;
 	uint32_t client_badness_rating;
-	uint16_t peer_connectivity_mask;
-	uint16_t peer_probe_mask;
-	uint32_t peer_latency_min;
-	uint32_t peer_latency_est;
-	uint32_t peer_latency_max;
+	s_network_session_peer_connectivity connectivity;
 	uint32_t language;
 	uint32_t determinism_version;
 	uint32_t determinism_compatible_version;
@@ -109,7 +115,7 @@ static_assert(sizeof(s_network_session_player) == 0xB98);
 
 struct s_network_session_peer_channel
 {
-	uint32_t flags;
+	uint32_t flags; // bool peer_needs_reestablishment?
 	long channel_index;
 	uint32_t expected_update_number; // membership_update_number?
 };
@@ -194,6 +200,11 @@ public:
 	void remove_player_internal(long player_index);
 	long get_player_from_identifier(s_player_identifier const* player_identifier);
 	bool add_player_to_player_add_queue(s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings);
+	long local_peer_index();
+	long get_peer_count();
+	void set_peer_needs_reestablishment(long peer_index, bool flags);
+	s_transport_secure_address* get_peer_address(long peer_index);
+	long get_peer_from_observer_channel(long channel_index);
 
 	c_network_session* m_session;
 	long unknown1;
@@ -211,6 +222,3 @@ public:
 };
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
 #pragma pack(pop)
-
-long fast_checksum_new();
-long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership);

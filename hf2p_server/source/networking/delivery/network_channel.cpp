@@ -116,3 +116,8 @@ const char* c_network_channel::get_closure_reason_string(e_network_channel_closu
 			return "<unknown>";
 	}
 }
+
+void c_network_channel::send_message(e_network_message_type message_type, long message_size, s_network_message* message)
+{
+	this->m_message_queue.send_message(message_type, message_size, message);
+}

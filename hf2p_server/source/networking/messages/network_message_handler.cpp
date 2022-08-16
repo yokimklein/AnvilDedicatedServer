@@ -218,11 +218,23 @@ void c_network_message_handler::handle_host_decline(c_network_channel* channel, 
         session->handle_host_decline(channel, message);
 }
 
-void c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message) // untested
+void c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message)
 {
-    typedef void(__fastcall* handle_peer_establish_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_peer_establish const* message);
-    auto handle_peer_establish = reinterpret_cast<handle_peer_establish_ptr>(module_base + 0x25730);
-    return handle_peer_establish(this, channel, message);
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    bool success = false;
+    if (session)
+        success = session->handle_peer_establish(channel, message);
+
+    if (success == false)
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_establish: channel '%s' failed to handle peer-establish (%s)\n",
+            channel->get_name(),
+            transport_secure_identifier_get_string(&message->session_id));
+
+        s_network_message_host_decline* decline_message = new s_network_message_host_decline();
+        decline_message->session_id = message->session_id;
+        channel->send_message(_network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
+    }
 }
 
 void c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message) // untested

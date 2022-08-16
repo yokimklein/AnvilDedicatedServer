@@ -63,3 +63,15 @@ void c_network_observer::quality_statistics_get_ratings(uint32_t* connectivity_b
 	void(__thiscall * quality_statistics_get_ratings)(c_network_observer * observer, uint32_t * connectivity_badness_rating, uint32_t * host_badness_rating, uint32_t * client_badness_rating) = reinterpret_cast<decltype(quality_statistics_get_ratings)>(module_base + 0xEF30);
 	quality_statistics_get_ratings(this, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
+
+// TODO - figure out what this actually is
+// TODO TEST!!!
+long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel)
+{
+	//auto* channel_observer = this->find_observer_by_channel(channel);
+	long next_channel = *((long*)channel + 0x29D) == 0;  // 0xA74
+	byte* channel_address = (byte*)channel;
+	if (!next_channel && ((unsigned __int8)(1 << (long)owner_type) & channel_address[0xA7D]) != 0)
+		return (channel_address - (byte*)this - 56) / 0x10A8;
+	return -1;
+}

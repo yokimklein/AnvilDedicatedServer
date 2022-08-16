@@ -6,6 +6,7 @@
 #include "network_session.h"
 #include "network_managed_session.h"
 #include "..\messages\network_message_type_collection.h"
+#include "..\..\math\fast_checksum.h"
 
 long c_network_session_membership::get_first_peer()
 {
@@ -135,6 +136,7 @@ void c_network_session_membership::update_player_data(long player_index, s_playe
     this->increment_update();
 }
 
+// TODO REWRITE THIS - forgot why i wrote this, why? might've thought i'd mislabed a different function and the original didn't exist
 long c_network_session_membership::get_peer_from_incoming_address(s_transport_address const* incoming_address)
 {
     typedef long(__thiscall* get_peer_from_incoming_address_ptr)(c_network_session_membership* session_membership, s_transport_address const* incoming_address);
@@ -483,9 +485,10 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         message->friends_only = membership->friends_only;
         message->are_slots_locked = membership->are_slots_locked;
     }
-    
-    auto fast_checksum = fast_checksum_new();
-    message->checksum = fast_checksum_s_network_session_shared_membership(fast_checksum, membership);
+    message->checksum = fast_checksum<k_network_session_shared_membership_seed, s_network_session_shared_membership>(fast_checksum_new(), membership);
+
+    // TODO temp remove this
+    printf("MEMBERSHIP CHECKSUM: %08X\n", message->checksum);
 }
 
 void c_network_session_membership::build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update)
@@ -536,11 +539,11 @@ void c_network_session_membership::build_peer_properties_update(s_network_sessio
         peer_properties_update->connectivity_badness_rating = membership_properties->connectivity_badness_rating;
         peer_properties_update->host_badness_rating = membership_properties->host_badness_rating;
         peer_properties_update->client_badness_rating = membership_properties->client_badness_rating;
-        peer_properties_update->peer_connectivity_mask = membership_properties->peer_connectivity_mask;
-        peer_properties_update->peer_probe_mask = membership_properties->peer_probe_mask;
-        peer_properties_update->peer_latency_min = membership_properties->peer_latency_min;
-        peer_properties_update->peer_latency_est = membership_properties->peer_latency_est;
-        peer_properties_update->peer_latency_max = membership_properties->peer_latency_max;
+        peer_properties_update->connectivity.peer_connectivity_mask = membership_properties->connectivity.peer_connectivity_mask;
+        peer_properties_update->connectivity.peer_probe_mask = membership_properties->connectivity.peer_probe_mask;
+        peer_properties_update->connectivity.peer_latency_min = membership_properties->connectivity.peer_latency_min;
+        peer_properties_update->connectivity.peer_latency_est = membership_properties->connectivity.peer_latency_est;
+        peer_properties_update->connectivity.peer_latency_max = membership_properties->connectivity.peer_latency_max;
         peer_properties_update->language = membership_properties->language;
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties connectivity changed\n");
     }
@@ -601,53 +604,7 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
 void c_network_session_membership::copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership)
 {
     memmove(&this->m_transmitted[peer_index], current_membership, sizeof(s_network_session_shared_membership));
-    auto fast_checksum = fast_checksum_new();
-    this->m_transmitted_checksums[peer_index] = fast_checksum_s_network_session_shared_membership(fast_checksum, &this->m_transmitted[peer_index]);
-}
-
-long fast_checksum_new()
-{
-    return -1;
-}
-
-// bless this ungodly mess
-// fast_checksum<s_network_session_shared_membership>
-long fast_checksum_s_network_session_shared_membership(long fast_checksum, s_network_session_shared_membership* shared_membership)
-{
-    long v4 = -558987394;
-    long v5 = -558987394;
-    long v6 = -558987394;
-    long long v24 = 0;
-    long long v26 = 0;
-    long* data_pointer = (long*)shared_membership;
-
-    long v1 = sizeof(s_network_session_shared_membership) / 12; // 0x10B6
-    for (long i = 0; i < v1; i++)
-    {
-        unsigned long v7 = data_pointer[2] + v4;
-        long v8 = data_pointer[1] + v5;
-        unsigned long v9 = (16 * v7) ^ (v7 >> 28) ^ (data_pointer[0] + v7 - v6);
-        unsigned long v10 = v8 + v7;
-        unsigned long v11 = (v9 << 6) ^ (v9 >> 26) ^ (v8 - v9);
-        unsigned long v12 = v10 + v9;
-        unsigned long v13 = (v11 << 8) ^ HIBYTE(v11) ^ (v10 - v11);
-        unsigned long v14 = v12 + v11;
-        unsigned long v15 = (v13 << 16) ^ HIWORD(v13) ^ (v12 - v13);
-        unsigned long v16 = v14 + v13;
-        unsigned long v17 = (v15 >> 13) ^ (v15 << 19) ^ (v14 - v15);
-        v6 = v16 + v15;
-        v4 = (16 * v17) ^ (v17 >> 28) ^ (v16 - v17);
-        v5 = v6 + v17;
-        data_pointer += 3;
-    }
-    long v19 = data_pointer[1] + v5;
-    unsigned long v20 = (v19 ^ v4) - ((v19 << 14) ^ ((unsigned __int64)(unsigned int)v19 >> 18));
-    unsigned long v21 = ((data_pointer[0] + v6) ^ v20) - ((v20 << 11) ^ ((unsigned __int64)v20 >> 21));
-    long v22 = (v21 ^ v19) - ((v21 >> 7) ^ (v21 << 25));
-    unsigned long v23 = (v22 ^ v20) - ((v22 << 16) ^ ((unsigned __int64)(unsigned int)v22 >> 16));
-    unsigned long v80 = (v21 ^ v23) - ((16 * v23) ^ ((unsigned __int64)v23 >> 28));
-    unsigned long v81 = (v80 ^ v22) - ((v80 << 14) ^ ((unsigned __int64)v80 >> 18));
-    return (v81 ^ v23) - ((v81 >> 8) ^ (v81 << 24));
+    this->m_transmitted_checksums[peer_index] = fast_checksum<k_network_session_shared_membership_seed, s_network_session_shared_membership>(fast_checksum_new(), &this->m_transmitted[peer_index]);
 }
 
 s_network_session_shared_membership::s_network_session_shared_membership()
@@ -745,4 +702,31 @@ bool c_network_session_membership::add_player_to_player_add_queue(s_player_ident
 {
     bool(__thiscall * add_player_to_player_add_queue)(c_network_session_membership * thisptr, s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client * player_data_from_client, long voice_settings) = reinterpret_cast<decltype(add_player_to_player_add_queue)>(module_base + 0x32B40);
     return add_player_to_player_add_queue(this, player_identifier, peer_index, peer_user_index, controller_index, player_data_from_client, voice_settings);
+}
+
+long c_network_session_membership::local_peer_index()
+{
+    return this->m_local_peer_index;
+}
+
+long c_network_session_membership::get_peer_count()
+{
+    return this->get_current_membership()->peer_count;
+}
+
+void c_network_session_membership::set_peer_needs_reestablishment(long peer_index, bool flags)
+{
+    // TODO ASSERTS
+    this->m_peer_channels[peer_index].flags = flags;
+}
+
+s_transport_secure_address* c_network_session_membership::get_peer_address(long peer_index)
+{
+    return &this->get_peer(peer_index)->secure_address;
+}
+
+long c_network_session_membership::get_peer_from_observer_channel(long channel_index)
+{
+    long(__thiscall * get_peer_from_observer_channel)(c_network_session_membership* thisptr, long channel_index) = reinterpret_cast<decltype(get_peer_from_observer_channel)>(module_base + 0x31180);
+    return get_peer_from_observer_channel(this, channel_index);
 }

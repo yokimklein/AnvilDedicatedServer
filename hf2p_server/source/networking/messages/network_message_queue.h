@@ -1,11 +1,13 @@
 #pragma once
 #include <windows.h>
 #include "..\..\memory\sliding_window.h"
+#include "network_message_type_collection.h"
 
 class c_network_message_queue
 {
 	public:
 		bool has_channel_been_used();
+		void send_message(e_network_message_type message_type, long message_size, s_network_message* message);
 	
 		byte data1[0x7];
 		bool m_channel_has_been_used; // non-original name

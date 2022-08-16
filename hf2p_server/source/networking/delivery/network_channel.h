@@ -2,6 +2,7 @@
 #include "network_connection.h"
 #include "..\transport\transport_address.h"
 #include "..\messages\network_message_queue.h"
+#include "..\messages\network_message_type_collection.h"
 
 constexpr long k_network_channel_maximum_clients = 6;
 constexpr long k_network_channel_maximum_base_clients = 3;
@@ -138,6 +139,7 @@ public:
 	void open(s_transport_address const* remote_address, bool initial_connection, long channel_identifier);
 	void send_connection_established(long remote_identifier);
 	const char* get_closure_reason_string(e_network_channel_closure_reason reason);
+	void send_message(e_network_message_type message_type, long message_size, s_network_message* message);
 
 	c_network_link* m_link;
 	c_network_observer* m_observer;
@@ -156,9 +158,9 @@ public:
 	byte m_unknown3[0x18];
 	s_transport_address m_remote_address; // 0xA2C - untested
 	bool m_initial_connection; // name based on log in ms23
-	byte m_unknown4[0x2C];
+	byte m_unknown4[0x30];
 };
-static_assert(sizeof(c_network_channel) == 0xA70); // size is assumed, if there's extra fields at the end that i've cut off, they'll be in s_channel_observer
+static_assert(sizeof(c_network_channel) == 0xA74); // size is assumed, if there's extra fields at the end that i've cut off, they'll be in s_channel_observer
 	// 0x9EC
 
 	// 1,788 bytes remaining

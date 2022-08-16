@@ -16,6 +16,12 @@ enum e_network_session_type
 	k_network_session_type_count
 };
 
+static const char* k_session_type_strings[k_network_session_type_count] = {
+	"none",
+	"group",
+	"squad"
+};
+
 enum e_network_session_state : uint32_t
 {
 	_network_session_state_none,
@@ -32,6 +38,20 @@ enum e_network_session_state : uint32_t
 	//_network_session_state_election,
 
 	k_network_session_state_count
+};
+
+static const char* k_session_state_strings[k_network_session_state_count] = {
+	"none",
+	"peer-creating",
+	"peer-joining",
+	"peer-join-abort",
+	"peer-established",
+	"peer-leaving",
+	"host-established",
+	"host-disband",
+	// "host-handoff",
+	// "host-reestablish",
+	// "election"
 };
 
 enum e_network_session_boot_reason : long // from ms23/ED
@@ -74,6 +94,7 @@ public:
 	e_network_join_refuse_reason can_accept_join_request(s_network_session_join_request const* join_request);
 	e_network_join_refuse_reason get_closure_reason();
 	const char* get_type_string(e_network_session_type session_type);
+	const char* get_state_string();
 	const char* get_peer_description(long peer_index);
 	void abort_pending_join(uint64_t join_nonce);
 	bool is_host();
@@ -114,6 +135,7 @@ public:
 	bool host_join_nonce_valid();
 	void add_pending_join_to_session(uint64_t join_nonce);
 	e_network_observer_owner session_index();
+	bool handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
