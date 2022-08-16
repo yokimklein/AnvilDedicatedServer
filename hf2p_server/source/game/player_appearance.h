@@ -178,14 +178,116 @@ enum e_grenade_type : byte
 {
 	_frag_grenade,
 	_plasma_grenade,
-	_claymore_grenade
-	//_firebomb_grenade - removed in later builds
+	_claymore_grenade,
+	_firebomb_grenade // tags don't exist in ms29
 };
 
-// IDs are unknown - TODO
+// TODO - find out what these are
 enum e_support_package : byte
 {
 
+};
+
+// TODO - test these
+enum e_modifiers : uint32_t
+{
+	_safety_booster,
+	_explosives_damage,
+	_explosives_aoe_size_boost,
+	_grenade_scavenger,
+	_stamina_restore_near_death,
+	_cooldown_reset,
+	_reflex_boost,
+	_zoom_radar,
+	_cooldown_boost,
+	_enable_nemesis_mechanics,
+	_silent_sprint,
+	_vehicle_shield_regen_speed,
+	_vehicle_shield_regen_delay,
+	_scavenger_aura,
+	_armor_to_vehicle,
+	_armor_to_player_in_vehicle,
+	_armor_to_player_in_vehicle_transferred,
+	_sprint_speed,
+	_sprint_stamina,
+	_reload_speed,
+	_weapon_switch_speed,
+	_ammo_max,
+	_melee_damage,
+	_melee_resist,
+	_revenge_shield_boost,
+	_respawn_modifier,
+	_grenades_max,
+	_motion_sensor_range,
+	_shield_regen_rate,
+	_shield_regen_delay,
+	_teflon_armor,
+	_explosion_resist,
+	_vehicle_ram_damage,
+	_turret_damage,
+	_machine_gun_rof_acceleration_time,
+	_grenade_warning,
+	_consumable_duration,
+	_energy_increase_max,
+	_energy_increase_count_on_spawn,
+	_energy_regeneration_rate,
+	_assault_rifle_rounds_per_second,
+	_assault_rifle_damage,
+	_assault_rifle_ammo_capacity,
+	_assault_rifle_reload_speed,
+	_battle_rifle_rounds_per_second,
+	_battle_rifle_fire_recovery_time,
+	_battle_rifle_damage,
+	_battle_rifle_ammo_capacity,
+	_battle_rifle_reload_speed,
+	_shotgun_spread,
+	_shotgun_damage,
+	_shotgun_ammo_capacity,
+	_shotgun_reload_speed,
+	_sniper_rifle_zoom_protection,
+	_sniper_rifle_damage,
+	_sniper_rifle_ammo_capacity,
+	_sniper_rifle_reload_speed,
+	_dmr_zoom_protection,
+	_dmr_damage,
+	_dmr_ammo_capacity,
+	_dmr_reload_speed,
+	_magnum_rounds_per_second,
+	_magnum_penetration,
+	_magnum_accuracy,
+	_magnum_damage,
+	_magnum_ammo_capacity,
+	_magnum_reload_speed,
+	_plasma_pistol_charge_up_time,
+	_plasma_pistol_damage,
+	_plasma_pistol_ammo_capacity,
+	_plasma_pistol_heat_per_round,
+	_frag_grenade_aoe_size,
+	_frag_grenade_damage,
+	_frag_grenade_ammo_capacity,
+	_plasma_grenade_aoe_size,
+	_plasma_grenade_damage,
+	_plasma_grenade_ammo_capacity,
+	_mauler_damage,
+	_spiker_damage,
+	_brute_shot_damage,
+	_plasma_rifle_heat_per_round,
+	_detonate_on_player_cdt,
+	_detonate_on_vehicle_cdt,
+	_enemies_always_on_radar,
+	_plant_plasma_on_death,
+	_shield_regen_rate_near_killed_enemies,
+	_shield_recharge_on_melee_kill,
+	_frag_grenades_max,
+	_plasma_grenades_max,
+	_claymore_grenade_aoe_size,
+	_smg_damage,
+	_smg_reload_speed,
+	_vehicle_autoflip,
+	_headshot_heal,
+	_weapon_accuracy,
+
+	k_modifiers_count
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
@@ -266,23 +368,23 @@ struct s_s3d_player_loadout
 	e_weapon_type primary_weapon;
 	e_weapon_type secondary_weapon;
 	e_grenade_type grenade;
-	e_support_package support_pack;
+	e_support_package support_pack; // is this the same as the modifiers enum? i don't think its used physically, but it might be used to display the correct support pack in your player card in game?
 	e_tactical_package tactical_packs[4];
 };
 static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 
-struct s_s3d_player_armor
+struct s_s3d_player_modifiers
 {
-	uint32_t armor_indices[95];
+	uint32_t modifier_values[k_modifiers_count];
 };
-static_assert(sizeof(s_s3d_player_armor) == 0x17C);
+static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
 
 struct s_s3d_player_appearance
 {
 	byte unknown; // has loadouts? current loadout?
 	s_s3d_player_loadout loadouts[3]; // 3 loadout sets
 	byte align1F[1];
-	s_s3d_player_armor armors[3]; // unused since the armr system/single sets were introduced?
+	s_s3d_player_modifiers modifiers[3];
 };
 static_assert(sizeof(s_s3d_player_appearance) == 0x494);
 
