@@ -1146,9 +1146,36 @@ c_network_session_parameters* c_network_session::get_session_parameters()
     return &this->m_session_parameters;
 }
 
-// FUNC TODO
 bool c_network_session::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
 {
+    if (this->established() && this->is_host())
+    {
+        long channel_index = this->m_observer->observer_channel_find_by_network_channel(this->observer_owner(), channel);
+        long peer_index = this->get_session_membership()->get_peer_from_observer_channel(channel_index);
+        if (peer_index == -1 || peer_index == this->get_session_membership()->local_peer_index())
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_properties: [%s] peer-properties received from invalid peer [#%d]\n",
+                this->get_id_string(),
+                peer_index);
+            return false;
+        }
+        else
+        {
+            if (this->get_session_membership()->get_peer_connection_state(peer_index) == _network_session_peer_state_connected)
+                this->get_session_membership()->set_peer_connection_state(peer_index, _network_session_peer_state_waiting);
+            this->get_session_membership()->set_peer_address(peer_index, &message->secure_address);
+            this->get_session_membership()->set_peer_properties(peer_index, &message->peer_properties);
+            return true;
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_properties: [%s] peer-properties received but not host, can't update properties (state %s)\n",
+            this->get_id_string(),
+            this->get_state_string());
+        return false;
+    }
+
     return false;
 }
 
@@ -1347,4 +1374,50 @@ void c_network_session::time_set(uint32_t time)
 {
     this->m_time_exists = true;
     this->m_time = time;
+}
+
+bool c_network_session::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
+{
+    long(__fastcall * get_player_index_from_mask)(uint32_t * player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+
+    if (this->established() && this->is_host())
+    {
+        long channel_index = this->m_observer->observer_channel_find_by_network_channel(this->observer_owner(), channel);
+        long peer_index = this->get_session_membership()->get_peer_from_observer_channel(channel_index);
+        if (peer_index == -1 || peer_index == this->get_session_membership()->local_peer_index())
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_player_properties: [%s] player-properties received from invalid peer [#%d]\n",
+                this->get_id_string(),
+                peer_index);
+            return false;
+        }
+        else
+        {
+            long player_index = get_player_index_from_mask(&this->get_session_membership()->get_current_membership()->peers[peer_index].player_mask, 16);
+            if (player_index == -1)
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_player_properties: [%s] player-properties received but no player associated with peer [#%d]\n",
+                    this->get_id_string(),
+                    peer_index);
+                return false;
+            }
+            else
+            {
+                this->get_session_membership()->set_player_properties(player_index, message->player_update_number, message->controller_index, &message->player_from_client, message->player_voice);
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_player_properties: [%s] player-properties accepted for peer/player [#%d]/[#%d]\n",
+                    this->get_id_string(),
+                    peer_index,
+                    player_index);
+                return true;
+            }
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_player_properties: [%s] player-properties received but not host, can't update players\n",
+            this->get_id_string());
+        return false;
+    }
+
+    return false;
 }

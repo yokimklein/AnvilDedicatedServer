@@ -138,6 +138,7 @@ public:
 	bool handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message);
 	bool leaving_session();
 	void time_set(uint32_t time);
+	bool handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

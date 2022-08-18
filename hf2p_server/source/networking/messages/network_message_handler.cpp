@@ -302,10 +302,24 @@ void c_network_message_handler::handle_player_remove(c_network_channel* channel,
     
 }
 
-// TODO
 void c_network_message_handler::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
-    
+    auto session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->is_host())
+    {
+        if (!session->handle_player_properties(channel, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_properties: session failed to handle player-properties (%s) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_properties: channel '%s' ignoring player-properties (%s) (not host)\n",
+            channel->get_name(),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
 void c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message) // untested

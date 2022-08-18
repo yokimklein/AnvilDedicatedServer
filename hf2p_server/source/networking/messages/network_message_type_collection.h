@@ -391,8 +391,13 @@ struct s_network_message_player_remove : s_network_message
 
 struct s_network_message_player_properties : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	uint32_t player_update_number; // or user_index?
+	uint32_t controller_index;
+	s_player_configuration_from_client player_from_client;
+	uint32_t player_voice;
 };
+static_assert(sizeof(s_network_message_player_properties) == 0x4C);
 
 struct s_network_message_parameters_update : s_network_message
 {

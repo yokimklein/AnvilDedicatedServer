@@ -654,14 +654,14 @@ void c_network_session_membership::commit_player_from_player_add_queue(s_player_
     if (mask_player_index != -1)
         sequence_number_not_zero = this->m_baseline.players[mask_player_index].player_occupies_a_public_slot != 0;
     long player_index = this->find_or_add_player(queue_entry->player_index, &queue_entry->player_identifier, sequence_number_not_zero);
-    this->set_player_properties(player_index, queue_entry->output_user_index, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
+    this->set_player_properties(player_index, queue_entry->player_update_number, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
     this->m_player_add_queue_current_index = (this->m_player_add_queue_current_index + 1) % 4;
 }
 
-void c_network_session_membership::set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
+void c_network_session_membership::set_player_properties(long player_index, long player_update_number, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
 {
     void(__thiscall * set_player_properties)(c_network_session_membership* thisptr, long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(set_player_properties)>(module_base + 0x31C10);
-    return set_player_properties(this, player_index, desired_configuration_version, controller_index, player_data_from_client, voice_settings);
+    return set_player_properties(this, player_index, player_update_number, controller_index, player_data_from_client, voice_settings);
 }
 
 long c_network_session_membership::get_creation_timestamp(long peer_index)
