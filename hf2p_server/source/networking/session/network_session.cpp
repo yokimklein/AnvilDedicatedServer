@@ -99,9 +99,86 @@ bool c_network_session::handle_host_decline(c_network_channel* channel, s_networ
 
 bool c_network_session::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message)
 {
-    typedef bool(__fastcall* handle_time_synchronize_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message);
-    auto handle_time_synchronize = reinterpret_cast<handle_time_synchronize_ptr>(module_base + 0x4B430);
-    return handle_time_synchronize(this, outgoing_address, message);
+    if (this->established())
+    {
+        if (this->is_host())
+        {
+            long peer_index = this->get_session_membership()->get_peer_from_incoming_address(outgoing_address);
+            if (peer_index == -1 || peer_index == this->get_session_membership()->local_peer_index())
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] time authority received synchronization from invalid peer index [#%d]\n",
+                    this->get_id_string(),
+                    peer_index);
+                return false;
+            }
+            else if (message->synchronization_stage != 0)
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] time authority received synchronization stage %d (expected 0)\n",
+                    this->get_id_string(),
+                    message->synchronization_stage);
+                return false;
+            }
+            else if (this->leaving_session())
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] ignoring time request from peer [%s] (currently leaving session)\n",
+                    this->get_id_string(),
+                    this->get_peer_description(peer_index));
+                return false;
+            }
+            else
+            {
+                s_network_message_time_synchronize* sync_message = new s_network_message_time_synchronize();
+                memcpy(sync_message, message, sizeof(s_network_message_time_synchronize));
+                sync_message->synchronization_stage = 1;
+                this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_time_synchronize, sizeof(s_network_message_time_synchronize), sync_message);
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] replying to time request from peer [%s]\n",
+                    this->get_id_string(),
+                    this->get_peer_description(peer_index));
+                return true;
+            }
+        }
+        else if (this->get_session_membership()->host_exists_at_incoming_address(outgoing_address))
+        {
+            if (message->synchronization_stage == 1)
+            {
+                uint32_t time_delta1 = message->authority_timestamp[0] - message->client_timestamp[0];
+                uint32_t time_delta2 = message->authority_timestamp[1] - message->client_timestamp[1];
+                uint32_t synchronized_time_offset = (time_delta1 + time_delta2) / 2;
+                int32_t temp = time_delta1 - synchronized_time_offset;
+                uint32_t synchronized_time_epsilon = abs(temp);
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] synchronized offset %dmsec (epsilon %dmsec)\n",
+                    this->get_id_string(),
+                    synchronized_time_offset,
+                    synchronized_time_epsilon);
+                this->time_set(synchronized_time_offset);
+                if (this->m_time_exists)
+                    this->m_time_synchronization_end_time = this->m_time;
+                else
+                    this->m_time_synchronization_end_time = timeGetTime();
+                return true;
+            }
+            else
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] time client received synchronization stage %d (expected 1)\n",
+                    this->get_id_string(),
+                    message->synchronization_stage);
+                return false;
+            }
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] client received from someone other than authority\n",
+                this->get_id_string());
+            return false;
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] not established, can't synchronize time\n",
+            this->get_id_string());
+        return false;
+    }
+    return false;
 }
 
 bool c_network_session::channel_is_authoritative(c_network_channel* channel) // untested
@@ -111,6 +188,7 @@ bool c_network_session::channel_is_authoritative(c_network_channel* channel) // 
     return channel_is_authoritative(this, channel);
 }
 
+// TODO - this call crashes
 bool c_network_session::handle_membership_update(s_network_message_membership_update const* message)
 {
     typedef bool(__fastcall* handle_membership_update_ptr)(c_network_session* session, s_network_message_membership_update const* message);
@@ -702,14 +780,14 @@ void c_network_session::process_pending_joins()
                 if (refuse_reason == _network_join_refuse_reason_none && !this->get_session_membership()->is_player_in_player_add_queue(&this->m_player_add_single_player_identifier))
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] player '%s' went missing from our add queue\n",
-                        managed_session_get_id_string(this->managed_session_index()),
+                        this->get_id_string(),
                         player_identifier_get_string(&this->m_player_add_single_player_identifier));
                     refuse_reason = _network_join_refuse_reason_player_add_failed;
                 }
                 if (refuse_reason != _network_join_refuse_reason_none)
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] single player '%s' added but can no longer join because %s, removing\n",
-                        managed_session_get_id_string(this->managed_session_index()),
+                        this->get_id_string(),
                         player_identifier_get_string(&this->m_player_add_single_player_identifier),
                         network_message_join_refuse_get_reason_string(refuse_reason));
                     managed_session_remove_players(this->managed_session_index(), (uint64_t*)&this->m_player_add_player_identifier.data, 1);
@@ -717,7 +795,7 @@ void c_network_session::process_pending_joins()
                 else
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] single player '%s' added\n",
-                        managed_session_get_id_string(this->managed_session_index()),
+                        this->get_id_string(),
                         player_identifier_get_string(&this->m_player_add_single_player_identifier));
                     this->get_session_membership()->commit_player_from_player_add_queue(&this->m_player_add_single_player_identifier);
                 }
@@ -725,7 +803,7 @@ void c_network_session::process_pending_joins()
             else
             {
                 printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] XSessionJoinRemote failed for single player add\n",
-                    managed_session_get_id_string(this->managed_session_index()));
+                    this->get_id_string());
             }
             this->finalize_single_player_add(refuse_reason);
         }
@@ -743,7 +821,7 @@ void c_network_session::process_pending_joins()
                 if ((managed_session_status & 0x40) != 0)
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as joined\n",
-                        managed_session_get_id_string(this->managed_session_index()),
+                        this->get_id_string(),
                         transport_secure_nonce_get_string(&join_nonce));
                     for (peer_index = this->get_session_membership()->get_first_peer(); peer_index != -1; peer_index = this->get_session_membership()->get_next_peer(peer_index))
                     {
@@ -763,7 +841,7 @@ void c_network_session::process_pending_joins()
                         if (this->join_nonce_is_from_clone_join_or_is_hosts(join_nonce))
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in local host join [%s] could not be added, recreating the session\n",
-                                managed_session_get_id_string(this->managed_session_index()),
+                                this->get_id_string(),
                                 transport_secure_nonce_get_string(&join_nonce));
                             for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
                             {
@@ -777,14 +855,14 @@ void c_network_session::process_pending_joins()
                         else
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] XSessionJoinRemote failed, aborting join\n",
-                                managed_session_get_id_string(this->managed_session_index()));
+                                this->get_id_string());
                             this->abort_pending_join(join_nonce);
                         }
                     }
                     else
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in squad host join [%s] could not be added, disconnecting\n",
-                            managed_session_get_id_string(this->managed_session_index()),
+                            this->get_id_string(),
                             transport_secure_nonce_get_string(&join_nonce));
                         this->disconnect();
                     }
@@ -793,7 +871,7 @@ void c_network_session::process_pending_joins()
             else
             {
                 printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] we completed a player modify that we didn't request\n", // ISSUE HERE
-                    managed_session_get_id_string(this->managed_session_index()));
+                    this->get_id_string());
             }
         }
     }
@@ -834,7 +912,7 @@ void c_network_session::process_pending_joins()
                     if (peer->connection_state == _network_session_peer_state_connected)
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] adding the join [%s] to the XSession\n",
-                            managed_session_get_id_string(this->managed_session_index()),
+                            this->get_id_string(),
                             transport_secure_nonce_get_string(&peer->join_nonce));
                         this->add_pending_join_to_session(peer->join_nonce);
                         managed_session_status |= 0x20u;
@@ -842,7 +920,7 @@ void c_network_session::process_pending_joins()
                     else
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as established\n",
-                            managed_session_get_id_string(this->managed_session_index()),
+                            this->get_id_string(),
                             transport_secure_nonce_get_string(&peer->join_nonce));
                         for (long i = while_loop_counter; i != -1; i = this->get_session_membership()->get_next_peer(i))
                         {
@@ -896,7 +974,7 @@ void c_network_session::process_pending_joins()
                 if ((!this->host_join_nonce_valid() || !this->join_nonce_is_from_clone_join_or_is_hosts(join_nonce)) && this->get_session_membership()->get_peer_connection_state(i) == _network_session_peer_state_disconnected)
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] failed because the peer disconnect, removing\n",
-                        managed_session_get_id_string(this->managed_session_index()),
+                        this->get_id_string(),
                         transport_secure_nonce_get_string(&join_nonce));
                     this->abort_pending_join(join_nonce);
                 }
@@ -904,7 +982,7 @@ void c_network_session::process_pending_joins()
             else
             {
                 printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] timed out (%d msec > %d msec), removing\n",
-                    managed_session_get_id_string(this->managed_session_index()),
+                    this->get_id_string(),
                     transport_secure_nonce_get_string(&join_nonce),
                     time_since_creation,
                     netconfig_time_unknown);
@@ -1123,7 +1201,7 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
         if (refuse_reason != _network_join_refuse_reason_none)
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: Warning [%s] host player '%s' add failed because of '%s'\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 player_identifier_get_string(&this->m_player_add_single_player_identifier),
                 network_message_join_refuse_get_reason_string(refuse_reason));
             this->m_player_add_join_refuse_reason = refuse_reason;
@@ -1131,7 +1209,7 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
         else
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: [%s] host player '%s' add succeeded\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 player_identifier_get_string(&this->m_player_add_single_player_identifier));
             this->m_player_add_join_refuse_reason = _network_join_refuse_reason_none;
         }
@@ -1146,7 +1224,7 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
         if (refuse_reason != _network_join_refuse_reason_none)
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: Warning. [%s] informing peer %d that its player '%s' add failed because '%s'\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 this->m_player_add_peer_index,
                 player_identifier_get_string(&this->m_player_add_single_player_identifier),
                 network_message_join_refuse_get_reason_string(refuse_reason));
@@ -1154,7 +1232,7 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
         else
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::finalize_single_player_add: [%s] informing peer %d that its player '%s' add succeeded\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 this->m_player_add_peer_index,
                 player_identifier_get_string(&this->m_player_add_single_player_identifier));
         }
@@ -1214,7 +1292,7 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
         if (peer_index == -1 && peer_index == this->get_session_membership()->local_peer_index())
         {
             printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received as host from invalid peer [#%d] (range [0,%d-1] us [#%d])\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 peer_index,
                 this->get_session_membership()->get_peer_count(),
                 this->get_session_membership()->local_peer_index());
@@ -1222,7 +1300,7 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
         else
         {
             printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received from peer [%s]\n",
-                managed_session_get_id_string(this->managed_session_index()),
+                this->get_id_string(),
                 this->get_peer_description(peer_index));
             this->get_session_membership()->set_peer_needs_reestablishment(peer_index, false);
             return true;
@@ -1231,7 +1309,7 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
     else
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_peer_establish: [%s] peer-establish received but not host (%s)\n",
-            managed_session_get_id_string(this->managed_session_index()),
+            this->get_id_string(),
             this->get_state_string());
     }
 
@@ -1250,4 +1328,23 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
     }
     this->m_observer->observer_channel_send_message(this->observer_owner(), channel_index, false, _network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
     return true;
+}
+
+bool c_network_session::leaving_session()
+{
+    switch (this->current_local_state())
+    {
+        case _network_session_state_peer_join_abort:
+        case _network_session_state_peer_leaving:
+        case _network_session_state_host_disband:
+            return true;
+        default:
+            return false;;
+    }
+}
+
+void c_network_session::time_set(uint32_t time)
+{
+    this->m_time_exists = true;
+    this->m_time = time;
 }

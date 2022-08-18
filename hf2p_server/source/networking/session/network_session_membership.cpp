@@ -730,3 +730,9 @@ long c_network_session_membership::get_peer_from_observer_channel(long channel_i
     long(__thiscall * get_peer_from_observer_channel)(c_network_session_membership* thisptr, long channel_index) = reinterpret_cast<decltype(get_peer_from_observer_channel)>(module_base + 0x31180);
     return get_peer_from_observer_channel(this, channel_index);
 }
+
+bool c_network_session_membership::host_exists_at_incoming_address(s_transport_address const* incoming_address)
+{
+    bool(__thiscall * host_exists_at_incoming_address)(c_network_session_membership* thisptr, s_transport_address const* incoming_address) = reinterpret_cast<decltype(host_exists_at_incoming_address)>(module_base + 0x31370);
+    return host_exists_at_incoming_address(this, incoming_address);
+}

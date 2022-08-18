@@ -136,6 +136,8 @@ public:
 	void add_pending_join_to_session(uint64_t join_nonce);
 	e_network_observer_owner session_index();
 	bool handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message);
+	bool leaving_session();
+	void time_set(uint32_t time);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

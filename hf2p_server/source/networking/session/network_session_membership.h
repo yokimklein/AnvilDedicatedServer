@@ -205,6 +205,7 @@ public:
 	void set_peer_needs_reestablishment(long peer_index, bool flags);
 	s_transport_secure_address* get_peer_address(long peer_index);
 	long get_peer_from_observer_channel(long channel_index);
+	bool host_exists_at_incoming_address(s_transport_address const* incoming_address);
 
 	c_network_session* m_session;
 	long unknown1;
