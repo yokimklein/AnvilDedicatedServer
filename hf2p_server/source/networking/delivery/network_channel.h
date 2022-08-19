@@ -71,11 +71,6 @@ struct s_client_iterator
 	long : 32;
 };
 
-class c_network_channel_client
-{
-	void* vftable;
-};
-
 class c_network_channel_owner
 {
 	void* vftable;
@@ -107,9 +102,13 @@ class c_network_channel_simulation_interface
 
 class c_network_channel_simulation_gatekeeper : c_network_channel_client
 {
-	void* vftable;
-	bool data_available;
-	bool data_expected;
+
+};
+
+struct s_network_channel_client_info
+{
+	unsigned int flags;
+	c_network_channel_client* client;
 };
 
 class c_network_link;
@@ -150,17 +149,26 @@ public:
 	c_network_connection m_connection;
 	c_network_message_queue m_message_queue;
 	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper;
-	byte m_unknown[0x1C];
-	long m_flags;
-	long m_identifier; // 0xA08
-	long m_remote_identifier; // 0xA0C
-	e_network_channel_state m_state; // 0xA10
-	byte m_unknown3[0x18];
-	s_transport_address m_remote_address; // 0xA2C - untested
-	bool m_initial_connection; // name based on log in ms23
-	byte m_unknown4[0x30];
+	int32_t m_client_count;
+	s_network_channel_client_info m_clients[k_network_channel_maximum_base_clients];
+	c_network_channel_simulation_interface* m_simulation_interface;
+	uint32_t m_flags;
+	uint32_t m_local_identifier; // 0xA08
+	uint32_t m_remote_identifier; // 0xA0C
+	e_network_channel_state m_channel_state; // 0xA10
+	e_network_channel_closure_reason m_closure_reason;
+	s_transport_address m_local_address;
+	s_transport_address m_remote_address;
+	bool m_send_connect_packets;
+	byte __alignA41[3];
+	uint32_t m_connect_identifier;
+	uint32_t m_connect_timestamp;
+	int32_t m_connect_unknown;
+	byte __dataA50[8];
+	int32_t m_activity_times[k_network_channel_maximum_clients];
+	byte __dataA70[4];
 };
-static_assert(sizeof(c_network_channel) == 0xA74); // size is assumed, if there's extra fields at the end that i've cut off, they'll be in s_channel_observer
+static_assert(sizeof(c_network_channel) == 0xA74);
 	// 0x9EC
 
 	// 1,788 bytes remaining

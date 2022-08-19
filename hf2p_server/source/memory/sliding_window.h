@@ -7,5 +7,6 @@ class c_sliding_window
 	int m_size;
 	int m_leading_sequence_number;
 	int m_trailing_sequence_number;
-	c_ring_buffer m_ring_buffer;
+	c_ring_buffer m_window;
 };
+static_assert(sizeof(c_sliding_window) == 0x1C);

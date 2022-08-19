@@ -2,19 +2,20 @@
 #include <cstdint>
 #include <windows.h>
 
+#pragma pack(push, 4)
 class c_bitstream
 {
-	byte* start;
-	byte* end;
-	uint32_t size;
-	uint32_t unknownC;
-	uint32_t unknown10;
+	byte* m_data;
+	byte* m_data_max;
+	int32_t m_data_size_bytes;
+	int32_t m_data_size_alignment;
+	uint32_t m_state;
 	void* unknown14;
-	uint32_t unknown18;
-	uint32_t position;
-	uint64_t window;
-	long windowBitsUsed;
-	c_bitstream* currentPtr;
+	int32_t m_data_size_in_bits;
+	int32_t m_position;
+	uint64_t m_window;
+	int32_t m_window_bits_used;
+	c_bitstream* m_next_data;
 	uint32_t unknown30;
 	uint32_t unknown34;
 	uint32_t unknown38;
@@ -27,3 +28,4 @@ class c_bitstream
 	uint32_t unknown9C;
 };
 static_assert(sizeof(c_bitstream) == 0xA0);
+#pragma pack(pop)

@@ -80,20 +80,22 @@ class c_network_observer
 		{
 			c_network_channel channel;
 			e_observer_state state;
-			byte unknown_data1[0x3C];
-			int unknown_flags;
-			int unknown2;
+			uint32_t unknown1;
+			byte flags;
+			byte owner_flags;
+			uint16_t __unknownA7E;
+			uint32_t owner_connection_identifier;
 			s_transport_secure_address secure_address;
-			long unknown3;
-			short time_unknown;
-			short unknown4; // could just be padding
-			long unknown5;
-			c_network_time_statistics time_statistics1; // non-original names
-			c_network_time_statistics time_statistics2;
-			c_network_time_statistics time_statistics3;
-			c_network_window_statistics window_statistics1;
-			c_network_window_statistics window_statistics2;
-			byte unknown_data2[0x126];
+			uint32_t __unknown1220_flags;
+			uint32_t __unknown1220_flags_bit;
+			s_transport_address secure_connection_address;
+			byte unknown_data1[26];
+			uint32_t time_unknown;
+			uint32_t unknown2;
+			uint32_t unknown3;
+			c_network_time_statistics time_statistics[3];
+			c_network_window_statistics window_statistics[2];
+			byte unknown_data2[294];
 		};
 		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
 

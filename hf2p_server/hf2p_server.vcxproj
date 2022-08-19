@@ -193,6 +193,7 @@
     <ClInclude Include="source\networking\logic\network_join.h" />
     <ClInclude Include="source\networking\network_globals.h" />
     <ClInclude Include="source\networking\network_utilities.h" />
+    <ClInclude Include="source\networking\transport\transport_endpoint_winsock.h" />
     <ClInclude Include="source\patch\Patch.hpp" />
     <ClInclude Include="source\patch\Pointer.hpp" />
     <ClInclude Include="source\simulation\simulation.h" />

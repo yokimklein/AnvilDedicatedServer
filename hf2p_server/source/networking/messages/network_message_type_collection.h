@@ -2,6 +2,7 @@
 #include "..\transport\transport_security.h"
 #include "..\session\network_session_membership.h"
 #include "..\network_globals.h"
+#include "..\..\memory\bitstream.h"
 
 enum e_network_message_type : long
 {
@@ -466,12 +467,12 @@ struct s_network_message_game_results : s_network_message
 
 struct c_network_message_type
 {
-	bool __unknown0;
+	bool initialized;
 	const char* message_type_name;
 	uint32_t flags;
-	uint32_t message_size;
-	uint32_t message_size_maximum;
-	void* encode_function;
+	int32_t message_size;
+	int32_t message_size_maximum;
+	void(__cdecl* encode_function)(c_bitstream*, int, void*);
 	void* decode_function;
 	void* compare_function;
 	void* dispose_function;
@@ -485,16 +486,6 @@ public:
 	const char* get_message_type_name(e_network_message_type message_type);
 private:
 	c_network_message_type message_types[k_network_message_type_count];
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	// type names?
-
 };
 
 static const char* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = { // TODO - update this whenever the enum updates

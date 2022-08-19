@@ -19,8 +19,11 @@ public:
 	c_network_message_type_collection* m_message_type_collection;
 	c_network_message_handler* m_message_handler;
 	bool m_outgoing_packet_pending;
-	byte m_outgoing_packet_storage[0x4B0]; // ms23 size = 0x5BE, h3debug size = 0x600
-	s_transport_address m_transport_address;
+	byte m_outgoing_packet_storage[0x4B0];
+	byte m_outgoing_packet_storage_end;
+	short : 16;
+	s_transport_address m_outgoing_packet_address;
+	long : 32;
 	c_bitstream m_outgoing_packet;
 };
 static_assert(sizeof(c_network_message_gateway) == 0x580);

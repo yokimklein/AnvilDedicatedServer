@@ -96,7 +96,7 @@ struct s_network_session_peer
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);
 
-#pragma pack(push, 4)
+#pragma pack(push, 1)
 struct s_network_session_player
 {
 	long desired_configuration_version;
@@ -104,6 +104,7 @@ struct s_network_session_player
 	long peer_index;
 	long player_sequence_number;
 	bool player_occupies_a_public_slot;
+	byte pad[3];
 	long controller_index;
 	long unknown2;
 	s_player_configuration configuration;
@@ -113,6 +114,7 @@ struct s_network_session_player
 static_assert(sizeof(s_network_session_player) == 0xB98);
 #pragma pack(pop)
 
+#pragma pack(push, 4)
 struct s_network_session_peer_channel
 {
 	uint32_t flags; // bool peer_needs_reestablishment?
@@ -120,8 +122,9 @@ struct s_network_session_peer_channel
 	uint32_t expected_update_number; // membership_update_number?
 };
 static_assert(sizeof(s_network_session_peer_channel) == 0xC);
+#pragma pack(pop)
 
-#pragma pack(push, 4)
+#pragma pack(push, 1)
 struct s_network_session_shared_membership
 {
 	s_network_session_shared_membership();
@@ -133,6 +136,7 @@ struct s_network_session_shared_membership
 	long public_slot_count;
 	bool friends_only;
 	bool are_slots_locked;
+	byte pad[2];
 	long peer_count;
 	uint32_t valid_peer_mask;
 	s_network_session_peer peers[k_network_maximum_machines_per_session];
@@ -143,10 +147,13 @@ struct s_network_session_shared_membership
 	long : 32;
 };
 static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
+#pragma pack(pop)
 
 class c_network_session;
 struct s_network_message_membership_update;
 struct s_network_message_membership_update_peer_properties;
+
+#pragma pack(push, 4)
 class c_network_session_membership
 {
 public:
@@ -211,8 +218,8 @@ public:
 	long unknown1;
 	s_network_session_shared_membership m_baseline;
 	s_network_session_shared_membership m_transmitted[k_network_maximum_machines_per_session];
-	long m_transmitted_checksums[k_network_maximum_machines_per_session];
-	long unknown2; // baseline checksum? or membership reset bool?
+	long m_transmitted_checksums[k_network_maximum_machines_per_session]; // m_transmitted_updates
+	long unknown2; // membership reset bool?
 	long m_local_peer_index;
 	long m_player_configuration_version;
 	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session];

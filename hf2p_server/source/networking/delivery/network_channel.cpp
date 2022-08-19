@@ -10,12 +10,12 @@ bool c_network_channel::connected()
 
 char* c_network_channel::get_name()
 {
-	return 0; // TODO once the field is mapped out
+	return 0; // TODO - do release builds even contain time statistics and names anymore?
 }
 
 e_network_channel_state c_network_channel::get_state()
 {
-	return this->m_state;
+	return this->m_channel_state;
 }
 
 //char* c_network_channel::get_message_type_name(e_network_message_type message_type) // this belongs to c_network_message_type_collection?
@@ -50,7 +50,7 @@ bool c_network_channel::established()
 
 long c_network_channel::get_identifier()
 {
-	return this->m_identifier;
+	return this->m_local_identifier;
 }
 
 long c_network_channel::get_remote_identifier()

@@ -343,19 +343,19 @@ struct s_player_appearance_unknown2
 };
 static_assert(sizeof(s_player_appearance_unknown2) == 0x324);
 
-struct s_player_appearance_unknown1
+struct s_player_appearance_model_customization
 {
-	s_player_appearance_unknown2 unknown1[2];
-	uint32_t unknown2[2]; // `unknown1` hashes? only set if `unknown1.unknown_count` != 0
+	s_player_appearance_unknown2 model_customizations[2];
+	uint32_t model_customization_hashes[2]; // `unknown1` hashes? only set if `unknown1.unknown_count` != 0
 };
-static_assert(sizeof(s_player_appearance_unknown1) == 0x650);
+static_assert(sizeof(s_player_appearance_model_customization) == 0x650);
 
 struct s_player_appearance // lives in player_appearance.h?
 {
 	byte flags; // gender
 	byte player_model_index; // 0 - male spartan, 1 - elite, 2 - female spartan, 3 - female elite?
 	byte align2[2];
-	s_player_appearance_unknown1 unknown_struct;
+	s_player_appearance_model_customization unknown;
 	wchar_t service_tag[5];
 	byte padding[2];
 };

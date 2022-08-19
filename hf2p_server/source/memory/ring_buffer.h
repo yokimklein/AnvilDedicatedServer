@@ -3,6 +3,7 @@
 class c_ring_buffer
 {
 	int ring_size;
-	int first_element;
+	void* elements;
 	int element_count;
 };
+static_assert(sizeof(c_ring_buffer) == 0xC);

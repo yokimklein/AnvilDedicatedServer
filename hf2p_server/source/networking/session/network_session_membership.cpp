@@ -614,7 +614,7 @@ s_network_session_shared_membership::s_network_session_shared_membership()
     for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
     {
         memset(&players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-        memset(&players[j].configuration.host.player_appearance.unknown_struct, 0, sizeof(s_player_appearance_unknown1));
+        memset(&players[j].configuration.host.player_appearance.unknown, 0, sizeof(s_player_appearance_model_customization));
         memset(&players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
         players[j].configuration.host.player_assigned_team = -1;
         players[j].configuration.host.player_team = -1;
