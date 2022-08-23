@@ -15,7 +15,7 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
         network_message_join_refuse_get_reason_string(reason),
         transport_address_get_string(address));
     s_network_message_join_refuse* message = new s_network_message_join_refuse();
-    managed_session_get_id(this->managed_session_index(), &message->session_id);
+    this->get_session_id(&message->session_id);
     message->reason = reason;
     return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), message);
 }
@@ -71,28 +71,28 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
 
 bool c_network_session::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
 {
-    typedef bool(__fastcall* handle_peer_connect_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
+    typedef bool(__thiscall* handle_peer_connect_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
     auto handle_peer_connect = reinterpret_cast<handle_peer_connect_ptr>(module_base + 0x4B2E0);
     return handle_peer_connect(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
 {
-    typedef bool(__fastcall* handle_session_disband_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_disband const* message);
+    typedef bool(__thiscall* handle_session_disband_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_disband const* message);
     auto handle_session_disband = reinterpret_cast<handle_session_disband_ptr>(module_base + 0x4B4D0);
     return handle_session_disband(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
 {
-    typedef bool(__fastcall* handle_session_boot_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_boot const* message);
+    typedef bool(__thiscall* handle_session_boot_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_boot const* message);
     auto handle_session_boot = reinterpret_cast<handle_session_boot_ptr>(module_base + 0x4B560);
     return handle_session_boot(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
 {
-    typedef bool(__fastcall* handle_host_decline_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_host_decline const* message);
+    typedef bool(__thiscall* handle_host_decline_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_host_decline const* message);
     auto handle_host_decline = reinterpret_cast<handle_host_decline_ptr>(module_base + 0x4B5F0);
     return handle_host_decline(this, channel, message);
 }
@@ -181,38 +181,35 @@ bool c_network_session::handle_time_synchronize(s_transport_address const* outgo
     return false;
 }
 
-bool c_network_session::channel_is_authoritative(c_network_channel* channel) // untested
+bool c_network_session::channel_is_authoritative(c_network_channel* channel)
 {
-    typedef bool(__fastcall* channel_is_authoritative_ptr)(c_network_session* session, c_network_channel* channel);
+    typedef bool(__thiscall* channel_is_authoritative_ptr)(c_network_session* session, c_network_channel* channel);
     auto channel_is_authoritative = reinterpret_cast<channel_is_authoritative_ptr>(module_base + 0x227A0);
     return channel_is_authoritative(this, channel);
 }
 
-// TODO - this call crashes
 bool c_network_session::handle_membership_update(s_network_message_membership_update const* message)
 {
-    typedef bool(__fastcall* handle_membership_update_ptr)(c_network_session* session, s_network_message_membership_update const* message);
-    auto handle_membership_update = reinterpret_cast<handle_membership_update_ptr>(module_base + 0x31DD0);
-    return handle_membership_update(this, message);
+    return this->get_session_membership()->handle_membership_update(message);
 }
 
 bool c_network_session::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
 {
-    typedef bool(__fastcall* handle_player_refuse_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_player_refuse const* message);
+    typedef bool(__thiscall* handle_player_refuse_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_player_refuse const* message);
     auto handle_player_refuse = reinterpret_cast<handle_player_refuse_ptr>(module_base + 0x4B7C0);
     return handle_player_refuse(this, channel, message);
 }
 
 bool c_network_session::handle_parameters_update(s_network_message_parameters_update const* message)
 {
-    typedef bool(__fastcall* handle_parameters_update_ptr)(c_network_session* session, s_network_message_parameters_update const* message);
+    typedef bool(__thiscall* handle_parameters_update_ptr)(c_network_session* session, s_network_message_parameters_update const* message);
     auto handle_parameters_update = reinterpret_cast<handle_parameters_update_ptr>(module_base + 0x4B3D0);
     return handle_parameters_update(this, message);
 }
 
 e_network_join_refuse_reason c_network_session::get_closure_reason()
 {
-    typedef e_network_join_refuse_reason(__fastcall* get_closure_reason_ptr)(c_network_session* session);
+    typedef e_network_join_refuse_reason(__thiscall* get_closure_reason_ptr)(c_network_session* session);
     auto get_closure_reason = reinterpret_cast<get_closure_reason_ptr>(module_base + 0x22ED0);
     return get_closure_reason(this);
 }
@@ -462,7 +459,7 @@ bool c_network_session::session_is_full(long joining_peer_count, long joining_pl
 
 void c_network_session::disconnect()
 {
-    typedef void(__fastcall* disconnect_ptr)(c_network_session* session);
+    typedef void(__thiscall* disconnect_ptr)(c_network_session* session);
     auto disconnect = reinterpret_cast<disconnect_ptr>(module_base + 0x21CC0);
     return disconnect(this);
 }
@@ -475,7 +472,7 @@ void c_network_session::disband_peer(long peer_index)
             this->get_id_string(),
             this->get_peer_description(peer_index));
         s_network_message_session_disband* disband_message = new s_network_message_session_disband();
-        managed_session_get_id(this->managed_session_index(), &disband_message->session_id);
+        this->get_session_id(&disband_message->session_id);
         long observer_index = this->get_session_membership()->get_observer_channel_index(peer_index);
         if (observer_index != -1)
         {
@@ -510,7 +507,7 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
             peer_index,
             boot_reason);
         s_network_message_session_boot* boot_message = new s_network_message_session_boot();
-        managed_session_get_id(this->managed_session_index(), &boot_message->session_id);
+        this->get_session_id(&boot_message->session_id);
         boot_message->reason = boot_reason;
         long observer_index = this->get_session_membership()->get_observer_channel_index(peer_index);
         if (observer_index != -1)
@@ -738,25 +735,25 @@ c_network_session_membership* c_network_session::get_session_membership()
 
 void c_network_session::idle_peer_creating()
 {
-    void(__thiscall * idle_peer_creating)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_creating)>(module_base + 0x3E800);
+    void(__thiscall* idle_peer_creating)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_creating)>(module_base + 0x3E800);
     idle_peer_creating(this);
 }
 
 void c_network_session::idle_peer_joining()
 {
-    void(__thiscall * idle_peer_joining)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_joining)>(module_base + 0x3E8B0);
+    void(__thiscall* idle_peer_joining)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_joining)>(module_base + 0x3E8B0);
     idle_peer_joining(this);
 }
 
 void c_network_session::idle_peer_join_abort()
 {
-    void(__thiscall * idle_peer_join_abort)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_join_abort)>(module_base + 0x3EA00);
+    void(__thiscall* idle_peer_join_abort)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_join_abort)>(module_base + 0x3EA00);
     idle_peer_join_abort(this);
 }
 
 void c_network_session::idle_peer_leaving()
 {
-    void(__thiscall * idle_peer_leaving)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_leaving)>(module_base + 0x3EA60);
+    void(__thiscall* idle_peer_leaving)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_leaving)>(module_base + 0x3EA60);
     idle_peer_leaving(this);
 }
 
@@ -997,13 +994,13 @@ e_network_observer_owner c_network_session::observer_owner()
 
 long c_network_session::get_maximum_player_count()
 {
-    long(__thiscall * get_maximum_player_count)(c_network_session* session) = reinterpret_cast<decltype(get_maximum_player_count)>(module_base + 0x22E80);
+    long(__thiscall* get_maximum_player_count)(c_network_session* session) = reinterpret_cast<decltype(get_maximum_player_count)>(module_base + 0x22E80);
     return get_maximum_player_count(this);
 }
 
 void c_network_session::handle_disconnection()
 {
-    void(__cdecl * hf2p_handle_disconnection)() = reinterpret_cast<decltype(hf2p_handle_disconnection)>(module_base + 0x2F29C0);
+    void(__cdecl* hf2p_handle_disconnection)() = reinterpret_cast<decltype(hf2p_handle_disconnection)>(module_base + 0x2F29C0);
 
     printf("MP/NET/SESSION,CTRL: c_network_session::handle_disconnection: [%s] disconnected from session host. Session Type %s\n",
         this->get_id_string(),
@@ -1014,13 +1011,13 @@ void c_network_session::handle_disconnection()
 
 void c_network_session::check_to_send_time_synchronization()
 {
-    void(__thiscall * check_to_send_time_synchronization)(c_network_session* session) = reinterpret_cast<decltype(check_to_send_time_synchronization)>(module_base + 0x22B50);
+    void(__thiscall* check_to_send_time_synchronization)(c_network_session* session) = reinterpret_cast<decltype(check_to_send_time_synchronization)>(module_base + 0x22B50);
     check_to_send_time_synchronization(this);
 }
 
 void c_network_session::idle_observer_state()
 {
-    void(__thiscall * idle_observer_state)(c_network_session* session) = reinterpret_cast<decltype(idle_observer_state)>(module_base + 0x3EAC0);
+    void(__thiscall* idle_observer_state)(c_network_session* session) = reinterpret_cast<decltype(idle_observer_state)>(module_base + 0x3EAC0);
     idle_observer_state(this);
 }
 
@@ -1028,18 +1025,20 @@ void c_network_session::check_to_send_membership_update()
 {
     for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = get_session_membership()->get_next_peer(i))
     {
-        auto peer_channel = &this->get_session_membership()->m_peer_channels[i];
-        if (peer_channel->channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && !peer_channel->flags)
+        long peer_channel_index = this->get_session_membership()->get_observer_channel_index(i);
+        long peer_update_number = this->get_session_membership()->get_membership_update_number(i);
+        bool peer_needs_reestablishment = this->get_session_membership()->get_peer_needs_reestablishment(i);
+        if (peer_channel_index != -1 && this->get_session_membership()->get_peer_connection_state(i) >= _network_session_peer_state_connected && peer_needs_reestablishment != true)
         {
             auto observer = this->m_observer;
-            auto channel_observer = &observer->m_channel_observers[peer_channel->channel_index];
-            if (observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+            auto channel_observer = &observer->m_channel_observers[peer_channel_index];
+            if (observer->observer_channel_connected(this->observer_owner(), peer_channel_index))
             {
-                if (peer_channel->expected_update_number != this->get_session_membership()->m_baseline.update_number)
+                if (peer_update_number != this->get_session_membership()->update_number())
                 {
-                    if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+                    if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel_index, _network_message_type_membership_update))
                     {
-                        observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+                        observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel_index, _network_message_type_membership_update);
                     }
                     else
                     {
@@ -1076,7 +1075,7 @@ void c_network_session::check_to_send_membership_update()
                         s_network_message_membership_update* membership_update_message = new s_network_message_membership_update();
                         bool send_complete_update = false;
                         auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(i);
-                        if (peer_channel->expected_update_number == -1 || peer_channel->expected_update_number != transmitted_membership->update_number)
+                        if (peer_update_number == -1 || peer_update_number != transmitted_membership->update_number)
                         {
                             send_complete_update = true;
                             transmitted_membership = nullptr;
@@ -1086,27 +1085,26 @@ void c_network_session::check_to_send_membership_update()
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending complete update #-1->[#%d] to peer [#%d]\n",
                                 this->get_id_string(),
-                                this->get_session_membership()->get_current_membership()->update_number,
+                                this->get_session_membership()->update_number(),
                                 i);
                         }
                         else
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending incremental update [#%d]->[#%d] to peer [#%d]\n",
                                 this->get_id_string(),
-                                peer_channel->expected_update_number,
-                                this->get_session_membership()->get_current_membership()->update_number,
+                                peer_update_number,
+                                this->get_session_membership()->update_number(),
                                 i);
                         }
-                        if (this->m_observer->observer_channel_connected(this->observer_owner(), peer_channel->channel_index))
+                        if (this->m_observer->observer_channel_connected(this->observer_owner(), peer_channel_index))
                         {
-                            if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update))
+                            if (observer->observer_channel_backlogged(this->observer_owner(), peer_channel_index, _network_message_type_membership_update))
                             {
-                                observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel->channel_index, _network_message_type_membership_update);
+                                observer->observer_channel_set_waiting_on_backlog(this->observer_owner(), peer_channel_index, _network_message_type_membership_update);
                             }
                             else
                             {
-                                long update_number = this->get_session_membership()->get_current_membership()->update_number;
-                                this->get_session_membership()->set_membership_update_number(i, update_number);
+                                this->get_session_membership()->set_membership_update_number(i, this->get_session_membership()->update_number());
                                 long observer_index = this->get_session_membership()->get_observer_channel_index(i);
                                 if (observer_index != -1)
                                 {
@@ -1190,7 +1188,7 @@ bool c_network_session::peer_request_properties_update(s_transport_secure_addres
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::peer_request_properties_update: [%s] sending peer-properties request\n", this->get_id_string());
             s_network_message_peer_properties* message = new s_network_message_peer_properties();
-            managed_session_get_id(this->managed_session_index(), &message->session_id);
+            this->get_session_id(&message->session_id);
             message->secure_address = *secure_address;
             memcpy(&message->peer_properties, peer_properties, sizeof(s_network_session_peer_properties));
             long channel_index = this->get_session_membership()->m_peer_channels[this->get_session_membership()->m_baseline.host_peer_index].channel_index;
@@ -1240,7 +1238,7 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
     else
     {
         s_network_message_player_refuse* message = new s_network_message_player_refuse();
-        managed_session_get_id(this->managed_session_index(), &message->session_id);
+        this->get_session_id(&message->session_id);
         long channel_index = this->get_session_membership()->get_observer_channel_index(this->m_player_add_peer_index);
         if (channel_index != -1)
             this->m_observer->observer_channel_send_message(this->session_index(), channel_index, false, _network_message_type_player_refuse, sizeof(s_network_message_player_refuse), message);
@@ -1340,7 +1338,7 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
         return false;
 
     s_network_message_host_decline* decline_message = new s_network_message_host_decline();
-    managed_session_get_id(this->managed_session_index(), &decline_message->session_id);
+    this->get_session_id(&decline_message->session_id);
     decline_message->peer_exists = peer_index != -1;
     decline_message->session_exists = true;
     if (this->established())
@@ -1418,7 +1416,7 @@ bool c_network_session::handle_player_properties(c_network_channel* channel, s_n
     return false;
 }
 
-void c_network_session::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
+bool c_network_session::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
 {
     if (this->established() && this->is_host())
     {
@@ -1430,11 +1428,18 @@ void c_network_session::handle_parameters_request(c_network_channel* channel, s_
                 this->get_id_string(),
                 peer_index);
         }
-        else if (!this->get_session_parameters()->handle_change_request((peer_index == this->get_session_membership()->leader_peer_index()), message))
+        else
         {
-            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_parameters_request: [%s] failed to handle parameters-request received from peer %d\n",
-                this->get_id_string(),
-                peer_index);
+            if (this->get_session_parameters()->handle_change_request((peer_index == this->get_session_membership()->leader_peer_index()), message))
+            {
+                return true;
+            }
+            else
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_parameters_request: [%s] failed to handle parameters-request received from peer %d\n",
+                    this->get_id_string(),
+                    peer_index);
+            }
         }
     }
     else
@@ -1443,4 +1448,15 @@ void c_network_session::handle_parameters_request(c_network_channel* channel, s_
             this->get_id_string(),
             this->get_state_string());
     }
+    return false;
+}
+
+bool c_network_session::compare_session_id(s_transport_secure_identifier const* secure_id)
+{
+    return managed_session_compare_id(this->managed_session_index(), secure_id);
+}
+
+bool c_network_session::get_session_id(s_transport_secure_identifier* secure_id)
+{
+    return managed_session_get_id(this->managed_session_index(), secure_id);
 }

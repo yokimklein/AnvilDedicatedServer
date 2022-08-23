@@ -322,20 +322,20 @@ s_network_session_shared_membership* c_network_session_membership::get_transmitt
 void c_network_session_membership::set_membership_update_number(long peer_index, long update_number)
 {
     // TODO - is_peer_valid assert
-    this->m_transmitted[peer_index].update_number = update_number;
+    this->m_peer_channels[peer_index].expected_update_number = update_number;
 }
 
 // TODO - test this, especially with the null pointer stuff going on, make sure to confirm that
 void c_network_session_membership::build_membership_update(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message)
 {
-    uint32_t unknown1 = 0;
-    uint32_t unknown2 = 1;
-    uint32_t unknown3 = 0;
+    int32_t unknown1 = 0;
+    int32_t unknown2 = 1;
+    int32_t unknown3 = 0;
     
     printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: [%s] building new update\n",
         this->get_session()->get_id_string());
     memset(message, 0, sizeof(s_network_message_membership_update));
-    managed_session_get_id(this->get_session()->managed_session_index(), &message->session_id);
+    this->get_session()->get_session_id(&message->session_id);
     message->update_number = membership->update_number;
     message->incremental_update_number = -1;
     if (baseline != nullptr)
@@ -409,10 +409,9 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         if (baseline != nullptr && ((baseline->valid_player_mask >> i) & 1)) // test player bit
             baseline_player = &baseline->players[i];
     
-        long unknown4 = 1 << membership_player->peer_index;
+        int32_t unknown4 = 1 << membership_player->peer_index;
         if (baseline_player == nullptr || ((membership->valid_player_mask >> i) & 1))
         {
-            // blam uses csmemcmp here, which asserts if one of the pointers is null, we're not so we're getting a warning
             if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0 || memcmp(membership_player, baseline_player, sizeof(s_network_session_player))))
             {
                 s_network_message_membership_update_player* update_player = &message->players[message->player_update_count];
@@ -448,14 +447,14 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                 }
                 printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]\n", i);
             }
-            else if ((unknown4 & unknown3) == 0 && (unknown4 & unknown1) == 0)
-            {
-                s_network_message_membership_update_player* player_update = &message->players[message->player_update_count];
-                message->player_update_count++;
-                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]\n", i);
-                player_update->player_index = i;
-                player_update->update_type = 0;
-            }
+        }
+        else if ((unknown4 & unknown3) == 0 && (unknown4 & unknown1) == 0)
+        {
+            s_network_message_membership_update_player* player_update = &message->players[message->player_update_count];
+            message->player_update_count++;
+            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]\n", i);
+            player_update->player_index = i;
+            player_update->update_type = 0;
         }
     }
     if (baseline == nullptr || membership->player_sequence_number != baseline->player_sequence_number)
@@ -717,10 +716,10 @@ long c_network_session_membership::get_peer_count()
     return this->get_current_membership()->peer_count;
 }
 
-void c_network_session_membership::set_peer_needs_reestablishment(long peer_index, bool flags)
+void c_network_session_membership::set_peer_needs_reestablishment(long peer_index, bool needs_reestablishment)
 {
     // TODO ASSERTS
-    this->m_peer_channels[peer_index].flags = flags;
+    this->m_peer_channels[peer_index].needs_reestablishment = needs_reestablishment;
 }
 
 s_transport_secure_address* c_network_session_membership::get_peer_address(long peer_index)
@@ -743,4 +742,26 @@ bool c_network_session_membership::host_exists_at_incoming_address(s_transport_a
 long c_network_session_membership::leader_peer_index()
 {
     return this->get_current_membership()->leader_peer_index;
+}
+
+bool c_network_session_membership::handle_membership_update(s_network_message_membership_update const* message)
+{
+    typedef bool(__thiscall* handle_membership_update_ptr)(c_network_session_membership* thisptr, s_network_message_membership_update const* message);
+    auto handle_membership_update = reinterpret_cast<handle_membership_update_ptr>(module_base + 0x31DD0);
+    return handle_membership_update(this, message);
+}
+
+long c_network_session_membership::update_number()
+{
+    return this->get_current_membership()->update_number;
+}
+
+long c_network_session_membership::get_membership_update_number(long peer_index)
+{
+    return this->m_peer_channels[peer_index].expected_update_number;
+}
+
+bool c_network_session_membership::get_peer_needs_reestablishment(long peer_index)
+{
+    return this->m_peer_channels[peer_index].needs_reestablishment;
 }

@@ -101,3 +101,4 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 void managed_session_reset_players_add_status(long managed_session_index);
 void managed_session_add_players(long managed_session_index, uint64_t* xuids, bool* player_bools, long player_count);
 void managed_session_add_players_internal(s_online_session_player* players, long player_count, uint64_t* player_xuids, bool* player_bools, long xuid_count);
+bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id);

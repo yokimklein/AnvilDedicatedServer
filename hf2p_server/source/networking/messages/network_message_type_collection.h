@@ -3,6 +3,7 @@
 #include "..\session\network_session_membership.h"
 #include "..\network_globals.h"
 #include "..\..\memory\bitstream.h"
+#include "..\session\network_session_parameter_types.h"
 
 enum e_network_message_type : long
 {
@@ -412,7 +413,7 @@ struct s_network_message_parameters_update : s_network_message
 	uint64_t cleared_parameters;
 	uint64_t updated_parameters;
 
-	byte parameters[0x20][0x460];
+	byte parameters[k_network_session_parameter_type_count][0x400];
 };
 static_assert(sizeof(s_network_message_parameters_update) == 0x8C28);
 
@@ -420,7 +421,7 @@ struct s_network_message_parameters_request : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	uint64_t change_request_parameters;
-	byte parameters[0x20][0x460];
+	byte parameters[k_network_session_parameter_type_count][0x400];
 };
 static_assert(sizeof(s_network_message_parameters_request) == 0x8C18);
 

@@ -44,10 +44,10 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
             transport_secure_address_build_from_identifier(machine_identifier, secure_address);
         }
         s_transport_secure_address* peer_secure_address;
-        if (!membership || membership->m_baseline.update_number == -1)
+        if (!membership || membership->update_number() == -1)
             peer_secure_address = secure_address;
         else
-            peer_secure_address = &membership->m_baseline.peers[membership->m_local_peer_index].secure_address;
+            peer_secure_address = membership->get_peer_address(membership->local_peer_index());
         if (peer->connection_state == _network_session_peer_state_joined
             || memcmp(secure_address, peer_secure_address, sizeof(s_transport_secure_address)) // equal
             || (memcmp(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties))) != 0) // not equal
@@ -60,9 +60,9 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
             if (session->peer_request_properties_update(secure_address, peer_properties))
             {
                 if (*(bool*)(module_base + 0x1038344))
-                    ((uint32_t*)module_base + 0x3EB1498)[session->m_session_index] = *(uint32_t*)(module_base + 0x1038348);
+                    ((uint32_t*)module_base + 0x3EB1498)[session->session_index()] = *(uint32_t*)(module_base + 0x1038348);
                 else
-                    ((uint32_t*)module_base + 0x3EB1498)[session->m_session_index] = timeGetTime();
+                    ((uint32_t*)module_base + 0x3EB1498)[session->session_index()] = timeGetTime();
             }
             else
             {

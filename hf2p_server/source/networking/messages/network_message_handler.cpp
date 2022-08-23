@@ -10,8 +10,7 @@
 #include "..\network_globals.h"
 #include "..\network_utilities.h"
 
-// inlined in the ms29 client
-void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message) // untested
+void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)
 {
     const char* address_string = transport_address_get_string(outgoing_address);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, address_string, timeGetTime());
@@ -22,13 +21,13 @@ void c_network_message_handler::handle_ping(s_transport_address const* outgoing_
     this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), response);
 }
 
-void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
+void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message)
 {
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 
         message->id, transport_address_get_string(outgoing_address), timeGetTime(), network_get_time() - message->timestamp);
 }
 
-void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message) // tested - seems to work
+void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message)
 {
     typedef long(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
     auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(module_base + 0x25AC0);
@@ -37,10 +36,6 @@ void c_network_message_handler::handle_connect_refuse(c_network_channel* channel
 
 void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message)
 {
-    //typedef long(__fastcall* handle_connect_establish_ptr)(c_network_channel* channel, s_network_message_connect_establish const* message);
-    //auto handle_connect_establish = reinterpret_cast<handle_connect_establish_ptr>(module_base + 0x25B10);
-    //handle_connect_establish(channel, message);
-
     if (channel->closed())
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: ignoring connect establish from '%s'/%d (currently closed)\n",
@@ -127,20 +122,34 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
     }
-    // this is likely caused by the client trying to connect with the wrong secure address/id, usually because the API server hasn't updated with the new server information
+
+    // if you get this error, it's likely caused by the client trying to connect with the wrong secure address/id, usually because the API server hasn't updated with the new server information
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
         transport_secure_identifier_get_string(&message->session_id),
         transport_address_get_string(outgoing_address));
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incoming join request\n");
 }
 
-void c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message) // untested
+void c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
 {
     if (message->protocol_version == 9)
     {
         auto* session = this->m_session_manager->get_session(&message->session_id);
         if (session)
+        {
             session->handle_peer_connect(outgoing_address, message);
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_connect: no session, ignoring peer connect from '%s'\n",
+                transport_address_get_string(outgoing_address));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_connect: received message with incorrect protocol version [%d!=%d]\n",
+            message->protocol_version,
+            9);
     }
 }
 
@@ -196,35 +205,69 @@ void c_network_message_handler::handle_leave_acknowledge(s_transport_address con
     return handle_leave_acknowledge(this, outgoing_address, message);
 }
 
-void c_network_message_handler::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message) // untested
+void c_network_message_handler::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
-        session->handle_session_disband(outgoing_address, message);
+    {
+        if (!session->handle_session_disband(outgoing_address, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_disband: session (%s) failed to handle session-disband from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                transport_address_get_string(outgoing_address));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_disband: ignoring message from '%s' (no %s session)\n",
+            transport_address_get_string(outgoing_address),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
-void c_network_message_handler::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message) // untested
+void c_network_message_handler::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
-        session->handle_session_boot(outgoing_address, message);
+    {
+        if (!session->handle_session_boot(outgoing_address, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_boot: session (%s) failed to handle session-boot from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                transport_address_get_string(outgoing_address));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_boot: ignoring session-boot from '%s' (no %s session)\n",
+            transport_address_get_string(outgoing_address),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
-void c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message) // untested
+void c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
-        session->handle_host_decline(channel, message);
+    {
+        if (!session->handle_host_decline(channel, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_host_decline: session failed to handle host-decline (%s)\n",
+                transport_secure_identifier_get_string(&message->session_id));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_host_decline: channel '%s' ignoring host-decline (%s) (can not find session)\n",
+            channel->get_name(),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
 void c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
-    bool success = false;
-    if (session)
-        success = session->handle_peer_establish(channel, message);
-    
-    if (success == false)
+    if (!session || !session->handle_peer_establish(channel, message))
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_establish: channel '%s' failed to handle peer-establish (%s)\n",
             channel->get_name(),
@@ -236,18 +279,46 @@ void c_network_message_handler::handle_peer_establish(c_network_channel* channel
     }
 }
 
-void c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message) // untested
+void c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
-        session->handle_time_synchronize(outgoing_address, message);
+    {
+        if (!session->handle_time_synchronize(outgoing_address, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_time_synchronize: session failed to handle time-synchronize (%s %d) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                message->synchronization_stage,
+                transport_address_get_string(outgoing_address));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_time_synchronize: session doesn't exist to handle time-synchronize (%s %d) from '%s'\n",
+            transport_secure_identifier_get_string(&message->session_id), 
+            message->synchronization_stage,
+            transport_address_get_string(outgoing_address));
+    }
 }
 
-void c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update const* message) // untested
+void c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
-        session->handle_membership_update(message);
+    {
+        if (!session->handle_membership_update(message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_membership_update: failed to handle authoritative membership-update (%s update %d) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                message->update_number,
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_membership_update: channel '%s' ignoring membership-update (channel is not authoritative)\n",
+            channel->get_name());
+    }
 }
 
 void c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
@@ -288,11 +359,24 @@ void c_network_message_handler::handle_player_add(c_network_channel* channel, s_
     
 }
 
-void c_network_message_handler::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message) // untested
+void c_network_message_handler::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
-        session->handle_player_refuse(channel, message);
+    {
+        if (!session->handle_player_refuse(channel, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_refuse: session failed to handle player-refuse (%s) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_refuse: channel '%s' ignoring player-refuse (%s) (channel not authoritative)\n",
+            channel->get_name(),
+            transport_secure_identifier_get_string(&message->session_id));
+    }
 }
 
 // TODO
@@ -321,11 +405,23 @@ void c_network_message_handler::handle_player_properties(c_network_channel* chan
     }
 }
 
-void c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message) // untested
+void c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message)
 {
     auto* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
-        session->handle_parameters_update(message);
+    {
+        if (!session->handle_parameters_update(message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_update: session failed to handle authoritative parameters-update (%s) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_update: channel '%s' ignoring parameters-update (channel is not authoritative)\n",
+            channel->get_name());
+    }
 }
 
 void c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)

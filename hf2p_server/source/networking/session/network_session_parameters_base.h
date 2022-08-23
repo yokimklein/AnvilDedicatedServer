@@ -12,6 +12,8 @@ public:
 	bool get_allowed();
 	const char* get_session_description();
 	bool set_allowed();
+	long get_change_request_size();
+	bool handle_change_request(void const* change_request, long change_request_size);
 
 	c_network_session_parameter_base_vtbl* vftable;
 	uint32_t m_type;

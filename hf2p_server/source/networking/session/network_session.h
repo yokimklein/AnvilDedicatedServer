@@ -139,7 +139,9 @@ public:
 	bool leaving_session();
 	void time_set(uint32_t time);
 	bool handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message);
-	void handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message);
+	bool handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message);
+	bool compare_session_id(s_transport_secure_identifier const* secure_id);
+	bool get_session_id(s_transport_secure_identifier* secure_id);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -153,7 +155,7 @@ public:
 	long : 32;
 	e_network_session_state m_local_state;
 	long : 32;
-	char m_local_state_data[0x288];
+	char m_local_state_data[0x288]; // host s_transport_address @ byte offset 20
 	uint32_t m_connection_identifier;
 	uint32_t m_time_synchronization_end_time;
 	uint32_t m_time_synchronization_start_time;

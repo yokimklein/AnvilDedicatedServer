@@ -114,12 +114,15 @@ struct s_network_session_player
 static_assert(sizeof(s_network_session_player) == 0xB98);
 #pragma pack(pop)
 
-#pragma pack(push, 4)
+#pragma pack(push, 1)
 struct s_network_session_peer_channel
 {
-	uint32_t flags; // bool peer_needs_reestablishment?
+	bool needs_reestablishment;
+	byte unknown1;
+	byte unknown2;
+	byte unknown3;
 	long channel_index;
-	uint32_t expected_update_number; // membership_update_number?
+	uint32_t expected_update_number;
 };
 static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 #pragma pack(pop)
@@ -214,6 +217,10 @@ public:
 	long get_peer_from_observer_channel(long channel_index);
 	bool host_exists_at_incoming_address(s_transport_address const* incoming_address);
 	long leader_peer_index();
+	bool handle_membership_update(s_network_message_membership_update const* message);
+	long update_number();
+	long get_membership_update_number(long peer_index);
+	bool get_peer_needs_reestablishment(long peer_index);
 
 	c_network_session* m_session;
 	long unknown1;

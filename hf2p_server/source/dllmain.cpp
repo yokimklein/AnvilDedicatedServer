@@ -238,7 +238,7 @@ long MainThread()
             // GET SECURE ID
             GUID server_secure_identifier;
             LPOLESTR secure_identifier_str;
-            if (managed_session_get_id(network_session->m_managed_session_index, (s_transport_secure_identifier*)&server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK))
+            if (network_session->get_session_id((s_transport_secure_identifier*)&server_secure_identifier) && (StringFromCLSID(server_secure_identifier, &secure_identifier_str) == S_OK))
                 printf("\nSecure id: %ls\n", secure_identifier_str);
             else
                 printf("Failed to get secure identifier\n");

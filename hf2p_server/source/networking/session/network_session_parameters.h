@@ -21,6 +21,7 @@ public:
 	void check_to_send_change_requests();
 	void update();
 	bool handle_change_request(bool is_leader, s_network_message_parameters_request const* message);
+	const char* get_session_description();
 
 	c_network_session_parameter_session_mode session_mode;
 	c_network_session_parameter_session_size session_size;
