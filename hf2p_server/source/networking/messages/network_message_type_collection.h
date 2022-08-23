@@ -412,13 +412,17 @@ struct s_network_message_parameters_update : s_network_message
 	uint64_t cleared_parameters;
 	uint64_t updated_parameters;
 
-	char parameters[6144];
+	byte parameters[0x20][0x460];
 };
+static_assert(sizeof(s_network_message_parameters_update) == 0x8C28);
 
 struct s_network_message_parameters_request : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	uint64_t change_request_parameters;
+	byte parameters[0x20][0x460];
 };
+static_assert(sizeof(s_network_message_parameters_request) == 0x8C18);
 
 struct s_network_message_view_establishment : s_network_message
 {

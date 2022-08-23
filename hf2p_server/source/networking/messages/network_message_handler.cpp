@@ -15,11 +15,11 @@ void c_network_message_handler::handle_ping(s_transport_address const* outgoing_
 {
     const char* address_string = transport_address_get_string(outgoing_address);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, address_string, timeGetTime());
-    s_network_message_pong response;
-    response.id = message->id;
-    response.timestamp = message->timestamp;
-    response.request_qos = message->request_qos;
-    this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), &response);
+    s_network_message_pong* response = new s_network_message_pong();
+    response->id = message->id;
+    response->timestamp = message->timestamp;
+    response->request_qos = message->request_qos;
+    this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), response);
 }
 
 void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message) // untested
@@ -164,11 +164,10 @@ void c_network_message_handler::handle_join_abort(s_transport_address const* out
             network_message_join_refuse_get_reason_string(refuse_reason),
             transport_address_get_string(outgoing_address));
         auto message_gateway = this->get_message_gateway();
-        s_network_message_join_refuse refuse_message;
-        memset(&refuse_message, 0, sizeof(s_network_message_join_refuse));
-        refuse_message.session_id = message->session_id;
-        refuse_message.reason = refuse_reason;
-        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &refuse_message);
+        s_network_message_join_refuse* refuse_message = new s_network_message_join_refuse();
+        refuse_message->session_id = message->session_id;
+        refuse_message->reason = refuse_reason;
+        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), refuse_message);
     }
     else
     {
@@ -224,13 +223,13 @@ void c_network_message_handler::handle_peer_establish(c_network_channel* channel
     bool success = false;
     if (session)
         success = session->handle_peer_establish(channel, message);
-
+    
     if (success == false)
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_establish: channel '%s' failed to handle peer-establish (%s)\n",
             channel->get_name(),
             transport_secure_identifier_get_string(&message->session_id));
-
+    
         s_network_message_host_decline* decline_message = new s_network_message_host_decline();
         decline_message->session_id = message->session_id;
         channel->send_message(_network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
@@ -329,17 +328,31 @@ void c_network_message_handler::handle_parameters_update(c_network_channel* chan
         session->handle_parameters_update(message);
 }
 
-// TODO
 void c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
 {
-    
+    auto* session = this->m_session_manager->get_session(&message->session_id);
+    if (session && session->is_host())
+    {
+        if (!session->handle_parameters_request(channel, message))
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_request: session failed to handle parameters-request (%s) from '%s'\n",
+                transport_secure_identifier_get_string(&message->session_id),
+                channel->get_name());
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_request: channel '%s' ignoring parameters-request (we are not the host)\n",
+            channel->get_name());
+    }
 }
 
-void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message) // untested
+// TODO - ensure this is doing everything it should be and that the call is correct
+void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
 {
-    typedef void(__fastcall* handle_view_establishment_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message);
+    typedef void(__thiscall* handle_view_establishment_ptr)(c_network_message_handler* message_handler/*, c_network_channel* channel, s_network_message_view_establishment const* message*/);
     auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(module_base + 0x257B0);
-    return handle_view_establishment(this, channel, message);
+    return handle_view_establishment(this/*, channel, message*/);
 }
 
 void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message) // untested
@@ -407,18 +420,17 @@ void log_received_over_non_connected_channel(c_network_channel* channel, e_netwo
         message_type, message_type_name, channel_name);
 }
 
-// might need a return code?
 void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     // non-original log but its useful to know when channel messages arrive
-    s_transport_address remote_address_log;
-    channel->get_remote_address(&remote_address_log);
+    s_transport_address* remote_address_log = nullptr;
+    channel->get_remote_address(remote_address_log);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
         message_type,
         this->m_message_type_collection->get_message_type_name(message_type),
-        transport_address_get_string(&remote_address_log));
+        transport_address_get_string(remote_address_log));
 
-    s_transport_address remote_address;
+    s_transport_address* remote_address = nullptr;
     switch (message_type)
     {
         case _network_message_type_connect_establish:
@@ -426,22 +438,22 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             break;
 
         case _network_message_type_leave_session:
-            if (channel->connected() && channel->get_remote_address(&remote_address))
-                this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message);
+            if (channel->connected() && channel->get_remote_address(remote_address))
+                this->handle_leave_session(remote_address, (s_network_message_leave_session*)message);
             else
                 log_received_over_closed_channel(channel, _network_message_type_leave_session);
             break;
 
         case _network_message_type_session_disband:
-            if (channel->connected() && channel->get_remote_address(&remote_address))
-                this->handle_session_disband(&remote_address, (s_network_message_session_disband*)message);
+            if (channel->connected() && channel->get_remote_address(remote_address))
+                this->handle_session_disband(remote_address, (s_network_message_session_disband*)message);
             else
                 log_received_over_closed_channel(channel, _network_message_type_session_disband);
             break;
 
         case _network_message_type_session_boot:
-            if (channel->connected() && channel->get_remote_address(&remote_address))
-                this->handle_session_boot(&remote_address, (s_network_message_session_boot*)message);
+            if (channel->connected() && channel->get_remote_address(remote_address))
+                this->handle_session_boot(remote_address, (s_network_message_session_boot*)message);
             else
                 log_received_over_closed_channel(channel, _network_message_type_session_boot);
             break;

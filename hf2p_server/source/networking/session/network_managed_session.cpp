@@ -3,15 +3,16 @@
 #include <iostream>
 
 // TEST THIS - function exists in ms29 but I couldn't get it to call correctly
+// ms23's function has an extra bool & code, which seems to be related to matchmaking
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
 	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 
 	if (managed_session_index == -1 || (managed_session->flags & 0x10) == 0)
 		return false;
-	if (out_secure_host_description)
-		*out_secure_host_description = managed_session->actual_online_session_state.description;
-	if (out_transport_platform)
+	if (out_secure_host_description != nullptr)
+		memcpy(out_secure_host_description, &managed_session->actual_online_session_state.description, sizeof(s_transport_session_description));
+	if (out_transport_platform != nullptr)
 		*out_transport_platform = managed_session->platform;
 	return true;
 }
@@ -162,7 +163,7 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 			{
 				players[player_index].flags = 0;
 				players[player_index].xuid = 0;
-				memset(&players[player_index], 0, 0x10);
+				memset(&players[player_index], 0, sizeof(s_online_session_player));
 			}
 		}
 		if (player_index == player_count)

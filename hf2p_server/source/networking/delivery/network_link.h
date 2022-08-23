@@ -5,7 +5,7 @@
 #include "..\transport\transport_endpoint_winsock.h"
 
 class c_network_channel;
-
+class c_network_message_gateway;
 class c_network_link
 {
 public:

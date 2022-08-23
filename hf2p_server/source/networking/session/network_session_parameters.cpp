@@ -25,3 +25,8 @@ void c_network_session_parameters::update()
 			this->check_to_send_change_requests();
 	}
 }
+
+bool c_network_session_parameters::handle_change_request(bool is_leader, s_network_message_parameters_request const* message)
+{
+
+}

@@ -72,7 +72,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     }
 
     // add entry to the queue
-    auto queue_entry = &g_network_join_data->join_queue[g_network_join_data->join_queue_entry_count];
+    s_join_queue_entry* queue_entry = &g_network_join_data->join_queue[g_network_join_data->join_queue_entry_count];
     memset(queue_entry, 0, sizeof(s_join_queue_entry)); // clear entry
     queue_entry->address = *address;
     queue_entry->join_nonce = join_request->join_nonce;

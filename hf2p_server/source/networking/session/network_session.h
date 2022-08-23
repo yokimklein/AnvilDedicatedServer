@@ -139,6 +139,7 @@ public:
 	bool leaving_session();
 	void time_set(uint32_t time);
 	bool handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message);
+	void handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

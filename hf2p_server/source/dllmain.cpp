@@ -65,7 +65,7 @@ void __fastcall handle_out_of_band_message_hook(c_network_message_handler* messa
 }
 
 // add back missing message handlers
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, bool unknown, c_network_channel* channel, e_network_message_type message_type, long message_storage_size/*, s_network_message const* message*/)
+void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, bool unknown, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* stub_message)
 {
     s_network_message const* message = (s_network_message const*)(module_base + 0x4FFB090);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
@@ -143,7 +143,7 @@ long MainThread()
     // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
     // output the message type for debugging
-    Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
+    //Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();
     printf("Hooks applied\n");
@@ -278,6 +278,9 @@ long MainThread()
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
+            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[0] = 1184274;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
             sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;

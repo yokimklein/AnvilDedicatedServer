@@ -17,6 +17,8 @@ enum e_network_channel_client_flags
 
 enum e_network_channel_activity
 {
+
+
 	k_network_channel_activity_count = 6
 };
 
@@ -165,52 +167,7 @@ public:
 	uint32_t m_connect_timestamp;
 	int32_t m_connect_unknown;
 	byte __dataA50[8];
-	int32_t m_activity_times[k_network_channel_maximum_clients];
+	int32_t m_activity_times[k_network_channel_activity_count];
 	byte __dataA70[4];
 };
 static_assert(sizeof(c_network_channel) == 0xA74);
-	// 0x9EC
-
-	// 1,788 bytes remaining
-	// 	   496 h3 debug gatekeeper size
-	// 	   216
-	// 
-	// 632 = 
-	// 633 = uint32_t m_client_count;
-	// 634 = s_client_info m_clients[k_network_channel_maximum_base_clients];
-	// 640 = c_network_channel_simulation_interface* m_simulation_interface;
-	// 641 = m_flags
-	// 642 = s_transport_unique_identifier m_remote_channel_identifier; // unique identifier inherits s_machine_identifier
-	// 643 = identifier
-	// 644 = e_network_channel_state m_channel_state; (_network_channel_state_none)
-	// 645 = e_network_channel_closure_reason m_channel_closure_reason; (_network_channel_reason_none)
-	// 646 = s_transport_address? something size 0x14?
-	// 648 = unknown pointer to class/struct with s_transport_address at +4
-	// 
-	// 650 = char* also channel name/655?
-	// 651 = s_transport_address m_remote_address;
-	// 655 = char* m_channel_description; // secure address string - 0x100 size
-	// 656 = init connect?
-	// 657 = time related // c_network_time_statistics? size 0xD8 in h3debug
-	// 658 = time related
-	// 659 = 0, probably time related
-	// 660 = something time related
-	// 661 = time
-	// 662 = array of activity time structs? struct is 16 bytes, array is k_network_channel_activity_count long
-	// 663 = time
-	// 664 = time
-	// 665 = time
-	// 666 = time
-	// 
-	// 668 = boolean?
-	// 
-	// 000 = s_channel_observer_owner m_owners[k_network_observer_owner_count];?
-	// 687 = s_channel_observer m_channel_observers[k_network_maximum_observers];
-	// 
-	// 706 = c_network_time_statistics?
-	// 
-	// 729 = unknown_struct[6] // sizeof == 0x10 (first member uses network_time_get(), 3rd uses network_absolute_time_get() + 4)
-	// 
-	// sizeof == 0x11C0 in h3debug
-
-	// new_channel_flags?

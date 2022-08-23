@@ -613,9 +613,12 @@ s_network_session_shared_membership::s_network_session_shared_membership()
         peers[j].properties.flags = 0;
     for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
     {
-        memset(&players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-        memset(&players[j].configuration.host.player_appearance.unknown, 0, sizeof(s_player_appearance_model_customization));
-        memset(&players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
+        players[j].configuration.client = *new s_player_configuration_from_client();
+        players[j].configuration.host.player_appearance.unknown = *new s_player_appearance_model_customization();
+        players[j].configuration.host = *new s_player_configuration_from_host();
+        //memset(&players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
+        //memset(&players[j].configuration.host.player_appearance.unknown, 0, sizeof(s_player_appearance_model_customization));
+        //memset(&players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
         players[j].configuration.host.player_assigned_team = -1;
         players[j].configuration.host.player_team = -1;
     }
@@ -735,4 +738,9 @@ bool c_network_session_membership::host_exists_at_incoming_address(s_transport_a
 {
     bool(__thiscall * host_exists_at_incoming_address)(c_network_session_membership* thisptr, s_transport_address const* incoming_address) = reinterpret_cast<decltype(host_exists_at_incoming_address)>(module_base + 0x31370);
     return host_exists_at_incoming_address(this, incoming_address);
+}
+
+long c_network_session_membership::leader_peer_index()
+{
+    return this->get_current_membership()->leader_peer_index;
 }

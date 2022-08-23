@@ -121,7 +121,7 @@ class c_network_observer
 		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
 		byte unknown_data[0x238];
 };
-static_assert(sizeof(c_network_observer) == 0x238C0); // TODO - verify size
+static_assert(sizeof(c_network_observer) == 0x238C0);
 /*
 
 class c_network_observer : c_network_channel

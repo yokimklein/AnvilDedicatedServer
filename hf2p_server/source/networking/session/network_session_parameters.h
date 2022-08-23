@@ -9,6 +9,7 @@
 #include "network_session_parameters_matchmaking.h"
 #include "network_session_parameter_types.h"
 #include "network_session_parameters_ui.h"
+#include "..\messages\network_message_type_collection.h"
 
 #pragma pack(push, 4)
 class c_network_session;
@@ -19,6 +20,7 @@ public:
 	void check_to_send_updates();
 	void check_to_send_change_requests();
 	void update();
+	bool handle_change_request(bool is_leader, s_network_message_parameters_request const* message);
 
 	c_network_session_parameter_session_mode session_mode;
 	c_network_session_parameter_session_size session_size;
