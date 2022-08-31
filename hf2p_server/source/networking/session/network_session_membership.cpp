@@ -22,7 +22,7 @@ long c_network_session_membership::get_next_peer(long peer_index)
         return -1;
     while (true)
     {
-        if (_bittest((long*)&this->m_baseline.valid_peer_mask, next_index))
+        if (_bittest((long*)&this->m_baseline.peer_valid_flags, next_index))
             break;
         if (++next_index >= k_network_maximum_machines_per_session)
             return -1;
@@ -39,13 +39,13 @@ long c_network_session_membership::get_peer_from_secure_address(s_transport_secu
 
 bool c_network_session_membership::is_peer_valid(long peer_index)
 {
-    return (m_baseline.valid_peer_mask >> peer_index) & 1;
+    return (m_baseline.peer_valid_flags >> peer_index) & 1;
 }
 
 // TODO - test this
 bool c_network_session_membership::is_player_valid(long player_index)
 {
-    return ((1 << (player_index & 0x1F)) & *(&this->get_current_membership()->valid_player_mask + (player_index >> 5)));
+    return ((1 << (player_index & 0x1F)) & *(&this->get_current_membership()->player_valid_flags + (player_index >> 5)));
 }
 
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, uint32_t joining_network_version_number, s_transport_secure_address const* secure_address, uint64_t join_party_nonce, uint64_t join_nonce)
@@ -105,7 +105,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
     this->get_current_membership()->player_sequence_number = (this->get_current_membership()->player_sequence_number + 1) % 0x100000;
     this->get_player(next_player_index)->configuration.client.multiplayer_team = -1;
     this->get_player(next_player_index)->configuration.client.active_armor_loadout = -1;
-    this->get_player(next_player_index)->configuration.client.hopper_access_flags = 0;
+    this->get_player(next_player_index)->configuration.client.unknown_bool2 = false;
     this->get_player(next_player_index)->configuration.host.player_team = -1;
     this->get_player(next_player_index)->configuration.host.player_assigned_team = -1;
     this->increment_update();
@@ -115,7 +115,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
 s_network_session_player* c_network_session_membership::add_player_internal(long player_index, s_player_identifier const* player_identifier, long peer_index, long player_sequence_number, bool player_occupies_a_public_slot)
 {
     long mask_unknown = 1 << (player_index & 0x1F);
-    *(&this->get_current_membership()->valid_player_mask + (player_index >> 5)) |= mask_unknown;
+    *(&this->get_current_membership()->player_valid_flags + (player_index >> 5)) |= mask_unknown;
     this->get_current_membership()->player_count++;
     auto player = &this->get_current_membership()->players[player_index];
     player->player_identifier.data = player_identifier->data;
@@ -151,7 +151,7 @@ void c_network_session_membership::set_peer_connection_state(long peer_index, e_
     session_peer->connection_state = state;
     uint32_t time_elapsed = network_get_time() - session_peer->join_start_time;
     printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_connection_state: [%s] peer #%d [%s] set to state %s (%d msec from start)\n",
-        "00:00:00:00:00:00:00:00", // TODO - not sure how to include network_session.h to network_session_membership.h without causing errors to allow this method to run here
+        this->get_session()->get_id_string(),
         peer_index,
         transport_secure_address_get_string(&session_peer->secure_address),
         network_session_peer_state_get_string(state),
@@ -349,21 +349,22 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
     {
         s_network_session_peer* membership_peer = &membership->peers[i];
         s_network_session_peer* baseline_peer = nullptr;
-        if (baseline != nullptr && ((baseline->valid_peer_mask >> i) & 1)) // test peer bit
+        if (baseline != nullptr && ((baseline->peer_valid_flags >> i) & 1)) // test peer bit
             baseline_peer = &baseline->peers[i];
     
-        if (baseline_peer == nullptr || ((membership->valid_peer_mask >> i) & 1))
+        if (baseline_peer == nullptr || ((membership->peer_valid_flags >> i) & 1))
         {
-            if ((membership->valid_peer_mask >> i) & 1)
+            if ((membership->peer_valid_flags >> i) & 1)
             {
                 bool peer_info_updated = (baseline_peer == nullptr
                     || membership_peer->party_nonce != baseline_peer->party_nonce
                     || membership_peer->join_nonce != baseline_peer->join_nonce
                     || membership_peer->join_start_time != baseline_peer->join_start_time);
-                bool peer_properties_updated = peer_info_updated || memcmp(&membership_peer->properties, &baseline_peer->properties, sizeof(s_network_session_peer));
+                bool peer_properties_updated = peer_info_updated || memcmp(&membership_peer->properties, &baseline_peer->properties, sizeof(s_network_session_peer)) != 0;
                 if (peer_info_updated || peer_properties_updated || membership_peer->version != baseline_peer->version)
                 {
-                    s_network_message_membership_update_peer* update_data = &message->peers[i];
+                    long next_available_update_index = message->peer_update_count;
+                    s_network_message_membership_update_peer* update_data = &message->peers[next_available_update_index];
                     message->peer_update_count++;
                     update_data->peer_index = i;
                     update_data->peer_update_type = 1;
@@ -394,10 +395,10 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
             printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: removing peer #%d [%s]\n",
                 i,
                 transport_secure_address_get_string(&membership_peer->secure_address));
-            long last_peer_update_index = message->peer_update_count;
+            long next_available_update_index = message->peer_update_count;
             message->peer_update_count++; // add 1 peer update
-            message->peers[last_peer_update_index].peer_index = i;
-            message->peers[last_peer_update_index].peer_update_type = 0;
+            message->peers[next_available_update_index].peer_index = i;
+            message->peers[next_available_update_index].peer_update_type = 0;
             unknown3 |= unknown2;
         }
         unknown2 *= 2;
@@ -406,13 +407,13 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
     {
         s_network_session_player* membership_player = &membership->players[i];
         s_network_session_player* baseline_player = nullptr;
-        if (baseline != nullptr && ((baseline->valid_player_mask >> i) & 1)) // test player bit
+        if (baseline != nullptr && ((baseline->player_valid_flags >> i) & 1)) // test player bit
             baseline_player = &baseline->players[i];
     
         int32_t unknown4 = 1 << membership_player->peer_index;
-        if (baseline_player == nullptr || ((membership->valid_player_mask >> i) & 1))
+        if (baseline_player == nullptr || ((membership->player_valid_flags >> i) & 1))
         {
-            if (((membership->valid_player_mask >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0 || memcmp(membership_player, baseline_player, sizeof(s_network_session_player))))
+            if (((membership->player_valid_flags >> i) & 1) && (baseline_player == nullptr || (unknown1 & unknown4) != 0 || memcmp(membership_player, baseline_player, sizeof(s_network_session_player)) != 0))
             {
                 s_network_message_membership_update_player* update_player = &message->players[message->player_update_count];
                 message->player_update_count++;
@@ -432,11 +433,10 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
                     update_player->player_occupies_a_public_slot = membership_player->player_occupies_a_public_slot;
                 }
 
-                // TODO - ensure we're doing the right thing here
-                update_player->player_properties_updated = (baseline_player != nullptr
-                                                         && (membership_player->desired_configuration_version != baseline_player->desired_configuration_version
+                update_player->player_properties_updated = (update_player->player_location_updated == true
+                                                         || (membership_player->desired_configuration_version != baseline_player->desired_configuration_version
                                                          || membership_player->controller_index != baseline_player->controller_index
-                                                         || memcmp(&membership_player->configuration, &baseline_player->configuration, sizeof(s_player_configuration))
+                                                         || memcmp(&membership_player->configuration, &baseline_player->configuration, sizeof(s_player_configuration)) != 0
                                                          || membership_player->voice_settings != baseline_player->voice_settings));
                 if (update_player->player_properties_updated)
                 {
@@ -484,10 +484,8 @@ void c_network_session_membership::build_membership_update(long peer_index, s_ne
         message->friends_only = membership->friends_only;
         message->are_slots_locked = membership->are_slots_locked;
     }
-    message->checksum = fast_checksum<k_network_session_shared_membership_seed, s_network_session_shared_membership>(fast_checksum_new(), membership);
 
-    // TODO temp remove this
-    printf("MEMBERSHIP CHECKSUM: %08X\n", message->checksum);
+    message->checksum = fast_checksum(membership, sizeof(s_network_session_shared_membership), fast_checksum_new());
 }
 
 void c_network_session_membership::build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update)
@@ -532,7 +530,13 @@ void c_network_session_membership::build_peer_properties_update(s_network_sessio
     if (!baseline_properties
         || membership_properties->connectivity_badness_rating != baseline_properties->connectivity_badness_rating
         || membership_properties->host_badness_rating != baseline_properties->host_badness_rating
-        || membership_properties->client_badness_rating != baseline_properties->client_badness_rating)
+        || membership_properties->client_badness_rating != baseline_properties->client_badness_rating
+        || membership_properties->connectivity.peer_connectivity_mask != baseline_properties->connectivity.peer_connectivity_mask
+        || membership_properties->connectivity.peer_probe_mask != baseline_properties->connectivity.peer_probe_mask
+        || membership_properties->connectivity.peer_latency_min != baseline_properties->connectivity.peer_latency_min
+        || membership_properties->connectivity.peer_latency_est != baseline_properties->connectivity.peer_latency_est
+        || membership_properties->connectivity.peer_latency_max != baseline_properties->connectivity.peer_latency_max
+        || membership_properties->language != baseline_properties->language)
     {
         peer_properties_update->peer_connection_updated = true;
         peer_properties_update->connectivity_badness_rating = membership_properties->connectivity_badness_rating;
@@ -567,7 +571,7 @@ void c_network_session_membership::build_peer_properties_update(s_network_sessio
 void c_network_session_membership::set_peer_address(long peer_index, s_transport_secure_address const* secure_address)
 {
     auto peer = this->get_peer(peer_index);
-    if (memcmp(&peer->secure_address, secure_address, sizeof(s_transport_secure_address)))
+    if (memcmp(&peer->secure_address, secure_address, sizeof(s_transport_secure_address)) != 0)
     {
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_address: [%s] secure address for peer #%d changed to [%s]\n",
             this->get_session()->get_id_string(),
@@ -584,7 +588,7 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
     auto id_string = "shadow";
     if (this->get_session())
         id_string = this->get_session()->get_id_string();
-    if (memcmp(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties)))
+    if (memcmp(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties)) != 0)
     {
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties\n");
         memcpy(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties));
@@ -603,25 +607,8 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
 void c_network_session_membership::copy_current_to_transmitted(long peer_index, s_network_session_shared_membership* current_membership)
 {
     memmove(&this->m_transmitted[peer_index], current_membership, sizeof(s_network_session_shared_membership));
-    this->m_transmitted_checksums[peer_index] = fast_checksum<k_network_session_shared_membership_seed, s_network_session_shared_membership>(fast_checksum_new(), &this->m_transmitted[peer_index]);
+    this->m_transmitted_checksums[peer_index] = fast_checksum(&this->m_transmitted[peer_index], sizeof(s_network_session_shared_membership), fast_checksum_new());
 }
-
-s_network_session_shared_membership::s_network_session_shared_membership()
-{
-    for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
-        peers[j].properties.flags = 0;
-    for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
-    {
-        players[j].configuration.client = *new s_player_configuration_from_client();
-        players[j].configuration.host.player_appearance.unknown = *new s_player_appearance_model_customization();
-        players[j].configuration.host = *new s_player_configuration_from_host();
-        //memset(&players[j].configuration.client, 0, sizeof(s_player_configuration_from_client));
-        //memset(&players[j].configuration.host.player_appearance.unknown, 0, sizeof(s_player_appearance_model_customization));
-        //memset(&players[j].configuration.host, 0, sizeof(s_player_configuration_from_host));
-        players[j].configuration.host.player_assigned_team = -1;
-        players[j].configuration.host.player_team = -1;
-    }
-};
 
 uint64_t c_network_session_membership::get_join_nonce(long peer_index)
 {

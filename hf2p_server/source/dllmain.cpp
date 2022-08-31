@@ -143,7 +143,7 @@ long MainThread()
     // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
     // output the message type for debugging
-    //Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
+    Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();
     printf("Hooks applied\n");
@@ -217,13 +217,14 @@ long MainThread()
                 std::cout << "Game variant set\n";
 
             // SET MAP VARIANT
-            c_map_variant* map_variant = new c_map_variant;
+            c_map_variant* map_variant = new c_map_variant();
             c_map_variant_ctor(map_variant); // initialize map variant
             c_map_variant__create_default(map_variant, map_id); // create default s3d_turf map variant
             if (!user_interface_squad_set_multiplayer_map(map_variant))
                 std::cout << "Failed to set map variant!\n";
             else
                 std::cout << "Map variant set\n";
+            delete map_variant;
 
             //char* map_path = new char[MAX_PATH];
             //levels_get_path(-1, map_id, map_path, MAX_PATH); // get path to map on disk, eg maps\\s3d_turf
@@ -291,7 +292,7 @@ long MainThread()
             printf("Adding a local test player...\n");
             c_network_session* sessions = *network_session->m_session_manager->session;
             sessions[0].get_session_membership()->get_current_membership()->player_count = 2;
-            sessions[0].get_session_membership()->get_current_membership()->valid_player_mask = 3;
+            sessions[0].get_session_membership()->get_current_membership()->player_valid_flags = 3;
             sessions[0].get_session_membership()->get_current_membership()->peers[0].player_mask = 3;
 
             sessions[0].get_session_membership()->get_current_membership()->players[1].player_identifier.data = 84207682768246;

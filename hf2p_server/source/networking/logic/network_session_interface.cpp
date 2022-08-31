@@ -24,7 +24,7 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
         memcpy(&peer_properties->peer_name, (wchar_t*)(module_base + 0x3EAE0C2), 32);
         memcpy(&peer_properties->peer_session_name, (wchar_t*)(module_base + 0x3EAE0E2), 64);
         peer_properties->language = system_default_ui_language_to_game_language();
-        network_session_peer_connectivity_unknown(session, &peer_properties->connectivity);
+        network_session_peer_connectivity_unknown(session, &peer_properties->connectivity); // get connectivity
         observer->quality_statistics_get_ratings(&peer_properties->connectivity_badness_rating, &peer_properties->host_badness_rating, &peer_properties->client_badness_rating);
         peer_properties->peer_mp_map_mask = build_peer_mp_map_mask();
         peer_properties->peer_map = *((uint32_t*)(module_base + 0x3EAE12C));
@@ -69,5 +69,8 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: unable to send peer-properties update\n");
             }
         }
+
+        delete peer_properties;
+        delete secure_address;
     }
 }

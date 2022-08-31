@@ -130,7 +130,13 @@ static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 #pragma pack(push, 1)
 struct s_network_session_shared_membership
 {
-	s_network_session_shared_membership();
+	s_network_session_shared_membership() :
+		peers(),
+		players()
+	{
+		// TODO - replace this
+		memset(this, 0, sizeof(s_network_session_shared_membership));
+	};
 
 	long update_number;
 	long leader_peer_index;
@@ -141,10 +147,10 @@ struct s_network_session_shared_membership
 	bool are_slots_locked;
 	byte pad[2];
 	long peer_count;
-	uint32_t valid_peer_mask;
+	uint32_t peer_valid_flags;
 	s_network_session_peer peers[k_network_maximum_machines_per_session];
 	long player_count;
-	uint32_t valid_player_mask;
+	uint32_t player_valid_flags;
 	s_network_session_player players[k_network_maximum_players_per_session];
 	long player_sequence_number;
 	long : 32;
@@ -227,7 +233,7 @@ public:
 	s_network_session_shared_membership m_baseline;
 	s_network_session_shared_membership m_transmitted[k_network_maximum_machines_per_session];
 	long m_transmitted_checksums[k_network_maximum_machines_per_session]; // m_transmitted_updates
-	long unknown2; // membership reset bool?
+	bool unknown2; // membership reset bool? membership initialised?
 	long m_local_peer_index;
 	long m_player_configuration_version;
 	s_network_session_peer_channel m_peer_channels[k_network_maximum_machines_per_session];

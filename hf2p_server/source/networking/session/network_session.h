@@ -54,25 +54,6 @@ static const char* k_session_state_strings[k_network_session_state_count] = {
 	// "election"
 };
 
-enum e_network_session_boot_reason : long // from ms23/ED
-{
-	_network_session_boot_reason_player_booted_player,
-	_network_session_boot_reason_unknown1,
-	_network_session_boot_reason_failed_to_load_map,
-	_network_session_boot_reason_write_stats_grief_time,
-	_network_session_boot_reason_unknown4,
-	_network_session_boot_reason_unknown5,
-	_network_session_boot_reason_recreating_session,
-	_network_session_boot_reason_join_aborted,
-	_network_session_boot_reason_simulation_aborted,
-	_network_session_boot_reason_unknown9,
-	_network_session_boot_reason_unknown10,
-	_network_session_boot_reason_unknown11,
-	_network_session_boot_reason_unknown12,
-
-	k_network_session_boot_reason_count
-};
-
 #pragma pack(push, 4)
 class c_network_message_gateway;
 class c_network_session_manager;

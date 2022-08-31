@@ -350,16 +350,28 @@ struct s_player_appearance_model_customization
 };
 static_assert(sizeof(s_player_appearance_model_customization) == 0x650);
 
-struct s_player_appearance // lives in player_appearance.h?
+#pragma pack(push, 4)
+struct s_player_appearance
 {
+	s_player_appearance() :
+		flags(),
+		player_model_index(), 
+		unknown(),
+		service_tag(),
+		padding1(),  // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
+		padding2()
+	{
+	};
+
 	byte flags; // gender
 	byte player_model_index; // 0 - male spartan, 1 - elite, 2 - female spartan, 3 - female elite?
-	byte align2[2];
+	byte padding1[2];
 	s_player_appearance_model_customization unknown;
 	wchar_t service_tag[5];
-	byte padding[2];
+	byte padding2[2];
 };
 static_assert(sizeof(s_player_appearance) == 0x660);
+#pragma pack(pop)
 
 struct s_s3d_player_loadout
 {
@@ -379,17 +391,37 @@ struct s_s3d_player_modifiers
 };
 static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
 
+#pragma pack(push, 4)
 struct s_s3d_player_appearance
 {
+	s_s3d_player_appearance() :
+		unknown(),
+		loadouts(),
+		pad(),  // we have to initialise this so leftover garbage bytes don't screw with the membership update checksum
+		modifiers()
+	{
+	};
+
 	byte unknown; // has loadouts? current loadout?
 	s_s3d_player_loadout loadouts[3]; // 3 loadout sets
-	byte align1F[1];
+	byte pad[1];
 	s_s3d_player_modifiers modifiers[3];
 };
 static_assert(sizeof(s_s3d_player_appearance) == 0x494);
+#pragma pack(pop)
 
 struct s_s3d_player_customization
 {
+	s_s3d_player_customization() :
+		unknown0(),
+		unknown1(),
+		nameplate(),
+		emblem(),
+		colours(),
+		data()
+	{
+	};
+
 	byte unknown0;
 	byte unknown1;
 	byte nameplate;

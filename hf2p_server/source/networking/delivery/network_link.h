@@ -11,6 +11,19 @@ class c_network_link
 public:
 	c_network_channel* get_associated_channel(s_transport_address const* address);
 
+	struct s_link_packet
+	{
+		int packet_mode;
+		byte __unknown4;
+		byte __unknown5;
+		uint16_t flags;
+		s_transport_address address;
+		int game_data_length;
+		char game_data[1200];
+		int voice_data_length;
+		char voice_data[512];
+	};
+
 	bool m_initialized;
 	byte __data1[3];
 	int32_t m_channel_count;

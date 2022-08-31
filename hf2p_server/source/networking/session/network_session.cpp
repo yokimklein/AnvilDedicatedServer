@@ -18,6 +18,8 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
     this->get_session_id(&message->session_id);
     message->reason = reason;
     return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), message);
+
+    delete message;
 }
 
 bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
@@ -134,6 +136,7 @@ bool c_network_session::handle_time_synchronize(s_transport_address const* outgo
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] replying to time request from peer [%s]\n",
                     this->get_id_string(),
                     this->get_peer_description(peer_index));
+                delete sync_message;
                 return true;
             }
         }
@@ -272,14 +275,9 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                         if (user_player_index != -1)
                         {
                             long player_index = this->get_session_membership()->find_or_add_player(peer_index, &join_request->joining_players[user_player_index], join_request->join_from_recruiting);
-                            s_player_configuration* player_config = new s_player_configuration(); // TODO - constructor
-                            player_config->client.multiplayer_team = -1;
-                            player_config->client.unknown_team = -1;
-                            s_player_identifier* player_xuid = new s_player_identifier();
-                            player_config->host.player_xuid = *player_xuid;
-                            player_config->host.player_team = -1;
-                            player_config->host.player_assigned_team = -1;
+                            s_player_configuration* player_config = new s_player_configuration();
                             this->get_session_membership()->update_player_data(player_index, player_config);
+                            delete player_config;
                         }
                         printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] '%s' session accepted a new peer %s with %d users\n",
                             this->get_id_string(),
@@ -296,6 +294,8 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                         peer_index);
                     refuse_reason = _network_join_refuse_reason_too_many_observers;
                 }
+
+                delete session_description;
             }
         }
         else
@@ -481,6 +481,7 @@ void c_network_session::disband_peer(long peer_index)
                 this->m_observer->observer_channel_send_message(this->session_index(), observer_index, false, _network_message_type_session_disband, sizeof(s_network_message_session_disband), disband_message);
             this->m_observer->observer_channel_send_message(this->session_index(), observer_index, true, _network_message_type_session_disband, sizeof(s_network_message_session_disband), disband_message);
         }
+        delete disband_message;
         this->get_session_membership()->remove_peer(peer_index);
     }
     else
@@ -517,6 +518,7 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
                 this->m_observer->observer_channel_send_message(this->session_index(), observer_index, false, _network_message_type_session_boot, sizeof(s_network_message_session_boot), boot_message);
             this->m_observer->observer_channel_send_message(this->session_index(), observer_index, true, _network_message_type_session_boot, sizeof(s_network_message_session_boot), boot_message);
         }
+        delete boot_message;
         this->get_session_membership()->remove_peer(peer_index);
     }
 }
@@ -1046,31 +1048,30 @@ void c_network_session::check_to_send_membership_update()
                         memmove(shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
                         shared_membership->leader_peer_index = shared_membership->host_peer_index;
                         shared_membership->peer_count = 2; // 1 for the host, 1 for the client. we don't sync other peers to clients
-                        shared_membership->valid_peer_mask = 0;
+                        shared_membership->peer_valid_flags = 0;
                         
-                        // TODO - need help understanding what this is doing, seems like its clearing everything that isnt the host peer and the joining peer?
-                        *(&shared_membership->valid_peer_mask + (shared_membership->host_peer_index >> 5)) |= 1 << (shared_membership->host_peer_index & 0x1F);
-                        long* unknown1 = (long*)&shared_membership->valid_peer_mask + (i >> 5); // 3
+                        // this ungodly mess clears all peers from the update that aren't the local peer and host peer
+                        *(&shared_membership->peer_valid_flags + (shared_membership->host_peer_index >> 5)) |= 1 << (shared_membership->host_peer_index & 0x1F);
+                        long* unknown1 = (long*)&shared_membership->peer_valid_flags + (i >> 5); // 3
                         long unknown2 = 1 << (i & 0x1F); // 0
                         long unknown3 = 1; // 1
                         *unknown1 |= unknown2;
                         for (size_t j = 0; j < k_network_maximum_machines_per_session; j++)
                         {
-                            if ((unknown3 & *(&shared_membership->valid_peer_mask + (j >> 5))) == 0)
+                            if ((unknown3 & *(&shared_membership->peer_valid_flags + (j >> 5))) == 0)
                                 memset(&shared_membership->peers[j], 0, sizeof(s_network_session_peer));
                             unknown3 = (unknown3 << 1) | (unknown3 >> (32 - 1)); // rotate left by 1 // moves from 1 to 2, 4, 8, 16 etc
                         }
                         long unknown4 = 1;
                         for (size_t j = 0; j < k_network_maximum_players_per_session; j++)
                         {
-                            if ((unknown4 & *(&shared_membership->valid_player_mask + (j >> 5))) != 0 && shared_membership->players[j].peer_index != i)
+                            if ((unknown4 & *(&shared_membership->player_valid_flags + (j >> 5))) != 0 && shared_membership->players[j].peer_index != i)
                             {
                                 *(&shared_membership->peers[shared_membership->host_peer_index].player_mask + (j >> 5)) |= unknown4;
                                 shared_membership->players[j].peer_index = shared_membership->host_peer_index;
                             }
                             unknown4 = (unknown4 << 1) | (unknown4 >> (32 - 1)); // rotate left by 1
                         }
-                        // end of unknown peer & player mask checking code
                         
                         s_network_message_membership_update* membership_update_message = new s_network_message_membership_update();
                         bool send_complete_update = false;
@@ -1114,6 +1115,9 @@ void c_network_session::check_to_send_membership_update()
                             }
                         }
                         this->get_session_membership()->copy_current_to_transmitted(i, shared_membership);
+
+                        delete shared_membership;
+                        delete membership_update_message;
                     }
                 }
             }
@@ -1194,6 +1198,8 @@ bool c_network_session::peer_request_properties_update(s_transport_secure_addres
             long channel_index = this->get_session_membership()->m_peer_channels[this->get_session_membership()->m_baseline.host_peer_index].channel_index;
             if (channel_index != -1)
                 this->m_observer->observer_channel_send_message(this->m_session_index, channel_index, false, _network_message_type_peer_properties, sizeof(s_network_message_peer_properties), message);
+
+            delete message;
         }
         return true;
     }
@@ -1257,6 +1263,8 @@ void c_network_session::finalize_single_player_add(e_network_join_refuse_reason 
                 this->m_player_add_peer_index,
                 player_identifier_get_string(&this->m_player_add_single_player_identifier));
         }
+
+        delete message;
     }
     this->m_player_add_single_player_identifier.data = 0;
     memset(&this->m_player_add_secure_address, 0, sizeof(s_transport_secure_address));
@@ -1348,6 +1356,8 @@ bool c_network_session::handle_peer_establish(c_network_channel* channel, s_netw
         memcpy(&decline_message->host_address, host_address, sizeof(s_transport_secure_address));
     }
     this->m_observer->observer_channel_send_message(this->observer_owner(), channel_index, false, _network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
+
+    delete decline_message;
     return true;
 }
 

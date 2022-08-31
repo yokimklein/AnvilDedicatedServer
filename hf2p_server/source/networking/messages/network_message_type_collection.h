@@ -103,6 +103,25 @@ enum e_network_join_mode : long // unofficial name, i couldn't find the original
 	k_network_join_status_count
 };
 
+enum e_network_session_boot_reason : long // from ms23/ED
+{
+	_network_session_boot_reason_player_booted_player,
+	_network_session_boot_reason_unknown1,
+	_network_session_boot_reason_failed_to_load_map,
+	_network_session_boot_reason_write_stats_grief_time,
+	_network_session_boot_reason_unknown4,
+	_network_session_boot_reason_unknown5,
+	_network_session_boot_reason_recreating_session,
+	_network_session_boot_reason_join_aborted,
+	_network_session_boot_reason_simulation_aborted,
+	_network_session_boot_reason_unknown9,
+	_network_session_boot_reason_unknown10,
+	_network_session_boot_reason_unknown11,
+	_network_session_boot_reason_unknown12,
+
+	k_network_session_boot_reason_count
+};
+
 struct s_network_message
 {
 	// leftover notes
@@ -161,6 +180,7 @@ struct s_network_message_connect_closed : s_network_message
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);
 
+#pragma pack(push, 8)
 struct s_network_message_join_request : s_network_message
 {
 	uint16_t protocol_version;
@@ -168,7 +188,7 @@ struct s_network_message_join_request : s_network_message
 	long executable_version;
 	long compatible_version;
 	s_transport_secure_identifier session_id;
-	long unknown;
+	long : 32;
 	s_network_session_join_request data;
 };
 static_assert(sizeof(s_network_message_join_request) == 0x258);
@@ -176,12 +196,11 @@ static_assert(sizeof(s_network_message_join_request) == 0x258);
 struct s_network_message_peer_connect : s_network_message
 {
 	uint16_t protocol_version;
-	short : 16;
 	s_transport_secure_identifier session_id;
-	long : 32;
 	uint64_t join_nonce;
 };
 static_assert(sizeof(s_network_message_peer_connect) == 0x20);
+#pragma pack(pop)
 
 struct s_network_message_join_abort : s_network_message
 {
@@ -205,7 +224,7 @@ static_assert(sizeof(s_network_message_leave_session) == 0x10);
 
 struct s_network_message_leave_acknowledge : s_network_message
 {
-	uint64_t session_id;
+	s_transport_secure_identifier session_id;
 };
 
 struct s_network_message_session_disband : s_network_message
@@ -216,7 +235,7 @@ struct s_network_message_session_disband : s_network_message
 struct s_network_message_session_boot : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	enum e_network_session_boot_reason reason;
+	e_network_session_boot_reason reason;
 };
 static_assert(sizeof(s_network_message_session_boot) == 0x14);
 
@@ -225,10 +244,8 @@ struct s_network_message_host_decline : s_network_message
 	s_transport_secure_identifier session_id;
 	bool session_exists;
 	bool peer_exists;
-
 	bool host_exists;
 	char : 8;
-
 	s_transport_secure_address host_address;
 };
 static_assert(sizeof(s_network_message_host_decline) == 0x24);
@@ -300,7 +317,7 @@ struct s_network_message_membership_update_peer_properties
 };
 static_assert(sizeof(s_network_message_membership_update_peer_properties) == 0xC8);
 
-#pragma pack(push, 1)
+#pragma pack(push, 8)
 struct s_network_message_membership_update_peer
 {
 	uint32_t peer_index;
@@ -308,27 +325,17 @@ struct s_network_message_membership_update_peer
 	uint32_t peer_connection_state;
 	bool peer_info_updated;
 	s_transport_secure_address peer_address;
-	byte : 8;
-	byte : 8;
-	byte : 8;
 	uint64_t peer_party_nonce;
 	uint64_t peer_join_nonce;
 	uint32_t network_version_number;
 	uint32_t peer_creation_timestamp;
 	bool peer_properties_updated;
-	byte : 8;
-	byte : 8;
-	byte : 8;
-	uint32_t unknown; // just padding?
 	s_network_message_membership_update_peer_properties peer_properties_update;
 };
 static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
-#pragma pack(pop)
 
-struct s_network_message_membership_update : s_network_message // this is actually a class?
+struct s_network_message_membership_update : s_network_message
 {
-	s_network_message_membership_update();
-
 	s_transport_secure_identifier session_id;
 	int32_t update_number;
 	int32_t incremental_update_number;
@@ -349,9 +356,9 @@ struct s_network_message_membership_update : s_network_message // this is actual
 	bool friends_only;
 	bool are_slots_locked;
 	uint32_t checksum;
-	long : 32;
 };
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
+#pragma pack(pop)
 
 struct s_network_message_peer_properties : s_network_message
 {
@@ -368,7 +375,9 @@ struct s_network_message_delegate_leadership : s_network_message
 
 struct s_network_message_boot_machine : s_network_message
 {
-
+	s_transport_secure_identifier session_id;
+	e_network_session_boot_reason reason;
+	s_transport_secure_address boot_peer_address;
 };
 
 struct s_network_message_player_add : s_network_message
@@ -401,21 +410,17 @@ struct s_network_message_player_properties : s_network_message
 };
 static_assert(sizeof(s_network_message_player_properties) == 0x4C);
 
+#pragma pack(push, 8)
 struct s_network_message_parameters_update : s_network_message
 {
 	s_transport_secure_identifier session_id;
 	bool initial_update;
-
-	char : 8;
-	short : 16;
-	long : 32;
-
 	uint64_t cleared_parameters;
 	uint64_t updated_parameters;
-
 	byte parameters[k_network_session_parameter_type_count][0x400];
 };
 static_assert(sizeof(s_network_message_parameters_update) == 0x8C28);
+#pragma pack(pop)
 
 struct s_network_message_parameters_request : s_network_message
 {

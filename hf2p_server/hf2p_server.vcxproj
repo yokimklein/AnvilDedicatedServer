@@ -237,6 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\math\fast_checksum.cpp" />
+    <ClCompile Include="source\math\lookup3.c" />
     <ClCompile Include="source\networking\network_statistics.cpp" />
     <ClCompile Include="source\networking\logic\network_session_interface.cpp" />
     <ClCompile Include="source\game\player_configuration.cpp" />
