@@ -261,32 +261,46 @@ long MainThread()
             printf("Ending game...\n");
             c_network_session_parameter_session_mode__set(&network_session->m_session_parameters, _network_session_mode_end_game);
         }
-        else if (GetKeyState(VK_INSERT) & 0x8000) // INSERT - set host player data
+        else if (GetKeyState(VK_INSERT) & 0x8000) // INSERT - set player data
         {
-            printf("Setting host player data...\n");
+            printf("Setting test player data...\n");
             c_network_session* sessions = *network_session->m_session_manager->session;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].controller_index = 0; // set to -1 by default, which prevents the player from spawning
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_assigned_team = 1; // blue team
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_team = 1; // blue team
-            wchar_t player_name[16] = L"player";
-            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_name, player_name, 32);
-            wchar_t service_tag[5] = L"TEST";
-            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.player_appearance.service_tag, service_tag, 10);
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_scanner;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[0] = 1184274;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;
-            sessions[0].get_session_membership()->get_current_membership()->players[0].configuration.host.s3d_player_customization.colours[3] = 1184274;
+            s_network_session_shared_membership* membership = sessions[0].get_session_membership()->get_current_membership();
+
+            // host player
+            membership->players[0].controller_index = 0; // set to -1 by default, which prevents the player from spawning
+            membership->players[0].configuration.host.player_assigned_team = 0; // red team
+            membership->players[0].configuration.host.player_team = 0; // red team
+            wchar_t player_name0[16] = L"host";
+            memcpy(membership->players[0].configuration.host.player_name, player_name0, 32);
+            wchar_t service_tag0[5] = L"YKWH";
+            memcpy(membership->players[0].configuration.host.player_appearance.service_tag, service_tag0, 10);
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_scanner;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
+            membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
+            membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
+            membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
+            membership->players[0].configuration.host.s3d_player_customization.colours[0] = 1184274;
+            membership->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
+            membership->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;
+            membership->players[0].configuration.host.s3d_player_customization.colours[3] = 1184274;
+
+            // client player
+            wchar_t service_tag1[5] = L"TEST";
+            memcpy(membership->players[1].configuration.host.player_appearance.service_tag, service_tag1, 10);
+            membership->players[1].configuration.host.player_assigned_team = 1; // blue team
+            membership->players[1].configuration.host.player_team = 1; // blue team
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_poncho;
+
+            // push update
+            sessions[0].get_session_membership()->increment_update();
         }
+        /*
         else if (GetKeyState(VK_DELETE) & 0x8000) // DEL - test add player (buggy)
         {
             printf("Adding a local test player...\n");
@@ -312,6 +326,7 @@ long MainThread()
             sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _assault_rifle;
             sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum;
         }
+        */
         Sleep(100);
     }
 

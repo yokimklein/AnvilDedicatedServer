@@ -122,6 +122,19 @@ enum e_network_session_boot_reason : long // from ms23/ED
 	k_network_session_boot_reason_count
 };
 
+enum e_simulation_view_establishment_mode : long
+{
+	_simulation_view_establishment_mode_none = -1,
+	_simulation_view_establishment_mode_detached,
+	_simulation_view_establishment_mode_connect,
+	_simulation_view_establishment_mode_established,
+	_simulation_view_establishment_mode_ready,
+	_simulation_view_establishment_mode_joining,
+	_simulation_view_establishment_mode_active,
+
+	k_simulation_view_establishment_mode_count
+};
+
 struct s_network_message
 {
 	// leftover notes
@@ -259,9 +272,9 @@ static_assert(sizeof(s_network_message_peer_establish) == 0x10);
 struct s_network_message_time_synchronize : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	uint32_t client_timestamp[2];
-	uint32_t authority_timestamp[2];
-	uint32_t synchronization_stage;
+	int32_t client_timestamp[2];
+	int32_t authority_timestamp[2];
+	int32_t synchronization_stage;
 };
 static_assert(sizeof(s_network_message_time_synchronize) == 0x24);
 
@@ -432,8 +445,13 @@ static_assert(sizeof(s_network_message_parameters_request) == 0x8C18);
 
 struct s_network_message_view_establishment : s_network_message
 {
-
+	e_simulation_view_establishment_mode establishment_mode;
+	long establishment_identifier;
+	bool signature_exists;
+	long signature_size;
+	byte signature_data[0x3C]; // used size is 8 * signature_size
 };
+static_assert(sizeof(s_network_message_view_establishment) == 0x4C);
 
 struct s_network_message_player_acknowledge : s_network_message
 {

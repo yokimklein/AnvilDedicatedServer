@@ -144,11 +144,10 @@ bool c_network_session::handle_time_synchronize(s_transport_address const* outgo
         {
             if (message->synchronization_stage == 1)
             {
-                uint32_t time_delta1 = message->authority_timestamp[0] - message->client_timestamp[0];
-                uint32_t time_delta2 = message->authority_timestamp[1] - message->client_timestamp[1];
-                uint32_t synchronized_time_offset = (time_delta1 + time_delta2) / 2;
-                int32_t temp = time_delta1 - synchronized_time_offset;
-                uint32_t synchronized_time_epsilon = abs(temp);
+                int32_t time_delta1 = message->authority_timestamp[0] - message->client_timestamp[0];
+                int32_t time_delta2 = message->authority_timestamp[1] - message->client_timestamp[1];
+                int32_t synchronized_time_offset = (time_delta1 + time_delta2) / 2;
+                int32_t synchronized_time_epsilon = abs(time_delta1 - synchronized_time_offset);
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] synchronized offset %dmsec (epsilon %dmsec)\n",
                     this->get_id_string(),
                     synchronized_time_offset,

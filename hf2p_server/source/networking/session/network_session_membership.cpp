@@ -584,6 +584,8 @@ void c_network_session_membership::set_peer_address(long peer_index, s_transport
 
 void c_network_session_membership::set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties)
 {
+    long(__fastcall * get_player_index_from_mask)(uint32_t * player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+
     auto peer = this->get_peer(peer_index);
     auto id_string = "shadow";
     if (this->get_session())
@@ -593,6 +595,19 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties\n");
         memcpy(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties));
         // observer quality_statistics_notify_established_connectivity removed as estimated bandwidth fields were removed from s_network_session_peer_properties
+
+        // NEW AS CODE, NOT ORIGINAL
+        // set the player's name based on their account nickname
+        auto baseline = this->get_current_membership();
+        auto peer_name = peer_properties->peer_name;
+        long player_index = get_player_index_from_mask(&peer->player_mask, 16);
+        if (player_index != -1)
+        {
+            auto player = &baseline->players[player_index];
+            if (peer_name != L"" && (memcmp(player->configuration.host.player_name, peer_name, 32) != 0))
+                memcpy(player->configuration.host.player_name, peer_name, 32);
+        }
+
         this->increment_update();
     }
     else
