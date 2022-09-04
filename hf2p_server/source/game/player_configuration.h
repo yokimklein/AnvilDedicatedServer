@@ -21,7 +21,7 @@ struct s_player_configuration_from_client
 
 	wchar_t player_name[16];
 	byte multiplayer_team;
-	byte unknown_byte1;
+	byte unknown_byte1; // active_weapon_loadout?
 	byte active_armor_loadout;
 	bool unknown_bool1;
 	bool unknown_bool2;

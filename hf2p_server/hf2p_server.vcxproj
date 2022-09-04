@@ -182,6 +182,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\simulation\simulation_world.h" />
+    <ClInclude Include="source\simulation\simulation_view.h" />
     <ClInclude Include="source\math\fast_checksum.h" />
     <ClInclude Include="source\networking\network_statistics.h" />
     <ClInclude Include="source\memory\ring_buffer.h" />
@@ -236,6 +238,8 @@
     <ClInclude Include="source\memory\tls.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\simulation\simulation_world.cpp" />
+    <ClCompile Include="source\simulation\simulation_view.cpp" />
     <ClCompile Include="source\math\fast_checksum.cpp" />
     <ClCompile Include="source\math\lookup3.c" />
     <ClCompile Include="source\networking\network_statistics.cpp" />

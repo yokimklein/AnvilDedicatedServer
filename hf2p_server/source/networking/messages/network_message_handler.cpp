@@ -450,19 +450,21 @@ void c_network_message_handler::handle_parameters_request(c_network_channel* cha
     }
 }
 
-// TODO - ensure this is doing everything it should be and that the call is correct
 void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
 {
-    typedef void(__thiscall* handle_view_establishment_ptr)(c_network_message_handler* message_handler/*, c_network_channel* channel, s_network_message_view_establishment const* message*/);
+    // non original but useful log
+    //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
+
+    typedef void(__thiscall* handle_view_establishment_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message*/);
     auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(module_base + 0x257B0);
-    return handle_view_establishment(this/*, channel, message*/);
+    return handle_view_establishment(channel/*this, channel, message*/);
 }
 
 void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message)
 {
-    typedef void(__thiscall* handle_player_acknowledge_ptr)(c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_player_acknowledge const* message);
+    typedef void(__thiscall* handle_player_acknowledge_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_player_acknowledge const* message*/);
     auto handle_player_acknowledge = reinterpret_cast<handle_player_acknowledge_ptr>(module_base + 0x25810);
-    return handle_player_acknowledge(this, channel, message);
+    return handle_player_acknowledge(channel/*this, channel, message*/);
 }
 
 // FUNC TODO

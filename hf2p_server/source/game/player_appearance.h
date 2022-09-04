@@ -98,6 +98,17 @@ enum e_armor_type : byte
 	_armor_widow_maker
 };
 
+enum e_armour_colours
+{
+	_primary,
+	_secondary,
+	_visor,
+	_lights,
+	_holo,
+
+	k_armour_colours_count
+};
+
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].GameVariantWeapons
 enum e_weapon_type : byte
 {
@@ -343,12 +354,12 @@ struct s_player_appearance_unknown2
 };
 static_assert(sizeof(s_player_appearance_unknown2) == 0x324);
 
-struct s_player_appearance_model_customization
+struct s_player_model_customization
 {
 	s_player_appearance_unknown2 model_customizations[2];
-	uint32_t model_customization_hashes[2]; // `unknown1` hashes? only set if `unknown1.unknown_count` != 0
+	uint32_t model_customization_hashes[2]; // fast_checksum of the above struct
 };
-static_assert(sizeof(s_player_appearance_model_customization) == 0x650);
+static_assert(sizeof(s_player_model_customization) == 0x650);
 
 #pragma pack(push, 4)
 struct s_player_appearance
@@ -356,7 +367,7 @@ struct s_player_appearance
 	s_player_appearance() :
 		flags(),
 		player_model_index(), 
-		unknown(),
+		model_customization(),
 		service_tag(),
 		padding1(),  // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
 		padding2()
@@ -364,9 +375,9 @@ struct s_player_appearance
 	};
 
 	byte flags; // gender
-	byte player_model_index; // 0 - male spartan, 1 - elite, 2 - female spartan, 3 - female elite?
+	byte player_model_index; // 0 - male spartan, 1 - elite
 	byte padding1[2];
-	s_player_appearance_model_customization unknown;
+	s_player_model_customization model_customization;
 	wchar_t service_tag[5];
 	byte padding2[2];
 };
@@ -402,7 +413,7 @@ struct s_s3d_player_appearance
 	{
 	};
 
-	byte unknown; // has loadouts? current loadout?
+	bool unknown; // has loadouts? current loadout?
 	s_s3d_player_loadout loadouts[3]; // 3 loadout sets
 	byte pad[1];
 	s_s3d_player_modifiers modifiers[3];
@@ -418,15 +429,15 @@ struct s_s3d_player_customization
 		nameplate(),
 		emblem(),
 		colours(),
-		data()
+		padding()
 	{
 	};
 
-	byte unknown0;
+	bool unknown0;
 	byte unknown1;
 	byte nameplate;
 	byte emblem;
-	uint32_t colours[5]; // primary, secondary, visor, lights, holo? real_argb
-	byte data[4];
+	uint32_t colours[k_armour_colours_count];
+	byte padding[4];
 };
 static_assert(sizeof(s_s3d_player_customization) == 0x1C);

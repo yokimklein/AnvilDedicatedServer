@@ -4,6 +4,7 @@
 #include "..\network_globals.h"
 #include "..\..\memory\bitstream.h"
 #include "..\session\network_session_parameter_types.h"
+#include "..\..\simulation\simulation_view.h"
 
 enum e_network_message_type : long
 {
@@ -120,19 +121,6 @@ enum e_network_session_boot_reason : long // from ms23/ED
 	_network_session_boot_reason_unknown12,
 
 	k_network_session_boot_reason_count
-};
-
-enum e_simulation_view_establishment_mode : long
-{
-	_simulation_view_establishment_mode_none = -1,
-	_simulation_view_establishment_mode_detached,
-	_simulation_view_establishment_mode_connect,
-	_simulation_view_establishment_mode_established,
-	_simulation_view_establishment_mode_ready,
-	_simulation_view_establishment_mode_joining,
-	_simulation_view_establishment_mode_active,
-
-	k_simulation_view_establishment_mode_count
 };
 
 struct s_network_message

@@ -15,6 +15,8 @@
 #include "networking\session\network_session_manager.h"
 #include "networking\logic\network_session_interface.h"
 #include "memory\tls.h"
+#include "simulation\simulation_view.h"
+#include "simulation\simulation_world.h"
 
 void UnprotectMemory(uintptr_t base)
 {
@@ -118,8 +120,14 @@ __declspec(naked) void contrail_fix_hook()
         retn
         render :
         push 0x68A390
-            retn
+        retn
     }
+}
+
+// allow view establishment to progress past the connection phase
+void __fastcall update_establishing_view_hook(c_simulation_world* simulation_world, void* unknown, c_simulation_view* simulation_view)
+{
+    simulation_world->update_establishing_view(simulation_view);
 }
 
 long MainThread()
@@ -146,6 +154,8 @@ long MainThread()
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();
+    // allow view_establishment to progress past connection phase to established in update_establishing_view again
+    Hook(0x370E0, update_establishing_view_hook).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 
@@ -285,17 +295,28 @@ long MainThread()
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
-            membership->players[0].configuration.host.s3d_player_customization.colours[0] = 1184274;
-            membership->players[0].configuration.host.s3d_player_customization.colours[1] = 1184274;
-            membership->players[0].configuration.host.s3d_player_customization.colours[2] = 1184274;
-            membership->players[0].configuration.host.s3d_player_customization.colours[3] = 1184274;
+            membership->players[0].configuration.host.s3d_player_customization.colours[_primary] = 0x620B0B;
+            membership->players[0].configuration.host.s3d_player_customization.colours[_secondary] = 0x620B0B;
+            membership->players[0].configuration.host.s3d_player_customization.colours[_visor] = 0xFF640A;
+            membership->players[0].configuration.host.s3d_player_customization.colours[_lights] = 0x9685FF;
+            membership->players[0].configuration.host.s3d_player_customization.colours[_holo] = 0x9685FF;
+
+            //membership->players[0].configuration.host.s3d_player_appearance.unknown = true;
+            //membership->players[0].configuration.host.s3d_player_customization.unknown0 = true;
+            //membership->players[0].configuration.host.s3d_player_customization.unknown1 = 1;
 
             // client player
             wchar_t service_tag1[5] = L"TEST";
             memcpy(membership->players[1].configuration.host.player_appearance.service_tag, service_tag1, 10);
             membership->players[1].configuration.host.player_assigned_team = 1; // blue team
             membership->players[1].configuration.host.player_team = 1; // blue team
-            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_poncho;
+
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_pilot;
+            membership->players[1].configuration.host.s3d_player_customization.colours[_primary] = 0x0F0F0F;
+            membership->players[1].configuration.host.s3d_player_customization.colours[_secondary] = 0x003750;
+            membership->players[1].configuration.host.s3d_player_customization.colours[_visor] = 0xFF640A;
+            membership->players[1].configuration.host.s3d_player_customization.colours[_lights] = 0xFF640A;
+            membership->players[1].configuration.host.s3d_player_customization.colours[_holo] = 0xFF640A;
 
             // push update
             sessions[0].get_session_membership()->increment_update();
