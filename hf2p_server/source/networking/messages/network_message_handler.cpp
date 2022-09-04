@@ -453,7 +453,7 @@ void c_network_message_handler::handle_parameters_request(c_network_channel* cha
 void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
 {
     // non original but useful log
-    //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
 
     typedef void(__thiscall* handle_view_establishment_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message*/);
     auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(module_base + 0x257B0);
@@ -497,16 +497,16 @@ void c_network_message_handler::handle_synchronous_gamestate(c_network_channel* 
     
 }
 
-// FUNC TODO
-void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
+void c_network_message_handler::handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message)
 {
-    
+    void(__thiscall* handle_game_results)(c_network_channel * channel) = reinterpret_cast<decltype(handle_game_results)>(module_base + 0x25A70);
+    handle_game_results(channel);
 }
 
-// FUNC TODO
-void c_network_message_handler::handle_game_results(c_network_channel* channel, s_network_message_game_results const* message)
+void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
 {
-    
+    void(__thiscall* handle_synchronous_client_ready)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_client_ready)>(module_base + 0x25950);
+    handle_synchronous_client_ready(channel);
 }
 
 void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)
@@ -696,6 +696,13 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_synchronous_gamestate);
             break;
+        */
+        case _network_message_type_game_results:
+            if (channel->connected())
+                this->handle_distributed_game_results(channel, (s_network_message_distributed_game_results*)message);
+            else
+                log_received_over_non_connected_channel(channel, _network_message_type_game_results);
+            break;
 
         case _network_message_type_synchronous_client_ready:
             if (channel->connected())
@@ -703,14 +710,6 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_synchronous_client_ready);
             break;
-
-        case _network_message_type_game_results:
-            if (channel->connected())
-                this->handle_game_results(channel, (s_network_message_game_results*)message);
-            else
-                log_received_over_non_connected_channel(channel, _network_message_type_game_results);
-            break;
-        */
     }
 }
 

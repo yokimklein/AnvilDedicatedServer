@@ -177,6 +177,9 @@
     <ClInclude Include="source\simulation\simulation_world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\game_results.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">

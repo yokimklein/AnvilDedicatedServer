@@ -75,7 +75,7 @@ public:
 	void handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message);
 	void handle_synchronous_gamestate(c_network_channel* channel, s_network_message_synchronous_gamestate const* message);
 	void handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message);
-	void handle_game_results(c_network_channel* channel, s_network_message_game_results const* message);
+	void handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message);
 	// handle_test?
 	void handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 	void handle_out_of_band_message(s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);

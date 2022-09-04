@@ -182,6 +182,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\game\game_results.h" />
     <ClInclude Include="source\simulation\simulation_world.h" />
     <ClInclude Include="source\simulation\simulation_view.h" />
     <ClInclude Include="source\math\fast_checksum.h" />

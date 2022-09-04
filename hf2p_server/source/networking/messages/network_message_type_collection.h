@@ -5,6 +5,7 @@
 #include "..\..\memory\bitstream.h"
 #include "..\session\network_session_parameter_types.h"
 #include "..\..\simulation\simulation_view.h"
+#include "..\..\game\game_results.h"
 
 enum e_network_message_type : long
 {
@@ -44,9 +45,8 @@ enum e_network_message_type : long
 	_network_message_type_synchronous_actions,
 	_network_message_type_synchronous_acknowledge,
 	_network_message_type_synchronous_gamestate,
-	//_network_message_type_distributed_game_results, // removed in ms29
-	_network_message_type_synchronous_client_ready,
 	_network_message_type_game_results,
+	_network_message_type_synchronous_client_ready,
 	_network_message_type_test,
 
 	k_network_message_type_count
@@ -443,8 +443,11 @@ static_assert(sizeof(s_network_message_view_establishment) == 0x4C);
 
 struct s_network_message_player_acknowledge : s_network_message
 {
-
+	uint32_t player_valid_mask;
+	uint32_t player_in_game_mask;
+	uint64_t player_identifiers[k_network_maximum_players_per_session];
 };
+static_assert(sizeof(s_network_message_player_acknowledge) == 0x88);
 
 struct s_network_message_synchronous_update : s_network_message
 {
@@ -471,12 +474,15 @@ struct s_network_message_synchronous_gamestate : s_network_message
 
 };
 
-struct s_network_message_synchronous_client_ready : s_network_message
+struct s_network_message_distributed_game_results : s_network_message
 {
-
+	long establishment_identifier;
+	long update_number;
+	s_game_results_incremental_update game_results;
 };
+static_assert(sizeof(s_network_message_distributed_game_results) == 0x10CA8);
 
-struct s_network_message_game_results : s_network_message
+struct s_network_message_synchronous_client_ready : s_network_message
 {
 
 };
