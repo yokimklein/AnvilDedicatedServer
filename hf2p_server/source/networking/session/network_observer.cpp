@@ -58,9 +58,9 @@ void c_network_observer::observer_channel_set_waiting_on_backlog(e_network_obser
 	observer_channel_set_waiting_on_backlog(this, owner_type, observer_index, message_type);
 }
 
-void c_network_observer::quality_statistics_get_ratings(uint32_t* connectivity_badness_rating, uint32_t* host_badness_rating, uint32_t* client_badness_rating)
+void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating)
 {
-	void(__thiscall * quality_statistics_get_ratings)(c_network_observer * observer, uint32_t * connectivity_badness_rating, uint32_t * host_badness_rating, uint32_t * client_badness_rating) = reinterpret_cast<decltype(quality_statistics_get_ratings)>(module_base + 0xEF30);
+	void(__thiscall * quality_statistics_get_ratings)(c_network_observer* observer, ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating) = reinterpret_cast<decltype(quality_statistics_get_ratings)>(module_base + 0xEF30);
 	quality_statistics_get_ratings(this, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
 

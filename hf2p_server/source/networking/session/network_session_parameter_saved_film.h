@@ -1,6 +1,5 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "network_session_parameters_base.h"
 #include "..\..\game\game_options.h"
 #include "..\..\simulation\simulation.h"
@@ -20,7 +19,7 @@ struct s_network_session_parameter_saved_film_game_options
 {
 	long playback_length_in_ticks;
 	long playback_start_tick;
-	s_game_options game_options;
+	game_options game_options;
 };
 
 class c_network_session_parameter_saved_film_game_options : public c_network_session_parameter_base

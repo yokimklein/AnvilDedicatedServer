@@ -1,13 +1,8 @@
-#include <iostream>
-#include <windows.h>
 #include "network_message_handler.h"
-#include "network_message_type_collection.h"
+#include <iostream>
 #include "network_message_gateway.h"
-#include "..\delivery\network_link.h"
 #include "..\session\network_session_manager.h"
 #include "..\session\network_session.h"
-#include "..\transport\transport_address.h"
-#include "..\network_globals.h"
 #include "..\network_utilities.h"
 
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)

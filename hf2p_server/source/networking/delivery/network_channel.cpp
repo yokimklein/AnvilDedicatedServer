@@ -1,7 +1,5 @@
 #include "network_channel.h"
 #include "..\..\dllmain.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\transport\transport_address.h"
 
 bool c_network_channel::connected()
 {

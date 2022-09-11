@@ -1,4 +1,3 @@
-#include <windows.h>
 #include "transport_security.h"
 #include "..\..\dllmain.h"
 
@@ -13,7 +12,7 @@ long transport_secure_address_get(s_transport_secure_address* secure_address)
 }
 
 // FUNC TODO
-const char* transport_secure_nonce_get_string(uint64_t const* secure_nonce)
+const char* transport_secure_nonce_get_string(qword const* secure_nonce)
 {
     const char* secure_nonce_string = "00000000-00000000";
     return secure_nonce_string;

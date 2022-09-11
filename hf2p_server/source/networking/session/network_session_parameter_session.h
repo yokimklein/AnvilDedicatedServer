@@ -1,4 +1,5 @@
 #pragma once
+#include "..\..\cseries\cseries.h"
 #include "network_session_parameters_base.h"
 #include "..\transport\transport_address.h"
 #include "..\transport\transport_security.h"
@@ -65,15 +66,15 @@ public:
 
 class c_generic_network_session_parameter_qword : public c_network_session_parameter_base
 {
-	uint64_t m_data;
-	uint64_t m_requested_data;
+	qword m_data;
+	qword m_requested_data;
 };
 
 class c_generic_network_session_parameter_ulong : public c_network_session_parameter_base
 {
 public:
-	uint32_t m_data;
-	uint32_t m_requested_data;
+	ulong m_data;
+	ulong m_requested_data;
 };
 
 class c_generic_network_session_parameter_long : public c_network_session_parameter_base
@@ -90,8 +91,8 @@ class c_generic_network_session_parameter_short : public c_network_session_param
 
 class c_generic_network_session_parameter_uchar : public c_network_session_parameter_base
 {
-	uint8_t m_data;
-	uint8_t m_requested_data;
+	byte m_data;
+	byte m_requested_data;
 };
 
 class c_generic_network_session_parameter_bool : public c_network_session_parameter_base
@@ -104,7 +105,7 @@ struct s_remote_session_join_data
 {
 	long join_state;
 	long join_to;
-	uint64_t join_nonce;
+	qword join_nonce;
 	long transport_platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key key;

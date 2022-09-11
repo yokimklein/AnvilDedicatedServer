@@ -12,6 +12,9 @@ static_assert(sizeof(s_network_session_parameter_game_variant) == 0x268);
 
 class c_network_session_parameter_game_variant : public c_network_session_parameter_base
 {
+public:
+	c_game_variant* get();
+
 	s_network_session_parameter_game_variant m_data;
 	s_network_session_parameter_game_variant m_requested_data;
 	long m_peer_consumed_chunks[k_network_maximum_machines_per_session];

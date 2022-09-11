@@ -1,11 +1,10 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "network_session_membership.h"
 #include "network_session_parameters.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\delivery\network_channel.h"
 #include "network_observer.h"
+#include "..\messages\network_messages_session_membership.h"
+#include "..\messages\network_messages_session_protocol.h"
 
 enum e_network_session_type
 {
@@ -22,7 +21,7 @@ static const char* k_session_type_strings[k_network_session_type_count] = {
 	"squad"
 };
 
-enum e_network_session_state : uint32_t
+enum e_network_session_state : long
 {
 	_network_session_state_none,
 	_network_session_state_peer_creating,
@@ -38,6 +37,25 @@ enum e_network_session_state : uint32_t
 	//_network_session_state_election,
 
 	k_network_session_state_count
+};
+
+enum e_network_session_boot_reason : long // from ms23/ED
+{
+	_network_session_boot_reason_player_booted_player,
+	_network_session_boot_reason_unknown1,
+	_network_session_boot_reason_failed_to_load_map,
+	_network_session_boot_reason_write_stats_grief_time,
+	_network_session_boot_reason_unknown4,
+	_network_session_boot_reason_unknown5,
+	_network_session_boot_reason_recreating_session,
+	_network_session_boot_reason_join_aborted,
+	_network_session_boot_reason_simulation_aborted,
+	_network_session_boot_reason_unknown9,
+	_network_session_boot_reason_unknown10,
+	_network_session_boot_reason_unknown11,
+	_network_session_boot_reason_unknown12,
+
+	k_network_session_boot_reason_count
 };
 
 static const char* k_session_state_strings[k_network_session_state_count] = {
@@ -77,7 +95,7 @@ public:
 	const char* get_type_string(e_network_session_type session_type);
 	const char* get_state_string();
 	const char* get_peer_description(long peer_index);
-	void abort_pending_join(uint64_t join_nonce);
+	void abort_pending_join(qword join_nonce);
 	bool is_host();
 	bool join_allowed_by_privacy();
 	e_network_join_refuse_reason can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
@@ -105,24 +123,26 @@ public:
 	void idle_observer_state();
 	void check_to_send_membership_update();
 	long managed_session_index();
-	bool join_abort(s_transport_address const* incoming_address, uint64_t join_nonce);
+	bool join_abort(s_transport_address const* incoming_address, qword join_nonce);
 	c_network_session_parameters* get_session_parameters();
 	bool handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message);
 	bool peer_request_properties_update(s_transport_secure_address const* secure_address, s_network_session_peer_properties const* peer_properties);
 	c_network_session_membership* get_session_membership_unsafe();
-	bool join_nonce_is_from_clone_join_or_is_hosts(uint64_t join_nonce);
+	bool join_nonce_is_from_clone_join_or_is_hosts(qword join_nonce);
 	void finalize_single_player_add(e_network_join_refuse_reason refuse_reason);
 	e_network_session_type session_type();
 	bool host_join_nonce_valid();
-	void add_pending_join_to_session(uint64_t join_nonce);
+	void add_pending_join_to_session(qword join_nonce);
 	e_network_observer_owner session_index();
 	bool handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message);
 	bool leaving_session();
-	void time_set(uint32_t time);
+	void time_set(ulong time);
 	bool handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message);
 	bool handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message);
 	bool compare_session_id(s_transport_secure_identifier const* secure_id);
 	bool get_session_id(s_transport_secure_identifier* secure_id);
+	void peer_request_player_add(const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings);
+	long get_session_membership_update_number();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
@@ -137,24 +157,24 @@ public:
 	e_network_session_state m_local_state;
 	long : 32;
 	char m_local_state_data[0x288]; // host s_transport_address @ byte offset 20
-	uint32_t m_connection_identifier;
-	uint32_t m_time_synchronization_end_time;
-	uint32_t m_time_synchronization_start_time;
+	ulong m_connection_identifier;
+	ulong m_time_synchronization_end_time;
+	ulong m_time_synchronization_start_time;
 	bool m_time_exists;
-	uint32_t m_time;
+	ulong m_time;
 	long unknown; // recevied packet pointer?
 	long m_managed_session_index;
 	e_network_join_refuse_reason m_join_refuse_reason;
-	uint64_t m_host_join_nonce;
+	qword m_host_join_nonce;
 	long : 32;
-	uint32_t m_disconnection_policy;
+	ulong m_disconnection_policy;
 	s_player_identifier m_player_add_single_player_identifier;
 	s_transport_secure_address m_player_add_secure_address;
 	long m_player_add_peer_index;
-	__int32 : 32;
+	long : 32;
 	s_player_identifier m_player_add_player_identifier;
 	e_network_join_refuse_reason m_player_add_join_refuse_reason;
-	uint32_t m_player_add_time;
+	ulong m_player_add_time;
 
 private:
 

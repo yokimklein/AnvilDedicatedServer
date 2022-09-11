@@ -1,24 +1,23 @@
 #pragma once
-#include <windows.h>
-#include <stdint.h>
+#include "..\cseries\cseries.h"
 #include "..\memory\bitstream.h"
 
-#pragma pack(push, 4)
+#pragma pack(push, 1)
 class c_network_time_statistics
 {
-	uint32_t unknown1;
-	uint32_t unknown2;
-	uint32_t unknown3;
-	uint32_t unknown4;
-	uint32_t unknown5;
-	uint64_t unknown6;
-	uint32_t unknown7;
-	float unknown8;
+	ulong unknown1;
+	ulong unknown2;
+	ulong unknown3;
+	ulong unknown4;
+	ulong unknown5;
+	long64 unknown6;
+	ulong m_period_duration_msec;
+	ulong m_interval_duration_msec;
 	float unknown9;
-	uint32_t unknown10;
-	c_bitstream stream;
-	uint64_t unknown11;
-	uint32_t unknown12;
+	ulong m_next_interval_index;
+	c_bitstream stream; // is this accurate?
+	long64 unknown11;
+	ulong unknown12;
 };
 static_assert(sizeof(c_network_time_statistics) == 0xD8);
 #pragma pack(pop)

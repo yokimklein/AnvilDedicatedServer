@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include "..\..\cseries\cseries.h"
 #include "transport_security.h"
 
 enum e_transport_platform : long
@@ -7,14 +7,14 @@ enum e_transport_platform : long
 
 };
 
-struct s_transport_address
+struct s_transport_address // just transport_address in original source
 {
 	union {
-		uint32_t ipv4;
+		ulong ipv4;
 		byte data[16];
 	} address;
-	uint16_t port;
-	uint16_t address_size; // 4 for IPv4, 16 for IPv6
+	ushort port;
+	ushort address_size; // 4 for IPv4, 16 for IPv6
 };
 static_assert(sizeof(s_transport_address) == 0x14);
 

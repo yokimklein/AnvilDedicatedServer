@@ -1,5 +1,4 @@
 #include "network_session_manager.h"
-#include "..\messages\network_message_type_collection.h"
 #include "..\..\dllmain.h"
 
 c_network_session* c_network_session_manager::get_session(s_transport_secure_identifier const* secure_identifier)

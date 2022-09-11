@@ -1,6 +1,5 @@
 #pragma once
-#include <windows.h>
-#include <stdint.h>
+#include "..\..\cseries\cseries.h"
 #include "..\..\memory\sliding_window.h"
 
 struct c_network_channel_client
@@ -17,7 +16,7 @@ class c_network_connection : c_network_channel_client
 {
 	struct s_connection_incoming_packet
 	{
-		uint16_t flags;
+		word_flags flags;
 	};
 	static_assert(sizeof(struct s_connection_incoming_packet) == 0x2);
 
@@ -26,8 +25,8 @@ class c_network_connection : c_network_channel_client
 		long timestamp;
 		long size_on_wire;
 		long round_trip_msec;
-		int16_t unretired_window_size;
-		uint16_t flags;
+		short unretired_window_size;
+		word_flags flags;
 	};
 	static_assert(sizeof(struct s_connection_outgoing_packet) == 0x10);
 

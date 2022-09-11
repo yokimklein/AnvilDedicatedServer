@@ -7,6 +7,8 @@
 #include "..\transport\transport_address.h"
 #include <iostream>
 
+// TODO: move each handler into grouped .cpp files
+
 void c_network_message_handler::handle_out_of_band_message(s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     c_network_channel* channel;
@@ -53,9 +55,9 @@ void c_network_message_handler::handle_out_of_band_message(s_transport_address c
         case _network_message_type_join_refuse:
             this->handle_join_refuse(address, (s_network_message_join_refuse*)message);
             break;
-        //case _network_message_type_leave_session:
-        //    this->handle_leave_session(address, (s_network_message_leave_session*)message);
-        //    break;
+        case _network_message_type_leave_session:
+            this->handle_leave_session(address, (s_network_message_leave_session*)message);
+            break;
         case _network_message_type_leave_acknowledge:
             this->handle_leave_acknowledge(address, (s_network_message_leave_acknowledge*)message);
             break;

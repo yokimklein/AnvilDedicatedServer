@@ -1,4 +1,5 @@
 #include "network_managed_session.h"
+#include "..\..\cseries\cseries.h"
 #include "network_session.h"
 #include <iostream>
 
@@ -141,9 +142,9 @@ void managed_session_reset_session(long managed_session_index, bool use_session_
 	}
 }
 
-void managed_session_remove_players(long managed_session_index, uint64_t* xuids, long xuid_count)
+void managed_session_remove_players(long managed_session_index, qword* xuids, long xuid_count)
 {
-	//void(__fastcall* remove_from_player_list)(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
+	//void(__fastcall* remove_from_player_list)(s_online_session_player* players, long player_count, qword* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
 	
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
@@ -152,7 +153,7 @@ void managed_session_remove_players(long managed_session_index, uint64_t* xuids,
 	managed_session->creation_time = 0;
 }
 
-void remove_from_player_list(s_online_session_player* players, long player_count, uint64_t* xuids, long xuid_count)
+void remove_from_player_list(s_online_session_player* players, long player_count, qword* xuids, long xuid_count)
 {
 	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{
@@ -164,6 +165,7 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 				players[player_index].flags = 0;
 				players[player_index].xuid = 0;
 				memset(&players[player_index], 0, sizeof(s_online_session_player));
+				break;
 			}
 		}
 		if (player_index == player_count)
@@ -179,7 +181,7 @@ void managed_session_reset_players_add_status(long managed_session_index)
 	managed_session->flags &= 0xFFFFE7FF;
 }
 
-void managed_session_add_players(long managed_session_index, uint64_t* player_xuids, bool* player_bools, long xuid_count)
+void managed_session_add_players(long managed_session_index, qword* player_xuids, bool* player_bools, long xuid_count)
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, player_bools, xuid_count); // non-original function name
@@ -190,7 +192,7 @@ void managed_session_add_players(long managed_session_index, uint64_t* player_xu
 }
 
 // TODO VERIFY THIS!!!!!!!
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, uint64_t* player_xuids, bool* player_bools, long xuid_count)
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* player_xuids, bool* player_bools, long xuid_count)
 {
 	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{

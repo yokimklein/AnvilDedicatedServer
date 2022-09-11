@@ -1,5 +1,6 @@
 #include "transport_address.h"
 #include "..\..\dllmain.h"
+#include <assert.h>
 
 enum
 {
@@ -23,9 +24,9 @@ const char* transport_address_to_string(s_transport_address const* address, s_tr
 	s_transport_secure_address secure_address_2;
 	s_transport_secure_identifier secure_identifier;
 #ifdef _DEBUG
-	ASSERT(!address);
-	ASSERT(!string);
-	ASSERT(maximum_string_length <= 0);
+	assert(!address);
+	assert(!string);
+	assert(maximum_string_length <= 0);
 #endif
 	csstrnzcpy(string, &"", maximum_string_length);
 	if (address->address_size == 4) // ipv4
@@ -57,7 +58,7 @@ const char* transport_address_to_string(s_transport_address const* address, s_tr
 	}
 	else if (address->address_size == 16) // ipv6
 	{
-		uint16_t ipv6_blocks[8];
+		ushort ipv6_blocks[8];
 		memcpy(&ipv6_blocks[7], &address->address.data[14], 2);
 		memcpy(&ipv6_blocks[6], &address->address.data[12], 2);
 		memcpy(&ipv6_blocks[5], &address->address.data[10], 2);

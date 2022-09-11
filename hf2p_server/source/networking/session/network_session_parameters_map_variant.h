@@ -1,8 +1,7 @@
 #pragma once
-#include <windows.h>
 #include "network_session_parameters_base.h"
-#include "..\..\scenario\scenario_map_variant.h"
 #include "..\..\simulation\simulation.h"
+#include "..\..\saved_games\saved_game_files.h"
 
 struct s_network_session_parameter_map_variant
 {

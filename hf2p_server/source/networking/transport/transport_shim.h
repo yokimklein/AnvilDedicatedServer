@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 #include "..\..\dllmain.h"
 #include "transport_address.h"
 #include "..\network_globals.h"

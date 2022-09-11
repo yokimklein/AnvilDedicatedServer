@@ -1,6 +1,5 @@
 #pragma once
-#include <windows.h>
-#include <cstdint>
+#include "..\..\cseries\cseries.h"
 
 struct s_transport_secure_address
 {
@@ -31,7 +30,7 @@ struct s_transport_session_description
 static_assert(sizeof(s_transport_session_description) == 0x30);
 
 long transport_secure_address_get(s_transport_secure_address* secure_address);
-const char* transport_secure_nonce_get_string(uint64_t const* secure_nonce);
+const char* transport_secure_nonce_get_string(qword const* secure_nonce);
 const char* transport_secure_address_get_string(s_transport_secure_address const* secure_address);
 const char* transport_secure_identifier_get_string(s_transport_secure_identifier const* secure_identifier);
 const s_transport_unique_identifier* transport_unique_identifier_get();

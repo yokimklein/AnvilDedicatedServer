@@ -1,4 +1,5 @@
 #pragma once
+#include "..\cseries\cseries.h"
 
 struct s_machine_identifier
 {
@@ -10,7 +11,7 @@ struct s_machine_identifier
 
 struct s_player_identifier
 {
-	long long data;
+	qword data;
 };
 
 bool player_identifier_is_valid(s_player_identifier const* identifier);

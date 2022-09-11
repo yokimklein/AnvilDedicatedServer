@@ -1,7 +1,6 @@
 #include "network_session.h"
 #include <iostream>
 #include "..\messages\network_message_gateway.h"
-#include "..\messages\network_message_handler.h"
 #include "..\network_utilities.h"
 #include "..\logic\network_join.h"
 #include "network_managed_session.h"
@@ -144,10 +143,10 @@ bool c_network_session::handle_time_synchronize(s_transport_address const* outgo
         {
             if (message->synchronization_stage == 1)
             {
-                int32_t time_delta1 = message->authority_timestamp[0] - message->client_timestamp[0];
-                int32_t time_delta2 = message->authority_timestamp[1] - message->client_timestamp[1];
-                int32_t synchronized_time_offset = (time_delta1 + time_delta2) / 2;
-                int32_t synchronized_time_epsilon = abs(time_delta1 - synchronized_time_offset);
+                long time_delta1 = message->authority_timestamp[0] - message->client_timestamp[0];
+                long time_delta2 = message->authority_timestamp[1] - message->client_timestamp[1];
+                long synchronized_time_offset = (time_delta1 + time_delta2) / 2;
+                long synchronized_time_epsilon = abs(time_delta1 - synchronized_time_offset);
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_time_synchronize: [%s] synchronized offset %dmsec (epsilon %dmsec)\n",
                     this->get_id_string(),
                     synchronized_time_offset,
@@ -218,7 +217,7 @@ e_network_join_refuse_reason c_network_session::get_closure_reason()
 
 void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
-    typedef long(__fastcall* bit_check_ptr)(uint32_t* mask, long bit_count);
+    typedef long(__fastcall* bit_check_ptr)(ulong* mask, long bit_count);
     auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
 
     printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] processing join request from %s\n",
@@ -340,7 +339,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
 
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
-    typedef long(__fastcall* bit_check_ptr)(uint32_t* mask, long bit_count);
+    typedef long(__fastcall* bit_check_ptr)(ulong* mask, long bit_count);
     auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
 
     if (!this->is_host())
@@ -393,7 +392,7 @@ e_network_join_refuse_reason c_network_session::can_accept_join_request(s_networ
     return refuse_reason;
 }
 
-void c_network_session::abort_pending_join(uint64_t join_nonce)
+void c_network_session::abort_pending_join(qword join_nonce)
 {
     if (this->get_session_membership()->get_peer(this->get_session_membership()->host_peer_index())->join_nonce == join_nonce)
     {
@@ -785,7 +784,7 @@ void c_network_session::process_pending_joins()
                         this->get_id_string(),
                         player_identifier_get_string(&this->m_player_add_single_player_identifier),
                         network_message_join_refuse_get_reason_string(refuse_reason));
-                    managed_session_remove_players(this->managed_session_index(), (uint64_t*)&this->m_player_add_player_identifier.data, 1);
+                    managed_session_remove_players(this->managed_session_index(), (qword*)&this->m_player_add_player_identifier.data, 1);
                 }
                 else
                 {
@@ -812,7 +811,7 @@ void c_network_session::process_pending_joins()
             }
             if (peer_index != -1)
             {
-                uint64_t join_nonce = this->get_session_membership()->get_join_nonce(peer_index);
+                qword join_nonce = this->get_session_membership()->get_join_nonce(peer_index);
                 if ((managed_session_status & 0x40) != 0)
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as joined\n",
@@ -936,7 +935,7 @@ void c_network_session::process_pending_joins()
     {
         s_player_add_queue_entry* add_queue_entry = this->get_session_membership()->get_first_player_from_player_add_queue();
         bool bool_array[1] = { true };
-        uint64_t xuids[1] = { 0 };
+        qword xuids[1] = { 0 };
         if (add_queue_entry != nullptr)
         {
             this->m_player_add_single_player_identifier.data = add_queue_entry->player_identifier.data;
@@ -957,7 +956,7 @@ void c_network_session::process_pending_joins()
             netconfig_time_unknown = *(long*)(module_base + 0x103861C); // get_network_configuration()->unknown
         for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
         {
-            uint64_t join_nonce = this->get_session_membership()->get_join_nonce(i);
+            qword join_nonce = this->get_session_membership()->get_join_nonce(i);
             long peer_creation_timestamp = this->get_session_membership()->get_creation_timestamp(i);
             long time_since_creation = network_get_time() - peer_creation_timestamp;
             if (this->host_join_nonce_valid()
@@ -1130,7 +1129,7 @@ long c_network_session::managed_session_index()
     return this->m_managed_session_index;
 }
 
-bool c_network_session::join_abort(s_transport_address const* incoming_address, uint64_t join_nonce)
+bool c_network_session::join_abort(s_transport_address const* incoming_address, qword join_nonce)
 {
     network_join_remove_join_from_queue(join_nonce);
     if (this->membership_is_locked())
@@ -1213,7 +1212,7 @@ c_network_session_membership* c_network_session::get_session_membership_unsafe()
         return this->get_session_membership();
 }
 
-bool c_network_session::join_nonce_is_from_clone_join_or_is_hosts(uint64_t join_nonce)
+bool c_network_session::join_nonce_is_from_clone_join_or_is_hosts(qword join_nonce)
 {
     return join_nonce == this->m_host_join_nonce;
 }
@@ -1281,12 +1280,12 @@ bool c_network_session::host_join_nonce_valid()
     return this->m_host_join_nonce != -1;
 }
 
-void c_network_session::add_pending_join_to_session(uint64_t join_nonce)
+void c_network_session::add_pending_join_to_session(qword join_nonce)
 {
-    long(__fastcall * get_player_index_from_mask)(uint32_t * player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall * get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
 
     bool player_bools[16] = {};
-    uint64_t player_xuids[16] = {};
+    qword player_xuids[16] = {};
     long xuid_count = 0;
     for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
     {
@@ -1295,7 +1294,7 @@ void c_network_session::add_pending_join_to_session(uint64_t join_nonce)
             long mask_player_index = get_player_index_from_mask(&this->get_session_membership()->get_peer(i)->player_mask, 16); // player mask is 1 in ms23
             if (mask_player_index != -1)
             {
-                player_xuids[xuid_count] = (uint64_t)this->get_session_membership()->get_player(mask_player_index)->configuration.host.player_xuid.data;
+                player_xuids[xuid_count] = (qword)this->get_session_membership()->get_player(mask_player_index)->configuration.host.player_xuid.data;
                 player_bools[xuid_count] = !this->get_session_membership()->get_player(mask_player_index)->player_occupies_a_public_slot;
                 xuid_count++;
             }
@@ -1373,7 +1372,7 @@ bool c_network_session::leaving_session()
     }
 }
 
-void c_network_session::time_set(uint32_t time)
+void c_network_session::time_set(ulong time)
 {
     this->m_time_exists = true;
     this->m_time = time;
@@ -1381,7 +1380,7 @@ void c_network_session::time_set(uint32_t time)
 
 bool c_network_session::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
-    long(__fastcall * get_player_index_from_mask)(uint32_t * player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall * get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
 
     if (this->established() && this->is_host())
     {
@@ -1468,4 +1467,15 @@ bool c_network_session::compare_session_id(s_transport_secure_identifier const* 
 bool c_network_session::get_session_id(s_transport_secure_identifier* secure_id)
 {
     return managed_session_get_id(this->managed_session_index(), secure_id);
+}
+
+void c_network_session::peer_request_player_add(const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
+{
+    void(__thiscall * peer_request_player_add)(c_network_session* session, const s_player_identifier * player_identifier, long user_index, long controller_index, s_player_configuration_from_client * configuration_from_client, long voice_settings) = reinterpret_cast<decltype(peer_request_player_add)>(module_base + 0x21EF0);
+    peer_request_player_add(this, player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
+}
+
+long c_network_session::get_session_membership_update_number()
+{
+    return this->m_session_membership.m_baseline.update_number;
 }

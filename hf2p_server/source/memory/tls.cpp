@@ -1,6 +1,6 @@
 #include "tls.h"
 
-void* tls_get(const unsigned long offset)
+void* tls_get(const dword offset)
 {
 	void* address = nullptr;
 	_asm

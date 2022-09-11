@@ -1,24 +1,17 @@
-#include <iostream>
-#include <cstdint>
-#include <windows.h>
-#include <inttypes.h>
 #include "dllmain.h"
+#include <iostream>
 #include "patch\Patch.hpp"
 #include "networking\session\network_session.h"
-#include "networking\messages\network_message_handler.h"
-#include "interface\user_interface_networking.h"
-#include "networking\network_globals.h"
-#include "networking\logic\network_join.h"
+#include "game\game_engine.h"
+#include "networking\messages\network_message_gateway.h"
+#include "networking\logic\network_session_interface.h"
+#include "simulation\simulation_world.h"
 #include "networking\session\network_managed_session.h"
 #include "networking\transport\transport_shim.h"
-#include "networking\messages\network_message_gateway.h"
 #include "networking\session\network_session_manager.h"
-#include "networking\logic\network_session_interface.h"
-#include "memory\tls.h"
-#include "simulation\simulation_view.h"
-#include "simulation\simulation_world.h"
+#include "networking\messages\network_message_handler.h"
 
-void UnprotectMemory(uintptr_t base)
+void UnprotectMemory(dword base)
 {
     // Enable write to all executable memory
     size_t Offset, Total;
@@ -26,7 +19,7 @@ void UnprotectMemory(uintptr_t base)
     MEMORY_BASIC_INFORMATION MemInfo;
 
     printf("Unprotecting memory...\n");
-    while (VirtualQuery((uint8_t*)base + Offset, &MemInfo, sizeof(MEMORY_BASIC_INFORMATION)))
+    while (VirtualQuery((byte*)base + Offset, &MemInfo, sizeof(MEMORY_BASIC_INFORMATION)))
     {
         Offset += MemInfo.RegionSize;
         if (MemInfo.Protect == PAGE_EXECUTE_READ)
@@ -44,7 +37,6 @@ static c_network_session* network_session = (c_network_session*)(module_base + 0
 static short* g_game_port = (short*)(module_base + 0xE9B7A0);
 // FUNCTIONS - TODO: sort these into their proper file locations
 char(__thiscall* network_life_cycle_create_local_squad)(e_network_session_class session_class) = reinterpret_cast<decltype(network_life_cycle_create_local_squad)>(module_base + 0x2AD00);
-void(__thiscall* game_variant_ctor)(c_game_variant* variant) = reinterpret_cast<decltype(game_variant_ctor)>(module_base + 0xC3460);
 void(__fastcall* build_default_game_variant)(c_game_variant* out_variant, long game_engine_type) = reinterpret_cast<decltype(build_default_game_variant)>(module_base + 0xE9BE0);
 bool(__thiscall* user_interface_squad_set_game_variant)(c_game_variant* game_variant) = reinterpret_cast<decltype(user_interface_squad_set_game_variant)>(module_base + 0x3ABEC0);
 void(__thiscall* c_map_variant_ctor)(c_map_variant* map_variant) = reinterpret_cast<decltype(c_map_variant_ctor)>(module_base + 0xAB2F0);
@@ -58,6 +50,11 @@ bool(__fastcall* hf2p_setup_session)() = reinterpret_cast<decltype(hf2p_setup_se
 void(__fastcall* user_interface_set_desired_multiplayer_mode)(e_desired_multiplayer_mode multiplayer_mode) = reinterpret_cast<decltype(user_interface_set_desired_multiplayer_mode)>(module_base + 0x3AA7D0);
 bool(__thiscall* c_network_session_parameter_ui_game_mode__request_change)(c_network_session_parameter_ui_game_mode* parameter, e_gui_game_mode gui_gamemode) = reinterpret_cast<decltype(c_network_session_parameter_ui_game_mode__request_change)>(module_base + 0x3B4D0);
 void(__fastcall* network_life_cycle_end)() = reinterpret_cast<decltype(network_life_cycle_end)>(module_base + 0x2AC20);
+
+bool game_is_dedicated_server()
+{
+    return false;
+}
 
 // HOOK FUNCTIONS
 // add back missing message handlers
@@ -130,6 +127,34 @@ void __fastcall update_establishing_view_hook(c_simulation_world* simulation_wor
     simulation_world->update_establishing_view(simulation_view);
 }
 
+// hook to prevent the game from adding a player to the host if we're running a dedicated server
+void __fastcall peer_request_player_add_hook(c_network_session* session, void* unknown, const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
+{
+    if (!game_is_dedicated_server())
+        session->peer_request_player_add(player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
+}
+// ditto above
+bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
+{
+    bool(__thiscall * network_session_interface_get_local_user_identifier)(s_player_identifier * player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(module_base + 0x3D50);
+    return !game_is_dedicated_server() && network_session_interface_get_local_user_identifier(player_identifier);
+}
+
+// reimplement network_session_check_properties by calling it at the end of network_session_interface_update_session
+void __fastcall network_session_interface_update_session_hook(c_network_session* session)
+{
+    void(__thiscall * network_session_interface_update_session)(c_network_session * session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
+    network_session_interface_update_session(session);
+
+    if (session->established() && !session->leaving_session())
+    {
+        if (session->is_host())
+        {
+            network_session_check_properties(session);
+        }
+    }
+}
+
 long MainThread()
 {
     AllocConsole();
@@ -156,6 +181,12 @@ long MainThread()
     Hook(0x28A38A, contrail_fix_hook).Apply();
     // allow view_establishment to progress past connection phase to established in update_establishing_view again
     Hook(0x370E0, update_establishing_view_hook).Apply();
+    // prevent the game from adding a player to the dedicated host
+    Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
+    Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
+    // add back network_session_check_properties
+    Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     printf("Hooks applied\n");
     //=== ===== ===//
 
@@ -195,8 +226,8 @@ long MainThread()
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP - create session
         {
             // SESSION DETAILS
-            auto map_id = _riverworld;
-            auto engine_variant = _engine_variant_ctf;
+            auto map_id = _s3d_edge;
+            auto engine_variant = _engine_variant_slayer;
             auto multiplayer_mode = _desired_multiplayer_mode_custom_games; // I'm not sure if this actually matters anymore
             auto gui_gamemode = _gui_game_mode_multiplayer; // or this
 
@@ -218,10 +249,9 @@ long MainThread()
                 std::cout << "Failed to set UI game mode!\n";
 
             // SET GAME VARIANT
-            c_game_variant game_variant;
-            game_variant_ctor(&game_variant);
-            build_default_game_variant(&game_variant, engine_variant);
-            if (!user_interface_squad_set_game_variant(&game_variant))
+            c_game_variant* game_variant = new c_game_variant();
+            build_default_game_variant(game_variant, engine_variant);
+            if (!user_interface_squad_set_game_variant(game_variant))
                 std::cout << "Failed to set game variant!\n";
             else
                 std::cout << "Game variant set\n";
@@ -235,7 +265,8 @@ long MainThread()
             else
                 std::cout << "Map variant set\n";
             delete map_variant;
-
+            delete game_variant;
+            
             //char* map_path = new char[MAX_PATH];
             //levels_get_path(-1, map_id, map_path, MAX_PATH); // get path to map on disk, eg maps\\s3d_turf
             //network_squad_session_set_map(-1, map_id, map_path); // set the map to use for the session
@@ -278,14 +309,18 @@ long MainThread()
             s_network_session_shared_membership* membership = sessions[0].get_session_membership()->get_current_membership();
 
             // host player
-            membership->players[0].controller_index = 0; // set to -1 by default, which prevents the player from spawning
+            wchar_t host_name[16] = L"host";
+            memcpy(membership->players[1].configuration.host.player_name, host_name, 32);
+            wchar_t service_tag1[5] = L"TEST";
+            memcpy(membership->players[0].configuration.host.player_appearance.service_tag, service_tag1, 10);
             membership->players[0].configuration.host.player_assigned_team = 0; // red team
             membership->players[0].configuration.host.player_team = 0; // red team
-            wchar_t player_name0[16] = L"host";
-            memcpy(membership->players[0].configuration.host.player_name, player_name0, 32);
-            wchar_t service_tag0[5] = L"YKWH";
-            memcpy(membership->players[0].configuration.host.player_appearance.service_tag, service_tag0, 10);
-            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_scanner;
+            membership->players[0].configuration.host.s3d_player_customization.colors[_primary] = 0x0F0F0F;
+            membership->players[0].configuration.host.s3d_player_customization.colors[_secondary] = 0x003750;
+            membership->players[0].configuration.host.s3d_player_customization.colors[_visor] = 0xFF640A;
+            membership->players[0].configuration.host.s3d_player_customization.colors[_lights] = 0xFF640A;
+            membership->players[0].configuration.host.s3d_player_customization.colors[_holo] = 0xFF640A;
+            membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_pilot;
             membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
             membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
             membership->players[0].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
@@ -295,59 +330,30 @@ long MainThread()
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
-            membership->players[0].configuration.host.s3d_player_customization.colours[_primary] = 0x620B0B;
-            membership->players[0].configuration.host.s3d_player_customization.colours[_secondary] = 0x620B0B;
-            membership->players[0].configuration.host.s3d_player_customization.colours[_visor] = 0xFF640A;
-            membership->players[0].configuration.host.s3d_player_customization.colours[_lights] = 0x9685FF;
-            membership->players[0].configuration.host.s3d_player_customization.colours[_holo] = 0x9685FF;
-
-            //membership->players[0].configuration.host.s3d_player_appearance.unknown = true;
-            //membership->players[0].configuration.host.s3d_player_customization.unknown0 = true;
-            //membership->players[0].configuration.host.s3d_player_customization.unknown1 = 1;
 
             // client player
-            wchar_t service_tag1[5] = L"TEST";
             memcpy(membership->players[1].configuration.host.player_appearance.service_tag, service_tag1, 10);
             membership->players[1].configuration.host.player_assigned_team = 1; // blue team
             membership->players[1].configuration.host.player_team = 1; // blue team
-
+            membership->players[1].configuration.host.s3d_player_customization.colors[_primary] = 0x0F0F0F;
+            membership->players[1].configuration.host.s3d_player_customization.colors[_secondary] = 0x003750;
+            membership->players[1].configuration.host.s3d_player_customization.colors[_visor] = 0xFF640A;
+            membership->players[1].configuration.host.s3d_player_customization.colors[_lights] = 0xFF640A;
+            membership->players[1].configuration.host.s3d_player_customization.colors[_holo] = 0xFF640A;
             membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_pilot;
-            membership->players[1].configuration.host.s3d_player_customization.colours[_primary] = 0x0F0F0F;
-            membership->players[1].configuration.host.s3d_player_customization.colours[_secondary] = 0x003750;
-            membership->players[1].configuration.host.s3d_player_customization.colours[_visor] = 0xFF640A;
-            membership->players[1].configuration.host.s3d_player_customization.colours[_lights] = 0xFF640A;
-            membership->players[1].configuration.host.s3d_player_customization.colours[_holo] = 0xFF640A;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _smg_v5;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum_v1;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[0] = _adrenaline;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
+            membership->players[1].configuration.host.s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
+            membership->players[1].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
+            membership->players[1].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
+            membership->players[1].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
 
             // push update
             sessions[0].get_session_membership()->increment_update();
         }
-        /*
-        else if (GetKeyState(VK_DELETE) & 0x8000) // DEL - test add player (buggy)
-        {
-            printf("Adding a local test player...\n");
-            c_network_session* sessions = *network_session->m_session_manager->session;
-            sessions[0].get_session_membership()->get_current_membership()->player_count = 2;
-            sessions[0].get_session_membership()->get_current_membership()->player_valid_flags = 3;
-            sessions[0].get_session_membership()->get_current_membership()->peers[0].player_mask = 3;
-
-            sessions[0].get_session_membership()->get_current_membership()->players[1].player_identifier.data = 84207682768246;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].peer_index = 0;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].controller_index = 0;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.client.multiplayer_team = -1;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.client.active_armor_loadout = -1;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_xuid.data = 84207682768246;
-
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_assigned_team = 0; // red team
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_team = 0; // red team
-            wchar_t player2_name[16] = L"empty";
-            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_name, player2_name, 32);
-            wchar_t service_tag2[5] = L"TST2";
-            memcpy(sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.player_appearance.service_tag, service_tag2, 10);
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].armor = _armor_air_assault;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].primary_weapon = _assault_rifle;
-            sessions[0].get_session_membership()->get_current_membership()->players[1].configuration.host.s3d_player_appearance.loadouts[0].secondary_weapon = _magnum;
-        }
-        */
         Sleep(100);
     }
 

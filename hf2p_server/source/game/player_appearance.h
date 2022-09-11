@@ -1,6 +1,13 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\cseries\cseries.h"
+
+enum e_gender : byte
+{
+	_male,
+	_female,
+
+	k_gender_count
+};
 
 // IDs are based on globals\hf2p_globals.hf2p_globals > RaceArmors[0].Genders[0].ArmorObjects
 // this assumes you are playing as a spartan, genders use the same IDs
@@ -95,10 +102,12 @@ enum e_armor_type : byte
 	_armor_vortex,
 	_armor_warrior,
 	_armor_wasp,
-	_armor_widow_maker
+	_armor_widow_maker,
+
+	k_armor_count
 };
 
-enum e_armour_colours
+enum e_armor_colors // ew american spelling
 {
 	_primary,
 	_secondary,
@@ -106,7 +115,7 @@ enum e_armour_colours
 	_lights,
 	_holo,
 
-	k_armour_colours_count
+	k_armor_colors_count
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].GameVariantWeapons
@@ -199,8 +208,7 @@ enum e_support_package : byte
 
 };
 
-// TODO - test these
-enum e_modifiers : uint32_t
+enum e_modifiers : long
 {
 	_safety_booster,
 	_explosives_damage,
@@ -335,13 +343,13 @@ enum e_tactical_package : byte
 
 struct s_player_appearance_unknown3
 {
-	uint16_t unknown0;
-	uint16_t unknown2;
-	uint16_t unknown4;
-	uint16_t unknown6;
-	uint16_t unknown8;
-	uint16_t unknownA;
-	uint16_t unknownC;
+	ushort unknown0;
+	ushort unknown2;
+	ushort unknown4;
+	ushort unknown6;
+	ushort unknown8;
+	ushort unknownA;
+	ushort unknownC;
 	byte unknownE;
 	byte unknownF;
 };
@@ -357,7 +365,7 @@ static_assert(sizeof(s_player_appearance_unknown2) == 0x324);
 struct s_player_model_customization
 {
 	s_player_appearance_unknown2 model_customizations[2];
-	uint32_t model_customization_hashes[2]; // fast_checksum of the above struct
+	ulong model_customization_hashes[2]; // fast_checksum of the above struct
 };
 static_assert(sizeof(s_player_model_customization) == 0x650);
 
@@ -386,19 +394,19 @@ static_assert(sizeof(s_player_appearance) == 0x660);
 
 struct s_s3d_player_loadout
 {
-	byte flags; // gender
+	e_gender gender;
 	e_armor_type armor;
 	e_weapon_type primary_weapon;
 	e_weapon_type secondary_weapon;
 	e_grenade_type grenade;
-	e_support_package support_pack; // is this the same as the modifiers enum? i don't think its used physically, but it might be used to display the correct support pack in your player card in game?
+	e_support_package support_pack; // actually boosters? or just for the in game playercard? support packs are mechanically handled by the player modifiers
 	e_tactical_package tactical_packs[4];
 };
 static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 
 struct s_s3d_player_modifiers
 {
-	uint32_t modifier_values[k_modifiers_count];
+	ulong modifier_values[k_modifiers_count];
 };
 static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
 
@@ -414,7 +422,7 @@ struct s_s3d_player_appearance
 	};
 
 	bool unknown; // has loadouts? current loadout?
-	s_s3d_player_loadout loadouts[3]; // 3 loadout sets
+	s_s3d_player_loadout loadouts[3];
 	byte pad[1];
 	s_s3d_player_modifiers modifiers[3];
 };
@@ -425,19 +433,19 @@ struct s_s3d_player_customization
 {
 	s_s3d_player_customization() :
 		unknown0(),
-		unknown1(),
-		nameplate(),
+		character_active_index(),
+		acount_label(),
 		emblem(),
-		colours(),
+		colors(),
 		padding()
 	{
 	};
 
 	bool unknown0;
-	byte unknown1;
-	byte nameplate;
+	byte character_active_index; // loadout index, 0-2
+	byte acount_label; // nameplate
 	byte emblem;
-	uint32_t colours[k_armour_colours_count];
+	ulong colors[k_armor_colors_count];
 	byte padding[4];
 };
 static_assert(sizeof(s_s3d_player_customization) == 0x1C);

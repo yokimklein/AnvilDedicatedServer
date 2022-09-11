@@ -1,5 +1,14 @@
 #pragma once
 #include "network_message_type_collection.h"
+#include "network_messages_out_of_band.h"
+#include "network_messages_connect.h"
+#include "network_messages_session_protocol.h"
+#include "network_messages_session_membership.h"
+#include "network_messages_session_parameters.h"
+#include "network_messages_simulation.h"
+#include "network_messages_simulation_synchronous.h"
+#include "network_messages_simulation_distributed.h"
+#include "network_messages_test.h"
 
 class c_network_channel;
 class c_network_link;

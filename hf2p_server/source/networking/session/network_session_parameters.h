@@ -1,6 +1,5 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "network_session_parameter_session.h"
 #include "network_session_parameters_game.h"
 #include "network_session_parameters_game_variant.h"
@@ -9,7 +8,7 @@
 #include "network_session_parameters_matchmaking.h"
 #include "network_session_parameter_types.h"
 #include "network_session_parameters_ui.h"
-#include "..\messages\network_message_type_collection.h"
+#include "..\messages\network_messages_session_parameters.h"
 
 #pragma pack(push, 4)
 class c_network_session;
@@ -62,8 +61,8 @@ public:
 	c_network_session* session;
 	c_network_observer* observer;
 	c_network_session_parameter_base* parameters[k_network_session_parameter_type_count];
-	uint32_t flags;
-	uint32_t initial_parameters_update_mask;
+	ulong flags;
+	ulong initial_parameters_update_mask;
 };
 static_assert(sizeof(c_network_session_parameters) == 0xCA114);
 #pragma pack(pop)

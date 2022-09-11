@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "network_message_type_collection.h"
 #include "..\transport\transport_address.h"
 #include "..\..\memory\bitstream.h"

@@ -1,8 +1,7 @@
 #pragma once
-#include "network_connection.h"
+#include "..\..\cseries\cseries.h"
 #include "..\transport\transport_address.h"
 #include "..\messages\network_message_queue.h"
-#include "..\messages\network_message_type_collection.h"
 
 constexpr long k_network_channel_maximum_clients = 6;
 constexpr long k_network_channel_maximum_base_clients = 3;
@@ -66,7 +65,7 @@ struct s_channel_configuration
 
 struct s_client_iterator
 {
-	long required_client_flags;
+	dword_flags required_client_flags;
 	long client_designator;
 	long client_index;
 	long : 32;
@@ -78,9 +77,9 @@ class c_network_channel_owner
 	void* vftable;
 };
 
-struct s_client_info
+struct s_network_channel_client_info
 {
-	long flags; // e_network_channel_client_flags
+	dword_flags flags; // e_network_channel_client_flags
 	c_network_channel_client* client;
 };
 
@@ -88,29 +87,19 @@ class c_network_channel_simulation_interface
 {
 	bool m_initialized;
 	void* m_simulation_context;
-	void* m_simulation_closure_callback;
+	void(__cdecl* m_closure_callback)(void*);
 	long m_client_count;
-	s_client_info m_clients[k_network_channel_maximum_base_clients];
-
-
-
-
-
-
-
-
-	//bool m_is_authority;
+	s_network_channel_client_info m_clients[k_network_channel_maximum_simulation_clients];
+	bool is_authority;
+	bool established;
+	byte : 8;
+	byte : 8;
 };
+static_assert(sizeof(c_network_channel_simulation_interface) == 0x34);
 
 class c_network_channel_simulation_gatekeeper : c_network_channel_client
 {
 
-};
-
-struct s_network_channel_client_info
-{
-	unsigned int flags;
-	c_network_channel_client* client;
 };
 
 class c_network_link;
@@ -151,23 +140,23 @@ public:
 	c_network_connection m_connection;
 	c_network_message_queue m_message_queue;
 	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper;
-	int32_t m_client_count;
+	long m_client_count;
 	s_network_channel_client_info m_clients[k_network_channel_maximum_base_clients];
 	c_network_channel_simulation_interface* m_simulation_interface;
-	uint32_t m_flags;
-	uint32_t m_local_identifier; // 0xA08
-	uint32_t m_remote_identifier; // 0xA0C
+	dword_flags m_flags;
+	ulong m_local_identifier; // 0xA08
+	ulong m_remote_identifier; // 0xA0C
 	e_network_channel_state m_channel_state; // 0xA10
 	e_network_channel_closure_reason m_closure_reason;
 	s_transport_address m_local_address;
 	s_transport_address m_remote_address;
 	bool m_send_connect_packets;
 	byte __alignA41[3];
-	uint32_t m_connect_identifier;
-	uint32_t m_connect_timestamp;
-	int32_t m_connect_unknown;
+	ulong m_connect_identifier;
+	ulong m_connect_timestamp;
+	long m_connect_unknown;
 	byte __dataA50[8];
-	int32_t m_activity_times[k_network_channel_activity_count];
+	long m_activity_times[k_network_channel_activity_count];
 	byte __dataA70[4];
 };
 static_assert(sizeof(c_network_channel) == 0xA74);

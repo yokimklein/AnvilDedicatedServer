@@ -1,8 +1,8 @@
 #include "network_join.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\session\network_session.h"
 #include <iostream>
 #include "..\network_utilities.h"
+#include "..\messages\network_message_type_collection.h"
+#include "..\session\network_session.h"
 
 void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request)
 {
@@ -157,7 +157,7 @@ void network_join_flush_join_queue()
     network_join_flush_join_queue_call();
 }
 
-void network_join_remove_join_from_queue(uint64_t join_nonce)
+void network_join_remove_join_from_queue(qword join_nonce)
 {
     long* entry_count = &g_network_join_data->join_queue_entry_count;
     for (long i = 0; i < *entry_count; i++)

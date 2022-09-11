@@ -1,6 +1,5 @@
 #pragma once
 #include <winsock.h>
-#include <cstdint>
 
 enum e_transport_type
 {
@@ -14,5 +13,5 @@ struct s_transport_endpoint
 {
 	SOCKET socket;
 	e_transport_type type;
-	uint32_t flags;
+	long flags;
 };

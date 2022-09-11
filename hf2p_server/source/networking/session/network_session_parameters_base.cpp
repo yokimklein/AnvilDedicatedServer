@@ -24,13 +24,13 @@ bool c_network_session_parameter_base::set_allowed()
 // TODO - TEST THIS
 long c_network_session_parameter_base::get_change_request_size()
 {
-	return (*((int(__thiscall**)(c_network_session_parameter_base*))this->vftable + 11))(this);
+	return this->get_change_request_payload_size();
 }
 
 // TODO - TEST THIS
 bool c_network_session_parameter_base::handle_change_request(void const* change_request, long change_request_size)
 {
-	bool success = (*((int(__thiscall**)(c_network_session_parameter_base*, const void*))this->vftable + 12))(this, change_request);
+	bool success = this->handle_change_request_payload(change_request);
 	if (success)
 	{
 		printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_base::handle_change_request: [%s] parameter %d [%s] change request handled\n",

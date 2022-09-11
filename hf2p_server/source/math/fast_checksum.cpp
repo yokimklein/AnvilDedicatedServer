@@ -1,6 +1,4 @@
 #include "fast_checksum.h"
-#include <iostream>
-#include <cassert>
 #include "lookup3.c"
 
 /*
@@ -10,12 +8,12 @@ https://burtleburtle.net/bob/c/lookup3.c
 -------------------------------------------------------------------------------
 */
 
-uint32_t fast_checksum(const void* key, size_t length, uint32_t initval)
+ulong fast_checksum(const void* key, size_t length, ulong initval)
 {
     return hashlittle(key, length, initval);
 }
 
-uint32_t fast_checksum_new()
+ulong fast_checksum_new()
 {
     return -1;
 }

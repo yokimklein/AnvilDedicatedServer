@@ -1,6 +1,5 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\cseries\cseries.h"
 #include "player_appearance.h"
 #include "players.h"
 
@@ -20,14 +19,14 @@ struct s_player_configuration_from_client
 	};
 
 	wchar_t player_name[16];
-	byte multiplayer_team;
+	char multiplayer_team;
 	byte unknown_byte1; // active_weapon_loadout?
-	byte active_armor_loadout;
+	char active_armor_loadout;
 	bool unknown_bool1;
 	bool unknown_bool2;
 	byte pad[3];
-	uint32_t cheating_flags; // old h3 name that likely changed
-	uint32_t user_experience_flags; // old h3 name that likely changed
+	ulong cheating_flags; // old h3 name that likely changed?
+	ulong user_experience_flags; // old h3 name that likely changed?
 };
 static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 

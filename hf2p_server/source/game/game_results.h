@@ -1,5 +1,8 @@
 #pragma once
+#include "..\cseries\cseries.h"
 #include "..\simulation\simulation.h"
+#include "players.h"
+#include "player_configuration.h"
 
 enum e_player_statistics
 {
@@ -237,7 +240,7 @@ static_assert(sizeof(s_game_results_team) == 0x6);
 struct s_game_results_player_statistics_update
 {
 	bool player_statistics_valid;
-	uint16_t player_statistics_update[k_player_statistics_count];
+	ushort player_statistics_update[k_player_statistics_count];
 };
 static_assert(sizeof(s_game_results_player_statistics_update) == 0x67);
 
@@ -245,7 +248,7 @@ struct s_game_results_player_medals_statistics_update
 {
 	bool player_medals_valid;
 	byte pad[1];
-	uint16_t medals_statistics_update[k_medals_count];
+	ushort medals_statistics_update[k_medals_count];
 };
 static_assert(sizeof(s_game_results_player_medals_statistics_update) == 0x76);
 
@@ -253,7 +256,7 @@ struct s_game_results_player_achievements_statistics_update
 {
 	bool player_achievements_valid;
 	byte pad[1];
-	uint16_t achievements_statistics_update[k_achievement_count];
+	ushort achievements_statistics_update[k_achievement_count];
 };
 static_assert(sizeof(s_game_results_player_achievements_statistics_update) == 0x60);
 
@@ -261,7 +264,7 @@ struct s_game_results_player_damage_statistics_update
 {
 	bool player_damage;
 	byte pad[1];
-	uint16_t damage_statistics_update[k_damage_count];
+	ushort damage_statistics_update[k_damage_count];
 };
 static_assert(sizeof(s_game_results_player_damage_statistics_update) == 0xC);
 
@@ -279,7 +282,7 @@ struct s_game_results_player_vs_player
 {
 	bool player_vs_player_valid;
 	byte pad[1];
-	uint16_t player_vs_player_statistics[k_player_vs_player_count];
+	ushort player_vs_player_statistics[k_player_vs_player_count];
 };
 static_assert(sizeof(s_game_results_player_vs_player) == 0x6);
 
@@ -287,7 +290,7 @@ struct s_game_results_player_team_valid
 {
 	bool team_valid;
 	byte pad[1];
-	uint16_t player_team_valid_statistics[k_player_statistics_count];
+	ushort player_team_valid_statistics[k_player_statistics_count];
 };
 static_assert(sizeof(s_game_results_player_team_valid) == 0x68);
 
@@ -310,13 +313,13 @@ struct s_game_results_incremental_update
 {
 	bool started;
 	byte pad1[3];
-	uint32_t start_time;
+	ulong start_time;
 	bool finished;
 	byte pad2[3];
-	uint32_t finish_time;
+	ulong finish_time;
 	bool finalized;
 	byte pad3[3];
-	uint32_t finish_reason; // unused
+	ulong finish_reason; // unused
 	s_game_results_player players[k_network_maximum_players_per_session];
 	s_game_results_team teams[k_network_maximum_players_per_session];
 	s_game_results_player_statistics player_statistics[k_network_maximum_players_per_session];

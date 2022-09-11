@@ -1,6 +1,7 @@
 #pragma once
-#include <windows.h>
+#include "..\cseries\cseries.h"
 #include "..\game\players.h"
+#include "..\networking\delivery\network_channel.h"
 
 enum e_simulation_view_establishment_mode : long
 {
@@ -15,10 +16,14 @@ enum e_simulation_view_establishment_mode : long
 	k_simulation_view_establishment_mode_count
 };
 
+struct c_simulation_distributed_view
+{
+	byte __data[0x22948];
+};
+static_assert(sizeof(c_simulation_distributed_view) == 0x22948);
+
 class c_simulation_world;
-class c_simulation_distributed_view;
 class c_network_observer;
-class c_network_channel;
 class c_simulation_view
 {
 public:
@@ -41,6 +46,7 @@ public:
 	long unknown2;
 	c_network_channel* m_channel;
 	long m_channel_connection_identifier;
-	byte unknown_data[0x70];
+	c_network_channel_simulation_interface m_simulation_interface;
+	byte __data84[0x3C]; // signature data?
 };
 static_assert(sizeof(c_simulation_view) == 0xC0);

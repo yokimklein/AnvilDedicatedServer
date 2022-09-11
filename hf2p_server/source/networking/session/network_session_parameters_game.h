@@ -1,6 +1,5 @@
 #pragma once
-#include <cstdint>
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "network_session_parameters_base.h"
 #include "network_session_membership.h"
 #include "..\..\game\game_options.h"
@@ -132,7 +131,7 @@ struct s_network_session_parameter_map
 	long map_id;
 	char map_name[128];
 	byte campagin_arguments[120];
-	uint32_t game_progression_bit_vector[64];
+	ulong game_progression_bit_vector[64];
 };
 
 class c_network_session_parameter_map : public c_network_session_parameter_base
@@ -144,9 +143,9 @@ class c_network_session_parameter_map : public c_network_session_parameter_base
 struct s_network_session_parameter_initial_participants
 {
 	bool machine_options_exists;
-	s_game_machine_options machine_options;
+	game_machine_options machine_options;
 	bool player_options_exists;
-	s_game_player_options player_options[k_network_maximum_players_per_session];
+	game_player_options player_options[k_network_maximum_players_per_session];
 };
 
 class c_network_session_parameter_initial_participants : public c_network_session_parameter_base
@@ -179,8 +178,8 @@ struct s_network_session_parameter_game_start_status
 {
 	e_session_game_start_status game_start_status;
 	e_session_game_start_error game_start_error;
-	uint16_t player_error_mask;
-	uint16_t map_load_progress;
+	ushort player_error_mask;
+	ushort map_load_progress;
 };
 static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 

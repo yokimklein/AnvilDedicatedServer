@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include "..\..\cseries\cseries.h"
 #include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
 #include "..\network_statistics.h"
@@ -80,19 +80,19 @@ class c_network_observer
 		{
 			c_network_channel channel;
 			e_observer_state state;
-			uint32_t unknown1;
+			ulong unknown1;
 			byte flags;
 			byte owner_flags;
-			uint16_t __unknownA7E;
-			uint32_t owner_connection_identifier;
+			ushort __unknownA7E;
+			ulong owner_connection_identifier;
 			s_transport_secure_address secure_address;
-			uint32_t __unknown1220_flags;
-			uint32_t __unknown1220_flags_bit;
+			ulong __unknown1220_flags;
+			ulong __unknown1220_flags_bit;
 			s_transport_address secure_connection_address;
 			byte unknown_data1[26];
-			uint32_t time_unknown;
-			uint32_t unknown2;
-			uint32_t unknown3;
+			ulong time_unknown;
+			ulong unknown2;
+			ulong unknown3;
 			c_network_time_statistics time_statistics[3];
 			c_network_window_statistics window_statistics[2];
 			byte unknown_data2[294];
@@ -108,7 +108,7 @@ class c_network_observer
 		bool observer_channel_connected(e_network_observer_owner owner_type, long observer_index);
 		bool observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
 		void observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
-		void quality_statistics_get_ratings(uint32_t* connectivity_badness_rating, uint32_t* host_badness_rating, uint32_t* client_badness_rating);
+		void quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating);
 		long observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel); // owner type might be a byte?
 
 		c_network_link* m_link;
