@@ -49,20 +49,46 @@ enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whet
 	k_network_join_refuse_reason_count
 };
 
-enum e_network_join_mode : long // unofficial name, i couldn't find the original
+enum e_network_join_queue_mode
 {
-	_network_join_closed_to_all_joins, // these are official though
-	_network_join_open_to_join_squad,
-	_network_join_queue_joins_to_group,
-	_network_join_process_queued_group_joins,
-	_network_join_queue_closed_while_in_match,
+    _network_join_closed_to_all_joins = 0,
+    _network_join_open_to_join_squad,
 
-	k_network_join_status_count
+    // _network_join_not_used_00 in ms29
+    _network_join_queue_joins_to_group,
+
+    // _network_join_not_used_01 in ms29
+    _network_join_process_queued_group_joins,
+
+    _network_join_queue_closed_while_in_match,
+
+    k_network_join_queue_mode_count
+};
+
+enum e_join_local_state
+{
+    _join_local_state_none = 0,
+    _join_local_state_start_join_squad,
+    _join_local_state_joining_squad,
+    _join_local_state_leaving_old_squad,
+    _join_local_state_processing_join_to_us,
+
+    k_join_local_state_count
 };
 
 enum e_join_remote_state : long
 {
+    _join_remote_state_none = 0,
+    _join_remote_state_party_start_join,
+    _join_remote_state_party_join_host,
+    _join_remote_state_party_join_clients,
+    _join_remote_state_party_leave_old_squad,
+    _join_remote_state_party_join_complete,
 
+    // _join_remote_state_not_used in ms29
+    _join_remote_state_leave_group,
+
+    k_join_remote_state_count
 };
 
 enum e_join_type : long
@@ -163,7 +189,7 @@ struct s_networking_join_data
     ulong unknown1; // maybe bool created_session_for_remote_join
     ulong unknown2;
     s_network_session_remote_session_join_data join_data;
-    e_network_join_mode join_queue_mode; // 0x1039B60
+    e_network_join_queue_mode join_queue_mode; // 0x1039B60
     long join_queue_entry_count; // 0x1039B64
     s_join_queue_entry join_queue[32]; // 32 - queue for channels?
 };

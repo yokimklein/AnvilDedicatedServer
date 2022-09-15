@@ -121,6 +121,7 @@ class c_network_session_parameter_ui_game_mode: public c_network_session_paramet
 
 class c_generic_network_session_parameter_dedicated_server_session_state: public c_network_session_parameter_base
 {
+public:
 	long m_data; // value between 0-10
 	long m_requested_data;
 };

@@ -8,7 +8,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
 {
     // init
     s_networking_join_data* data = g_network_join_data;
-    e_network_join_mode join_status = data->join_queue_mode;
+    e_network_join_queue_mode join_status = data->join_queue_mode;
     e_network_join_refuse_reason closure_reason = session->get_closure_reason();
 
     // make sure join isn't closed

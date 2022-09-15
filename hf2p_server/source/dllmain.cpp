@@ -35,6 +35,10 @@ void UnprotectMemory(dword base)
 // GLOBALS
 static c_network_session* network_session = (c_network_session*)(module_base + 0x3970168); // one of many sessions
 static short* g_game_port = (short*)(module_base + 0xE9B7A0);
+// these aren't original names
+static bool* g_netdebug_enabled = (bool*)(module_base + 0x103E768); // enables netdebug scoreboard widget
+static bool* g_netdebug_local = (bool*)(module_base + 0x1038283); // disables debug statistics when true (and sets local text widget to display in green)
+
 // FUNCTIONS - TODO: sort these into their proper file locations
 char(__thiscall* network_life_cycle_create_local_squad)(e_network_session_class session_class) = reinterpret_cast<decltype(network_life_cycle_create_local_squad)>(module_base + 0x2AD00);
 void(__fastcall* build_default_game_variant)(c_game_variant* out_variant, long game_engine_type) = reinterpret_cast<decltype(build_default_game_variant)>(module_base + 0xE9BE0);
@@ -81,7 +85,8 @@ void __stdcall send_message_hook(void* stream, e_network_message_type message_ty
 {
     void(__stdcall * send_message)(void* stream, e_network_message_type message_type, long message_storage_size) = reinterpret_cast<decltype(send_message)>(module_base + 0x387A0);
 
-    printf("SEND: %s\n", network_session->m_message_gateway->m_message_type_collection->get_message_type_name(message_type));
+    if (network_session->m_message_gateway != nullptr)
+        printf("SEND: %s\n", network_session->m_message_gateway->m_message_type_collection->get_message_type_name(message_type));
     return send_message(stream, message_type, message_storage_size);
 }
 
@@ -143,7 +148,7 @@ bool __fastcall network_session_interface_get_local_user_identifier_hook(s_playe
 // reimplement network_session_check_properties by calling it at the end of network_session_interface_update_session
 void __fastcall network_session_interface_update_session_hook(c_network_session* session)
 {
-    void(__thiscall * network_session_interface_update_session)(c_network_session * session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
+    void(__thiscall * network_session_interface_update_session)(c_network_session* session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
     network_session_interface_update_session(session);
 
     if (session->established() && !session->leaving_session())
@@ -185,8 +190,11 @@ long MainThread()
     Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
     Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
     // add back network_session_check_properties
-    Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    //Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    //Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing
+
     printf("Hooks applied\n");
     //=== ===== ===//
 
@@ -197,6 +205,9 @@ long MainThread()
     Patch::NopFill(Pointer::Base(0x083AFC), 2);
     // contrail gpu freeze fix - twister
     Patch(0x1D6B70, { 0xC3 }).Apply();
+    // enable netdebug
+    *g_netdebug_enabled = true;
+    *g_netdebug_local = false;
     printf("Patches applied\n");
     //== ======= ==//
     
@@ -226,7 +237,7 @@ long MainThread()
         if (GetKeyState(VK_PRIOR) & 0x8000) // PAGE UP - create session
         {
             // SESSION DETAILS
-            auto map_id = _s3d_edge;
+            auto map_id = _zanzibar;
             auto engine_variant = _engine_variant_slayer;
             auto multiplayer_mode = _desired_multiplayer_mode_custom_games; // I'm not sure if this actually matters anymore
             auto gui_gamemode = _gui_game_mode_multiplayer; // or this
@@ -251,6 +262,8 @@ long MainThread()
             // SET GAME VARIANT
             c_game_variant* game_variant = new c_game_variant();
             build_default_game_variant(game_variant, engine_variant);
+            game_variant->m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
+            //game_variant->m_storage.m_slayer_variant.m_score_to_win = 1;
             if (!user_interface_squad_set_game_variant(game_variant))
                 std::cout << "Failed to set game variant!\n";
             else
@@ -274,9 +287,6 @@ long MainThread()
         }
         else if (GetKeyState(VK_NEXT) & 0x8000) // PAGE DOWN - get session info
         {
-            auto test = online_session_manager_globals;
-            auto test2 = g_xnet_shim_table;
-
             // GET SECURE ID
             GUID server_secure_identifier;
             LPOLESTR secure_identifier_str;
@@ -310,7 +320,7 @@ long MainThread()
 
             // host player
             wchar_t host_name[16] = L"host";
-            memcpy(membership->players[1].configuration.host.player_name, host_name, 32);
+            memcpy(membership->players[0].configuration.host.player_name, host_name, 32);
             wchar_t service_tag1[5] = L"TEST";
             memcpy(membership->players[0].configuration.host.player_appearance.service_tag, service_tag1, 10);
             membership->players[0].configuration.host.player_assigned_team = 0; // red team
@@ -330,6 +340,7 @@ long MainThread()
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
             membership->players[0].configuration.host.s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
+            membership->players[0].controller_index = 0;
 
             // client player
             memcpy(membership->players[1].configuration.host.player_appearance.service_tag, service_tag1, 10);

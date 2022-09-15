@@ -864,7 +864,7 @@ void c_network_session::process_pending_joins()
             }
             else
             {
-                printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] we completed a player modify that we didn't request\n", // ISSUE HERE
+                printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] we completed a player modify that we didn't request\n",
                     this->get_id_string());
             }
         }

@@ -128,4 +128,4 @@ struct c_map_variant
 	s_map_variant_budget_entry budget_entries[256];
 	char unused[320];
 };
-static_assert(sizeof(c_map_variant) == 0xE090);
+static_assert(sizeof(c_map_variant) == 0xE090); // is this actually 0xE108 now?

@@ -48,7 +48,7 @@ struct s_player_configuration_from_host
 	long player_team;
 	long player_assigned_team;
 	s_player_appearance player_appearance;
-	s_s3d_player_appearance s3d_player_appearance;
+	s_s3d_player_appearance s3d_player_appearance; // more likely to be bool unknown, then s_s3d_player_appearance
 	s_s3d_player_customization s3d_player_customization;
 };
 static_assert(sizeof(s_player_configuration_from_host) == 0xB40);

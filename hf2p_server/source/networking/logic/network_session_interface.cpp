@@ -90,6 +90,7 @@ void network_session_check_properties(c_network_session* session)
         }
     }
     */
+    /*
     bool mulg_is_valid = true;
 
     if (!session->membership_is_locked() && mulg_is_valid)
@@ -101,4 +102,5 @@ void network_session_check_properties(c_network_session* session)
             game_variant = parameters->game_variant.get();
         long update_number = session->get_session_membership_update_number();
     }
+    */
 }

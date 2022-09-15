@@ -274,7 +274,7 @@ struct s_game_results_player_statistics
 	s_game_results_player_statistics_update player_statistics;
 	s_game_results_player_medals_statistics_update medals_statistics;
 	s_game_results_player_achievements_statistics_update achievements_statistics;
-	s_game_results_player_damage_statistics_update damage_statistics[64]; // why 64?
+	s_game_results_player_damage_statistics_update damage_statistics[64]; // why 64? for each simulation event?
 };
 static_assert(sizeof(s_game_results_player_statistics) == 0x43E);
 
