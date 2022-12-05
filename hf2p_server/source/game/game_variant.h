@@ -1,6 +1,7 @@
 #pragma once
 
 #include "..\cseries\cseries.h"
+#include "game_engine.h"
 #include "game_engine_variant.h"
 #include "game_engine_ctf.h"
 #include "game_engine_slayer.h"
@@ -45,3 +46,5 @@ public:
 	} m_storage;
 };
 static_assert(sizeof(c_game_variant) == 0x264);
+
+FUNCTION_DEF(0xE9BE0, void, __fastcall, build_default_game_variant, c_game_variant* game_variant, e_engine_variant engine_variant);

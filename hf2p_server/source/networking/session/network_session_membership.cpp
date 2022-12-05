@@ -8,26 +8,56 @@
 #include "..\messages\network_message_type_collection.h"
 #include "..\..\math\fast_checksum.h"
 
+char const* network_session_peer_states[k_network_session_peer_state_count] = {
+    "_none",
+    "_rejoining",
+    "_reserved",
+    "_disconnected",
+    "_connected",
+    "_joining",
+    "_joined",
+    "_waiting",
+    "_established",
+};
+
 long c_network_session_membership::get_first_peer()
 {
-    typedef long(__fastcall* get_first_peer_ptr)(c_network_session_membership* session_membership);
-    auto get_first_peer = reinterpret_cast<get_first_peer_ptr>(module_base + 0x313F0);
-    return get_first_peer(this);
+    for (long i = 0; i < k_network_maximum_machines_per_session; i++)
+    {
+        if (this->is_peer_valid(i))
+            return i;
+    }
+    return -1;
 }
 
 long c_network_session_membership::get_next_peer(long peer_index)
 {
-    long next_index = peer_index + 1;
-    if (next_index >= k_network_maximum_machines_per_session)
-        return -1;
-    while (true)
+    for (long i = peer_index + 1; i < k_network_maximum_machines_per_session; i++)
     {
-        if (_bittest((long*)&this->m_baseline.peer_valid_flags, next_index))
-            break;
-        if (++next_index >= k_network_maximum_machines_per_session)
-            return -1;
+        if (this->is_peer_valid(i))
+            return i;
     }
-    return next_index;
+    return -1;
+}
+
+long c_network_session_membership::get_first_player()
+{
+    for (long i = 0; i < k_network_maximum_players_per_session; i++)
+    {
+        if (this->is_player_valid(i))
+            return i;
+    }
+    return -1;
+}
+
+long c_network_session_membership::get_next_player(long player_index)
+{
+    for (long i = player_index + 1; i < k_network_maximum_players_per_session; i++)
+    {
+        if (this->is_player_valid(i))
+            return i;
+    }
+    return -1;
 }
 
 long c_network_session_membership::get_peer_from_secure_address(s_transport_secure_address const* secure_address)
@@ -39,13 +69,12 @@ long c_network_session_membership::get_peer_from_secure_address(s_transport_secu
 
 bool c_network_session_membership::is_peer_valid(long peer_index)
 {
-    return (m_baseline.peer_valid_flags >> peer_index) & 1;
+    return (this->get_current_membership()->peer_valid_flags >> peer_index) & 1;
 }
 
-// TODO - test this
 bool c_network_session_membership::is_player_valid(long player_index)
 {
-    return ((1 << (player_index & 0x1F)) & *(&this->get_current_membership()->player_valid_flags + (player_index >> 5)));
+    return (this->get_current_membership()->player_valid_flags >> player_index) & 1;
 }
 
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, ulong joining_network_version_number, s_transport_secure_address const* secure_address, qword join_party_nonce, qword join_nonce)

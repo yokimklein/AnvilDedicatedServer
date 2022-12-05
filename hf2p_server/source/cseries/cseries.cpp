@@ -10,9 +10,13 @@
 
 #define MAXIMUM_STRING_SIZE 0x100000
 
-//long csstricmp(charchar const* s1, char const* s1)
-//long csstrnicmp(char const* s1, char const* s1, dword size)
-//char* csstristr(char const* s1, char const* s1)
+long csstricmp(char const* s1, char const* s2)
+{
+    return _stricmp(s1, s2);
+}
+
+//long csstrnicmp(char const* s1, char const* s2, dword size)
+//char* csstristr(char const* s1, char const* s2)
 
 char* csstrnzcpy(char* s1, char const* s2, dword size)
 {
@@ -21,6 +25,9 @@ char* csstrnzcpy(char* s1, char const* s2, dword size)
 
     strncpy_s(s1, size, s2, size);
     s1[size - 1] = 0;
+
+    size_t s2_size = strlen(s2);
+    memset(s1 + s2_size, 0, size - s2_size);
 
     return s1;
 }
@@ -64,9 +71,14 @@ char* csstrnlwr(char* s, dword size)
     return s;
 }
 
+char const* csstrstr(char const* s1, char const* s2)
+{
+    return strstr(s1, s2);
+}
+
 //char* csstrtok(char*, char const*, bool, struct csstrtok_data* data)
 
-long cvsnzprintf(char* buffer, dword size, char const* format, char* list)
+long cvsnzprintf(char* buffer, dword size, char const* format, va_list list)
 {
     assert(buffer);
     assert(format);
@@ -74,6 +86,9 @@ long cvsnzprintf(char* buffer, dword size, char const* format, char* list)
 
     long result = vsnprintf(buffer, size - 1, format, list);
     buffer[size - 1] = 0;
+
+    size_t buf_size = strlen(buffer);
+    memset(buffer + buf_size, 0, size - buf_size);
 
     return result;
 }
@@ -84,6 +99,21 @@ char* csnzprintf(char* buffer, dword size, char const* format, ...)
     va_start(list, format);
 
     cvsnzprintf(buffer, size, format, list);
+
+    va_end(list);
+
+    return buffer;
+}
+
+char* csnzappendf(char* buffer, dword size, char const* format, ...)
+{
+    dword current_length = strlen(buffer);
+    assert(current_length >= 0 && current_length < size);
+
+    va_list list;
+    va_start(list, format);
+
+    cvsnzprintf(&buffer[current_length], size - current_length, format, list);
 
     va_end(list);
 

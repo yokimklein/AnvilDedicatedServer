@@ -15,12 +15,6 @@ enum e_network_session_type
 	k_network_session_type_count
 };
 
-static const char* k_session_type_strings[k_network_session_type_count] = {
-	"none",
-	"group",
-	"squad"
-};
-
 enum e_network_session_state : long
 {
 	_network_session_state_none,
@@ -56,20 +50,6 @@ enum e_network_session_boot_reason : long // from ms23/ED
 	_network_session_boot_reason_unknown12,
 
 	k_network_session_boot_reason_count
-};
-
-static const char* k_session_state_strings[k_network_session_state_count] = {
-	"none",
-	"peer-creating",
-	"peer-joining",
-	"peer-join-abort",
-	"peer-established",
-	"peer-leaving",
-	"host-established",
-	"host-disband",
-	// "host-handoff",
-	// "host-reestablish",
-	// "election"
 };
 
 #pragma pack(push, 4)

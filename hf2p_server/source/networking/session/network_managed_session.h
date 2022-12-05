@@ -1,6 +1,6 @@
 #pragma once
 #include "..\..\cseries\cseries.h"
-#include "..\transport\transport_address.h"
+#include "..\transport\transport_security.h"
 #include "..\..\simulation\simulation.h"
 #include "..\..\dllmain.h"
 
@@ -62,9 +62,9 @@ struct c_managed_session // 0x5D0
 {
 	ulong session_class;
 	e_transport_platform platform; // size=0x4
-	ulong flags; // e_online_managed_session_flags
-	ushort current_operation_flags;
-	ushort pending_operation_flags;
+	ulong flags; // e_online_managed_session_flags - 0x10 = session created
+	ushort current_operation_flags; // e_online_managed_session_operation_flags
+	ushort pending_operation_flags; // e_online_managed_session_operation_flags
 	c_managed_session_overlapped_task overlapped_task;
 	ulong creation_time;
 	char __data114[4];

@@ -1,20 +1,57 @@
 #include "network_message_type_collection.h"
 #include <cassert>
 
+// TODO - update this whenever the enum updates
+char const* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = {
+	"no-reason-given",
+	"tried-to-join-self",
+	"could-not-connect",
+	"join-timed-out",
+	"not-found",
+	"privacy-mode",
+	"not-joinable",
+	"session-full",
+	"alpha-split-screen",
+	"session-disbanded",
+	"session-booted",
+	"address-invalid",
+	"address-failed",
+	"too-many-observers",
+	"aborted",
+	"abort-ignored",
+	"wrong-payload-type",
+	"no-reservation",
+	"in-matchmaking",
+	"player-count-zero",
+	"player-not-online-enabled",
+	"player-add-pending",
+	"player-add-failed",
+	"host-time-out",
+	"rejected-by-host",
+	"peer-version-too-low",
+	"host-version-too-low",
+	"holding-in-queue",
+	"film-in-progress",
+	"campaign-in-progress",
+	"user-content-not-allowed",
+	"survival-in-progress", // interestingly enough this refuse reason is in h3 too
+	"executable-type-mismatch"
+};
+
 const char* c_network_message_type_collection::get_message_type_name(e_network_message_type message_type)
 {
-    const char* message_name = "<unknown>";
-    if (message_type >= _network_message_type_ping && message_type < k_network_message_type_count && this->m_message_types[message_type].initialized)
-        message_name = this->m_message_types[message_type].message_type_name;
-    return message_name;
+	if (message_type >= _network_message_type_ping && message_type < k_network_message_type_count && this->m_message_types[message_type].initialized)
+		return this->m_message_types[message_type].message_type_name;
+	else
+		return "<unknown>";
 }
 
 const char* network_message_join_refuse_get_reason_string(e_network_join_refuse_reason refuse_reason)
 {
-    const char* refuse_string = "<unknown>";
     if (refuse_reason >= _network_join_refuse_reason_none && refuse_reason < k_network_join_refuse_reason_count)
-        refuse_string = k_join_refuse_reason_strings[refuse_reason];
-    return refuse_string;
+        return k_join_refuse_reason_strings[refuse_reason];
+	else
+		return "<unknown>";
 }
 
 void c_network_message_type_collection::register_message_type(

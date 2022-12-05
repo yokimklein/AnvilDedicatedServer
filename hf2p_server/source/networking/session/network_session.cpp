@@ -5,20 +5,42 @@
 #include "..\logic\network_join.h"
 #include "network_managed_session.h"
 #include "..\transport\transport_shim.h"
+#include "..\..\hf2p\hf2p_session.h"
+
+char const* k_session_type_strings[k_network_session_type_count] = {
+    "none",
+    "group",
+    "squad"
+};
+
+char const* k_session_state_strings[k_network_session_state_count] = {
+    "none",
+    "peer-creating",
+    "peer-joining",
+    "peer-join-abort",
+    "peer-established",
+    "peer-leaving",
+    "host-established",
+    "host-disband",
+    // "host-handoff",
+    // "host-reestablish",
+    // "election"
+};
 
 bool c_network_session::acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason)
 {
-    const char* managed_session_index_string = this->get_id_string();
     printf("MP/NET/SESSION,CTRL: c_network_session::acknowledge_join_request: [%s] join failed, sending refusal (%s - possibly inaccurate) to '%s'\n",
-        managed_session_index_string,
+        this->get_id_string(),
         network_message_join_refuse_get_reason_string(reason),
         transport_address_get_string(address));
+    
     s_network_message_join_refuse* message = new s_network_message_join_refuse();
     this->get_session_id(&message->session_id);
     message->reason = reason;
-    return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), message);
 
+    bool result = this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), message);
     delete message;
+    return result;
 }
 
 bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
@@ -36,7 +58,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
             {
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] received for %d peers, adding to the join queue\n",
                     this->get_id_string(),
-                    transport_secure_nonce_get_string(&message->data.join_nonce),
+                    transport_secure_nonce_get_string(message->data.join_nonce),
                     message->data.joining_peer_count);
                 network_join_add_join_to_queue(this, address, &message->data);
             }
@@ -44,7 +66,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
             {
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] executable type mismatch, peer: %d, host: %d\n",
                     this->get_id_string(),
-                    transport_secure_nonce_get_string(&message->data.join_nonce),
+                    transport_secure_nonce_get_string(message->data.join_nonce),
                     message->executable_type, executable_type);
                 this->acknowledge_join_request(address, _network_join_refuse_reason_executable_type_mismatch);
             }
@@ -53,7 +75,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
         {
             printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] version mismatch, peer: %d->%d, host: %d->%d\n",
                 this->get_id_string(),
-                transport_secure_nonce_get_string(&message->data.join_nonce),
+                transport_secure_nonce_get_string(message->data.join_nonce),
                 message->executable_version, message->compatible_version, compatible_version, executable_version);
             this->acknowledge_join_request(address, _network_join_refuse_reason_host_version_too_low);
         }
@@ -62,7 +84,7 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_join_request: [%s] join-request [%s] version mismatch, peer: %d->%d, host: %d->%d\n",
             this->get_id_string(),
-            transport_secure_nonce_get_string(&message->data.join_nonce),
+            transport_secure_nonce_get_string(message->data.join_nonce),
             message->executable_version, message->compatible_version, compatible_version, executable_version);
         this->acknowledge_join_request(address, _network_join_refuse_reason_peer_version_too_low);
     }
@@ -398,14 +420,14 @@ void c_network_session::abort_pending_join(qword join_nonce)
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] the aborted join [%s] contains the host peer, disconnecting the session\n",
             this->get_id_string(),
-            transport_secure_nonce_get_string(&join_nonce));
+            transport_secure_nonce_get_string(join_nonce));
         this->disconnect();
     }
     else
     {
         printf("MP/NET/SESSION,CTRL: c_network_session::abort_pending_join: [%s] aborting join [%s]\n",
             this->get_id_string(),
-            transport_secure_nonce_get_string(&join_nonce));
+            transport_secure_nonce_get_string(join_nonce));
 
         for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
         {
@@ -427,7 +449,6 @@ bool c_network_session::join_allowed_by_privacy()
 
     if (this->get_session_parameters()->privacy_mode.get_allowed())
     {
-        s_network_session_privacy_mode* privacy_parameter = &this->get_session_parameters()->privacy_mode.m_data;
         return this->get_session_parameters()->privacy_mode.m_data.closed_mode == _network_session_closed_none
             && !this->get_session_parameters()->privacy_mode.m_data.is_closed_by_user;
     }
@@ -523,17 +544,16 @@ void c_network_session::boot_peer(long peer_index, e_network_session_boot_reason
 
 const char* c_network_session::get_type_string(e_network_session_type session_type)
 {
-    const char* type_string = "<unknown>";
     if (session_type >= _network_session_type_none && session_type <= _network_session_type_squad)
-        type_string = k_session_type_strings[session_type];
-    return type_string;
+        return k_session_type_strings[session_type];
+    else
+        return "<unknown>";
 }
 
 const char* c_network_session::get_state_string()
 {
     // TODO ASSERTS
-    e_network_session_state state = this->current_local_state();
-    return k_session_state_strings[state];
+    return k_session_state_strings[this->current_local_state()];
 }
 
 // FUNC TODO: mac address & unknown peer field
@@ -816,7 +836,7 @@ void c_network_session::process_pending_joins()
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as joined\n",
                         this->get_id_string(),
-                        transport_secure_nonce_get_string(&join_nonce));
+                        transport_secure_nonce_get_string(join_nonce));
                     for (peer_index = this->get_session_membership()->get_first_peer(); peer_index != -1; peer_index = this->get_session_membership()->get_next_peer(peer_index))
                     {
                         if (this->get_session_membership()->get_peer_connection_state(peer_index) == _network_session_peer_state_joining && join_nonce == this->get_session_membership()->get_join_nonce(peer_index))
@@ -836,7 +856,7 @@ void c_network_session::process_pending_joins()
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in local host join [%s] could not be added, recreating the session\n",
                                 this->get_id_string(),
-                                transport_secure_nonce_get_string(&join_nonce));
+                                transport_secure_nonce_get_string(join_nonce));
                             for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
                             {
                                 if (i == this->get_session_membership()->host_peer_index())
@@ -857,7 +877,7 @@ void c_network_session::process_pending_joins()
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] players in squad host join [%s] could not be added, disconnecting\n",
                             this->get_id_string(),
-                            transport_secure_nonce_get_string(&join_nonce));
+                            transport_secure_nonce_get_string(join_nonce));
                         this->disconnect();
                     }
                 }
@@ -907,7 +927,7 @@ void c_network_session::process_pending_joins()
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] adding the join [%s] to the XSession\n",
                             this->get_id_string(),
-                            transport_secure_nonce_get_string(&peer->join_nonce));
+                            transport_secure_nonce_get_string(peer->join_nonce));
                         this->add_pending_join_to_session(peer->join_nonce);
                         managed_session_status |= 0x20u;
                     }
@@ -915,7 +935,7 @@ void c_network_session::process_pending_joins()
                     {
                         printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: [%s] marking all peers in join [%s] as established\n",
                             this->get_id_string(),
-                            transport_secure_nonce_get_string(&peer->join_nonce));
+                            transport_secure_nonce_get_string(peer->join_nonce));
                         for (long i = while_loop_counter; i != -1; i = this->get_session_membership()->get_next_peer(i))
                         {
                             if (this->get_session_membership()->get_peer(i)->join_nonce == peer->join_nonce)
@@ -969,7 +989,7 @@ void c_network_session::process_pending_joins()
                 {
                     printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] failed because the peer disconnect, removing\n",
                         this->get_id_string(),
-                        transport_secure_nonce_get_string(&join_nonce));
+                        transport_secure_nonce_get_string(join_nonce));
                     this->abort_pending_join(join_nonce);
                 }
             }
@@ -977,7 +997,7 @@ void c_network_session::process_pending_joins()
             {
                 printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] timed out (%d msec > %d msec), removing\n",
                     this->get_id_string(),
-                    transport_secure_nonce_get_string(&join_nonce),
+                    transport_secure_nonce_get_string(join_nonce),
                     time_since_creation,
                     netconfig_time_unknown);
                 this->abort_pending_join(join_nonce);
@@ -1000,8 +1020,6 @@ long c_network_session::get_maximum_player_count()
 
 void c_network_session::handle_disconnection()
 {
-    void(__cdecl* hf2p_handle_disconnection)() = reinterpret_cast<decltype(hf2p_handle_disconnection)>(module_base + 0x2F29C0);
-
     printf("MP/NET/SESSION,CTRL: c_network_session::handle_disconnection: [%s] disconnected from session host. Session Type %s\n",
         this->get_id_string(),
         get_type_string(this->m_session_type));
@@ -1048,6 +1066,7 @@ void c_network_session::check_to_send_membership_update()
                         shared_membership->peer_count = 2; // 1 for the host, 1 for the client. we don't sync other peers to clients
                         shared_membership->peer_valid_flags = 0;
                         
+                        // TODO: make this readable
                         // this ungodly mess clears all peers from the update that aren't the local peer and host peer
                         *(&shared_membership->peer_valid_flags + (shared_membership->host_peer_index >> 5)) |= 1 << (shared_membership->host_peer_index & 0x1F);
                         long* unknown1 = (long*)&shared_membership->peer_valid_flags + (i >> 5); // 3

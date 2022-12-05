@@ -56,22 +56,25 @@ struct s_network_message_membership_update_peer_properties
 };
 static_assert(sizeof(s_network_message_membership_update_peer_properties) == 0xC8);
 
-#pragma pack(push, 8)
+#pragma pack(push, 1)
 struct s_network_message_membership_update_peer
 {
 	ulong peer_index;
 	ulong peer_update_type;
-	ulong peer_connection_state;
+	e_network_session_peer_state peer_connection_state;
 	bool peer_info_updated;
 	s_transport_secure_address peer_address;
+	byte pad1[3];
 	qword peer_party_nonce;
 	qword peer_join_nonce;
 	ulong network_version_number;
 	ulong peer_creation_timestamp;
 	bool peer_properties_updated;
+	byte pad2[7];
 	s_network_message_membership_update_peer_properties peer_properties_update;
 };
 static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
+#pragma pack(pop)
 
 struct s_network_message_membership_update : s_network_message
 {
@@ -95,9 +98,9 @@ struct s_network_message_membership_update : s_network_message
 	bool friends_only;
 	bool are_slots_locked;
 	ulong checksum;
+	long : 32;
 };
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
-#pragma pack(pop)
 
 struct s_network_message_peer_properties : s_network_message
 {

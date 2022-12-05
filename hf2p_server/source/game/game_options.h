@@ -5,7 +5,7 @@
 #include "game_progression.h"
 #include "game_variant.h"
 #include "..\tools\network_webstats.h"
-#include "..\saved_games\saved_game_files.h"
+#include "..\scenario\scenario_map_variant.h"
 #include "players.h"
 #include "player_configuration.h"
 

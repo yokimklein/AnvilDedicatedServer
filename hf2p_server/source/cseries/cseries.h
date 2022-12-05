@@ -5,6 +5,8 @@
 #include "..\math\integer_math.h"
 #include "..\math\real_math.h"
 
+#include <stdarg.h> 
+
 #define DECLFUNC(ADDR, R, CC, ...) reinterpret_cast<R(CC*)(__VA_ARGS__)>(ADDR)
 #define DECLTHUNK(ADDR, TYPE, ...) reinterpret_cast<decltype(TYPE)*>(ADDR)(__VA_ARGS__)
 
@@ -102,17 +104,19 @@ typedef char utf8;
 
 const long LONG_BITS = SIZEOF_BITS(long);
 
-//extern long csstricmp(charchar const* s1, char const* s1);
-//extern long csstrnicmp(char const* s1, char const* s1, dword size);
-//extern char* csstristr(char const* s1, char const* s1);
+extern long csstricmp(char const* s1, char const* s2);
+//extern long csstrnicmp(char const* s1, char const* s2, dword size);
+//extern char* csstristr(char const* s1, char const* s2);
 extern char* csstrnzcpy(char* s1, char const* s2, dword size);
 extern char* csstrnzcat(char* s1, char const* s2, dword size);
 extern dword csstrnlen(char const* s, dword size);
 extern char* csstrnupr(char* s, dword size);
 extern char* csstrnlwr(char* s, dword size);
+extern char const* csstrstr(char const* s1, char const* s2);
 //extern char* csstrtok(char*, char const*, bool, struct csstrtok_data* data);
-extern long cvsnzprintf(char* buffer, dword size, char const* format, char* list);
+extern long cvsnzprintf(char* buffer, dword size, char const* format, va_list list);
 extern char* csnzprintf(char* buffer, dword size, char const* format, ...);
+extern char* csnzappendf(char* buffer, dword size, char const* format, ...);
 
 template<typename t_type, size_t k_count>
 struct c_static_array

@@ -1,6 +1,6 @@
 #pragma once
 #include "..\..\cseries\cseries.h"
-#include "..\transport\transport_address.h"
+#include "..\transport\transport_security.h"
 #include "..\..\game\players.h"
 #include "..\..\simulation\simulation.h"
 #include "..\..\game\player_configuration.h"
@@ -25,19 +25,6 @@ enum e_network_session_peer_state : long
 
 	k_network_session_peer_state_count
 };
-
-static const char* network_session_peer_states[k_network_session_peer_state_count] = {
-	"_none",
-	"_rejoining",
-	"_reserved",
-	"_disconnected",
-	"_connected",
-	"_joining",
-	"_joined",
-	"_waiting",
-	"_established",
-};
-const char* network_session_peer_state_get_string(e_network_session_peer_state state);
 
 struct s_player_add_queue_entry
 {
@@ -168,6 +155,8 @@ class c_network_session_membership
 public:
 	long get_first_peer();
 	long get_next_peer(long peer_index);
+	long get_first_player();
+	long get_next_player(long peer_index);
 	long get_peer_from_secure_address(s_transport_secure_address const* secure_address);
 	bool is_peer_valid(long peer_index);
 	bool is_player_valid(long player_index);
@@ -244,3 +233,5 @@ public:
 };
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
 #pragma pack(pop)
+
+const char* network_session_peer_state_get_string(e_network_session_peer_state state);

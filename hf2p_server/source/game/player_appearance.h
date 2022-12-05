@@ -341,6 +341,7 @@ enum e_tactical_package : byte
 	_consumable_vision_tutorial
 };
 
+// saber emblems?
 struct s_player_appearance_unknown3
 {
 	ushort unknown0;
@@ -355,6 +356,7 @@ struct s_player_appearance_unknown3
 };
 static_assert(sizeof(s_player_appearance_unknown3) == 0x10);
 
+// saber emblems?
 struct s_player_appearance_unknown2
 {
 	s_player_appearance_unknown3 unknown[50];

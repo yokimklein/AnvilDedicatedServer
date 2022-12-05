@@ -6,6 +6,7 @@
     <StartupObject>hf2p_launcher.Program</StartupObject>
     <Nullable>disable</Nullable>
     <Description>Halo: Online dedicated server launcher + injector</Description>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

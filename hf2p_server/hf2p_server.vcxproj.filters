@@ -120,10 +120,10 @@
     <ClInclude Include="source\simulation\simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\patch\Patch.hpp">
+    <ClInclude Include="source\anvil\patch\Patch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\patch\Pointer.hpp">
+    <ClInclude Include="source\anvil\patch\Pointer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\networking\network_utilities.h">
@@ -324,6 +324,36 @@
     <ClInclude Include="source\game\multiplayer_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\dllproxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\build_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\interface\user_interface_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\network_life_cycle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scenario\scenario_map_variant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hf2p\hf2p_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\server_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\main\main_game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -386,10 +416,10 @@
     <ClCompile Include="source\simulation\simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\patch\Patch.cpp">
+    <ClCompile Include="source\anvil\patch\Patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\patch\Pointer.cpp">
+    <ClCompile Include="source\anvil\patch\Pointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\network_utilities.cpp">
@@ -429,6 +459,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\build_version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scenario\scenario_map_variant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\server_tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\main\main_game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

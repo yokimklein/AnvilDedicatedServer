@@ -89,8 +89,8 @@ bool c_network_session_parameters::handle_change_request(bool is_leader, s_netwo
 
 const char* c_network_session_parameters::get_session_description()
 {
-	const char* description_str = "UNKNOWN";
 	if (this->session && this->session->get_session_id(nullptr))
-		description_str = this->session->get_id_string();
-	return description_str;
+		return this->session->get_id_string();
+	else
+		return "UNKNOWN";
 }

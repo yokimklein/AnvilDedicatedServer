@@ -1,6 +1,29 @@
 #include "network_channel.h"
 #include "..\..\dllmain.h"
 
+char const* k_network_channel_reason_names[k_network_channel_reason_count] =
+{
+	"no-reason-given",
+	"link-destroyed",
+	"link-refused-listen",
+	"channel-deleted",
+	"connect-timeout",
+	"connect-refused",
+	"connect-reinitiate",
+	"establish-timeout",
+	"address-change",
+	"destination-unreachable",
+	"remote-closure",
+	"connection-overflow",
+	"message-overflow",
+	"security-lost",
+	"observer-released",
+	"observer-refused",
+	"observer-timeout",
+	"observer-reset",
+	"observer-reset-security"
+};
+
 bool c_network_channel::connected()
 {
 	return this->get_state() == _network_channel_state_connected;
@@ -23,9 +46,9 @@ e_network_channel_state c_network_channel::get_state()
 
 bool c_network_channel::get_remote_address(s_transport_address* remote_address) // untested
 {
-	if (this->get_state() != _network_channel_state_none || this->get_state() == _network_channel_state_empty)
+	if (this->get_state() == _network_channel_state_none || this->get_state() == _network_channel_state_empty)
 		return false;
-	remote_address = &this->m_remote_address;
+	*remote_address = this->m_remote_address;
 	return true;
 }
 
@@ -68,51 +91,13 @@ void c_network_channel::send_connection_established(long remote_identifier)
 	send_connection_established(this, remote_identifier);
 }
 
+// originally a switch-case statement in OG source
 const char* c_network_channel::get_closure_reason_string(e_network_channel_closure_reason reason)
 {
-	switch (reason)
-	{
-		case _network_channel_reason_none:
-			return "no-reason-given";
-		case _network_channel_reason_link_destroyed:
-			return "link-destroyed";
-		case _network_channel_reason_link_refused_listen:
-			return "link-refused-listen";
-		case _network_channel_reason_channel_deleted:
-			return "channel-deleted";
-		case _network_channel_reason_connect_timeout:
-			return "connect-timeout";
-		case _network_channel_reason_connect_refused:
-			return "connect-refused";
-		case _network_channel_reason_connect_reinitiate:
-			return "connect-reinitiate";
-		case _network_channel_reason_establish_timeout:
-			return "establish-timeout";
-		case _network_channel_reason_address_change:
-			return "address-change";
-		case _network_channel_reason_destination_unreachable:
-			return "destination-unreachable";
-		case _network_channel_reason_remote_closure:
-			return "remote-closure";
-		case _network_channel_reason_connection_overflow:
-			return "connection-overflow";
-		case _network_channel_reason_message_overflow:
-			return "message-overflow";
-		case _network_channel_reason_security_lost:
-			return "security-lost";
-		case _network_channel_reason_observer_released:
-			return "observer-released";
-		case _network_channel_reason_observer_refused:
-			return "observer-refused";
-		case _network_channel_reason_observer_timeout:
-			return "observer-timeout";
-		case _network_channel_reason_observer_reset:
-			return "observer-reset";
-		case _network_channel_reason_observer_reset_security:
-			return "observer-reset-security";
-		default:
-			return "<unknown>";
-	}
+	if (reason <= k_network_channel_reason_count)
+		return k_network_channel_reason_names[reason];
+	else
+		return "<unknown>";
 }
 
 void c_network_channel::send_message(e_network_message_type message_type, long message_size, s_network_message* message)

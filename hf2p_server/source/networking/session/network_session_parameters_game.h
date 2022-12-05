@@ -44,18 +44,6 @@ enum e_session_game_start_status
 	k_start_status_count
 };
 
-static const char* k_game_start_status_strings[k_start_status_count] = {
-	"none",
-	"not pre game",
-	"not leader",
-	"join in progress",
-	"loading",
-	"ready",
-	"countdown",
-	"countdown unknown",
-	"error"
-};
-
 // non-original names based off strings in multiplayer_game_start_error_to_string
 // this may be incorrect
 enum e_session_game_start_error
@@ -78,24 +66,6 @@ enum e_session_game_start_error
 	k_session_game_start_error_count
 };
 
-// update this whenever the enum updates
-static const char* k_game_start_error_strings[k_session_game_start_error_count] = {
-	"none",
-	"no map selected",
-	"map load failure",
-	"map load precaching",
-	"invalid film selected",
-	"no film selected",
-	"too many teams",
-	"too many for local coop",
-	"too many for net coop",
-	"incompatible for net coop",
-	"theater too many players",
-	"theater leader must be host",
-	"theater all not compatible",
-	"too many players in forge"
-};
-
 struct s_network_session_privacy_mode
 {
 	e_network_game_privacy privacy_mode;
@@ -115,6 +85,9 @@ public:
 
 class c_network_session_parameter_ui_game_mode: public c_network_session_parameter_base
 {
+public:
+	bool request_change(e_gui_game_mode gui_gamemode);
+
 	e_gui_game_mode m_data;
 	e_gui_game_mode m_requested_data;
 };
@@ -187,6 +160,8 @@ static_assert(sizeof(s_network_session_parameter_game_start_status) == 0xC);
 class c_network_session_parameter_game_start_status : public c_network_session_parameter_base
 {
 public:
+	s_network_session_parameter_game_start_status* get();
+
 	s_network_session_parameter_game_start_status m_data;
 	s_network_session_parameter_game_start_status m_requested_data;
 };

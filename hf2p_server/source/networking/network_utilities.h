@@ -1,5 +1,6 @@
 #pragma once
 #include "..\cseries\cseries.h"
+#include "network_globals.h"
 
 enum e_life_cycle_session_type
 {
@@ -30,5 +31,7 @@ enum e_life_cycle_state
 	k_life_cycle_state_count,
 };
 
+c_network_session_manager* network_get_session_manager();
 void network_get_build_identifiers(long* executable_type, long* executable_version, long* compatible_version);
 ulong network_get_time();
+bool network_initialized();

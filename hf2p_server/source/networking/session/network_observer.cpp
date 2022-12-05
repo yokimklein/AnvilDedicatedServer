@@ -1,6 +1,28 @@
 #include "network_observer.h"
 #include "..\..\dllmain.h"
 
+char const* k_observer_state_strings[k_observer_state_count]
+{
+	"none",
+	"dead",
+	"idle",
+	"securing",
+	"waiting",
+	"ready",
+	"connecting",
+	"connected",
+	"reconnecting",
+	"disconnected"
+};
+
+char const* k_owner_type_strings[k_network_observer_owner_count]
+{
+	"squad one",
+	"squad two",
+	"group",
+	"simulation"
+};
+
 void c_network_observer::handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message)
 {
 	typedef void(__thiscall* c_network_observer__handle_connect_request_ptr)(c_network_observer* observer, s_transport_address const* address, s_network_message_connect_request const* message);
@@ -20,8 +42,7 @@ const char* c_network_observer::get_name(long observer_index)
 {
 	// get channel from observer index
 	// call c_network_channel::get_name
-	const char* name = "<channel-name>";
-	return name;
+	return "<channel-name>";
 }
 
 bool c_network_observer::observer_channel_dead(e_network_observer_owner owner_type, long observer_index)

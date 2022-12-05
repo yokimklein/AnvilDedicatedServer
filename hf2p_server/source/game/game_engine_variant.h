@@ -65,6 +65,6 @@ public:
 constexpr size_t k_game_engine_base_variant_size = sizeof(c_game_engine_base_variant);
 static_assert(k_game_engine_base_variant_size == 0x1D0);
 
-extern const char* game_engine_variant_get_name(long game_engine_variant);
+//extern const char* game_engine_variant_get_name(long game_engine_variant);
 
 #pragma pack(pop)

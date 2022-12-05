@@ -7,8 +7,7 @@
 
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)
 {
-    const char* address_string = transport_address_get_string(outgoing_address);
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, address_string, timeGetTime());
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, transport_address_get_string(outgoing_address), timeGetTime());
     s_network_message_pong* response = new s_network_message_pong();
     response->id = message->id;
     response->timestamp = message->timestamp;
@@ -506,31 +505,26 @@ void c_network_message_handler::handle_synchronous_client_ready(c_network_channe
 
 void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)
 {
-    const char* message_type_name = channel->m_type_collection->get_message_type_name(message_type);
-    char* channel_name = channel->get_name();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over CLOSED channel '%s'\n",
-        message_type, message_type_name, channel_name);
+        message_type, channel->m_type_collection->get_message_type_name(message_type), channel->get_name());
 }
 
 void log_received_over_non_connected_channel(c_network_channel* channel, e_network_message_type message_type)
 {
-    const char* message_type_name = channel->m_type_collection->get_message_type_name(message_type);
-    char* channel_name = channel->get_name();
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over a non-connected channel '%s', discarding\n",
-        message_type, message_type_name, channel_name);
+        message_type, channel->m_type_collection->get_message_type_name(message_type), channel->get_name());
 }
 
 void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     // non-original log but its useful to know when channel messages arrive
-    s_transport_address* remote_address_log = nullptr;
-    channel->get_remote_address(remote_address_log);
+    s_transport_address remote_address;
+    channel->get_remote_address(&remote_address);
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
         message_type,
         this->m_message_type_collection->get_message_type_name(message_type),
-        transport_address_get_string(remote_address_log));
+        transport_address_get_string(&remote_address));
 
-    s_transport_address* remote_address = nullptr;
     switch (message_type)
     {
         case _network_message_type_connect_establish:
@@ -538,22 +532,22 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             break;
 
         case _network_message_type_leave_session:
-            if (channel->connected() && channel->get_remote_address(remote_address))
-                this->handle_leave_session(remote_address, (s_network_message_leave_session*)message); // TODO
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_leave_session(&remote_address, (s_network_message_leave_session*)message); // TODO
             else
                 log_received_over_closed_channel(channel, _network_message_type_leave_session);
             break;
 
         case _network_message_type_session_disband:
-            if (channel->connected() && channel->get_remote_address(remote_address))
-                this->handle_session_disband(remote_address, (s_network_message_session_disband*)message);
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_session_disband(&remote_address, (s_network_message_session_disband*)message);
             else
                 log_received_over_closed_channel(channel, _network_message_type_session_disband);
             break;
 
         case _network_message_type_session_boot:
-            if (channel->connected() && channel->get_remote_address(remote_address))
-                this->handle_session_boot(remote_address, (s_network_message_session_boot*)message);
+            if (channel->connected() && channel->get_remote_address(&remote_address))
+                this->handle_session_boot(&remote_address, (s_network_message_session_boot*)message);
             else
                 log_received_over_closed_channel(channel, _network_message_type_session_boot);
             break;
@@ -644,7 +638,7 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
 
         case _network_message_type_view_establishment:
             if (channel->connected())
-                this->handle_view_establishment(channel, (s_network_message_view_establishment*)message); // TODO - verify view establishment
+                this->handle_view_establishment(channel, (s_network_message_view_establishment*)message);
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_view_establishment);
             break;

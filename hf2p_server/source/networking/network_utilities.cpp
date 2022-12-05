@@ -1,5 +1,4 @@
 #include "network_utilities.h"
-#include "network_globals.h"
 #include <timeapi.h>
 
 void network_get_build_identifiers(long* executable_type, long* executable_version, long* compatible_version)
@@ -17,4 +16,14 @@ ulong network_get_time() // non-original name
 	else
 		time = timeGetTime();
 	return time;
+}
+
+c_network_session_manager* network_get_session_manager()
+{
+	return g_network_session_manager;
+}
+
+bool network_initialized()
+{
+	return *network_globals;
 }

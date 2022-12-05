@@ -90,40 +90,4 @@ protected:
 	s_network_message_type m_message_types[k_network_message_type_count];
 };
 
-static const char* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = { // TODO - update this whenever the enum updates
-	"no-reason-given",
-	"tried-to-join-self",
-	"could-not-connect",
-	"join-timed-out",
-	"not-found",
-	"privacy-mode",
-	"not-joinable",
-	"session-full",
-	"alpha-split-screen",
-	"session-disbanded",
-	"session-booted",
-	"address-invalid",
-	"address-failed",
-	"too-many-observers",
-	"aborted",
-	"abort-ignored",
-	"wrong-payload-type",
-	"no-reservation",
-	"in-matchmaking",
-	"player-count-zero",
-	"player-not-online-enabled",
-	"player-add-pending",
-	"player-add-failed",
-	"host-time-out",
-	"rejected-by-host",
-	"peer-version-too-low",
-	"host-version-too-low",
-	"holding-in-queue",
-	"film-in-progress",
-	"campaign-in-progress",
-	"user-content-not-allowed",
-	"survival-in-progress", // interestingly enough this refuse reason is in h3 too
-	"executable-type-mismatch"
-};
-
 const char* network_message_join_refuse_get_reason_string(e_network_join_refuse_reason refuse_reason);

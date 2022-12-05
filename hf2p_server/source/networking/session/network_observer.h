@@ -22,20 +22,6 @@ enum e_observer_state : long
 	k_observer_state_count
 };
 
-static const char* k_observer_state_strings[k_observer_state_count]
-{
-	"none",
-	"dead",
-	"idle",
-	"securing",
-	"waiting",
-	"ready",
-	"connecting",
-	"connected",
-	"reconnecting",
-	"disconnected"
-};
-
 enum e_network_observer_owner : long
 {
 	_network_observer_owner_squad_one = 0,
@@ -44,14 +30,6 @@ enum e_network_observer_owner : long
 	_network_observer_owner_simulation,
 
 	k_network_observer_owner_count
-};
-
-static const char* k_owner_type_strings[k_network_observer_owner_count]
-{
-	"squad one",
-	"squad two",
-	"group",
-	"simulation"
 };
 
 struct s_observer_configuration

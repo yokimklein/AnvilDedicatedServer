@@ -43,6 +43,9 @@ static_assert(sizeof(s_network_session_parameter_session_mode) == 0xC);
 
 class c_network_session_parameter_session_mode : public c_network_session_parameter_base
 {
+public:
+	bool set(e_network_session_mode session_mode);
+
 	s_network_session_parameter_session_mode m_data;
 	s_network_session_parameter_session_mode m_requested_data;
 };

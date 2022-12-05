@@ -25,8 +25,8 @@ static_assert(sizeof(s_network_message_connect_establish) == 0x8);
 
 struct s_network_message_connect_closed : s_network_message
 {
-	ulong remote_identifier;
 	ulong identifier;
+	ulong remote_identifier;
 	enum e_network_channel_closure_reason closure_reason;
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);
