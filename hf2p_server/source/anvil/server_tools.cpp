@@ -4,7 +4,7 @@
 #include "..\interface\user_interface_session.h"
 #include "..\networking\session\network_session.h"
 
-bool anvil_dedi_create_session()
+bool anvil_create_session()
 {
     if (!hf2p_setup_session())
     {
@@ -15,7 +15,7 @@ bool anvil_dedi_create_session()
     return true;
 }
 
-bool anvil_dedi_set_map(e_map_id map_id)
+bool anvil_session_set_map(e_map_id map_id)
 {
     c_map_variant* map_variant = new c_map_variant();
     map_variant->create_default(map_id);
@@ -26,7 +26,7 @@ bool anvil_dedi_set_map(e_map_id map_id)
     return success;
 }
 
-bool anvil_dedi_set_gamemode(c_network_session* session, e_engine_variant engine_variant)
+bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant engine_variant)
 {
     c_game_variant* game_variant = new c_game_variant();
     build_default_game_variant(game_variant, engine_variant);
@@ -47,7 +47,7 @@ bool anvil_dedi_set_gamemode(c_network_session* session, e_engine_variant engine
     return success;
 }
 
-void anvil_dedi_test_set_player_data(c_network_session_membership* membership)
+void anvil_session_set_test_player_data(c_network_session_membership* membership)
 {
     // set test data for each player
     wchar_t service_tag1[5] = L"TEST";
@@ -70,9 +70,9 @@ void anvil_dedi_test_set_player_data(c_network_session_membership* membership)
         host_configuration->s3d_player_appearance.loadouts[0].tactical_packs[1] = _bomb_run;
         host_configuration->s3d_player_appearance.loadouts[0].tactical_packs[2] = _concussive_blast;
         host_configuration->s3d_player_appearance.loadouts[0].tactical_packs[3] = _hologram;
-        host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
-        host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
-        host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
+        //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
+        //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
+        //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;
 
         // host player data
         if (current_player->peer_index == membership->host_peer_index())
@@ -89,7 +89,7 @@ void anvil_dedi_test_set_player_data(c_network_session_membership* membership)
     membership->increment_update();
 }
 
-bool anvil_dedi_test_key_pressed(long vkey, bool* key_held)
+bool anvil_key_pressed(long vkey, bool* key_held)
 {
     bool key_pressed = false;
 

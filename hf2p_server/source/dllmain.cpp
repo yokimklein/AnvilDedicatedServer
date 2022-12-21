@@ -54,12 +54,12 @@ long main_thread()
 
     // SESSION MAP & VARIANT
     auto map_id = _s3d_edge;
-    auto engine_variant = _engine_variant_slayer;
+    auto engine_variant = _engine_variant_ctf;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading
-    while (!main_game_change_in_progress()) Sleep(k_anvil_dedi_update_rate);
+    while (!main_game_change_in_progress()) Sleep(k_game_tick_rate);
     // we also need to wait for the network to avoid accessing uninitialised memory
-    while (!network_initialized()) Sleep(k_anvil_dedi_update_rate);
+    while (!network_initialized()) Sleep(k_game_tick_rate);
 
     c_network_session* network_session = network_get_session_manager()->session[0];
 
@@ -67,14 +67,14 @@ long main_thread()
     while (true)
     {
         // wait to finish loading
-        while (main_game_change_in_progress()) Sleep(k_anvil_dedi_update_rate);
+        while (main_game_change_in_progress()) Sleep(k_game_tick_rate);
 
         // create the session
-        anvil_dedi_create_session();
+        anvil_create_session();
 
         // wait for the managed session to create & for the session to establish
         ulong* managed_session_flags = &online_session_manager_globals->managed_sessions[network_session->managed_session_index()].flags;
-        while ((*managed_session_flags & 0x10) == 0 || !network_session->established()) Sleep(k_anvil_dedi_update_rate);
+        while ((*managed_session_flags & 0x10) == 0 || !network_session->established()) Sleep(k_game_tick_rate);
 
         // log session connection info
         char* address_str = new char[0x100];
@@ -122,31 +122,31 @@ long main_thread()
                 // set the map when none is selected
                 if (*start_error == _start_error_no_map_selected)
                 {
-                    anvil_dedi_set_gamemode(network_session, engine_variant);
-                    anvil_dedi_set_map(map_id);
+                    anvil_session_set_gamemode(network_session, engine_variant);
+                    anvil_session_set_map(map_id);
                     // wait for the error to update so we don't spam the set map call
-                    while (*start_error == _start_error_no_map_selected) Sleep(k_anvil_dedi_update_rate);
+                    while (*start_error == _start_error_no_map_selected) Sleep(k_game_tick_rate);
                 }
                 // enable the launch key when the session is ready
-                else if (*start_status == _start_status_ready && anvil_dedi_test_key_pressed(VK_HOME, &key_held_home))
+                else if (*start_status == _start_status_ready && anvil_key_pressed(VK_HOME, &key_held_home))
                 {
                     printf("Launching session...\n");
                     network_session->m_session_parameters.session_mode.set(_network_session_mode_setup);
                 }
                 // enable the end game key once a game is started
-                else if (*start_status == _start_status_none && anvil_dedi_test_key_pressed(VK_END, &key_held_end))
+                else if (*start_status == _start_status_none && anvil_key_pressed(VK_END, &key_held_end))
                 {
                     printf("Ending game...\n");
                     network_session->m_session_parameters.session_mode.set(_network_session_mode_end_game);
                 }
             }
             // always available in established session
-            if (anvil_dedi_test_key_pressed(VK_INSERT, &key_held_insert))
+            if (anvil_key_pressed(VK_INSERT, &key_held_insert))
             {
                 printf("Setting test player data...\n");
-                anvil_dedi_test_set_player_data(network_session->get_session_membership());
+                anvil_session_set_test_player_data(network_session->get_session_membership());
             }
-            Sleep(k_anvil_dedi_update_rate);
+            Sleep(k_game_tick_rate);
         }
         printf("Session disconnected!\n");
     }
