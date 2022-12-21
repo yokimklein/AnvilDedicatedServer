@@ -54,6 +54,10 @@ static_assert(sizeof(ulong) == 0x4);
 typedef long long long64;
 static_assert(sizeof(long64) == 0x8);
 
+// 64-bit unsigned integer ranging from 0 to 18,446,744,073,709,551,615
+typedef unsigned long long ulong64;
+static_assert(sizeof(ulong64) == 0x8);
+
 // 8-bit unsigned integer ranging from 0 to 255
 typedef unsigned char byte;
 static_assert(sizeof(byte) == 0x1);

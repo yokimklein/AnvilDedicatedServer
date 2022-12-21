@@ -19,7 +19,7 @@ static_assert(sizeof(s_network_message_parameters_update) == 0x8C28);
 struct s_network_message_parameters_request : s_network_message
 {
 	s_transport_secure_identifier session_id;
-	long64 change_request_parameters;
+	ulong64 change_request_parameters;
 	byte parameters[k_network_session_parameter_type_count][0x400];
 };
 static_assert(sizeof(s_network_message_parameters_request) == 0x8C18);

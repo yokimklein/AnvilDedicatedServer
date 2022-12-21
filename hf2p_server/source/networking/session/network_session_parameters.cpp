@@ -34,16 +34,17 @@ bool c_network_session_parameters::handle_change_request(bool is_leader, s_netwo
 		if (this->session->is_host())
 		{
 			byte* message_parameters = (byte*)&message->parameters;
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session_parameters::handle_change_request: [%s] handling session parameter change request [requested 0x%08X]\n",
+			// log previously used 0x%08X, but message->change_request_parameters is a int64?
+			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session_parameters::handle_change_request: [%s] handling session parameter change request [requested 0x%llX]\n",
 				this->get_session_description(),
 				message->change_request_parameters);
 			long total_size = 0;
 			for (long i = 0; i < k_network_session_parameter_type_count; i++)
 			{
-				if ((message->change_request_parameters & i) != 0) // assuming this is a mask of all the params - TODO
+				if ((message->change_request_parameters & ((long64)1 << i)) != 0)
 				{
-					c_network_session_parameter_base* parameter = (c_network_session_parameter_base*)&message->parameters[i];
-					long change_request_size = parameter->get_change_request_size();
+					c_network_session_parameter_base* parameter = this->parameters[i];
+					long change_request_size = this->parameters[i]->get_change_request_size();
 					if (total_size + change_request_size > k_network_session_parameter_type_count * 0x400)
 					{
 						printf("MP/NET/SESSION,PARAMS: c_network_session_parameters::handle_change_request: [%s] parameter %d [%s] change request size out of bounds of payload size [0x%8X 0x%8X 0x%8X]\n",
