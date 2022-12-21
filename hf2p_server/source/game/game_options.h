@@ -38,7 +38,7 @@ static_assert(sizeof(game_player_options) == 0xB90);
 struct game_options
 {
 	c_enum<e_game_mode, long, k_game_mode_count> game_mode;
-	c_enum<e_game_simulation_type, char, k_game_mode_count> game_simulation;
+	c_enum<e_game_simulation_type, char, k_game_simulation_count> game_simulation;
 	byte game_network_type;
 	short game_tick_rate;
 	qword game_instance;

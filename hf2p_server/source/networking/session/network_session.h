@@ -52,6 +52,17 @@ enum e_network_session_boot_reason : long // from ms23/ED
 	k_network_session_boot_reason_count
 };
 
+enum e_session_game_mode
+{
+	_session_game_mode_none = 0,
+	//_session_game_mode_matchmaking, // removed in later builds
+	_session_game_mode_pregame,
+	_session_game_mode_ingame,
+	//_session_game_mode_postgame, // removed in later builds
+
+	k_session_game_mode_count
+};
+
 #pragma pack(push, 4)
 class c_network_message_gateway;
 class c_network_session_manager;

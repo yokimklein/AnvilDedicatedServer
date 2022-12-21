@@ -122,7 +122,7 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
     {
         char* resource_uri = new char[0x100];
-        memcpy(resource_uri, va_arg(ArgList, char*), 0x100);
+        memcpy(resource_uri, va_arg(ArgList, char*), 0x100); // occasional access violations here - TODO FIX
         backend_deobfuscate_uri(resource_uri, 0x100);
 
         // potentially dangerous, but acceptable given the context?
@@ -210,8 +210,8 @@ void anvil_dedi_apply_hooks()
     
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
-    // hook net_debug_print's vsnprintf_s call to print API logs to the console
-    Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
+    // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
+    //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
 
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();

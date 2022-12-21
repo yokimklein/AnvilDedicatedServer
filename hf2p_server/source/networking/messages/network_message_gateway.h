@@ -3,17 +3,17 @@
 #include "network_message_type_collection.h"
 #include "..\transport\transport_address.h"
 #include "..\..\memory\bitstream.h"
+#include "network_messages_out_of_band.h"
 
 class c_network_link;
 class c_network_message_handler;
 class c_network_message_type_collection;
-class c_network_message_gateway // : c_network_out_of_band_consumer // TODO, map out base class
+class c_network_message_gateway : c_network_out_of_band_consumer // TODO, map out base class
 {
 public:
 	c_network_link* get_network_link();
 	bool send_message_directed(s_transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 
-	struct c_network_message_gateway_vtbl* __vftable /*VFT*/;
 	bool m_initialized;
 	c_network_link* m_link;
 	c_network_message_type_collection* m_message_type_collection;
