@@ -12,6 +12,16 @@ enum e_online_context_id : ulong
 	k_online_context_id_count
 };
 
+enum e_online_managed_session_flags : ulong
+{
+	_online_managed_session_created_bit = 0x10
+};
+
+enum e_online_managed_session_operation_flags : ushort
+{
+
+};
+
 struct s_online_session_player
 {
 	byte flags;
@@ -58,11 +68,11 @@ struct s_online_context
 };
 static_assert(sizeof(s_online_context) == 0x8);
 
-struct c_managed_session // 0x5D0
+struct c_managed_session
 {
 	ulong session_class;
-	e_transport_platform platform; // size=0x4
-	ulong flags; // e_online_managed_session_flags - 0x10 = session created
+	e_transport_platform platform;
+	ulong flags; // e_online_managed_session_flags
 	ushort current_operation_flags; // e_online_managed_session_operation_flags
 	ushort pending_operation_flags; // e_online_managed_session_operation_flags
 	c_managed_session_overlapped_task overlapped_task;
@@ -82,7 +92,7 @@ static_assert(sizeof(c_managed_session) == 0x5D0);
 
 struct s_online_session_manager_globals
 {
-	ushort current_operation_flags;
+	e_online_managed_session_operation_flags current_operation_flags;
 	char __data2[6];
 	c_managed_session managed_sessions[8];
 };
@@ -92,7 +102,7 @@ static s_online_session_manager_globals* online_session_manager_globals = reinte
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform);
 const char* managed_session_get_id_string(long managed_session_index);
-bool managed_session_get_id(long index, s_transport_secure_identifier* secure_id);
+bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* secure_id);
 void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count);
 short* managed_session_get_status(short* managed_session_status, long managed_session_index);
 bool managed_session_is_master_session(long managed_session_index);
