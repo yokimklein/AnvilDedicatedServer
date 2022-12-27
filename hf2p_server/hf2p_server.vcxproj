@@ -156,6 +156,8 @@
     <ClInclude Include="source\main\main_game.h" />
     <ClInclude Include="source\anvil\server_tools.h" />
     <ClInclude Include="source\hf2p\hf2p_session.h" />
+    <ClInclude Include="source\memory\byte_swapping.h" />
+    <ClInclude Include="source\networking\network_time.h" />
     <ClInclude Include="source\scenario\scenario_map_variant.h" />
     <ClInclude Include="source\anvil\hooks.h" />
     <ClInclude Include="source\anvil\build_version.h" />
@@ -264,12 +266,16 @@
     <ClInclude Include="source\memory\tls.h" />
     <ClInclude Include="source\tag_files\files.h" />
     <ClInclude Include="source\tag_files\files_windows.h" />
+    <ClInclude Include="source\tag_files\string_ids.h" />
+    <ClInclude Include="source\text\unicode.h" />
     <ClInclude Include="source\tools\network_webstats.h" />
     <ClInclude Include="source\interface\user_interface_session.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main\main_game.cpp" />
     <ClCompile Include="source\anvil\server_tools.cpp" />
+    <ClCompile Include="source\networking\logic\network_life_cycle.cpp" />
+    <ClCompile Include="source\networking\network_time.cpp" />
     <ClCompile Include="source\scenario\scenario_map_variant.cpp" />
     <ClCompile Include="source\anvil\hooks.cpp" />
     <ClCompile Include="source\anvil\backend.cpp" />
@@ -309,6 +315,8 @@
     <ClCompile Include="source\networking\transport\transport_security.cpp" />
     <ClCompile Include="source\networking\transport\transport_address.cpp" />
     <ClCompile Include="source\memory\tls.cpp" />
+    <ClCompile Include="source\tag_files\string_ids.cpp" />
+    <ClCompile Include="source\text\unicode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

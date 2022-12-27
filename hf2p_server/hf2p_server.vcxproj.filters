@@ -354,6 +354,18 @@
     <ClInclude Include="source\main\main_game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\text\unicode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\network_time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memory\byte_swapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tag_files\string_ids.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -477,6 +489,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\main\main_game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\text\unicode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\network_time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\logic\network_life_cycle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\string_ids.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

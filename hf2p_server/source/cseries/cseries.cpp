@@ -2,11 +2,53 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/cseries.cpp
 
+#include "..\memory\byte_swapping.h"
+//#include "..\tag_files\string_ids.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+
+REFERENCE_DECLARE(0x0189CD54, real_argb_color const* const, global_real_argb_white);
+REFERENCE_DECLARE(0x0189CD58, real_argb_color const* const, global_real_argb_grey);
+REFERENCE_DECLARE(0x0189CD5C, real_argb_color const* const, global_real_argb_black);
+REFERENCE_DECLARE(0x0189CD60, real_argb_color const* const, global_real_argb_red);
+REFERENCE_DECLARE(0x0189CD64, real_argb_color const* const, global_real_argb_green);
+REFERENCE_DECLARE(0x0189CD68, real_argb_color const* const, global_real_argb_blue);
+REFERENCE_DECLARE(0x0189CD6C, real_argb_color const* const, global_real_argb_yellow);
+REFERENCE_DECLARE(0x0189CD70, real_argb_color const* const, global_real_argb_cyan);
+REFERENCE_DECLARE(0x0189CD74, real_argb_color const* const, global_real_argb_magenta);
+REFERENCE_DECLARE(0x0189CD78, real_argb_color const* const, global_real_argb_pink);
+REFERENCE_DECLARE(0x0189CD7C, real_argb_color const* const, global_real_argb_lightblue);
+REFERENCE_DECLARE(0x0189CD80, real_argb_color const* const, global_real_argb_orange);
+REFERENCE_DECLARE(0x0189CD84, real_argb_color const* const, global_real_argb_purple);
+REFERENCE_DECLARE(0x0189CD88, real_argb_color const* const, global_real_argb_aqua);
+REFERENCE_DECLARE(0x0189CD8C, real_argb_color const* const, global_real_argb_darkgreen);
+REFERENCE_DECLARE(0x0189CD90, real_argb_color const* const, global_real_argb_salmon);
+REFERENCE_DECLARE(0x0189CD94, real_argb_color const* const, global_real_argb_violet);
+REFERENCE_DECLARE(0x0189CD98, real_rgb_color const* const, global_real_rgb_white);
+REFERENCE_DECLARE(0x0189CD9C, real_rgb_color const* const, global_real_rgb_grey);
+REFERENCE_DECLARE(0x0189CDA0, real_rgb_color const* const, global_real_rgb_black);
+REFERENCE_DECLARE(0x0189CDA4, real_rgb_color const* const, global_real_rgb_red);
+REFERENCE_DECLARE(0x0189CDA8, real_rgb_color const* const, global_real_rgb_green);
+REFERENCE_DECLARE(0x0189CDAC, real_rgb_color const* const, global_real_rgb_blue);
+REFERENCE_DECLARE(0x0189CDB0, real_rgb_color const* const, global_real_rgb_yellow);
+REFERENCE_DECLARE(0x0189CDB4, real_rgb_color const* const, global_real_rgb_cyan);
+REFERENCE_DECLARE(0x0189CDB8, real_rgb_color const* const, global_real_rgb_magenta);
+REFERENCE_DECLARE(0x0189CDBC, real_rgb_color const* const, global_real_rgb_pink);
+REFERENCE_DECLARE(0x0189CDC0, real_rgb_color const* const, global_real_rgb_lightblue);
+REFERENCE_DECLARE(0x0189CDC4, real_rgb_color const* const, global_real_rgb_orange);
+REFERENCE_DECLARE(0x0189CDC8, real_rgb_color const* const, global_real_rgb_purple);
+REFERENCE_DECLARE(0x0189CDCC, real_rgb_color const* const, global_real_rgb_aqua);
+REFERENCE_DECLARE(0x0189CDD0, real_rgb_color const* const, global_real_rgb_darkgreen);
+REFERENCE_DECLARE(0x0189CDD4, real_rgb_color const* const, global_real_rgb_salmon);
+REFERENCE_DECLARE(0x0189CDD8, real_rgb_color const* const, global_real_rgb_violet);
+
+int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size) = memcmp;
+void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size) = memcpy;
+void* (__cdecl* csmemset)(void* _Dst, int _Val, size_t _Size) = memset;
 
 #define MAXIMUM_STRING_SIZE 0x100000
 
@@ -118,4 +160,49 @@ char* csnzappendf(char* buffer, dword size, char const* format, ...)
     va_end(list);
 
     return buffer;
+}
+
+bool string_is_not_empty(char const* s)
+{
+    return s && *s;
+}
+
+char* strncpy_debug(char* s1, dword size1, char const* s2, dword size2)
+{
+    assert(s1 && s2);
+    assert(size1 >= 0 && size1 <= MAXIMUM_STRING_SIZE);
+    assert(size2 >= 0 && size2 <= MAXIMUM_STRING_SIZE);
+    strncpy_s(s1, size1, s2, size2);
+    return s1;
+}
+
+long strlen_debug(char const* s)
+{
+    assert(s);
+    long length = strlen(s);
+    assert(length >= 0 && length < MAXIMUM_STRING_SIZE);
+    return length;
+}
+
+char* tag_to_string(tag _tag, char* buffer)
+{
+    *(tag*)buffer = _byteswap_ulong(_tag);
+    buffer[4] = 0;
+
+    return buffer;
+}
+
+//char const* c_string_id::get_string()
+//{
+//    return string_id_get_string_const(m_value);
+//}
+//
+//char const* c_string_id::get_string() const
+//{
+//    return string_id_get_string_const(m_value);
+//}
+
+__int64 make_int64(__int64 a, __int64 b)
+{
+    return ((a << 0) | (b << 32));
 }
