@@ -33,7 +33,7 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
         this->get_id_string(),
         network_message_join_refuse_get_reason_string(reason),
         transport_address_get_string(address));
-    
+
     s_network_message_join_refuse* message = new s_network_message_join_refuse();
     this->get_session_id(&message->session_id);
     message->reason = reason;
@@ -263,7 +263,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
             printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] -- joining with peer %s\n",
                 this->get_id_string(),
                 transport_secure_address_get_string(&join_request->joining_peers[i].joining_peer_address));
-            
+
             for (long j = 0; j < k_network_maximum_machines_per_session; j++)
             {
                 // if peer is invalid
@@ -556,11 +556,13 @@ const char* c_network_session::get_state_string()
     return k_session_state_strings[this->current_local_state()];
 }
 
-// FUNC TODO: mac address & unknown peer field
 const char* c_network_session::get_peer_description(long peer_index)
 {
-    static char peer_description[51];
-    sprintf_s(peer_description, "#%02d", peer_index);
+    static char peer_description[0x4B];
+    if (this->established() && peer_index != -1 && this->get_session_membership()->is_peer_valid(peer_index) && this->get_session_membership()->get_peer(peer_index)->properties.peer_name[0] != L'\0')
+        csnzprintf(peer_description, 0x4B, "#%02d:%S:%s", peer_index, this->get_session_membership()->get_peer(peer_index)->properties.peer_name, transport_secure_address_get_mac_string(this->get_session_membership()->get_peer_address(peer_index)));
+    else
+        csnzprintf(peer_description, 0x4B, "#%02d", peer_index);
     return peer_description;
 }
 
@@ -1065,7 +1067,7 @@ void c_network_session::check_to_send_membership_update()
                         shared_membership->leader_peer_index = shared_membership->host_peer_index;
                         shared_membership->peer_count = 2; // 1 for the host, 1 for the client. we don't sync other peers to clients
                         shared_membership->peer_valid_flags = 0;
-                        
+
                         // TODO: make this readable
                         // this ungodly mess clears all peers from the update that aren't the local peer and host peer
                         *(&shared_membership->peer_valid_flags + (shared_membership->host_peer_index >> 5)) |= 1 << (shared_membership->host_peer_index & 0x1F);
@@ -1089,7 +1091,7 @@ void c_network_session::check_to_send_membership_update()
                             }
                             unknown4 = (unknown4 << 1) | (unknown4 >> (32 - 1)); // rotate left by 1
                         }
-                        
+
                         s_network_message_membership_update* membership_update_message = new s_network_message_membership_update();
                         bool send_complete_update = false;
                         auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(i);

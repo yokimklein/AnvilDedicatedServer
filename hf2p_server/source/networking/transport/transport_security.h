@@ -63,8 +63,11 @@ char const* transport_secure_address_get_string(s_transport_secure_address const
 char const* transport_secure_identifier_get_string(s_transport_secure_identifier const* secure_identifier);
 char const* transport_session_description_get_string(s_transport_session_description const* session_description);
 char* transport_secure_address_to_string(s_transport_secure_address const* secure_address, char* string, long maximum_string_length, bool include_online, bool include_mac);
+const char* transport_secure_address_get_mac_string(s_transport_secure_address const* secure_address);
+char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_id);
 const s_transport_unique_identifier* transport_unique_identifier_get();
 void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address);
 bool transport_secure_identifier_retrieve(s_transport_address const* usable_address, e_transport_platform transport_platform, s_transport_secure_identifier* secure_identifier, s_transport_secure_address* secure_address);
+void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_id);
 
 static s_transport_security_globals* transport_security_globals = (s_transport_security_globals*)(module_base + 0x4EBE9D0);

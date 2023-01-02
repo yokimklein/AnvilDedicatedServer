@@ -4,10 +4,9 @@
 
 char const* transport_secure_nonce_get_string(qword secure_nonce)
 {
-    static char nonce_str[0x40]{};
     byte* nonce_bytes = (byte*)&secure_nonce;
-    csnzprintf(nonce_str,
-        0x40,
+    static char nonce_str[0x13]{};
+    csnzprintf(nonce_str, 0x13,
         "%02X%02X%02X%02X-%02X%02X%02X%02X",
         nonce_bytes[7],
         nonce_bytes[6],
@@ -22,16 +21,15 @@ char const* transport_secure_nonce_get_string(qword secure_nonce)
 
 char const* transport_secure_address_get_string(s_transport_secure_address const* secure_address)
 {
-    static char secure_addr_str[0x40]{};
-    return transport_secure_address_to_string(secure_address, secure_addr_str, 0x40, false, false);
+    static char secure_addr_str[0x26]{};
+    return transport_secure_address_to_string(secure_address, secure_addr_str, 0x26, false, false);
     return secure_addr_str;
 }
 
 char const* transport_secure_identifier_get_string(s_transport_secure_identifier const* secure_identifier)
 {
-    static char secure_id_str[0x40]{};
-    csnzprintf(secure_id_str,
-        0x40,
+    static char secure_id_str[0x26]{};
+    csnzprintf(secure_id_str, 0x26,
         "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         secure_identifier->part0,
         secure_identifier->part4[0],
@@ -57,7 +55,7 @@ char const* transport_session_description_get_string(s_transport_session_descrip
 bool transport_secure_address_get(s_transport_secure_address* secure_address)
 {
     if (secure_address != nullptr)
-        memcpy(secure_address, &transport_security_globals->secure_address, sizeof(s_transport_secure_address));
+        *secure_address = transport_security_globals->secure_address;
     return transport_security_globals->address_resolved;
 }
 
@@ -68,8 +66,8 @@ const s_transport_unique_identifier* transport_unique_identifier_get()
 
 void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address)
 {
-    memset(secure_address, 0, sizeof(s_transport_secure_address));
-    memcpy(&secure_address, &unique_identifier, sizeof(s_transport_secure_address));
+    csmemset(secure_address, 0, sizeof(s_transport_secure_address));
+    csmemcpy(&secure_address, &unique_identifier, sizeof(s_transport_secure_address));
 }
 
 char* transport_secure_address_to_string(s_transport_secure_address const* secure_address, char* string, long maximum_string_length, bool include_online, bool include_mac)
@@ -97,4 +95,35 @@ bool transport_secure_identifier_retrieve(s_transport_address const* usable_addr
         return xnet_shim_inaddr_to_xnaddr2(usable_address, secure_address, secure_identifier);
     else
         return false;
+}
+
+const char* transport_secure_address_get_mac_string(s_transport_secure_address const* secure_address)
+{
+    s_transport_unique_identifier unique_id;
+    transport_secure_address_extract_identifier(secure_address, &unique_id);
+    return transport_unique_identifier_get_string(&unique_id);
+}
+
+void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_id)
+{
+    memcpy(unique_id, secure_address, sizeof(s_transport_unique_identifier));
+}
+
+char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_id)
+{
+    static char unique_id_str[0x26]{};
+    csnzprintf(unique_id_str, 0x26,
+        "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        unique_id->part0,
+        unique_id->part4[0],
+        unique_id->part4[1],
+        unique_id->part8[0],
+        unique_id->part8[1],
+        unique_id->part8[2],
+        unique_id->part8[3],
+        unique_id->part8[4],
+        unique_id->part8[5],
+        unique_id->part8[6],
+        unique_id->part8[7]);
+    return unique_id_str;
 }
