@@ -1,6 +1,8 @@
 #pragma once
 #include "..\cseries\cseries.h"
 
+constexpr long k_player_configuration_maximum_loadouts = 3; // 5 in earlier builds
+
 enum e_gender : byte
 {
 	_male,
@@ -396,8 +398,9 @@ static_assert(sizeof(s_player_appearance) == 0x660);
 
 struct s_s3d_player_loadout
 {
+	// long armor_pieces[5]; // previously existed prior to armr tag system
 	e_gender gender;
-	e_armor_type armor;
+	e_armor_type armor_suit;
 	e_weapon_type primary_weapon;
 	e_weapon_type secondary_weapon;
 	e_grenade_type grenade;
@@ -413,28 +416,29 @@ struct s_s3d_player_modifiers
 static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
 
 #pragma pack(push, 4)
-struct s_s3d_player_appearance
+struct s_s3d_player_container
 {
-	s_s3d_player_appearance() :
-		unknown(),
+	s_s3d_player_container() :
+		override_api_data(),
 		loadouts(),
 		pad(),  // we have to initialise this so leftover garbage bytes don't screw with the membership update checksum
 		modifiers()
 	{
 	};
 
-	bool unknown; // has loadouts? current loadout?
-	s_s3d_player_loadout loadouts[3];
+	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
+	bool override_api_data;
+	s_s3d_player_loadout loadouts[k_player_configuration_maximum_loadouts];
 	byte pad[1];
-	s_s3d_player_modifiers modifiers[3];
+	s_s3d_player_modifiers modifiers[k_player_configuration_maximum_loadouts];
 };
-static_assert(sizeof(s_s3d_player_appearance) == 0x494);
+static_assert(sizeof(s_s3d_player_container) == 0x494);
 #pragma pack(pop)
 
 struct s_s3d_player_customization
 {
 	s_s3d_player_customization() :
-		unknown0(),
+		override_api_data(),
 		character_active_index(),
 		acount_label(),
 		emblem(),
@@ -443,7 +447,8 @@ struct s_s3d_player_customization
 	{
 	};
 
-	bool unknown0;
+	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
+	bool override_api_data;
 	byte character_active_index; // loadout index, 0-2
 	byte acount_label; // nameplate
 	byte emblem;
