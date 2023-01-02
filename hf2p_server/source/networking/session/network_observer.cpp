@@ -1,4 +1,5 @@
 #include "network_observer.h"
+#include "assert.h"
 #include "..\..\dllmain.h"
 
 char const* k_observer_state_strings[k_observer_state_count]
@@ -37,12 +38,13 @@ void c_network_observer::observer_channel_initiate_connection(e_network_observer
 	return observer_channel_initiate_connection_call(this, observer_owner, observer_channel_index);
 }
 
-// FUNC TODO
 const char* c_network_observer::get_name(long observer_index)
 {
-	// get channel from observer index
-	// call c_network_channel::get_name
-	return "<channel-name>";
+	auto observer = &this->m_channel_observers[observer_index];
+	assert(observer_index >= 0 && observer_index < k_network_maximum_observers);
+	assert(observer->state != _observer_state_none);
+	assert(observer->channel.allocated());
+	return observer->channel.get_name();
 }
 
 bool c_network_observer::observer_channel_dead(e_network_observer_owner owner_type, long observer_index)
@@ -52,8 +54,12 @@ bool c_network_observer::observer_channel_dead(e_network_observer_owner owner_ty
 
 c_network_observer::s_channel_observer* c_network_observer::get_observer(e_network_observer_owner owner_type, long observer_index)
 {
-	// TODO ASSERTS
-	return &this->m_channel_observers[observer_index];
+	auto observer = &this->m_channel_observers[observer_index];
+	assert(observer_index >= 0 && observer_index < k_network_maximum_observers);
+	assert(owner_type >= 0 && owner_type < k_network_observer_owner_count);
+	assert(observer->state > _observer_state_none && observer->state < k_observer_state_count);
+	assert(TEST_BIT(observer->owner_flags, owner_type));
+	return observer;
 }
 
 void c_network_observer::observer_channel_send_message(e_network_observer_owner owner_type, long observer_index, bool disconnected, e_network_message_type message_type, long message_size, s_network_message* message)
@@ -81,18 +87,28 @@ void c_network_observer::observer_channel_set_waiting_on_backlog(e_network_obser
 
 void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating)
 {
-	void(__thiscall * quality_statistics_get_ratings)(c_network_observer* observer, ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating) = reinterpret_cast<decltype(quality_statistics_get_ratings)>(module_base + 0xEF30);
+	void(__thiscall* quality_statistics_get_ratings)(c_network_observer* observer, ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating) = reinterpret_cast<decltype(quality_statistics_get_ratings)>(module_base + 0xEF30);
 	quality_statistics_get_ratings(this, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
 
-// TODO - figure out what this actually is
-// TODO TEST!!!
+// TODO - test this with more than one peer
 long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel)
 {
-	//auto* channel_observer = this->find_observer_by_channel(channel);
-	long next_channel = *((long*)channel + 0x29D) == 0;  // 0xA74
-	byte* channel_address = (byte*)channel;
-	if (!next_channel && ((unsigned __int8)(1 << (long)owner_type) & channel_address[0xA7D]) != 0)
-		return (channel_address - (byte*)this - 56) / 0x10A8;
-	return -1;
+	long channel_index = -1;
+	assert(owner_type >= 0 && owner_type < k_network_observer_owner_count);
+	assert(channel != NULL);
+	auto observer = this->find_observer_by_channel(channel);
+	assert(observer != NULL);
+	
+	if (observer->state != _observer_state_none && ((byte)(1 << owner_type) & observer->owner_flags) != 0)
+		channel_index = ((byte*)observer - (byte*)&m_channel_observers[0]) / sizeof(s_channel_observer); // (target address - start address) / struct size
+	return channel_index;
+}
+
+c_network_observer::s_channel_observer* c_network_observer::find_observer_by_channel(c_network_channel* channel)
+{
+	auto observer = (c_network_observer::s_channel_observer*)channel;
+	assert(observer >= &m_channel_observers[0] && observer < &m_channel_observers[k_network_maximum_observers]);
+	assert(((byte*)observer - (byte*)&m_channel_observers[0]) % sizeof(s_channel_observer) == 0);
+	return observer;
 }

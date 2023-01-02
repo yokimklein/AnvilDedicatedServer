@@ -2,25 +2,8 @@
 #include "..\..\cseries\cseries.h"
 #include "..\messages\network_message_type_collection.h"
 #include "..\delivery\network_channel.h"
-#include "..\network_statistics.h"
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
-
-enum e_observer_state : long
-{
-	_observer_state_none = 0,
-	_observer_state_dead,
-	_observer_state_idle,
-	_observer_state_securing,
-	_observer_state_waiting,
-	_observer_state_ready,
-	_observer_state_connecting,
-	_observer_state_connected,
-	_observer_state_reconnecting,
-	_observer_state_disconnected,
-
-	k_observer_state_count
-};
 
 enum e_network_observer_owner : long
 {
@@ -34,7 +17,11 @@ enum e_network_observer_owner : long
 
 struct s_observer_configuration
 {
-
+	byte unknown_data1[0x124];
+	long period_duration_msec; // name taken from c_network_time_statistics.m_period_duration_msec // offset 0x1c in time stats
+	c_network_window_statistics window_statistics; // either full statistics or just the first field? may also be m_interval_duration_msec from c_network_time_statistics which would be above
+	byte unknown_data2[0x38];
+	long packet_timeout; // offset 0x270
 };
 
 struct s_network_message_connect_request;
@@ -58,7 +45,7 @@ class c_network_observer
 		{
 			c_network_channel channel;
 			e_observer_state state;
-			ulong unknown1;
+			long m_allocated_timestamp1;
 			byte flags;
 			byte owner_flags;
 			ushort __unknownA7E;
@@ -67,13 +54,24 @@ class c_network_observer
 			ulong __unknown1220_flags;
 			ulong __unknown1220_flags_bit;
 			s_transport_address secure_connection_address;
-			byte unknown_data1[26];
-			ulong time_unknown;
-			ulong unknown2;
-			ulong unknown3;
+			long unknown3; // -1 when allocated
+			long unknown4; // -1 when allocated
+			long unknown5; // set by a global value that is 1000 by default, likely to be a timeout?
+			long unknown6; // set by a global value that is 1000 by default, likely to be a timeout?
+			long unknown7; // 0
+			long m_packet_timeout;
+			byte unknown_data1[0x2];
+			long m_allocated_timestamp2;
+			long unknown8; // 0
+			long unknown9; // 0
 			c_network_time_statistics time_statistics[3];
 			c_network_window_statistics window_statistics[2];
-			byte unknown_data2[294];
+			byte unknown_data2[44];
+			bool stream__active; // stream.active
+			bool unknown_bool1;
+			bool unknown_bool2;
+			bool unknown_bool3;
+			byte unknown_data3[248];
 		};
 		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
 
@@ -88,6 +86,7 @@ class c_network_observer
 		void observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type);
 		void quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating);
 		long observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel); // owner type might be a byte?
+		s_channel_observer* find_observer_by_channel(c_network_channel* channel);
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;

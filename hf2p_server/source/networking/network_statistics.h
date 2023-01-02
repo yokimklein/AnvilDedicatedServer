@@ -13,7 +13,7 @@ class c_network_time_statistics
 	long64 unknown6;
 	ulong m_period_duration_msec;
 	ulong m_interval_duration_msec;
-	float unknown9;
+	float m_unknown_period; // set to 1000.0f / m_period_duration_msec
 	ulong m_next_interval_index;
 	c_bitstream stream; // is this accurate?
 	long64 unknown11;

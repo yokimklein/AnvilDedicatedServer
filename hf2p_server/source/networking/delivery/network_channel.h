@@ -2,10 +2,12 @@
 #include "..\..\cseries\cseries.h"
 #include "..\transport\transport_address.h"
 #include "..\messages\network_message_queue.h"
+#include "..\network_statistics.h"
 
 constexpr long k_network_channel_maximum_clients = 6;
 constexpr long k_network_channel_maximum_base_clients = 3;
 constexpr long k_network_channel_maximum_simulation_clients = 4;
+constexpr long k_network_channel_name_size = 0x100;
 
 enum e_network_channel_client_flags
 {
@@ -16,7 +18,7 @@ enum e_network_channel_client_flags
 
 enum e_network_channel_activity
 {
-
+	// activity_types
 
 	k_network_channel_activity_count = 6
 };
@@ -58,9 +60,28 @@ enum e_network_channel_state
 	k_network_channel_state_count
 };
 
+enum e_observer_state : long
+{
+	_observer_state_none = 0,
+	_observer_state_dead,
+	_observer_state_idle,
+	_observer_state_securing,
+	_observer_state_waiting,
+	_observer_state_ready,
+	_observer_state_connecting,
+	_observer_state_connected,
+	_observer_state_reconnecting,
+	_observer_state_disconnected,
+
+	k_observer_state_count
+};
+
 struct s_channel_configuration
 {
-	s_transport_address address;
+	long unknown_time1;
+	long connect_unknown; // time between sending connect requests?
+	long connect_timeout; // attempt connect requests for x milliseconds before timing out
+	long establishment_timeout;
 };
 
 struct s_client_iterator
@@ -111,11 +132,12 @@ class c_network_channel
 {
 public:
 	bool connected();
-	char* get_name(); // m_short_name is followed by m_name
+	char* get_name();
+	char* get_short_name();
 	e_network_channel_state get_state();
 	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
-	// allocated()
+	bool allocated();
 	// allocate()
 	bool closed();
 	void close(e_network_channel_closure_reason reason);
@@ -142,9 +164,10 @@ public:
 	c_network_channel_simulation_gatekeeper m_simulation_gatekeeper;
 	long m_client_count;
 	s_network_channel_client_info m_clients[k_network_channel_maximum_base_clients];
+	// is there a struct split here at 0xA00? check c_network_observer::stream_check_stream_channel_connections
 	c_network_channel_simulation_interface* m_simulation_interface;
 	dword_flags m_flags;
-	ulong m_local_identifier; // 0xA08
+	ulong m_local_identifier; // 0xA08 // 0xA14 in H3debug
 	ulong m_remote_identifier; // 0xA0C
 	e_network_channel_state m_channel_state; // 0xA10
 	e_network_channel_closure_reason m_closure_reason;
@@ -152,11 +175,13 @@ public:
 	s_transport_address m_remote_address;
 	bool m_send_connect_packets;
 	byte __alignA41[3];
-	ulong m_connect_identifier;
-	ulong m_connect_timestamp;
+	long m_connect_start_timestamp;
+	long m_connect_request_timestamp;
 	long m_connect_unknown;
-	byte __dataA50[8];
+	long m_established_timestamp; // establish start
+	long m_connected_timestamp; // establish complete
 	long m_activity_times[k_network_channel_activity_count];
-	byte __dataA70[4];
+	bool m_destination_unreachable;
+	byte __alignA71[3];
 };
 static_assert(sizeof(c_network_channel) == 0xA74);
