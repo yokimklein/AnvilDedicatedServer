@@ -134,7 +134,7 @@ struct s_simulation_globals
 	dword __unknown20;
 
 	char simulation_status[256];
-
+	/* - removed in MS29
 	byte simulation_paused;
 	byte __unknown125;
 	byte __unknown126;
@@ -143,8 +143,9 @@ struct s_simulation_globals
 	// used in `simulation_update_write_to_buffer`
 	simulation_update update;
 	dword_flags update_flags;
+	*/
 };
-static_assert(sizeof(s_simulation_globals) == 0x1784);
+static_assert(sizeof(s_simulation_globals) == 0x124); // 0x1784 in ms23
 
 static s_simulation_globals* simulation_globals = (s_simulation_globals*)(module_base + 0x4EBEBA8);
 
