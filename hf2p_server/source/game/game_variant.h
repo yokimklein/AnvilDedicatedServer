@@ -18,10 +18,10 @@
 class c_game_variant
 {
 public:
-	c_game_variant() :
-		m_game_engine_index(),
-		m_storage()
+	c_game_variant()
 	{
+		m_game_engine_index = 0;
+		csmemset(m_storage.variant_data, 0, sizeof(this->m_storage));
 	};
 
 	c_enum<e_game_engine_variant, long, k_game_engine_variant_count> m_game_engine_index;

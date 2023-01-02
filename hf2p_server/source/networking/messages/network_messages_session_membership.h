@@ -30,8 +30,8 @@ static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
 struct s_network_message_membership_update_peer_properties
 {
 	bool peer_name_updated;
-	wchar_t peer_name[16]; // offset 60? code uses 58
-	wchar_t peer_session_name[32]; // offset 92? code uses 90
+	wchar_t peer_name[16];
+	wchar_t peer_session_name[32];
 	ulong game_start_error;
 	bool peer_map_id_updated;
 	ulong peer_map_id;

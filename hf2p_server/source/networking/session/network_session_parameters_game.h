@@ -214,6 +214,7 @@ class c_network_session_parameter_request_campaign_quit : public c_network_sessi
 	s_network_session_parameter_request_campaign_quit m_requested_data;
 };
 
+// c_generic_network_session_parameter<enum e_network_game_simulation_protocol>
 class c_network_session_parameter_game_simulation_protocol : public c_network_session_parameter_base
 {
 public:

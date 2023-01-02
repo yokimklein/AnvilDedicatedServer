@@ -41,9 +41,9 @@ struct s_network_session_peer_connectivity
 {
 	ushort peer_connectivity_mask;
 	ushort peer_probe_mask;
-	ulong peer_latency_min;
-	ulong peer_latency_est;
-	ulong peer_latency_max;
+	ulong latency_minimum_msec;
+	ulong latency_average_msec;
+	ulong latency_maximum_msec;
 };
 static_assert(sizeof(s_network_session_peer_connectivity) == 0x10);
 
@@ -57,7 +57,7 @@ struct s_network_session_peer_properties
 	e_peer_map_status peer_map_status;
 	ulong peer_map_progress_percentage;
 	qword peer_game_instance;
-	ulong game_start_error; // originally written as nat_type, but c_network_session_membership::apply_peer_properties_update sets it to update peer properties' game_start_error
+	ulong game_start_error;
 	ulong connectivity_badness_rating;
 	ulong host_badness_rating;
 	ulong client_badness_rating;
@@ -79,7 +79,7 @@ struct s_network_session_peer
 	s_network_session_peer_properties properties; // 8?
 	qword party_nonce;
 	qword join_nonce;
-	ulong player_mask; // contains player count
+	ulong player_mask;
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);
 
@@ -117,14 +117,6 @@ static_assert(sizeof(s_network_session_peer_channel) == 0xC);
 #pragma pack(push, 1)
 struct s_network_session_shared_membership
 {
-	s_network_session_shared_membership() :
-		peers(),
-		players()
-	{
-		// TODO - replace this
-		memset(this, 0, sizeof(s_network_session_shared_membership));
-	};
-
 	long update_number;
 	long leader_peer_index;
 	long host_peer_index;
@@ -134,7 +126,7 @@ struct s_network_session_shared_membership
 	bool are_slots_locked;
 	byte pad[2];
 	long peer_count;
-	ulong peer_valid_flags;
+	ulong peer_valid_mask;
 	s_network_session_peer peers[k_network_maximum_machines_per_session];
 	long player_count;
 	ulong player_valid_flags;
@@ -173,7 +165,7 @@ public:
 	long get_player_count();
 	void idle();
 	bool all_peers_established();
-	long get_observer_channel_index(long observer_channel_index);
+	long get_observer_channel_index(long peer_index);
 	long get_host_observer_channel_index();
 	long host_peer_index();
 	long private_slot_count();
@@ -216,6 +208,7 @@ public:
 	long update_number();
 	long get_membership_update_number(long peer_index);
 	bool get_peer_needs_reestablishment(long peer_index);
+	bool has_membership();
 
 	c_network_session* m_session;
 	long unknown1;

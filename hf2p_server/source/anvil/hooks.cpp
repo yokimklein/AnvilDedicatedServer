@@ -96,14 +96,14 @@ void __fastcall peer_request_player_add_hook(c_network_session* session, void* u
 // ditto above
 bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
 {
-    bool(__thiscall * network_session_interface_get_local_user_identifier)(s_player_identifier * player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(module_base + 0x3D50);
+    bool(__thiscall* network_session_interface_get_local_user_identifier)(s_player_identifier* player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(module_base + 0x3D50);
     return !game_is_dedicated_server() && network_session_interface_get_local_user_identifier(player_identifier);
 }
 
 // reimplement network_session_check_properties by calling it at the end of network_session_interface_update_session
 void __fastcall network_session_interface_update_session_hook(c_network_session* session)
 {
-    void(__thiscall * network_session_interface_update_session)(c_network_session * session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
+    void(__thiscall* network_session_interface_update_session)(c_network_session* session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
     network_session_interface_update_session(session);
 
     if (session->established() && !session->leaving_session())

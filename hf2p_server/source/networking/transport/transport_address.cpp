@@ -84,7 +84,7 @@ char* transport_address_to_string(s_transport_address const* address, s_transpor
 
 bool transport_address_equivalent(s_transport_address const* address1, s_transport_address const* address2)
 {
-	bool(__fastcall * transport_address_equivalent_call)(s_transport_address const* address1, s_transport_address const* address2) = reinterpret_cast<decltype(transport_address_equivalent_call)>(module_base + 0x77D0);
+	bool(__fastcall* transport_address_equivalent_call)(s_transport_address const* address1, s_transport_address const* address2) = reinterpret_cast<decltype(transport_address_equivalent_call)>(module_base + 0x77D0);
 	return transport_address_equivalent_call(address1, address2);
 }
 

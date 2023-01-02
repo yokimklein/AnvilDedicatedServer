@@ -8,7 +8,7 @@
 class c_network_link;
 class c_network_message_handler;
 class c_network_message_type_collection;
-class c_network_message_gateway : c_network_out_of_band_consumer // TODO, map out base class
+class c_network_message_gateway : c_network_out_of_band_consumer
 {
 public:
 	c_network_link* get_network_link();

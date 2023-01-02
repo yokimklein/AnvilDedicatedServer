@@ -82,7 +82,7 @@ public:
 	void handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message);
 	void handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message);
 	void handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message);
-	void handle_synchronous_gamestate(c_network_channel* channel, s_network_message_synchronous_gamestate const* message);
+	void handle_synchronous_gamestate(long size, const void* unknown_struct);
 	void handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message);
 	void handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message);
 	// handle_test?

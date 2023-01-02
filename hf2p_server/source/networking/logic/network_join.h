@@ -8,21 +8,20 @@
 
 struct s_network_session_join_request;
 
-// TODO - update k_join_refuse_reason_strings whenever this is updated
-// verified against ms23, not ms29 - INACCURATE! TODO will produce invalid error logs!
-enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whether these are correct for ms29, ms29's differs from mcc's slightly (check mcc odst's when it releases?)
+// POTENTIALLY INACCURATE! may produce invalid error logs - TODO: finish verifying enum entries
+enum e_network_join_refuse_reason : long // based off mcc h3 - ms29's differs from mcc's slightly (check against mcc odst?)
 {
-	_network_join_refuse_reason_none, // verified
+	_network_join_refuse_reason_none, // verified in ms23
 	_network_join_refuse_reason_tried_to_join_self,
 	_network_join_refuse_reason_could_not_connect,
 	_network_join_refuse_reason_join_timed_out,
 	_network_join_refuse_reason_not_found,
 	_network_join_refuse_reason_privacy_mode,
-	_network_join_refuse_reason_not_joinable, // verified
-	_network_join_refuse_reason_session_full, // verified
+	_network_join_refuse_reason_not_joinable, // verified in ms23
+	_network_join_refuse_reason_session_full, // verified in ms23
 	_network_join_refuse_reason_alpha_split_screen,
-	_network_join_refuse_reason_session_disband, // verified
-	_network_join_refuse_reason_session_booted, // verified
+	_network_join_refuse_reason_session_disband, // verified in ms23
+	_network_join_refuse_reason_session_booted, // verified in ms23
 	_network_join_refuse_reason_address_invalid,
 	_network_join_refuse_reason_address_failed,
 	_network_join_refuse_reason_too_many_observers,
@@ -30,21 +29,21 @@ enum e_network_join_refuse_reason : long // based off mcc h3 - TODO, verify whet
 	_network_join_refuse_reason_abort_ignored,
 	_network_join_refuse_reason_wrong_payload_type,
 	_network_join_refuse_reason_no_reservation,
-	_network_join_refuse_reason_in_matchmaking, // verified
+	_network_join_refuse_reason_in_matchmaking, // verified in ms23
 	_network_join_refuse_reason_player_count_zero,
 	_network_join_refuse_reason_player_not_online_enabled,
 	_network_join_refuse_reason_player_add_pending,
-	_network_join_refuse_reason_player_add_failed,
-	_network_join_refuse_reason_host_time_out, // verified (verified in ms29 too)
+	_network_join_refuse_reason_player_add_failed, // verified in ms23 & ms29
+	_network_join_refuse_reason_host_time_out, // verified in ms23 & ms29
 	_network_join_refuse_reason_rejected_by_host,
-	_network_join_refuse_reason_peer_version_too_low, // verified
-	_network_join_refuse_reason_host_version_too_low, // verified
-	_network_join_refuse_reason_holding_in_queue, // verified (in ms29 too)
-	_network_join_refuse_reason_film_in_progress, // verified
-	_network_join_refuse_reason_campaign_in_progress, // verified (verified in ms29 too)
+	_network_join_refuse_reason_peer_version_too_low, // verified in ms23
+	_network_join_refuse_reason_host_version_too_low, // verified in ms23
+	_network_join_refuse_reason_holding_in_queue, // verified in ms23 & ms29
+	_network_join_refuse_reason_film_in_progress, // verified in ms23
+	_network_join_refuse_reason_campaign_in_progress, // verified in ms23 & ms29
 	_network_join_refuse_reason_user_content_not_allowed,
-	_network_join_refuse_reason_survival_in_progress, // verified
-	_network_join_refuse_reason_executable_type_mismatch, // verified? did this move? TODO - verify
+	_network_join_refuse_reason_survival_in_progress, // verified in ms23
+	_network_join_refuse_reason_executable_type_mismatch, // verified in ms23 & ms29? did this move? this was a lot further up in MCC
 
 	k_network_join_refuse_reason_count
 };

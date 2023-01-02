@@ -7,8 +7,6 @@
 #include "..\transport\transport_address.h"
 #include <iostream>
 
-// TODO: move each handler into grouped .cpp files
-
 void c_network_message_handler::handle_out_of_band_message(s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
     c_network_channel* channel;

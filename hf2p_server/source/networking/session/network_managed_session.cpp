@@ -2,17 +2,20 @@
 #include "..\..\cseries\cseries.h"
 #include "network_session.h"
 #include <iostream>
+#include <assert.h>
 
-// TEST THIS - function exists in ms29 but I couldn't get it to call correctly
-// ms23's function has an extra bool & code, which seems to be related to matchmaking
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
 	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 
-	if (managed_session_index == -1 || (managed_session->flags & 0x10) == 0)
+	if (managed_session_index == -1 || (managed_session->flags & _online_managed_session_created_bit) == 0)
 		return false;
 	if (out_secure_host_description != nullptr)
-		memcpy(out_secure_host_description, &managed_session->actual_online_session_state.description, sizeof(s_transport_session_description));
+	{
+		out_secure_host_description->session_id = managed_session->actual_online_session_state.description.session_id;
+		out_secure_host_description->host_address = managed_session->actual_online_session_state.description.host_address;
+		out_secure_host_description->key = managed_session->actual_online_session_state.description.key;
+	}
 	if (out_transport_platform != nullptr)
 		*out_transport_platform = managed_session->platform;
 	return true;
@@ -37,7 +40,7 @@ bool managed_session_get_id(long managed_session_index, s_transport_secure_ident
 	if ((managed_session->flags & _online_managed_session_created_bit) == 0)
 		return false;
 	if (secure_id != nullptr)
-		memcpy(secure_id, &managed_session->actual_online_session_state.description.session_id, sizeof(s_transport_secure_identifier));
+		*secure_id = managed_session->actual_online_session_state.description.session_id;
 	return true;
 }
 
@@ -192,28 +195,37 @@ void managed_session_add_players(long managed_session_index, qword* player_xuids
 	managed_session->creation_time = 0;
 }
 
-// TODO VERIFY THIS!!!!!!!
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* player_xuids, bool* player_bools, long xuid_count)
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* player_bools, long xuid_count)
 {
-	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
+	assert(players);
+	assert(player_count > 0);
+	assert(xuids);
+
+	for (long i = 0; i < xuid_count; i++)
 	{
-		long player_index = -1;
-		if (player_xuids[xuid_index])
+		long empty_index = -1;
+		if (xuids[i])
 		{
-			long player_index2 = 0;
-			for (player_index2 = 0; player_index2 < player_count; player_index2++)
+			long j = 0;
+			for (j = 0; j < player_count; j++)
 			{
-				if (((players[player_index2].flags & 1) != 0 || player_index2 != -1) && player_xuids[xuid_index] == players[player_index2].xuid)
-					break;
+				if ((players[j].flags & 1) != 0 || empty_index != -1)
+				{
+					if (!csmemcmp(&xuids[i], &players[j].xuid, 8))
+						break;
+				}
 				else
-					player_index = player_index2;
+				{
+					empty_index = j;
+				}
 			}
-			if (player_index2 == player_count)
+			if (j == player_count)
 			{
-				players[player_index].xuid = player_xuids[xuid_index];
-				players[player_index].flags |= 1u;
-				if (player_bools[xuid_index])
-					players[player_index].flags |= 2u;
+				assert(empty_index != NONE);
+				players[empty_index].xuid = xuids[i];
+				players[empty_index].flags |= 1u;
+				if (player_bools[i])
+					players[empty_index].flags |= 2u;
 			}
 		}
 	}
@@ -221,6 +233,6 @@ void managed_session_add_players_internal(s_online_session_player* players, long
 
 bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id)
 {
-	bool(__fastcall * managed_session_compare_id_call)(long managed_session_index, s_transport_secure_identifier const* secure_id) = reinterpret_cast<decltype(managed_session_compare_id_call)>(module_base + 0x28B40);
+	bool(__fastcall* managed_session_compare_id_call)(long managed_session_index, s_transport_secure_identifier const* secure_id) = reinterpret_cast<decltype(managed_session_compare_id_call)>(module_base + 0x28B40);
 	return managed_session_compare_id_call(managed_session_index, secure_id);
 }

@@ -1,7 +1,6 @@
 #include "network_message_type_collection.h"
 #include <cassert>
 
-// TODO - update this whenever the enum updates
 char const* k_join_refuse_reason_strings[k_network_join_refuse_reason_count] = {
 	"no-reason-given",
 	"tried-to-join-self",

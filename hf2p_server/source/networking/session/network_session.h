@@ -5,6 +5,7 @@
 #include "network_observer.h"
 #include "..\messages\network_messages_session_membership.h"
 #include "..\messages\network_messages_session_protocol.h"
+#include "..\..\game\players.h"
 
 enum e_network_session_type
 {

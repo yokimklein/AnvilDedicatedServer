@@ -77,7 +77,10 @@ struct c_managed_session
 	ushort pending_operation_flags; // e_online_managed_session_operation_flags
 	c_managed_session_overlapped_task overlapped_task;
 	ulong creation_time;
-	char __data114[4];
+	bool creation_failed_not_live;
+	bool creation_failed_invalid_ip;
+	bool creation_failed_session_id_clash; // another managed session already has this session's ID
+	byte pad[1];
 	s_online_session desired_online_session_state;
 	s_online_session transitory_online_session_state;
 	s_online_session actual_online_session_state;
@@ -85,10 +88,14 @@ struct c_managed_session
 	byte_flags xuid_flags[k_network_maximum_players_per_session];
 	byte_flags xuid_next_flags[k_network_maximum_players_per_session];
 	long session_player_operation_count;
+	//short unknown;
+	//s_transport_session_description migration_description;
+	//byte pad2[2];
 	s_online_context creation_contexts[4];
 	ulong creation_context_count;
+	//int unknown3;
 };
-static_assert(sizeof(c_managed_session) == 0x5D0);
+static_assert(sizeof(c_managed_session) == 0x5D0); // 0x608 in ms23
 
 struct s_online_session_manager_globals
 {
@@ -111,5 +118,5 @@ void managed_session_remove_players(long managed_session_index, qword* xuids, lo
 void remove_from_player_list(s_online_session_player* players, long player_count, qword* xuids, long xuid_count);
 void managed_session_reset_players_add_status(long managed_session_index);
 void managed_session_add_players(long managed_session_index, qword* xuids, bool* player_bools, long player_count);
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* player_xuids, bool* player_bools, long xuid_count);
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* player_bools, long xuid_count);
 bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id);

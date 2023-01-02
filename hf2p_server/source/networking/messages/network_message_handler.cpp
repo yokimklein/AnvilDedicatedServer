@@ -8,13 +8,11 @@
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)
 {
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n", message->id, transport_address_get_string(outgoing_address), timeGetTime());
-    s_network_message_pong* response = new s_network_message_pong();
-    response->id = message->id;
-    response->timestamp = message->timestamp;
-    response->request_qos = message->request_qos;
-    this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), response);
-
-    delete response;
+    s_network_message_pong response = s_network_message_pong();
+    response.id = message->id;
+    response.timestamp = message->timestamp;
+    response.request_qos = message->request_qos;
+    this->m_message_gateway->send_message_directed(outgoing_address, _network_message_type_pong, sizeof(s_network_message_pong), &response);
 }
 
 void c_network_message_handler::handle_pong(s_transport_address const* outgoing_address, s_network_message_pong const* message)
@@ -102,10 +100,10 @@ void c_network_message_handler::handle_connect_closed(c_network_channel* channel
 
 void c_network_message_handler::handle_join_request(s_transport_address const* outgoing_address, s_network_message_join_request const* message)
 {
-    if (message->protocol_version == 9)
+    if (message->protocol_version == k_network_protocol_version)
     {
         c_network_session* session = this->m_session_manager->get_session(&message->session_id);
-        if (session)
+        if (session != nullptr)
         {
             if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
             {
@@ -116,7 +114,9 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
     }
     else
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n", message->protocol_version, 9);
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n",
+            message->protocol_version,
+            k_network_protocol_version);
     }
 
     // if you get this error, it's likely caused by the client trying to connect with the wrong secure address/id, usually because the API server hasn't updated with the new server information
@@ -128,7 +128,7 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
 
 void c_network_message_handler::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
 {
-    if (message->protocol_version == 9)
+    if (message->protocol_version == k_network_protocol_version)
     {
         auto* session = this->m_session_manager->get_session(&message->session_id);
         if (session)
@@ -145,7 +145,7 @@ void c_network_message_handler::handle_peer_connect(s_transport_address const* o
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_connect: received message with incorrect protocol version [%d!=%d]\n",
             message->protocol_version,
-            9);
+            k_network_protocol_version);
     }
 }
 
@@ -169,12 +169,10 @@ void c_network_message_handler::handle_join_abort(s_transport_address const* out
             network_message_join_refuse_get_reason_string(refuse_reason),
             transport_address_get_string(outgoing_address));
         auto message_gateway = this->get_message_gateway();
-        s_network_message_join_refuse* refuse_message = new s_network_message_join_refuse();
-        refuse_message->session_id = message->session_id;
-        refuse_message->reason = refuse_reason;
-        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), refuse_message);
-
-        delete refuse_message;
+        s_network_message_join_refuse refuse_message = {};
+        refuse_message.session_id = message->session_id;
+        refuse_message.reason = refuse_reason;
+        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &refuse_message);
     }
     else
     {
@@ -271,12 +269,9 @@ void c_network_message_handler::handle_peer_establish(c_network_channel* channel
             channel->get_name(),
             transport_secure_identifier_get_string(&message->session_id));
     
-        s_network_message_host_decline* decline_message = new s_network_message_host_decline();
-        memset(decline_message, 0, sizeof(s_network_message_host_decline));
-        decline_message->session_id = message->session_id;
-        channel->send_message(_network_message_type_host_decline, sizeof(s_network_message_host_decline), decline_message);
-        
-        delete decline_message;
+        s_network_message_host_decline decline_message = {};
+        decline_message.session_id = message->session_id;
+        channel->send_message(_network_message_type_host_decline, sizeof(s_network_message_host_decline), &decline_message);
     }
 }
 
@@ -461,39 +456,40 @@ void c_network_message_handler::handle_player_acknowledge(c_network_channel* cha
     return handle_player_acknowledge(channel/*this, channel, message*/);
 }
 
-// FUNC TODO
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-    
+    // TODO test annoying usercall function
+    void(__thiscall* handle_synchronous_update)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_update)>(module_base + 0x25860);
+    handle_synchronous_update(channel);
 }
 
-// FUNC TODO
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
 {
-    
+    void(__thiscall* handle_synchronous_playback_control)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_playback_control)>(module_base + 0x258E0);
+    handle_synchronous_playback_control(channel);
 }
 
-// FUNC TODO
 void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
 {
-    
+    void(__thiscall* handle_synchronous_actions)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_actions)>(module_base + 0x25990);
+    handle_synchronous_actions(channel);
 }
 
-// FUNC TODO
 void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
 {
-    
+    void(__thiscall* handle_synchronous_acknowledge)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_acknowledge)>(module_base + 0x25810);
+    handle_synchronous_acknowledge(channel);
 }
 
-// FUNC TODO
-void c_network_message_handler::handle_synchronous_gamestate(c_network_channel* channel, s_network_message_synchronous_gamestate const* message)
+void c_network_message_handler::handle_synchronous_gamestate(long size, const void* unknown_struct)
 {
-    
+    void(__cdecl* handle_synchronous_gamestate)(long size, const void* unknown_struct) = reinterpret_cast<decltype(handle_synchronous_gamestate)>(module_base + 0x25A20);
+    handle_synchronous_gamestate(size, unknown_struct);
 }
 
 void c_network_message_handler::handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message)
 {
-    void(__thiscall* handle_game_results)(c_network_channel * channel) = reinterpret_cast<decltype(handle_game_results)>(module_base + 0x25A70);
+    void(__thiscall* handle_game_results)(c_network_channel* channel) = reinterpret_cast<decltype(handle_game_results)>(module_base + 0x25A70);
     handle_game_results(channel);
 }
 
@@ -649,8 +645,6 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_player_acknowledge);
             break;
-        // UNIMPLEMENTED! TODO
-        /*
         case _network_message_type_synchronous_update:
             if (channel->connected())
                 this->handle_synchronous_update(channel, (s_network_message_synchronous_update*)message);
@@ -664,7 +658,7 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_synchronous_playback_control);
             break;
-
+        // TODO SYNCHRONOUS HANDLERS
         case _network_message_type_synchronous_actions:
             if (channel->connected())
                 this->handle_synchronous_actions(channel, (s_network_message_synchronous_actions*)message);
@@ -681,11 +675,11 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
 
         case _network_message_type_synchronous_gamestate:
             if (channel->connected())
-                this->handle_synchronous_gamestate(channel, (s_network_message_synchronous_gamestate*)message);
+                this->handle_synchronous_gamestate(message_storage_size - 16, (void*)((byte*)message + 16)); // TODO: proper args
             else
                 log_received_over_non_connected_channel(channel, _network_message_type_synchronous_gamestate);
             break;
-        */
+        
         case _network_message_type_game_results:
             if (channel->connected())
                 this->handle_distributed_game_results(channel, (s_network_message_distributed_game_results*)message);

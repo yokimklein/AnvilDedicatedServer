@@ -2,6 +2,7 @@
 #include "network_session.h"
 #include <stdio.h>
 #include "network_managed_session.h"
+#include "assert.h"
 
 bool c_network_session_parameter_base::get_allowed()
 {
@@ -21,15 +22,15 @@ bool c_network_session_parameter_base::set_allowed()
 	return this->m_session->established() && this->m_session->is_host();
 }
 
-// TODO - TEST THIS
 long c_network_session_parameter_base::get_change_request_size()
 {
 	return this->get_change_request_payload_size();
 }
 
-// TODO - TEST THIS
 bool c_network_session_parameter_base::handle_change_request(void const* change_request, long change_request_size)
 {
+	assert(change_request);
+	assert(change_request_size == get_change_request_size());
 	bool success = this->handle_change_request_payload(change_request);
 	if (success)
 	{

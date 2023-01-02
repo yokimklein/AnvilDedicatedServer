@@ -9,7 +9,7 @@
 void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
     ulong(__cdecl* game_language_get_default)() = reinterpret_cast<decltype(game_language_get_default)>(module_base + 0xB0C00);
-    void(__fastcall* network_session_get_connectivity)(c_network_session * session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(module_base + 0x2E500);
+    void(__fastcall* network_session_get_connectivity)(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(module_base + 0x2E500);
     ulong(__cdecl* build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(module_base + 0xDD750);
 
     ulong peer_properties_update_timestamp = ((ulong*)(module_base + 0x3EB1498))[session->session_index()];
