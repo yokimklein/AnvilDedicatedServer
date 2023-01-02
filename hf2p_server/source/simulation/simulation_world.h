@@ -9,13 +9,15 @@
 
 enum e_simulation_world_type : long
 {
-	_simulation_world_type_none = 0,
+	_simulation_world_type_none,
 	_simulation_world_type_local,
 	_simulation_world_type_local_playback,
-	_simulation_world_type_synchronous_server,
-	_simulation_world_type_synchronous_client,
-	_simulation_world_type_distributed_server,
-	_simulation_world_type_distributed_client,
+	_simulation_world_type_synchronous_game_authority,
+	_simulation_world_type_synchronous_game_client,
+	_simulation_world_type_synchronous_playback_authority,
+	_simulation_world_type_synchronous_playback_client,
+	_simulation_world_type_distributed_game_authority,
+	_simulation_world_type_distributed_game_client,
 
 	k_simulation_world_type_count
 };

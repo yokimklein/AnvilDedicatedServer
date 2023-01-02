@@ -1,7 +1,7 @@
 #pragma once
 #include "..\cseries\cseries.h"
 
-struct c_simulation_watcher
+class c_simulation_watcher
 {
 	byte unknown_data[0x16658];
 };

@@ -153,11 +153,13 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\game\aim_assist.h" />
     <ClInclude Include="source\main\main_game.h" />
     <ClInclude Include="source\anvil\server_tools.h" />
     <ClInclude Include="source\hf2p\hf2p_session.h" />
     <ClInclude Include="source\memory\byte_swapping.h" />
     <ClInclude Include="source\networking\network_time.h" />
+    <ClInclude Include="source\replication\replication_encoding.h" />
     <ClInclude Include="source\scenario\scenario_map_variant.h" />
     <ClInclude Include="source\anvil\hooks.h" />
     <ClInclude Include="source\anvil\build_version.h" />
@@ -207,6 +209,7 @@
     <ClInclude Include="source\saved_games\saved_game_files.h" />
     <ClInclude Include="source\shell\shell.h" />
     <ClInclude Include="source\simulation\simulation_actors.h" />
+    <ClInclude Include="source\simulation\simulation_debug_globals.h" />
     <ClInclude Include="source\simulation\simulation_players.h" />
     <ClInclude Include="source\simulation\simulation_queue.h" />
     <ClInclude Include="source\simulation\simulation_type_collection.h" />
@@ -270,6 +273,7 @@
     <ClInclude Include="source\text\unicode.h" />
     <ClInclude Include="source\tools\network_webstats.h" />
     <ClInclude Include="source\interface\user_interface_session.h" />
+    <ClInclude Include="source\units\units.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main\main_game.cpp" />
@@ -315,8 +319,10 @@
     <ClCompile Include="source\networking\transport\transport_security.cpp" />
     <ClCompile Include="source\networking\transport\transport_address.cpp" />
     <ClCompile Include="source\memory\tls.cpp" />
+    <ClCompile Include="source\simulation\simulation_debug_globals.cpp" />
     <ClCompile Include="source\tag_files\string_ids.cpp" />
     <ClCompile Include="source\text\unicode.cpp" />
+    <ClCompile Include="source\units\units.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

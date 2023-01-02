@@ -12,6 +12,7 @@
 #include "..\networking\transport\transport_shim.h"
 #include "..\networking\session\network_managed_session.h"
 #include "server_tools.h"
+#include "..\simulation\simulation_debug_globals.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -181,8 +182,8 @@ void anvil_dedi_apply_patches()
     // contrail gpu freeze fix - twister
     Patch(0x1D6B70, { 0xC3 }).Apply();
     // enable netdebug
-    *g_network_interface_show_latency_and_framerate_metrics_on_chud = true;
-    *g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
+    g_network_interface_show_latency_and_framerate_metrics_on_chud = true;
+    g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
 }
 
 void anvil_dedi_apply_hooks()
@@ -199,8 +200,8 @@ void anvil_dedi_apply_hooks()
     // allow view_establishment to progress past connection phase to established in update_establishing_view again
     Hook(0x370E0, update_establishing_view_hook).Apply();
     // add back network_session_check_properties
-    //Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    //Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+    Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     // add/remove the host address & security keys to the xnet shim table on session creation/destruction so we can locate them with one another
     Hook(0x28E32, transport_secure_key_create_hook, HookFlags::IsCall).Apply();
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();

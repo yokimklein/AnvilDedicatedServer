@@ -366,6 +366,18 @@
     <ClInclude Include="source\tag_files\string_ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\units.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\aim_assist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\replication\replication_encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\simulation_debug_globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -501,6 +513,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\tag_files\string_ids.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\units.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\simulation\simulation_debug_globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
