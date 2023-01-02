@@ -11,6 +11,7 @@
 #include "..\networking\logic\network_life_cycle.h"
 #include "..\networking\transport\transport_shim.h"
 #include "..\networking\session\network_managed_session.h"
+#include "server_tools.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -118,32 +119,30 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     // original function call
     int result = vsnprintf_s(DstBuf, SizeInBytes, MaxCount, Format, ArgList);
 
-    // parse obfuscated URIs
-    if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
-    {
-        char* resource_uri = new char[0x100];
-        memcpy(resource_uri, va_arg(ArgList, char*), 0x100); // occasional access violations here - TODO FIX
-        backend_deobfuscate_uri(resource_uri, 0x100);
-
-        // potentially dangerous, but acceptable given the context?
-        // these will return random data from memory for request logs
-        // but they are ignored by the request format in snprintf
-        long request_status = va_arg(ArgList, long); // more likely to be error code - response code
-        long response_status = va_arg(ArgList, long);
-
-        char* deobfuscated_log = new char[SizeInBytes];
-        memcpy(deobfuscated_log, DstBuf, SizeInBytes);
-        snprintf(deobfuscated_log, SizeInBytes, Format, resource_uri, request_status, response_status);
-
-        printf("[+] %s \n", deobfuscated_log);
-        delete[] resource_uri;
-        delete[] deobfuscated_log;
-    }
     // check if we're building a URI - we don't want to print these
-    else if (strcmp(Format, "/%s.svc/%s") != 0)
+    if (strcmp(Format, "/%s.svc/%s") != 0)
     {
         printf("[+] %s \n", DstBuf);
     }
+    // parse obfuscated URIs - temporarily disabled
+    //else if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
+    //{
+    //    char resource_uri[0x100];
+    //    memcpy(resource_uri, va_arg(ArgList, char*), 0x100); // occasional access violations here - TODO FIX
+    //    backend_deobfuscate_uri(resource_uri, 0x100);
+    //
+    //    // potentially dangerous, but acceptable given the context?
+    //    // these will return random data from memory for request logs
+    //    // but they are ignored by the request format in snprintf
+    //    long request_status = va_arg(ArgList, long); // more likely to be error code - response code
+    //    long response_status = va_arg(ArgList, long);
+    //
+    //    char deobfuscated_log[0x100];
+    //    memcpy(deobfuscated_log, DstBuf, 0x100);
+    //    snprintf(deobfuscated_log, 0x100, Format, resource_uri, request_status, response_status);
+    //
+    //    printf("[+] %s \n", deobfuscated_log);
+    //}
 
     return result;
 }
@@ -165,6 +164,12 @@ void __fastcall managed_session_delete_session_internal_hook(long managed_sessio
         xnet_shim_unregister_inaddr(&transport_security_globals->address);
 
     managed_session_delete_session_internal(managed_session_index, managed_session);
+}
+
+void __fastcall network_session_interface_set_local_name_hook(wchar_t const* machine_name, wchar_t const* session_name)
+{
+    FUNCTION_DEF(0x2E680, void, __fastcall, network_session_interface_set_local_name, wchar_t const* machine_name, wchar_t const* session_name);
+    network_session_interface_set_local_name(k_anvil_machine_name, k_anvil_session_name);
 }
 
 void anvil_dedi_apply_patches()
@@ -202,11 +207,14 @@ void anvil_dedi_apply_hooks()
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
 
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup
     // prevent the game from adding a player to the dedicated host
     Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
     Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing
-    // do the same for game_startup
+    // set peer & session name
+    Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    Hook(0x3AC243, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
     
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();

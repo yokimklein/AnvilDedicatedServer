@@ -4,6 +4,8 @@
 
 // TODO: replace with game_time_globals->tick_rate
 constexpr long k_game_tick_rate = 1000 / 60;
+const static wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
+const static wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED";
 
 bool anvil_create_session();
 bool anvil_session_set_map(e_map_id map_id);
