@@ -27,7 +27,8 @@ long xnet_shim_table_find_row(const s_transport_address* address, const s_transp
 	return first_invalid_row;
 }
 
-void xnet_shim_table_add(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier)
+// XNetRegisterKey
+void xnet_shim_register(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier)
 {
 	long row_index = xnet_shim_table_find_row(address, secure_address, false);
 	if (row_index != -1)
@@ -39,7 +40,8 @@ void xnet_shim_table_add(const s_transport_address* address, const s_transport_s
 	}
 }
 
-void xnet_shim_unregister_inaddr(const s_transport_address* address)
+// XNetUnregisterKey
+void xnet_shim_unregister(const s_transport_address* address)
 {
 	long row_index = xnet_shim_table_find_row(address, nullptr, true);
 	if (row_index != -1)

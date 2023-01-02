@@ -74,8 +74,8 @@ long main_thread()
         anvil_create_session();
 
         // wait for the managed session to create & for the session to establish
-        ulong* managed_session_flags = &online_session_manager_globals->managed_sessions[network_session->managed_session_index()].flags;
-        while ((*managed_session_flags & 0x10) == 0 || !network_session->established()) Sleep(k_game_tick_rate);
+        auto managed_session = &online_session_manager_globals->managed_sessions[network_session->managed_session_index()];
+        while (!managed_session->flags.test(_online_managed_session_created_bit) || !network_session->established()) Sleep(k_game_tick_rate);
 
         // log session connection info
         char address_str[0x100];

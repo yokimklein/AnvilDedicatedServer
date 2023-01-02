@@ -41,6 +41,7 @@ bool c_network_session::acknowledge_join_request(s_transport_address const* addr
     return this->m_message_gateway->send_message_directed(address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &message);
 }
 
+// TODO: ensure that each peer matches a session ID within the API lobby to prevent random external joins coming in from outside of our matchmaking system
 bool c_network_session::handle_join_request(s_transport_address const* address, s_network_message_join_request const* message)
 {
     long executable_type;
@@ -287,7 +288,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                     && this->get_session_membership()->add_peer(peer_index, _network_session_peer_state_reserved, join_request->joining_peers[i].joining_network_version_number,
                         &join_request->joining_peers[i].joining_peer_address, join_request->join_party_nonce, join_request->join_nonce))
                 {
-                    xnet_shim_table_add(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
+                    xnet_shim_register(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
                     this->m_observer->observer_channel_initiate_connection(this->session_index(), this->get_session_membership()->get_observer_channel_index(peer_index));
 
                     // if not refused

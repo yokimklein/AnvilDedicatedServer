@@ -64,6 +64,7 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
     }
 }
 
+// TODO: set player name, loadouts and teams here
 void network_session_check_properties(c_network_session* session)
 {
     /* TODO - once mulg definition is implemented & tag interface

@@ -3,12 +3,13 @@
 #include "network_session.h"
 #include <iostream>
 #include <assert.h>
+#include "..\network_time.h"
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
 	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 
-	if (managed_session_index == -1 || (managed_session->flags & _online_managed_session_created_bit) == 0)
+	if (managed_session_index == -1 || !managed_session->flags.test(_online_managed_session_created_bit))
 		return false;
 	if (out_secure_host_description != nullptr)
 	{
@@ -37,7 +38,7 @@ bool managed_session_get_id(long managed_session_index, s_transport_secure_ident
 	if (managed_session_index == -1)
 		return false;
 	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
-	if ((managed_session->flags & _online_managed_session_created_bit) == 0)
+	if (!managed_session->flags.test(_online_managed_session_created_bit))
 		return false;
 	if (secure_id != nullptr)
 		*secure_id = managed_session->actual_online_session_state.description.session_id;
@@ -57,51 +58,50 @@ void managed_session_modify_slot_counts(long managed_session_index, long private
 			managed_session->desired_online_session_state.public_slots_flags |= 0x200u;
 		else
 			managed_session->desired_online_session_state.public_slots_flags &= 0xFDFFu;
-		managed_session->pending_operation_flags |= 0x80u;
-		managed_session->flags &= 0xFFFFFFFB;
+		managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
+		managed_session->flags.set(_online_managed_session_recreating_bit, false);
 		managed_session->creation_time = 0;
 	}
 	if (friends_only)
 	{
-		if ((managed_session->flags & 2) == 0 && (managed_session->flags & 0x40000) == 0)
-			managed_session->flags = managed_session->flags | 0x20000;
+		if (!managed_session->flags.test(_online_managed_session_master_session_bit) && !managed_session->flags.test(_online_managed_session_session_is_locked_bit))
+			managed_session->flags.set(_online_managed_session_lock_session_bit, true);
 	}
 }
 
 short* managed_session_get_status(short* managed_session_status, long managed_session_index)
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
-	auto flags = managed_session->flags;
-	short status = 0;
-	if ((flags & 0x10) != 0)
+	short status = 0; // TODO: e_managed_session_status_flags
+	if (managed_session->flags.test(_online_managed_session_created_bit))
 		status = 2;
-	if ((flags & 0x20) != 0)
+	if (managed_session->flags.test(_online_managed_session_unknown_flag5_bit))
 		status |= 4u;
-	if ((managed_session->current_operation_flags & 4) != 0 || (managed_session->pending_operation_flags & 4) != 0)
+	if (managed_session->current_operation_flags.test(_online_managed_session_create_bit) || managed_session->pending_operation_flags.test(_online_managed_session_create_bit))
 		status |= 1u;
-	if ((flags & 0x40) != 0)
+	if (managed_session->flags.test(_online_managed_session_host_migration_in_process_bit))
 		status |= 8u;
-	if ((flags & 0x80) != 0)
+	if (managed_session->flags.test(_online_managed_session_host_migration_session_created_bit))
 		status |= 0x10u;
-	if ((managed_session->current_operation_flags & 0x10) != 0 || (managed_session->pending_operation_flags & 0x10) != 0)
+	if (managed_session->current_operation_flags.test(_online_managed_session_create_host_migration_bit) || managed_session->pending_operation_flags.test(_online_managed_session_create_host_migration_bit))
 		status |= 8u;
-	if ((flags & 0x800) != 0)
+	if (managed_session->flags.test(_online_managed_session_unknown_flag11_bit))
 		status |= 0x40u;
-	if ((flags & 0x1000) != 0)
+	if (managed_session->flags.test(_online_managed_session_unknown_flag12_bit))
 		status |= 0x80u;
-	if ((flags & 0x400) != 0)
+	if (managed_session->flags.test(_online_managed_session_players_add_pending_bit))
 		status |= 0x20u;
-	if ((managed_session->current_operation_flags & 0x400) != 0 || (managed_session->pending_operation_flags & 0x400) != 0)
+	if (managed_session->current_operation_flags.test(_online_managed_session_game_start_bit) || managed_session->pending_operation_flags.test(_online_managed_session_game_start_bit))
 		status |= 0x100u;
-	if ((flags & 0x2000) != 0)
+	if (managed_session->flags.test(_online_managed_session_game_start_succeeded_bit))
 		status |= 0x200u;
-	if ((flags & 0x4000) != 0)
+	if (managed_session->flags.test(_online_managed_session_game_start_failed_bit))
 		status |= 0x400u;
-	if ((managed_session->current_operation_flags & 0x200) != 0 || (managed_session->pending_operation_flags & 0x200) != 0)
+	if (managed_session->current_operation_flags.test(_online_managed_session_game_end_bit) || managed_session->pending_operation_flags.test(_online_managed_session_game_end_bit))
 		status |= 0x800u;
-	if ((flags & 0x8000) != 0)
+	if (managed_session->flags.test(_online_managed_session_game_end_succeeded_bit))
 		status |= 0x1000u;
-	if ((flags & 0x10000) != 0)
+	if (managed_session->flags.test(_online_managed_session_game_end_failed_bit))
 		status |= 0x2000u;
 	*managed_session_status = status;
 	return managed_session_status;
@@ -114,46 +114,42 @@ bool managed_session_is_master_session(long managed_session_index)
 	else
 	{
 		auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
-		auto flags = managed_session->flags;
-		return (flags & 2) != 0;
+		return managed_session->flags.test(_online_managed_session_master_session_bit);
 	}
 }
 
-void managed_session_reset_session(long managed_session_index, bool use_session_time)
+void managed_session_reset_session(long managed_session_index, bool recreating_session)
 {
-	c_network_session* life_cycle_session = (c_network_session*)(module_base + 0x3EADFD0); // life cycle session 0 - desired state session?
-
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_reset_session: [%s]:%08X reset session\n",
 		transport_session_description_get_string(&managed_session->desired_online_session_state.description),
 		managed_session_index);
-	managed_session->pending_operation_flags |= 1u;
+	managed_session->pending_operation_flags.set(_online_managed_session_delete_bit, true);
 	managed_session->desired_online_session_state.public_slots_flags |= 1u;
-	managed_session->creation_contexts[0].id = _online_context_id_game_type;
-	managed_session->pending_operation_flags = managed_session->pending_operation_flags & 0xFFEF | 0x184;
-	if (use_session_time)
+	//managed_session->unknown1 = true;
+	managed_session->pending_operation_flags.set(_online_managed_session_create_host_migration_bit, false);
+	managed_session->pending_operation_flags.set(_online_managed_session_create_bit, true);
+	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
+	managed_session->pending_operation_flags.set(_online_managed_session_players_add_bit, true);
+	if (recreating_session)
 	{
-		managed_session->flags |= (1 << 2);
-		if (life_cycle_session->m_time_exists)
-			managed_session->creation_time = life_cycle_session->m_time;
-		else
-			managed_session->creation_time = timeGetTime();
+		managed_session->flags.set(_online_managed_session_recreating_bit, true);
+		managed_session->creation_time = network_time_get();
 	}
 	else
 	{
-		managed_session->flags &= ~(1 << 2);
+		managed_session->flags.set(_online_managed_session_recreating_bit, false);
 		managed_session->creation_time = 0;
 	}
 }
 
 void managed_session_remove_players(long managed_session_index, qword* xuids, long xuid_count)
 {
-	//void(__fastcall* remove_from_player_list)(s_online_session_player* players, long player_count, qword* xuids, long xuid_count) = reinterpret_cast<decltype(remove_from_player_list)>(module_base + 0x290E0);
-	
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
-	managed_session->pending_operation_flags |= 0xC0u;
-	managed_session->flags &= 0xFFFFFFFB;
+	managed_session->pending_operation_flags.set(_online_managed_session_players_remove_bit, true);
+	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
+	managed_session->flags.set(_online_managed_session_recreating_bit, false);
 	managed_session->creation_time = 0;
 }
 
@@ -182,16 +178,18 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 void managed_session_reset_players_add_status(long managed_session_index)
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
-	managed_session->flags &= 0xFFFFE7FF;
+	managed_session->flags.set(_online_managed_session_unknown_flag11_bit, false);
+	managed_session->flags.set(_online_managed_session_unknown_flag8_bit, false);
 }
 
 void managed_session_add_players(long managed_session_index, qword* player_xuids, bool* player_bools, long xuid_count)
 {
 	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
 	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, player_bools, xuid_count); // non-original function name
-	managed_session->flags |= 0x400u;
-	managed_session->pending_operation_flags |= 0x180u;
-	managed_session->flags &= 0xFFFFFFFB;
+	managed_session->flags.set(_online_managed_session_players_add_pending_bit, true);
+	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
+	managed_session->pending_operation_flags.set(_online_managed_session_players_add_bit, true);
+	managed_session->flags.set(_online_managed_session_recreating_bit, false);
 	managed_session->creation_time = 0;
 }
 

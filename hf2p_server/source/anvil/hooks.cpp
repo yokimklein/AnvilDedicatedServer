@@ -153,7 +153,7 @@ bool __fastcall transport_secure_key_create_hook(s_transport_session_description
     FUNCTION_DEF(0x3BC0, bool, __fastcall, transport_secure_key_create, s_transport_session_description* session_description);
     bool result = transport_secure_key_create(session_description);
     
-    xnet_shim_table_add(&transport_security_globals->address, &session_description->host_address, &session_description->session_id);
+    xnet_shim_register(&transport_security_globals->address, &session_description->host_address, &session_description->session_id);
     return result;
 }
 
@@ -161,8 +161,8 @@ void __fastcall managed_session_delete_session_internal_hook(long managed_sessio
 {
     FUNCTION_DEF(0x28C30, void, __fastcall, managed_session_delete_session_internal, long managed_session_index, c_managed_session* managed_session);
 
-    if ((managed_session->flags & 0x10) != 0 && managed_session->session_class == 1)
-        xnet_shim_unregister_inaddr(&transport_security_globals->address);
+    if (managed_session->flags.test(_online_managed_session_created_bit) && managed_session->session_class == _network_session_class_online)
+        xnet_shim_unregister(&transport_security_globals->address);
 
     managed_session_delete_session_internal(managed_session_index, managed_session);
 }
@@ -202,7 +202,7 @@ void anvil_dedi_apply_hooks()
     // add back network_session_check_properties
     Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    // add/remove the host address & security keys to the xnet shim table on session creation/destruction so we can locate them with one another
+    // register/unregister the host address description to the xnet shim table on session creation/destruction so we can locate them with one another
     Hook(0x28E32, transport_secure_key_create_hook, HookFlags::IsCall).Apply();
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
