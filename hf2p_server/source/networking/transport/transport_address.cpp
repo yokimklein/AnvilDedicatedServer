@@ -2,6 +2,7 @@
 #include "..\..\dllmain.h"
 #include <assert.h>
 #include "transport_security.h"
+#include <stdio.h>
 
 enum
 {
@@ -15,7 +16,6 @@ char const* transport_address_get_string(s_transport_address const* address)
 	return address_str;
 }
 
-// FUNC TODO
 char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool include_port, bool include_security)
 {
 	assert(address);
@@ -86,4 +86,36 @@ bool transport_address_equivalent(s_transport_address const* address1, s_transpo
 {
 	bool(__fastcall * transport_address_equivalent_call)(s_transport_address const* address1, s_transport_address const* address2) = reinterpret_cast<decltype(transport_address_equivalent_call)>(module_base + 0x77D0);
 	return transport_address_equivalent_call(address1, address2);
+}
+
+bool transport_address_valid(s_transport_address const* address)
+{
+	bool valid = false;
+	if (address)
+	{
+		switch (address->address_size)
+		{
+			case -1:
+				valid = address->address.ipv4 != 0;
+				break;
+			case 4:
+				valid = address->address.ipv4 != 0;
+				if (!address->address.ipv4)
+					printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: transport_address_valid: the IPV4 address is NOT valid\n\n");
+				break;
+			case 16:
+				for (long i = 0; i < 8; ++i)
+				{
+					if (*((ushort*)address + i))
+					{
+						valid = true;
+						break;
+					}
+				}
+				if (!valid)
+					printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: transport_address_valid: the IPV6 address is NOT valid\n\n");
+				break;
+		}
+	}
+	return valid;
 }
