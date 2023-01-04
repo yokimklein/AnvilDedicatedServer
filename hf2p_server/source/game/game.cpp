@@ -12,7 +12,7 @@ game_options* game_options_get()
 
 bool game_is_server()
 {
-	e_game_simulation_type game_simulation = game_options_get()->game_simulation;
+	e_game_simulation_type game_simulation = game_options_get()->game_simulation_type;
 	if (game_simulation == _game_simulation_synchronous_server ||
 		game_simulation == _game_simulation_distributed_server)
 		return true;
@@ -22,7 +22,7 @@ bool game_is_server()
 
 bool game_is_distributed()
 {
-	e_game_simulation_type game_simulation = game_options_get()->game_simulation;
+	e_game_simulation_type game_simulation = game_options_get()->game_simulation_type;
 	if (game_simulation >= _game_simulation_distributed_client &&
 		game_simulation <= _game_simulation_distributed_server)
 		return true;

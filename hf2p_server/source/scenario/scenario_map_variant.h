@@ -2,6 +2,8 @@
 #include "..\saved_games\saved_game_files.h"
 #include "..\dllmain.h"
 
+constexpr long k_number_of_map_variant_simulation_entities = 80;
+
 // uncommented maps are included in cache 11.1.601838
 enum e_map_id : long
 {
@@ -97,7 +99,7 @@ struct s_map_variant_placement_properties
 	float boundry_bottom;
 };
 
-struct s_map_variant_placement
+struct s_variant_object_datum
 {
 	word_flags flags;
 	short : 16;
@@ -110,8 +112,9 @@ struct s_map_variant_placement
 	c_object_identifier parent_object_identifier;
 	s_map_variant_placement_properties properties;
 };
+static_assert(sizeof(s_variant_object_datum) == 0x54);
 
-struct s_map_variant_budget_entry
+struct s_variant_quota
 {
 	long tag_index;
 	byte runtime_minimum;
@@ -120,30 +123,32 @@ struct s_map_variant_budget_entry
 	byte design_time_maximum;
 	real cost;
 };
+static_assert(sizeof(s_variant_quota) == 0xC);
 
-class c_map_variant
+class c_map_variant : public s_saved_game_item_metadata
 {
 public:
 	c_map_variant();
 	void create_default(e_map_id map_id);
+	datum_index get_chunk_gamestate_index(long chunk_index);
 
-	s_saved_game_item_metadata base;
-	short : 16;
-	ushort total_placements_count;
-	ushort used_placements_count;
-	ushort budget_entry_count;
+	short version; // 12 in HO
+	ushort scenario_object_count;
+	ushort variant_object_count;
+	ushort placeable_object_quota_count;
 	long map_id;
-	real_bounds world_x_bounds;
-	real_bounds world_y_bounds;
-	real_bounds world_z_bounds;
-	long content_type;
+	real_rectangle3d world_bounds;
+	c_enum<e_content_item, long, k_content_item_count> content_type;
 	real maximum_budget;
 	real current_budget;
-	long : 32;
-	long : 32;
-	s_map_variant_placement placements[640];
-	ushort scenario_indices[16];
-	s_map_variant_budget_entry budget_entries[256];
-	char unused[320];
+	bool showing_helpers;
+	bool built_in;
+	long cache_checksum;
+	c_static_array<s_variant_object_datum, 640> objects;
+	c_static_array<short, 16> scenario_indices;
+	c_static_array<s_variant_quota, 256> quotas;
+	c_static_array<datum_index, k_number_of_map_variant_simulation_entities> simulation_gamestate_indices;
 };
-static_assert(sizeof(c_map_variant) == 0xE090); // is this actually 0xE108 now?
+static_assert(sizeof(c_map_variant) == 0xE090);
+
+c_map_variant* game_engine_get_runtime_map_variant();

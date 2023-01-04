@@ -212,3 +212,14 @@ union real_matrix4x3
 	real n[13];
 };
 static_assert(sizeof(real_matrix4x3) == 0x34);
+
+struct real_rectangle3d
+{
+	real x0;
+	real x1;
+	real y0;
+	real y1;
+	real z0;
+	real z1;
+};
+static_assert(sizeof(real_rectangle3d) == 0x18);

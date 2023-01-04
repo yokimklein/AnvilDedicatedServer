@@ -63,7 +63,7 @@ struct s_game_engine_globals
 	short __unknown2A;
 	dword gamestate_index;
 	datum_index statborg_gamestate_index;
-	c_static_array<long, 16> player_simulation_object_glue_indices;
+	c_static_array<datum_index, 16> player_simulation_gamestate_indices;
 	byte __data74[0x4];
 	c_map_variant map_variant;
 	short current_state;
@@ -120,5 +120,6 @@ static_assert(sizeof(s_game_engine_globals) == 0x15858);
 void game_engine_attach_to_simulation();
 bool game_engine_is_sandbox();
 c_game_engine* current_game_engine();
+bool game_engine_running();
 
 static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);

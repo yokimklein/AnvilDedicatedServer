@@ -59,17 +59,61 @@ void simulation_action_game_ai_create()
 	// is this for syncing ai over distributed/asynchronous games?
 }
 
+// only called for the sandbox engine (forge)
+// TODO: test this
 void simulation_action_game_map_variant_create_all()
 {
-	// TODO
+	if (game_is_server() && game_is_distributed())
+	{
+		for (long i = 0; i < k_number_of_map_variant_simulation_entities; i++)
+			simulation_action_game_map_variant_create_for_chunk(i);
+	}
 }
 
-void simulation_action_game_engine_player_create(long player_index)
+void simulation_action_game_map_variant_create_for_chunk(long chunk_index)
 {
-	// TODO
+	c_map_variant* map_variant = game_engine_get_runtime_map_variant();
+	assert(map_variant->get_chunk_gamestate_index(chunk_index) == NONE);
+	datum_index gamestate_index = simulation_gamestate_entity_create();
+	map_variant->simulation_gamestate_indices[chunk_index] = gamestate_index;
+	simulation_gamestate_entity_set_object_index(gamestate_index, chunk_index);
+	if (!game_is_playback())
+	{
+		long entity_index = simulation_entity_create(_simulation_entity_type_map_variant, chunk_index, gamestate_index);
+		if (entity_index != -1)
+		{
+			c_simulation_entity_database* simulation_entity_database = simulation_get_world()->get_entity_database();
+			s_simulation_entity* entity = simulation_entity_database->entity_get(entity_index);
+			assert(entity->gamestate_index != NONE);
+			simulation_entity_database->entity_capture_creation_data(entity_index);
+		}
+	}
+}
+
+void simulation_action_game_engine_player_create(short player_absolute_index)
+{
+	if (game_is_server() && game_is_distributed())
+	{
+		assert(game_engine_globals_get_player_gamestate_index(player_absolute_index) == NONE);
+		datum_index gamestate_index = simulation_gamestate_entity_create();
+		game_engine_globals_set_player_gamestate_index(player_absolute_index, gamestate_index);
+		simulation_gamestate_entity_set_object_index(gamestate_index, -1);
+		if (!game_is_playback())
+		{
+			long entity_index = simulation_entity_create(_simulation_entity_type_game_engine_player, -1, gamestate_index);
+			if (entity_index != -1)
+			{
+				c_simulation_entity_database* simulation_entity_database = simulation_get_world()->get_entity_database();
+				s_simulation_entity* entity = simulation_entity_database->entity_get(entity_index);
+				assert(entity->gamestate_index != NONE);
+				simulation_entity_database->entity_capture_creation_data(entity_index);
+			}
+		}
+	}
 }
 
 void simulation_action_breakable_surfaces_create()
 {
-	// TODO
+	// there is code for this in ms23, but it doesn't seem like it would function?
+	// TODO: revisit this
 }
