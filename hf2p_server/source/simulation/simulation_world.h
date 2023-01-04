@@ -6,6 +6,9 @@
 #include "simulation_players.h"
 #include "simulation_watcher.h"
 #include "simulation_queue.h"
+#include "simulation_entity_database.h"
+#include "..\networking\replication\replication_event_manager.h"
+#include "..\networking\replication\replication_entity_manager.h"
 
 enum e_simulation_world_type : long
 {
@@ -22,9 +25,24 @@ enum e_simulation_world_type : long
 	k_simulation_world_type_count
 };
 
+enum e_simulation_world_state
+{
+	_simulation_world_state_none = 0,
+	_simulation_world_state_dead,
+	_simulation_world_state_disconnected,
+	_simulation_world_state_joining,
+	_simulation_world_state_active,
+	_simulation_world_state_handoff,
+
+	k_simulation_world_state_count
+};
+
 class c_simulation_distributed_world
 {
-	byte unknown_data[0xD0C8];
+public:
+	c_replication_entity_manager m_entity_manager;
+	c_replication_event_manager m_event_manager;
+	c_simulation_entity_database m_entity_database;
 };
 static_assert(sizeof(c_simulation_distributed_world) == 0xD0C8);
 
@@ -33,6 +51,11 @@ class c_simulation_world
 {
 public:
 	void update_establishing_view(c_simulation_view* simulation_view);
+	bool exists();
+	bool is_distributed();
+	bool is_authority();
+	bool is_active();
+	c_simulation_entity_database* get_entity_database();
 
 	c_simulation_watcher* m_watcher;
 	c_simulation_distributed_world* m_distributed_world;
@@ -41,7 +64,7 @@ public:
 	s_machine_identifier m_local_machine_identifier;
 	byte __align1D[0x3];
 	long m_local_machine_index;
-	long m_world_state; // e_simulation_world_state
+	e_simulation_world_state m_world_state;
 	long m_last_time_disconnected;
 	byte __data2C[0x4];
 	bool m_time_running;
@@ -76,3 +99,5 @@ public:
 };
 static_assert(sizeof(c_simulation_world) == 0x1540);
 #pragma pack(pop)
+
+c_simulation_world* simulation_get_world();

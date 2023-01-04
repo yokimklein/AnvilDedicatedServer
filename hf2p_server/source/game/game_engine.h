@@ -1,85 +1,23 @@
 #pragma once
 #include "..\cseries\cseries.h"
-
-// uncommented maps are included in cache 11.1.601838
-enum e_map_id : long
-{
-	//         this is the birthday of one of the halo 3 devs' wife
-	//                 23rd October 1971
-	           _mainmenu = 0x10231971, // Mainmenu,
-	           _zanzibar = 30,  // Last Resort
-			   _s3d_turf = 31,  // Icebox
-	//        _construct = 300, // Construct
-	//         _dlc_5050 = 301, // 
-	//          _dlc_new = 302, // 
-	//        _dlc_reuse = 303, // 
-	           _deadlock = 310, // High Ground
-			   _guardian = 320, // Guardian
-	//        _isolation = 330, // Isolation
-	         _riverworld = 340, // Valhalla
-	//        _salvation = 350, // Epitaph
-	//        _snowbound = 360, // Snowbound
-	//      _warthog_inc = 370, // Warthog Inc
-	              _chill = 380, // Narrows
-	          _cyberdyne = 390, // The Pit
-	//           _shrine = 400, // Sandtrap
-	        _bunkerworld = 410, // Standoff
-	//        _landslide = 420, // Landslide
-	//        _beachhead = 430, // Beachhead
-	//            _docks = 440, // Longshore
-	//        _pump_haus = 450, // Pump Haus
-	//            _shaft = 460, // Shaft
-	//       _sidewinder = 470, // Avalanche
-	//        _warehouse = 480, // Foundry
-	//          _descent = 490, // Assembly
-	//        _spacecamp = 500, // Orbital
-	//          _volcano = 510, // Volcano
-	//          _lockout = 520, // Blackout
-	//           _armory = 580, // Rat's Nest
-	//        _ghosttown = 590, // Ghost Town
-	//         _chillout = 600, // Cold Storage
-	        _s3d_reactor = 700, // Reactor
-	//                   = 701, // 
-	//                   = 702, // 
-	           _s3d_edge = 703, // Edge
-	//                   = 704, // 
-	      _s3d_avalanche = 705, // Diamondback
-	//    _s3d_waterfall = 706, // Whiteout
-	//                   = 707, // 
-	//                   = 708, // 
-	//_s3d_sky_bridgenew = 709, // Sky Bridge New
-	//             _damn = 710, // Dam
-	//      _s3d_lockout = 711, // Lockup
-	//                   = 712, // 
-	//                   = 713, // 
-	//                   = 714, // 
-	//   _s3d_powerhouse = 715, // Powerhouse
-	//                   = 716, // 
-	//                   = 717, // 
-	//                   = 718, // 
-	//                   = 719, // 
-	//          _midship = 720, // Heretic
-	//          _sandbox = 730, // Sandbox
-	//         _fortress = 740, // Citadel
-
-	/*
-	// unknown map ids
-	the_gash
-	s3d_dale
-	s3d_hangar
-	s3d_rock
-	s3d_sidewinder
-	s3d_underwater
-	s3d_well
-	s3d_countdown
-	s3d_haven
-	s3d_drydock // Dry Dock
-	s3d_burial_mounds
-	s3d_chillout // Abeyance
-	s3d_beaver_creek
-	s3d_tutorial // Tutorial
-	*/
-};
+#include "game_engine_scoring.h"
+#include "game_engine_spawn_influencer.h"
+#include "game_statborg.h"
+#include "game_engine_candy_monitor.h"
+#include "game_engine_teleporters.h"
+#include "..\scenario\scenario_map_variant.h"
+#include "game_engine_ctf.h"
+#include "game_engine_slayer.h"
+#include "game_engine_oddball.h"
+#include "game_engine_king.h"
+#include "game_engine_sandbox.h"
+#include "game_engine_vip.h"
+#include "game_engine_juggernaut.h"
+#include "game_engine_territories.h"
+#include "game_engine_assault.h"
+#include "game_engine_infection.h"
+#include "game_engine_simulation.h"
+#include "..\dllmain.h"
 
 enum e_engine_variant : long
 {
@@ -95,3 +33,92 @@ enum e_engine_variant : long
 	_engine_variant_assault,
 	_engine_variant_infection,
 };
+
+struct s_player_waypoint_data
+{
+	byte __data[0x1C];
+};
+static_assert(sizeof(s_player_waypoint_data) == 0x1C);
+
+struct s_multiplayer_weapon_tracker
+{
+	dword weapon_index;
+	word multiplayer_weapon_identifier;
+	dword owner_unit_index;
+	dword owner_player_index;
+};
+static_assert(sizeof(s_multiplayer_weapon_tracker) == 0x10);
+
+struct s_game_engine_globals
+{
+	dword_flags flags;
+	word_flags valid_team_mask;
+	word_flags initial_teams;
+	word_flags valid_designators;
+	word_flags valid_teams;
+	word_flags active_teams;
+	word game_simulation;
+	c_static_array<short, 9> team_designator_to_team_index;
+	c_static_array<byte, 8> team_lives_per_round;
+	short __unknown2A;
+	dword gamestate_index;
+	datum_index statborg_gamestate_index;
+	c_static_array<long, 16> player_simulation_object_glue_indices;
+	byte __data74[0x4];
+	c_map_variant map_variant;
+	short current_state;
+	short round_index;
+	dword round_timer;
+	byte round_condition_flags;
+	s_game_engine_score_list score_list;
+
+	union
+	{
+		s_ctf_globals ctf_globals;
+		//s_slayer_globals slayer_globals;
+		s_oddball_globals oddball_globals;
+		s_king_globals king_globals;
+		s_sandbox_globals sandbox_globals;
+		s_vip_globals vip_globals;
+		s_juggernaut_globals juggernaut_globals;
+		s_territories_globals territories_globals;
+		s_assault_globals assault_globals;
+		s_infection_globals infection_globals;
+
+		// probably contains more bytes than it should
+		byte globals_storage[0x1800];
+	};
+
+	word timer;
+	word __unknownF992;
+	dword game_variant_round_time_limit_ticks_per_second;
+	real __unknownF996[4];
+	byte __dataF9A8[2];
+	short __unknownF9A8;
+	long __unknownF9AC;
+	c_static_array<s_dead_player_info, 64> spawn_influencers;
+	c_game_statborg statborg;
+	long __unknown102D4;
+	c_static_array<s_player_waypoint_data, 16> player_waypoints;
+	byte __data10498[0x104];
+	c_multiplayer_candy_monitor_manager candy_monitor_manager;
+	dword __unknown13D9C;
+	dword desired_state;
+	bool game_finished;
+	dword __unknown13DA8;
+	dword __unknown13DAC;
+	c_enum<e_game_engine_type, long, k_game_engine_type_count> game_engine_index;
+	long multiplayer_weapon_count;
+	c_static_array<s_multiplayer_weapon_tracker, 8> multiplayer_weapons;
+	c_area_set<c_teleporter_area, 32> teleporters;
+	long current_event_identifier;
+	c_static_array<s_game_engine_queued_event, 64> event_queue;
+	byte __data1584C[0xC];
+};
+static_assert(sizeof(s_game_engine_globals) == 0x15858);
+
+void game_engine_attach_to_simulation();
+bool game_engine_is_sandbox();
+c_game_engine* current_game_engine();
+
+static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);

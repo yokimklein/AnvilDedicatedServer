@@ -197,6 +197,11 @@ public:
 		return TEST_BIT(m_storage, bit);
 	}
 
+	t_storage_type get_unsafe()
+	{
+		return m_storage;
+	}
+
 	bool operator==(t_type value)
 	{
 		return !!(m_storage & (1 << value));

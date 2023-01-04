@@ -5,7 +5,7 @@
 #include "game_engine_traits.h"
 #include "..\saved_games\saved_game_files.h"
 
-enum e_game_engine_variant
+enum e_game_engine_type
 {
 	_game_engine_base_variant = 0,
 	_game_engine_ctf_variant,
@@ -19,8 +19,8 @@ enum e_game_engine_variant
 	_game_engine_assault_variant,
 	_game_engine_infection_variant,
 
-	k_game_engine_variant_count,
-	k_game_engine_variant_default = _game_engine_base_variant
+	k_game_engine_type_count,
+	k_game_engine_type_default = _game_engine_base_variant
 };
 
 class c_bitstream;
@@ -49,7 +49,7 @@ public:
 	virtual bool __cdecl can_add_to_recent_list();
 	virtual long __thiscall get_score_to_win_round();
 	virtual long __thiscall get_score_unknown();                                  // halo online specific
-	virtual bool __stdcall can_be_cast_to(e_game_engine_variant, void const**);
+	virtual bool __stdcall can_be_cast_to(e_game_engine_type, void const**);
 	virtual void __stdcall custom_team_score_stats(long, long, long);
 
 	dword __unknown4;

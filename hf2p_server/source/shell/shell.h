@@ -34,7 +34,7 @@ enum e_campaign_skulls_primary
 	_campaign_skull_tilt,
 	_campaign_skull_mythic,
 
-	k_campaign_skull_primary_count
+	k_campaign_skulls_primary_count
 };
 
 enum e_campaign_skulls_secondary
@@ -47,7 +47,7 @@ enum e_campaign_skulls_secondary
 	_campaign_skull_third_person,
 	_campaign_skull_directors_cut,
 
-	k_campaign_skull_secondary_count
+	k_campaign_skulls_secondary_count
 };
 
 // TODO: find a home

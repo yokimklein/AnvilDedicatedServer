@@ -6,6 +6,7 @@
 
 bool anvil_create_session()
 {
+    printf("Creating session...\n");
     if (!hf2p_setup_session())
     {
         printf("Session creation failed!\n");
@@ -61,7 +62,7 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         host_configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
         host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scout;
         host_configuration->s3d_player_container.loadouts[0].primary_weapon = _smg_v5;
-        host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
+        host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _bomb_run;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _concussive_blast;

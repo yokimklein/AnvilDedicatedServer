@@ -1,0 +1,36 @@
+#include "simulation_gamestate_entities.h"
+#include "..\memory\tls.h"
+#include "assert.h"
+#include <stdio.h>
+
+datum_index simulation_gamestate_entity_create()
+{
+	auto tls = get_tls();
+	datum_index gamestate_index = datum_new(tls->simulation_gamestate_entity_data);
+	if (gamestate_index != -1)
+	{
+		simulation_gamestate_entity_datum* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(tls->simulation_gamestate_entity_data, gamestate_index);
+		gamestate_entity->object_index = -1;
+		gamestate_entity->entity_index = -1;
+		gamestate_entity->__unknownC = 0;
+	}
+	else
+	{
+		printf("simulation_gamestate_entity_create: failed to allocate simulation gamestate entity\n");
+	}
+	return gamestate_index;
+}
+
+void simulation_gamestate_entity_set_object_index(datum_index gamestate_index, long object_index)
+{
+	assert(gamestate_index != NONE);
+	auto* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(get_tls()->simulation_gamestate_entity_data, gamestate_index);
+	gamestate_entity->object_index = object_index;
+}
+
+void simulation_gamestate_entity_set_simulation_entity_index(datum_index gamestate_index, long entity_index)
+{
+	assert(gamestate_index != NONE);
+	auto* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(get_tls()->simulation_gamestate_entity_data, gamestate_index);
+	gamestate_entity->entity_index = entity_index;
+}

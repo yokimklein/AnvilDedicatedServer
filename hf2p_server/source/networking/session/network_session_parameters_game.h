@@ -121,6 +121,7 @@ struct s_network_session_parameter_initial_participants
 	bool player_options_exists;
 	game_player_options player_options[k_network_maximum_players_per_session];
 };
+static_assert(sizeof(s_network_session_parameter_initial_participants) == 0xBA30);
 
 class c_network_session_parameter_initial_participants : public c_network_session_parameter_base
 {
@@ -141,6 +142,7 @@ class c_network_session_parameter_initial_participants : public c_network_sessio
 	long m_max_chunk_count;
 	long : 32;
 };
+static_assert(sizeof(c_network_session_parameter_initial_participants) == 0x56500);
 
 class c_generic_network_session_parameter_start_mode : public c_network_session_parameter_base
 {

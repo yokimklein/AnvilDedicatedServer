@@ -173,6 +173,15 @@ void __fastcall network_session_interface_set_local_name_hook(wchar_t const* mac
     network_session_interface_set_local_name(k_anvil_machine_name, k_anvil_session_name);
 }
 
+long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* file_name, long line_number)
+{
+    FUNCTION_DEF(0x94CB0, long, __cdecl, internal_halt_render_thread_and_lock_resources, const char* file_name, long line_number);
+    long result = internal_halt_render_thread_and_lock_resources(file_name, line_number);
+
+    game_engine_attach_to_simulation();
+    return result;
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -207,6 +216,8 @@ void anvil_dedi_apply_hooks()
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
+    // add game_engine_attach_to_simulation back to game_engine_game_starting
+    Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
 
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup
     // prevent the game from adding a player to the dedicated host
