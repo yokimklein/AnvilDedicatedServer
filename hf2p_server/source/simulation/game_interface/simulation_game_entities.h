@@ -54,3 +54,4 @@ static_assert(sizeof(s_simulation_entity) == 0x30);
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index);
 e_simulation_entity_type simulation_entity_type_from_game_engine();
+void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_mask);

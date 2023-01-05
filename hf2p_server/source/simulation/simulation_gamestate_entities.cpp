@@ -34,3 +34,10 @@ void simulation_gamestate_entity_set_simulation_entity_index(datum_index gamesta
 	auto* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(get_tls()->simulation_gamestate_entity_data, gamestate_index);
 	gamestate_entity->entity_index = entity_index;
 }
+
+long simulation_gamestate_entity_get_simulation_entity_index(datum_index gamestate_index)
+{
+	assert(gamestate_index != NONE);
+	auto* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(get_tls()->simulation_gamestate_entity_data, gamestate_index);
+	return gamestate_entity->entity_index;
+}

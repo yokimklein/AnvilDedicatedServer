@@ -39,3 +39,9 @@ e_game_playback_type game_playback_get()
 {
 	return game_options_get()->game_playback;
 }
+
+bool game_is_available()
+{
+	game_globals_storage* game_globals = game_globals_get();
+	return game_globals != nullptr && game_globals->map_active && game_globals->options.game_mode != _game_mode_none;
+}

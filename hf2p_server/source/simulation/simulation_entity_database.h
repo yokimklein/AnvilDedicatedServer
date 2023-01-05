@@ -15,6 +15,8 @@ public:
 	const char* get_entity_type_name(e_simulation_entity_type entity_type);
 	s_simulation_entity* entity_get(long entity_index);
 	void entity_capture_creation_data(long entity_index);
+	bool entity_is_local(long entity_index);
+	void entity_update(long entity_index, c_flags<long, ulong64, 64>* update_mask, bool force_mask_update);
 
 	bool m_initialized;
 	byte __unknown1;

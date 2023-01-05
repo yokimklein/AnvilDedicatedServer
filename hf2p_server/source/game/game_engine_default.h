@@ -7,7 +7,6 @@
 enum e_multiplayer_team;
 enum e_team_scoring_method;
 struct game_engine_interface_state;
-enum e_multiplayer_team_designator;
 struct s_chud_navpoint;
 struct s_netgame_goal_influencer;
 enum e_game_team;

@@ -37,3 +37,14 @@ e_simulation_entity_type simulation_entity_type_from_game_engine()
 {
 	return game_engine_globals_get_simulation_entity_type();
 }
+
+void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_mask)
+{
+	c_simulation_world* world = simulation_get_world();
+	if (world->is_distributed() && world->is_authority())
+	{
+		c_simulation_entity_database* entity_database = world->get_entity_database();
+		if (entity_database->entity_is_local(entity_index))
+			entity_database->entity_update(entity_index, update_mask, false);
+	}
+}

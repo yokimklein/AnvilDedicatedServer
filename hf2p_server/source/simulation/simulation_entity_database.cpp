@@ -2,6 +2,7 @@
 #include "assert.h"
 #include <stdio.h>
 #include "..\networking\network_memory.h"
+#include "simulation_gamestate_entities.h"
 
 long c_simulation_entity_database::entity_create(e_simulation_entity_type entity_type)
 {
@@ -168,4 +169,46 @@ void c_simulation_entity_database::entity_capture_creation_data(long entity_inde
 	entity->exists_in_gameworld = true;
 	entity->pending_update_mask = MASK(entity_definition->update_flag_count());
 	entity->force_update_mask = 0;
+}
+
+bool c_simulation_entity_database::entity_is_local(long entity_index)
+{
+	assert(this->m_entity_manager);
+	assert(this->m_world->is_distributed());
+	return this->m_entity_manager->is_entity_local(entity_index);
+}
+
+void c_simulation_entity_database::entity_update(long entity_index, c_flags<long, ulong64, 64>* update_mask, bool force_mask_update)
+{
+	s_simulation_entity* entity = this->entity_get(entity_index);
+	assert(!update_mask->is_clear());
+	assert(entity->exists_in_gameworld);
+	assert(this->m_world);
+	assert(this->m_world->is_distributed());
+	assert(this->m_world->is_authority());
+	assert(this->m_entity_manager);
+	assert(this->m_entity_manager->is_entity_local(entity_index));
+	assert(!this->m_entity_manager->is_entity_being_deleted(entity_index));
+	c_simulation_entity_definition* entity_definition = this->m_type_collection->get_entity_definition(entity->entity_type);
+	if (entity_definition->gameworld_attachment_valid(entity->gamestate_index))
+	{
+		if (simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index) != entity->entity_index)
+		{
+			printf("c_simulation_entity_database::entity_update: entity type %d index 0x%8X (!= 0x%08X) not attached properly to gamestate 0x%8X (update)\n",
+				entity_index,
+				entity->entity_type,
+				simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index),
+				entity->gamestate_index);
+		}
+	}
+	else
+	{
+		printf("c_simulation_entity_database::entity_update: entity type %d index 0x%8X not attached properly to gamestate 0x%8X (update)\n",
+			entity->entity_type,
+			entity_index,
+			entity->gamestate_index);
+	}
+	entity->pending_update_mask |= update_mask->get_unsafe();
+	if (force_mask_update)
+		entity->force_update_mask |= update_mask->get_unsafe();
 }

@@ -59,7 +59,7 @@ long c_replication_entity_manager::create_local_entity_internal(long absolute_in
 	assert(this->m_entity_data[absolute_index].flags.get_unsafe() == FLAG(_replication_entity_allocated_flag));
 	entity_data->flags.set(_replication_entity_local_flag, true);
 	entity_data->seed = (entity_data->seed + 1) % 16;
-	long entity_index = absolute_index | (entity_data->seed << 28);
+	long entity_index = absolute_index | SEED_TO_ENTITY_INDEX(entity_data->seed);
 	for (long i = 0; i < 16; i++)
 	{
 		if (this->m_views[i] != nullptr)
@@ -82,9 +82,32 @@ s_replication_entity_data* c_replication_entity_manager::try_and_get_entity(long
 		s_replication_entity_data* entity_data = &this->m_entity_data[absolute_index];
 		if (entity_data->flags.test(_replication_entity_allocated_flag))
 		{
-			if (entity_data->seed == entity_index >> 28)
+			if (entity_data->seed == ENTITY_INDEX_TO_SEED(entity_index))
 				out_entity_data = entity_data;
 		}
 	}
 	return out_entity_data;
+}
+
+bool c_replication_entity_manager::is_entity_local(long entity_index)
+{
+	s_replication_entity_data* entity = this->get_entity(entity_index);
+	return entity->flags.test(_replication_entity_local_flag);
+}
+
+s_replication_entity_data* c_replication_entity_manager::get_entity(long entity_index)
+{
+	long absolute_index = entity_index & 1023;
+	s_replication_entity_data* entity = &this->m_entity_data[absolute_index];
+	assert(entity_index != NONE);
+	assert(absolute_index >= 0 && absolute_index < NUMBEROF(this->m_entity_data));
+	assert(entity->flags.test(_replication_entity_allocated_flag));
+	assert(entity->seed == ENTITY_INDEX_TO_SEED(entity_index));
+	return entity;
+}
+
+bool c_replication_entity_manager::is_entity_being_deleted(long entity_index)
+{
+	s_replication_entity_data* entity = this->get_entity(entity_index);
+	return entity->flags.test(_replication_entity_marked_for_deletion_flag);
 }

@@ -74,6 +74,8 @@ struct c_game_engine_respawn_options
 
 	// default: 0
 	// maximum: 50
+	// TODO - this actually needs to be 4 bytes further down? are we missing a field or have we misnamed these?
+	// edit a map variant in ED and mess with these values, then check the struct in memory to see if our definition matches
 	byte m_lives_per_round;
 
 	// default: 0

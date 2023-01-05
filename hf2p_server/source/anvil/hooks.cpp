@@ -13,6 +13,7 @@
 #include "..\networking\session\network_managed_session.h"
 #include "server_tools.h"
 #include "..\simulation\simulation_debug_globals.h"
+#include "..\simulation\game_interface\simulation_game_action.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -182,6 +183,20 @@ long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* fil
     return result;
 }
 
+// TODO - rewrite game_engine_player_added instead of this, the hook is calling the updates before game_engine_attach_to_simulation
+void* __cdecl c_game_statborg_clear_player_stats_hook(void* dst, long val, long size)
+{
+    void* result = csmemset(dst, val, size);
+    // get the player index back from the memset's args
+    ulong absolute_player_index = (ulong)(((ulong)result - (ulong)dst) / (ulong)size);
+
+    c_flags<long, ulong64, 64> player_update_mask = {};
+    player_update_mask.set(absolute_player_index, true);
+    simulation_action_game_statborg_update(&player_update_mask);
+    simulation_action_game_engine_player_update((short)absolute_player_index, 1 << _simulation_entity_type_game_engine_player);
+    return result;
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -218,6 +233,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
     // add game_engine_attach_to_simulation back to game_engine_game_starting
     Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
+    // add back simulation_action_game_statborg_update calls
+    //Hook(0xFA39F, c_game_statborg_clear_player_stats_hook, HookFlags::IsCall).Apply(); // c_game_statborg::player_added -> c_game_statborg::clear_player_stats -> simulation_action_game_statborg_update
 
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup
     // prevent the game from adding a player to the dedicated host

@@ -29,6 +29,9 @@ public:
 	long create_local_entity_internal(long absolute_index);
 	bool is_entity_allocated(long entity_index);
 	s_replication_entity_data* try_and_get_entity(long entity_index);
+	bool is_entity_local(long entity_index);
+	s_replication_entity_data* get_entity(long entity_index);
+	bool is_entity_being_deleted(long entity_index);
 
 	c_simulation_entity_database* m_client;
 	c_static_array<c_replication_entity_manager_view*, 16> m_views;

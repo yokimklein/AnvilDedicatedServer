@@ -119,6 +119,8 @@ const long LONG_BITS = SIZEOF_BITS(long);
 #define MASK(bit) ((1 << (bit)) - 1)
 #define TEST_BIT(flags, bit) ((flags & (1 << (bit))) != 0)
 #define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))
+#define ENTITY_INDEX_TO_SEED(value) ((ulong)(value >> 28))
+#define SEED_TO_ENTITY_INDEX(value) ((ulong)(value << 28))
 
 #define NONE -1
 
@@ -200,6 +202,11 @@ public:
 	t_storage_type get_unsafe()
 	{
 		return m_storage;
+	}
+
+	bool is_clear()
+	{
+		return m_storage == 0;
 	}
 
 	bool operator==(t_type value)

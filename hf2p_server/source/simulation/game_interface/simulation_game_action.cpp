@@ -4,6 +4,7 @@
 #include "simulation_game_entities.h"
 #include "..\simulation_world.h"
 #include "assert.h"
+#include <stdio.h>
 
 void simulation_action_game_engine_globals_create()
 {
@@ -116,4 +117,30 @@ void simulation_action_breakable_surfaces_create()
 {
 	// there is code for this in ms23, but it doesn't seem like it would function?
 	// TODO: revisit this
+}
+
+void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_mask)
+{
+	if (game_is_server() && game_is_distributed() && !game_is_playback())
+	{
+		datum_index gamestate_index = game_engine_globals_get_statborg_gamestate_index();
+		if (gamestate_index == -1)
+		{
+			if (game_is_available())
+				printf("simulation_action_game_statborg_update: statborg does not have valid gamestate index to update\n");
+		}
+		else
+		{
+			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
+			if (entity_index == -1)
+				printf("simulation_action_game_statborg_update: statborg has invalid entity, can't update (gamestate 0x%8X)\n", gamestate_index);
+			else
+				simulation_entity_update(entity_index, -1, update_mask);
+		}
+	}
+}
+
+void simulation_action_game_engine_player_update(short absolute_player_index, ulong update_mask)
+{
+
 }
