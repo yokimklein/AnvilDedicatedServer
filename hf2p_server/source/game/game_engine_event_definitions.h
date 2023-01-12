@@ -23,16 +23,16 @@ enum e_game_engine_event_type
 
 struct s_game_engine_event_data
 {
-	c_enum<e_game_engine_event_type, long, k_number_of_game_engine_event_types> type;
-	string_id name;
-	long index;
-	long target_player_index;
-	long capuse_player_index;
+	c_enum<e_game_engine_event_type, long, k_number_of_game_engine_event_types> event_type;
+	string_id type;
+	long identifier;
+	long audience_player_index;
+	long cause_player_index;
 	long cause_team_index;
 	long effect_player_index;
 	long effect_team_index;
-	long points;
-	short unknown;
+	long event_quantity;
+	short dummy_or_territories;
 };
 static_assert(sizeof(s_game_engine_event_data) == 0x28);
 
