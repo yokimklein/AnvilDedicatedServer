@@ -119,7 +119,7 @@ void simulation_action_breakable_surfaces_create()
 	// TODO: revisit this
 }
 
-void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_mask)
+void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags)
 {
 	if (game_is_server() && game_is_distributed() && !game_is_playback())
 	{
@@ -127,20 +127,36 @@ void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_m
 		if (gamestate_index == -1)
 		{
 			if (game_is_available())
-				printf("simulation_action_game_statborg_update: statborg does not have valid gamestate index to update\n");
+				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg does not have valid gamestate index to update\n");
 		}
 		else
 		{
 			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 			if (entity_index == -1)
-				printf("simulation_action_game_statborg_update: statborg has invalid entity, can't update (gamestate 0x%8X)\n", gamestate_index);
+				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg has invalid entity, can't update (gamestate 0x%8X)\n", gamestate_index);
 			else
-				simulation_entity_update(entity_index, -1, update_mask);
+				simulation_entity_update(entity_index, -1, update_flags);
 		}
 	}
 }
 
-void simulation_action_game_engine_player_update(short absolute_player_index, ulong update_mask)
+void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags)
 {
-
+	if (game_is_server() && game_is_distributed() && !game_is_playback())
+	{
+		datum_index gamestate_index = game_engine_globals_get_player_gamestate_index(player_index);
+		if (gamestate_index == -1)
+		{
+			if (game_is_available())
+				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d not attached to gamestate\n", player_index);
+		}
+		else
+		{
+			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
+			if (entity_index == -1)
+				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d gamestate 0x%8X not attached to entity\n", player_index, gamestate_index);
+			else
+				simulation_entity_update(entity_index, -1, update_flags);
+		}
+	}
 }

@@ -2,6 +2,8 @@
 #include "..\cseries\cseries.h"
 #include "..\game\players.h"
 #include "..\networking\delivery\network_channel.h"
+#include "..\networking\replication\replication_event_manager_view.h"
+#include "..\networking\replication\replication_entity_manager_view.h"
 
 enum e_simulation_view_establishment_mode : long
 {
@@ -21,6 +23,13 @@ struct c_simulation_distributed_view
 	byte __data[0x22948];
 };
 static_assert(sizeof(c_simulation_distributed_view) == 0x22948);
+
+struct s_simulation_view_statistics
+{
+	s_replication_entity_manager_view_statistics entity_statistics;
+	s_replication_event_manager_view_statistics event_statistics;
+};
+static_assert(sizeof(s_simulation_view_statistics) == 0x24);
 
 class c_simulation_world;
 class c_network_observer;

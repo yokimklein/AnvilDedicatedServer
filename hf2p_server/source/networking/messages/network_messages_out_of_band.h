@@ -4,10 +4,8 @@
 
 class c_network_out_of_band_consumer
 {
-public:
-	virtual bool __cdecl receive_out_of_band_packet(s_transport_address const* address, c_bitstream* packet);
+
 };
-static_assert(sizeof(c_network_out_of_band_consumer) == 0x4);
 
 struct s_network_message_ping : s_network_message
 {

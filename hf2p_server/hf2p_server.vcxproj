@@ -153,24 +153,39 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\game\aim_target.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\game\game_engine_area_set.h" />
     <ClInclude Include="source\game\game_engine_candy_monitor.h" />
+    <ClInclude Include="source\game\game_engine_event_definitions.h" />
     <ClInclude Include="source\game\game_engine_scoring.h" />
     <ClInclude Include="source\game\game_engine_simulation.h" />
     <ClInclude Include="source\game\game_engine_spawn_influencer.h" />
+    <ClInclude Include="source\game\game_engine_team.h" />
     <ClInclude Include="source\game\game_engine_teleporters.h" />
+    <ClInclude Include="source\game\game_engine_util.h" />
     <ClInclude Include="source\game\game_globals.h" />
     <ClInclude Include="source\game\game_statborg.h" />
+    <ClInclude Include="source\game\game_time.h" />
+    <ClInclude Include="source\game\player_mapping.h" />
+    <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
+    <ClInclude Include="source\models\damage_info_definitions.h" />
+    <ClInclude Include="source\models\model_definitions.h" />
     <ClInclude Include="source\networking\network_memory.h" />
     <ClInclude Include="source\networking\replication\replication_entity_manager_view.h" />
     <ClInclude Include="source\networking\replication\replication_entity_manager.h" />
     <ClInclude Include="source\networking\replication\replication_event_manager.h" />
     <ClInclude Include="source\networking\replication\replication_event_manager_view.h" />
+    <ClInclude Include="source\networking\replication\replication_scheduler.h" />
+    <ClInclude Include="source\objects\damage.h" />
     <ClInclude Include="source\objects\multiplayer_game_objects.h" />
+    <ClInclude Include="source\objects\object_definitions.h" />
+    <ClInclude Include="source\objects\object_types.h" />
+    <ClInclude Include="source\physics\physics_model_definitions.h" />
     <ClInclude Include="source\render\render_visibility_collection.h" />
     <ClInclude Include="source\saved_games\scenario_map_variant.h" />
+    <ClInclude Include="source\scenario\scenario_definitions.h" />
     <ClInclude Include="source\simulation\game_interface\simulation_game_action.h" />
     <ClInclude Include="source\game\aim_assist.h" />
     <ClInclude Include="source\main\main_game.h" />
@@ -229,6 +244,7 @@
     <ClInclude Include="source\shell\shell.h" />
     <ClInclude Include="source\simulation\game_interface\simulation_game_entities.h" />
     <ClInclude Include="source\simulation\game_interface\simulation_game_events.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_objects.h" />
     <ClInclude Include="source\simulation\simulation_actors.h" />
     <ClInclude Include="source\simulation\simulation_debug_globals.h" />
     <ClInclude Include="source\simulation\simulation_entity_database.h" />
@@ -295,6 +311,9 @@
     <ClInclude Include="source\tag_files\files.h" />
     <ClInclude Include="source\tag_files\files_windows.h" />
     <ClInclude Include="source\tag_files\string_ids.h" />
+    <ClInclude Include="source\tag_files\tag_block.h" />
+    <ClInclude Include="source\tag_files\tag_field.h" />
+    <ClInclude Include="source\tag_files\tag_files.h" />
     <ClInclude Include="source\text\unicode.h" />
     <ClInclude Include="source\tools\network_webstats.h" />
     <ClInclude Include="source\interface\user_interface_session.h" />
@@ -302,13 +321,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\game\game.cpp" />
+    <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
     <ClCompile Include="source\game\game_engine_simulation.cpp" />
+    <ClCompile Include="source\game\game_engine_team.cpp" />
+    <ClCompile Include="source\game\game_engine_traits.cpp" />
+    <ClCompile Include="source\game\game_engine_util.cpp" />
+    <ClCompile Include="source\game\game_engine_variant.cpp" />
     <ClCompile Include="source\game\game_globals.cpp" />
+    <ClCompile Include="source\game\game_results.cpp" />
+    <ClCompile Include="source\game\game_statborg.cpp" />
+    <ClCompile Include="source\game\game_time.cpp" />
+    <ClCompile Include="source\game\game_variant.cpp" />
+    <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\network_memory.cpp" />
     <ClCompile Include="source\networking\replication\replication_entity_manager_view.cpp" />
     <ClCompile Include="source\networking\replication\replication_entity_manager.cpp" />
+    <ClCompile Include="source\objects\objects.cpp" />
+    <ClCompile Include="source\objects\object_types.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_action.cpp" />
     <ClCompile Include="source\game\game_engine.cpp" />
     <ClCompile Include="source\main\main_game.cpp" />
@@ -323,6 +354,7 @@
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameter_type_collection.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_entities.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_objects.cpp" />
     <ClCompile Include="source\simulation\simulation_entity_database.cpp" />
     <ClCompile Include="source\simulation\simulation_gamestate_entities.cpp" />
     <ClCompile Include="source\simulation\simulation_type_collection.cpp" />

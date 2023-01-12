@@ -343,62 +343,57 @@ enum e_tactical_package : byte
 	_consumable_vision_tutorial
 };
 
-// saber emblems?
-struct s_player_appearance_unknown3
+struct s_emblem_info
 {
-	ushort unknown0;
-	ushort unknown2;
-	ushort unknown4;
-	ushort unknown6;
-	ushort unknown8;
-	ushort unknownA;
-	ushort unknownC;
-	byte unknownE;
-	byte unknownF;
-};
-static_assert(sizeof(s_player_appearance_unknown3) == 0x10);
+	struct
+	{
+		struct
+		{
+			word __unknown0;
+			word __unknown2;
+			word __unknown4;
+			word __unknown6;
+			word __unknown8;
+			word __unknownA;
+			word __unknownC;
+			byte __unknownE;
+			byte __unknownF;
+		} __unknown0[50];
 
-// saber emblems?
-struct s_player_appearance_unknown2
-{
-	s_player_appearance_unknown3 unknown[50];
-	long unknown_count; // max of 50
-};
-static_assert(sizeof(s_player_appearance_unknown2) == 0x324);
+		long __unknown0_count;
+	} __unknown0[2];
 
-struct s_player_model_customization
-{
-	s_player_appearance_unknown2 model_customizations[2];
-	ulong model_customization_hashes[2]; // fast_checksum of the above struct
+	// checksums calculated with fast_checksum / hashlittle
+	dword __unknown0_checksums[2];
 };
-static_assert(sizeof(s_player_model_customization) == 0x650);
+static_assert(sizeof(s_emblem_info) == 0x650);
 
 #pragma pack(push, 4)
 struct s_player_appearance
 {
 	s_player_appearance() :
 		flags(),
-		player_model_index(), 
-		model_customization(),
+		player_model_choice(), 
+		emblem_info(),
 		service_tag(),
-		padding1(),  // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
-		padding2()
+		pad1(),  // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
+		pad2()
 	{
 	};
 
 	byte flags; // gender
-	byte player_model_index; // 0 - male spartan, 1 - elite
-	byte padding1[2];
-	s_player_model_customization model_customization;
+	byte player_model_choice; // 0 - male spartan, 1 - elite
+	byte pad1[2];
+	s_emblem_info emblem_info;
 	wchar_t service_tag[5];
-	byte padding2[2];
+	byte pad2[2];
 };
 static_assert(sizeof(s_player_appearance) == 0x660);
 #pragma pack(pop)
 
 struct s_s3d_player_loadout
 {
-	// long armor_pieces[5]; // previously existed prior to armr tag system
+	// long armor_pieces[5]; // previously existed prior to armr tag system - may be colours
 	e_gender gender;
 	e_armor_type armor_suit;
 	e_weapon_type primary_weapon;
@@ -440,7 +435,7 @@ struct s_s3d_player_customization
 	s_s3d_player_customization() :
 		override_api_data(),
 		character_active_index(),
-		acount_label(),
+		account_label(),
 		emblem(),
 		colors(),
 		padding()
@@ -450,7 +445,7 @@ struct s_s3d_player_customization
 	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
 	bool override_api_data;
 	byte character_active_index; // loadout index, 0-2
-	byte acount_label; // nameplate
+	byte account_label; // nameplate
 	byte emblem;
 	ulong colors[k_armor_colors_count];
 	byte padding[4];

@@ -95,7 +95,7 @@ struct s_client_iterator
 
 class c_network_channel_owner
 {
-	void* vftable;
+	
 };
 
 struct s_network_channel_client_info
@@ -157,7 +157,7 @@ public:
 	c_network_observer* m_observer;
 	c_network_message_gateway* m_message_gateway;
 	c_network_message_handler* m_message_handler;
-	s_channel_configuration* m_configuration; // g_network_configuration? s_channel_configuration?
+	s_channel_configuration* m_configuration; // g_network_configuration?
 	c_network_message_type_collection* m_type_collection;
 	c_network_connection m_connection;
 	c_network_message_queue m_message_queue;

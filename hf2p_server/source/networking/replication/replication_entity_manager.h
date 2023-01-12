@@ -1,5 +1,7 @@
 #pragma once
 #include "..\..\cseries\cseries.h"
+#include "..\..\simulation\simulation_entity_database.h"
+#include "replication_entity_manager_view.h"
 
 enum e_replication_entity_flags
 {
@@ -14,13 +16,10 @@ struct s_replication_entity_data
 {
 	c_flags<e_replication_entity_flags, byte, k_replication_entity_flags_count> flags;
 	byte seed;
-	byte __data[2];
+	short deletion_mask;
 };
 static_assert(sizeof(s_replication_entity_data) == 0x4);
 
-class c_simulation_entity_database;
-class c_replication_entity_manager_view;
-struct s_replication_entity_data;
 class c_replication_entity_manager
 {
 public:
@@ -32,6 +31,8 @@ public:
 	bool is_entity_local(long entity_index);
 	s_replication_entity_data* get_entity(long entity_index);
 	bool is_entity_being_deleted(long entity_index);
+	void delete_local_entity(long entity_index);
+	void delete_entity_internal(long entity_index);
 
 	c_simulation_entity_database* m_client;
 	c_static_array<c_replication_entity_manager_view*, 16> m_views;

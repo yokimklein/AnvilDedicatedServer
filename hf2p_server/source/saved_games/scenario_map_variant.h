@@ -1,5 +1,6 @@
 #pragma once
 #include "..\cseries\cseries.h"
+#include "..\objects\multiplayer_game_objects.h"
 
 enum e_game_engine_symmetric_placement
 {
@@ -73,16 +74,6 @@ enum e_teleporter_channel
 	k_teleporter_channel_count
 };
 
-enum e_multiplayer_object_boundary_shape
-{
-	_multiplayer_object_boundary_shape_unused = 0,
-	_multiplayer_object_boundary_shape_sphere,
-	_multiplayer_object_boundary_shape_cylinder,
-	_multiplayer_object_boundary_shape_box,
-
-	k_multiplayer_object_boundary_shape_count
-};
-
 struct s_variant_multiplayer_object_properties_definition
 {
 public:
@@ -101,7 +92,7 @@ public:
 		shared_storage = { 0 };
 		spawn_rate = 0;
 		teleporter_channel = _teleporter_channel_alpha;
-		boundary_shape = _multiplayer_object_boundary_shape_unused;
+		boundary_shape = _multiplayer_object_boundary_shape_none;
 		boundary_radius = 0.0f;
 		boundary_box_length = 0.0f;
 		boundary_positive_height = 0.0f;
@@ -125,7 +116,7 @@ protected:
 
 	c_enum<e_teleporter_channel, byte, k_teleporter_channel_count> teleporter_channel;
 
-	c_enum<e_multiplayer_object_boundary_shape, char, k_multiplayer_object_boundary_shape_count> boundary_shape;
+	c_enum<e_multiplayer_object_boundary_shape, char, k_number_of_multiplayer_object_boundary_shapes> boundary_shape;
 
 	union
 	{

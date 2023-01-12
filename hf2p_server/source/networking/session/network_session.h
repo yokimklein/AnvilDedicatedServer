@@ -70,6 +70,12 @@ class c_network_session_manager;
 class c_network_session : c_network_channel_owner
 {
 public:
+	virtual bool __thiscall desire_channel_heartbeat(long channel_index);
+	virtual bool __thiscall channel_is_load_bearing(long channel_index);
+	virtual bool __thiscall attempt_channel_reconnection(long channel_index, bool unknown);
+	virtual void __thiscall notify_channel_connection(long channel_index, long unused, bool notify_host);
+	virtual void __thiscall notify_channel_died(long channel_index);
+
 	bool handle_join_request(s_transport_address const* address, s_network_message_join_request const* message);
 	bool acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason);
 	bool handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);

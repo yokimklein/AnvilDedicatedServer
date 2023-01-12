@@ -36,14 +36,13 @@ class c_network_observer
 	public:
 		struct s_channel_observer_owner
 		{
-			e_network_observer_owner owner;
+			e_network_observer_owner owner; // this is c_network_session*?
 			long managed_session_index;
 		};
 		static_assert(sizeof(s_channel_observer_owner) == 0x8);
 
-		struct s_channel_observer
+		struct s_channel_observer : c_network_channel
 		{
-			c_network_channel channel;
 			e_observer_state state;
 			long m_allocated_timestamp1;
 			byte flags;
@@ -54,6 +53,8 @@ class c_network_observer
 			ulong __unknown1220_flags;
 			ulong __unknown1220_flags_bit;
 			s_transport_address secure_connection_address;
+			// s_transport_secure_identifier secure_connection_identifier;
+
 			long unknown3; // -1 when allocated
 			long unknown4; // -1 when allocated
 			long unknown5; // set by a global value that is 1000 by default, likely to be a timeout?
@@ -68,10 +69,13 @@ class c_network_observer
 			c_network_window_statistics window_statistics[2];
 			byte unknown_data2[44];
 			bool stream__active; // stream.active
-			bool unknown_bool1;
+			bool load_bearing;
 			bool unknown_bool2;
 			bool unknown_bool3;
-			byte unknown_data3[248];
+			byte unknown_data3[1];
+			bool synchronous;
+			bool joining;
+			byte unknown_data4[245];
 		};
 		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
 
@@ -96,7 +100,12 @@ class c_network_observer
 		c_network_session* m_session;
 		s_channel_observer_owner m_owners[k_network_observer_owner_count];
 		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
-		byte unknown_data[0x238];
+		bool m_quality_statistics_are_set;
+		int __unknown23CEC;
+		byte m_quality_statistics[0xC0]; // s_network_quality_statistics
+		byte __data23DB0[0x9];
+		bool m_online_network_environment;
+		byte __data[0x166];
 };
 static_assert(sizeof(c_network_observer) == 0x238C0);
 /*

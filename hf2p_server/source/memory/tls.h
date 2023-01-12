@@ -3,85 +3,46 @@
 #include "..\game\players.h"
 #include "data.h"
 #include "..\game\game_globals.h"
-
-struct s_player_datum : s_datum_header // belongs in game\players\players.h
-{
-	short unknown;
-	dword_flags flags;
-	s_player_identifier player_identifier;
-	ulong left_game_time;
-	s_machine_identifier machine_identifier; // secure_address / xnaddr
-	short machine_index;
-	short machine_input_user_index;
-	long machine_controller_index;
-	short location;
-	datum_index unit_index;
-	datum_index dead_unit_index;
-	datum_index previous_unit_index;
-	// INCOMPLETE
-};
-// TODO size
-
-struct s_player_mapping
-{
-	short active_input_user_count;
-	short active_input_controller_count;
-	ulong input_user_player_mapping[4];
-	datum_index input_user_unit_mapping[4];
-	ulong input_controller_player_mapping[4];
-	ulong player_input_controller_mapping[16];
-	ulong player_input_user_mapping[16];
-	ulong active_output_user_count;
-	ulong output_user_player_mapping[4];
-	datum_index output_user_unit_mapping[4];
-	byte player_output_user_mapping[16];
-};
-
-struct simulation_gamestate_entity_datum : s_datum_header
-{
-	word __unknown2;
-	dword entity_index;
-	dword object_index;
-	bool __unknownC; // or byte
-};
-static_assert(sizeof(simulation_gamestate_entity_datum) == 0x10);
+#include "..\simulation\simulation_gamestate_entities.h"
+#include "..\game\player_mapping.h"
+#include "..\game\game_time.h"
 
 struct s_thread_local_storage
 {
 	byte* __unknown0;
 	byte* __unknown4; // actor
-	byte* g_players_data; // s_player_datum array? // players
-	byte* __unknownC; // object
+	c_smart_data_array<s_player_datum>* players; // players
+	c_smart_data_array<s_object_header>* object_headers; // object
 	s_game_engine_globals* game_engine_globals;
 	byte* __unknown14; // prop_ref
 	byte* __unknown18; // det hs thread
 	byte* __unknown1C;
-	struct global_preferences* g_global_preferences;
+	struct global_preferences* global_preferences;
 	game_globals_storage* game_globals;
 	byte* __unknown28; // squad
-	struct s_scripted_camera_globals* g_scripted_camera_globals;
-	struct players_global_data* g_players_globals;
-	byte* __unknown34; // effect
+	struct s_scripted_camera_globals* scripted_camera_globals;
+	struct players_global_data* players_globals;
+	byte* __unknown34; // effect (survival_mode_globals?)
 	byte* __unknown38; // prop
 	byte* __unknown3C; // command scripts
 	byte* __unknown40; // clump
 	byte* __unknown44;
 	byte* __unknown48;
-	struct s_player_control_globals* g_player_control_globals;
-	byte* __unknown50;
-	byte* g_campaign_metagame_globals;
-	byte* g_breakable_surface_globals;
-	byte* g_timing_samples_global;
+	struct s_player_control_globals* player_control_globals;
+	byte* __unknown50; // s_object_globals* object_globals?
+	byte* campaign_metagame_globals;
+	byte* breakable_surface_globals;
+	byte* timing_samples_global;
 	byte* __unknown60; // joint state
-	struct game_time_globals_definition* g_game_time_globals;
+	s_game_time_globals* game_time_globals;
 	byte* __unknown68;
 	byte* __unknown6C;
-	struct s_data_array* g_object_looping_sounds_data;
+	struct s_data_array* object_looping_sounds_data;
 	byte* __unknown74;
 	byte* __unknown78;
 	byte* __unknown7C; // effect event
 	byte* __unknown80;
-	s_player_mapping* g_player_mapping_globals;
+	s_player_mapping* player_mapping_globals;
 	byte* __unknown88; // lights
 	byte* __unknown8C;
 	byte* __unknown90;
@@ -93,19 +54,19 @@ struct s_thread_local_storage
 	byte* __unknownA8; // vocalization records
 	byte* __unknownAC;
 	byte* __unknownB0;
-	struct s_game_sound_globals* g_game_sound_globals;
+	struct s_game_sound_globals* game_sound_globals;
 	byte* __unknownB8;
 	byte* __unknownBC; // impacts
-	byte* g_director_globals;
+	byte* director_globals;
 	byte* __unknownC4; // cached object render states
 	byte* __unknownC8; // device groups
 	byte* __unknownCC;
 	byte* __unknownD0;
 	byte* __unknownD4;
 	byte* __unknownD8; // swarm
-	byte* __unknownDC;
+	byte* __unknownDC; // g_object_scripting_state?
 	byte* __unknownE0; // flocks
-	byte* g_effect_counts;
+	byte* effect_counts;
 	byte* __unknownE8;
 	byte* __unknownEC; // objectives
 	byte* __unknownF0;
@@ -114,7 +75,7 @@ struct s_thread_local_storage
 	byte* __unknownFC;
 	byte* __unknown100; // particle_system
 	byte* __unknown104;
-	struct s_data_array* g_breakable_surface_set_broken_events_data;
+	struct s_data_array* breakable_surface_set_broken_events_data;
 	byte* __unknown10C;
 	byte* __unknown110; // tracking
 	byte* __unknown114; // widget
@@ -124,7 +85,7 @@ struct s_thread_local_storage
 	byte* __unknown124; // squad_patrol
 	byte* __unknown128; // leaf system
 	byte* __unknown12C;
-	c_smart_data_array<simulation_gamestate_entity_datum>* simulation_gamestate_entity_data;
+	c_smart_data_array<simulation_gamestate_entity_datum>* simulation_gamestate_entities; // sim. gamestate entities
 	byte* __unknown134; // dynamic firing points
 	byte* __unknown138; // particle_emitter
 	byte* __unknown13C; // particle_location
@@ -138,16 +99,16 @@ struct s_thread_local_storage
 	byte* __unknown15C;
 	byte* __unknown160; // decal_system
 	byte* __unknown164;
-	struct s_data_array* g_effect_geometry_sample_data;
+	struct s_data_array* effect_geometry_sample_data;
 	byte* __unknown16C;
 	byte* __unknown170; // c_particle_emitter_gpu::s_row
 	byte* __unknown174;
 	byte* __unknown178;
 	byte* __unknown17C;
-	byte* __unknown180; // object list header
+	byte* __unknown180; // object list header 
 	byte* __unknown184; // screen_effect
 	byte* __unknown188; // hs globals
-	byte* g_game_sound_scripted_impulses_globals;
+	byte* game_sound_scripted_impulses_globals;
 	byte* __unknown190;
 	byte* __unknown194; // formations
 	byte* __unknown198; // c_particle_emitter_gpu
@@ -183,15 +144,15 @@ struct s_thread_local_storage
 	byte* __unknown210;
 	byte* __unknown214; // contrail_profile
 	byte* __unknown218; // decal
-	byte* g_effect_messaging_queue;
-	byte* g_effect_lightprobes;
-	byte* g_player_control_globals_deterministic;
+	byte* effect_messaging_queue;
+	byte* effect_lightprobes;
+	byte* player_control_globals_deterministic;
 	byte* __unknown228;
 	byte* __unknown22C; // list object reference
 	byte* __unknown230;
 	byte* __unknown234;
 	byte* __unknown238;
-	byte* __unknown23C;
+	byte* g_object_message_queue;
 	byte* __unknown240;
 	byte* __unknown244;
 	byte* __unknown248;
@@ -216,7 +177,7 @@ struct s_thread_local_storage
 	byte* __unknown294;
 	byte* __unknown298;
 	byte* __unknown29C; // non-det hs thread
-	byte* g_random_math_globals;
+	byte* random_math_globals;
 	byte* __unknown2A4; // cluster noncollideable object r
 	byte* __unknown2A8; // noncollideable object cluster r
 	byte* __unknown2AC;

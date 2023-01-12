@@ -12,12 +12,12 @@ long c_replication_entity_manager::create_local_entity()
 	long absolute_index = this->preallocate_entity();
 	if (absolute_index == -1)
 	{
-		printf("c_replication_entity_manager::create_local_entity: unable to create local entity, table is full\n");
+		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::create_local_entity: unable to create local entity, table is full\n");
 	}
 	else
 	{
 		entity_index = this->create_local_entity_internal(absolute_index);
-		printf("c_replication_entity_manager::create_local_entity: local entity created %lx\n", entity_index);
+		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::create_local_entity: local entity created %lx\n", entity_index);
 	}
 	return entity_index;
 }
@@ -110,4 +110,42 @@ bool c_replication_entity_manager::is_entity_being_deleted(long entity_index)
 {
 	s_replication_entity_data* entity = this->get_entity(entity_index);
 	return entity->flags.test(_replication_entity_marked_for_deletion_flag);
+}
+
+void c_replication_entity_manager::delete_local_entity(long entity_index)
+{
+	s_replication_entity_data* entity = this->get_entity(entity_index);
+	assert(entity->flags.test(_replication_entity_local_flag));
+	assert(entity->flags.test(_replication_entity_allocated_flag));
+	assert(!entity->flags.test(_replication_entity_marked_for_deletion_flag));
+	assert(entity->deletion_mask == 0);
+	entity->flags.set(_replication_entity_marked_for_deletion_flag, true);
+	printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::delete_local_entity: local entity marked for deletion %lx\n", entity_index);
+	assert(this->m_client);
+	this->m_client->notify_mark_entity_for_deletion(entity_index, false);
+	if (this->m_view_mask)
+	{
+		for (long view_index = 0; view_index < 16; view_index++)
+		{
+			if ((this->m_view_mask & (1 << view_index)) != 0)
+			{
+				assert(this->m_views[view_index] != NULL);
+				this->m_views[view_index]->mark_entity_for_deletion(entity_index);
+			}
+		}
+	}
+	if (!entity->deletion_mask)
+		this->delete_entity_internal(entity_index);
+}
+
+void c_replication_entity_manager::delete_entity_internal(long entity_index)
+{
+	s_replication_entity_data* entity = this->get_entity(entity_index);
+	assert(this->m_client != NULL);
+	assert(entity->flags.test(_replication_entity_allocated_flag));
+	assert(entity->flags.test(_replication_entity_marked_for_deletion_flag));
+	assert(entity->deletion_mask == 0);
+	this->m_client->entity_delete_internal(entity_index);
+	entity->flags.set(_replication_entity_allocated_flag, false);
+	printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::delete_entity_internal: entity deleted %lx\n", entity_index);
 }

@@ -1,9 +1,9 @@
 #pragma once
-#pragma pack(push, 4)
 
 #include "..\cseries\cseries.h"
 #include "game_engine_traits.h"
 #include "..\saved_games\saved_game_files.h"
+#include "..\memory\bitstream.h"
 
 enum e_game_engine_type
 {
@@ -23,7 +23,7 @@ enum e_game_engine_type
 	k_game_engine_type_default = _game_engine_base_variant
 };
 
-class c_bitstream;
+#pragma pack(push, 4)
 class c_game_engine_base_variant
 {
 public:
@@ -48,9 +48,12 @@ public:
 	virtual void __thiscall decode(c_bitstream*);
 	virtual bool __cdecl can_add_to_recent_list();
 	virtual long __thiscall get_score_to_win_round();
-	virtual long __thiscall get_score_unknown();                                  // halo online specific
+	virtual long __thiscall get_score_unknown(); // halo online specific
 	virtual bool __stdcall can_be_cast_to(e_game_engine_type, void const**);
 	virtual void __stdcall custom_team_score_stats(long, long, long);
+
+	c_game_engine_miscellaneous_options* get_miscellaneous_options();
+	c_game_engine_respawn_options* get_respawn_options();
 
 	dword __unknown4;
 	string m_name;
@@ -62,9 +65,7 @@ public:
 	word_flags m_flags;
 	short m_team_scoring_method;
 };
-constexpr size_t k_game_engine_base_variant_size = sizeof(c_game_engine_base_variant);
-static_assert(k_game_engine_base_variant_size == 0x1D0);
+static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
+#pragma pack(pop)
 
 //extern const char* game_engine_variant_get_name(long game_engine_variant);
-
-#pragma pack(pop)

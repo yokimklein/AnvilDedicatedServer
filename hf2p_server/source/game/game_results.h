@@ -330,3 +330,6 @@ struct s_game_results_incremental_update
 };
 static_assert(sizeof(s_game_results_incremental_update) == 0x10CA0);
 #pragma pack(pop)
+
+void game_results_notify_player_indices_changed();
+void game_results_statistic_set(datum_index absolute_player_index, e_game_team team_index, long statistic, long value);

@@ -14,6 +14,8 @@
 #include "server_tools.h"
 #include "..\simulation\simulation_debug_globals.h"
 #include "..\simulation\game_interface\simulation_game_action.h"
+#include "..\memory\tls.h"
+#include "..\simulation\game_interface\simulation_game_objects.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -183,18 +185,36 @@ long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* fil
     return result;
 }
 
-// TODO - rewrite game_engine_player_added instead of this, the hook is calling the updates before game_engine_attach_to_simulation
-void* __cdecl c_game_statborg_clear_player_stats_hook(void* dst, long val, long size)
+void __fastcall game_engine_player_added_hook(datum_index absolute_player_index)
 {
-    void* result = csmemset(dst, val, size);
-    // get the player index back from the memset's args
-    ulong absolute_player_index = (ulong)(((ulong)result - (ulong)dst) / (ulong)size);
+    game_engine_player_added(absolute_player_index);
+}
 
-    c_flags<long, ulong64, 64> player_update_mask = {};
-    player_update_mask.set(absolute_player_index, true);
-    simulation_action_game_statborg_update(&player_update_mask);
-    simulation_action_game_engine_player_update((short)absolute_player_index, 1 << _simulation_entity_type_game_engine_player);
-    return result;
+void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* forward)
+{
+    s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set(_simulation_entity_type_unit, true);
+    simulation_action_object_create(player_data->unit_index);
+    simulation_action_object_update(player_data->unit_index, &update_flags);
+
+    // this part is stubbed in ms23
+    //if ( game_is_multiplayer() )
+    //{
+    //  game_engine_add_starting_equipment(player_object_index);
+    //  game_engine_spawn_influencer_record_player_spawn(player_index3);
+    //}
+
+    FUNCTION_DEF(0xB6300, void, __fastcall, player_set_facing, datum_index player_index, real_vector3d* forward);
+    player_set_facing(player_index, forward);
+}
+
+void __fastcall object_scripting_clear_all_function_variables_hook(datum_index object_index)
+{
+    simulation_action_object_delete(object_index);
+
+    FUNCTION_DEF(0x475CF0, void, __fastcall, object_scripting_clear_all_function_variables, datum_index object_index);
+    object_scripting_clear_all_function_variables(object_index);
 }
 
 void anvil_dedi_apply_patches()
@@ -233,8 +253,12 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
     // add game_engine_attach_to_simulation back to game_engine_game_starting
     Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
-    // add back simulation_action_game_statborg_update calls
-    //Hook(0xFA39F, c_game_statborg_clear_player_stats_hook, HookFlags::IsCall).Apply(); // c_game_statborg::player_added -> c_game_statborg::clear_player_stats -> simulation_action_game_statborg_update
+    // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
+    Hook(0xFA2D0, game_engine_player_added_hook).Apply();
+    // add simulation updates back to player_spawn
+    Hook(0xBB084, player_set_facing_hook, HookFlags::IsCall).Apply();
+    // add simulation_action_object_delete back to object_delete
+    Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
 
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup
     // prevent the game from adding a player to the dedicated host

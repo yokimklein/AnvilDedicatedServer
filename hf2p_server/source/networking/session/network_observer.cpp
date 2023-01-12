@@ -43,8 +43,8 @@ const char* c_network_observer::get_name(long observer_index)
 	auto observer = &this->m_channel_observers[observer_index];
 	assert(observer_index >= 0 && observer_index < k_network_maximum_observers);
 	assert(observer->state != _observer_state_none);
-	assert(observer->channel.allocated());
-	return observer->channel.get_name();
+	assert(observer->allocated());
+	return observer->get_name();
 }
 
 bool c_network_observer::observer_channel_dead(e_network_observer_owner owner_type, long observer_index)

@@ -1,6 +1,7 @@
 #pragma once
 #include "..\cseries\cseries.h"
 #include "game_engine_player_traits.h"
+#include "..\memory\data.h"
 
 enum e_base_variant_flags
 {
@@ -24,6 +25,7 @@ enum e_game_engine_respawn_options_flags
 	_game_engine_respawn_options_respawn_with_teammate,
 	_game_engine_respawn_options_respawn_at_location,
 	_game_engine_respawn_options_respawn_on_kills,
+	_game_engine_respawn_options_auto_respawn_disabled,
 
 	k_game_engine_respawn_options_flags
 };
@@ -35,9 +37,12 @@ enum e_game_engine_social_options_flags
 	_game_engine_social_options_team_changing_balancing_only,
 	_game_engine_social_options_friendly_fire_enabled,
 	_game_engine_social_options_betrayal_booting_enabled,
-	_game_engine_social_options_enemy_voice_enabled,
-	_game_engine_social_options_open_channel_voice_enabled,
-	_game_engine_social_options_dead_player_voice_enabled,
+	_game_engine_social_options_spartans_vs_elites_enabled,
+
+	// these may or may not have been removed in HO
+	//_game_engine_social_options_enemy_voice_enabled,
+	//_game_engine_social_options_open_channel_voice_enabled,
+	//_game_engine_social_options_dead_player_voice_enabled,
 
 	k_game_engine_social_options_flags
 };
@@ -50,8 +55,11 @@ enum e_game_engine_map_override_options_flags
 	k_game_engine_map_override_options_flags
 };
 
-struct c_game_engine_miscellaneous_options
+class c_game_engine_miscellaneous_options
 {
+public:
+	bool get_teams_enabled();
+
 	c_flags<e_game_engine_miscellaneous_option_flags, byte_flags, k_game_engine_miscellaneous_option_flags> m_flags;
 
 	// default: 8
@@ -68,14 +76,15 @@ struct c_game_engine_miscellaneous_options
 };
 static_assert(sizeof(c_game_engine_miscellaneous_options) == 0x4);
 
-struct c_game_engine_respawn_options
+class c_game_engine_respawn_options
 {
+public:
+	byte get_lives_per_round();
+
 	c_flags<e_game_engine_respawn_options_flags, byte_flags, k_game_engine_respawn_options_flags> m_flags;
 
 	// default: 0
 	// maximum: 50
-	// TODO - this actually needs to be 4 bytes further down? are we missing a field or have we misnamed these?
-	// edit a map variant in ED and mess with these values, then check the struct in memory to see if our definition matches
 	byte m_lives_per_round;
 
 	// default: 0
@@ -153,3 +162,5 @@ struct c_game_engine_map_override_options
 	byte pad[1];
 };
 static_assert(sizeof(c_game_engine_map_override_options) == 0x7C);
+
+void game_engine_assemble_player_traits(datum_index absolute_player_index);

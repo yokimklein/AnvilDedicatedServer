@@ -16,10 +16,14 @@ public:
 	s_simulation_entity* entity_get(long entity_index);
 	void entity_capture_creation_data(long entity_index);
 	bool entity_is_local(long entity_index);
-	void entity_update(long entity_index, c_flags<long, ulong64, 64>* update_mask, bool force_mask_update);
+	void entity_update(long entity_index, c_flags<long, ulong64, 64>* update_flags, bool force_mask_update);
+	void entity_delete(long entity_index);
+	void notify_mark_entity_for_deletion(long entity_index, bool unknown);
+	void entity_delete_internal(long entity_index);
+	void entity_delete_gameworld(long entity_index, bool unknown);
 
 	bool m_initialized;
-	byte __unknown1;
+	bool __unknown1;
 	c_simulation_world* m_world;
 	c_replication_entity_manager* m_entity_manager;
 	c_simulation_type_collection* m_type_collection;

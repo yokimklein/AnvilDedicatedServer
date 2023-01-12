@@ -6,6 +6,13 @@
 #include "..\simulation_gamestate_entities.h"
 #include "..\simulation_type_collection.h"
 #include "..\..\game\game_engine_simulation.h"
+#include "..\..\tag_files\tag_files.h"
+#include "..\..\game\game_engine_util.h"
+#include "..\..\models\model_definitions.h"
+#include "..\..\models\damage_info_definitions.h"
+#include "..\..\objects\object_definitions.h"
+#include "..\..\physics\physics_model_definitions.h"
+#include "..\..\game\game.h"
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index)
 {
@@ -17,7 +24,7 @@ long simulation_entity_create(e_simulation_entity_type simulation_entity_type, l
 		entity_index = entity_database->entity_create(simulation_entity_type);
 		if (entity_index == -1)
 		{
-			printf("simulation_entity_create: failed to create entity (type %d/%s object [0x%08x])\n",
+			printf("MP/NET/SIMULATION,ENTITIES: simulation_entity_create: failed to create entity (type %d/%s object [0x%08x])\n",
 				simulation_entity_type,
 				simulation_entity_type_get_name(simulation_entity_type),
 				object_index);
@@ -38,13 +45,112 @@ e_simulation_entity_type simulation_entity_type_from_game_engine()
 	return game_engine_globals_get_simulation_entity_type();
 }
 
-void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_mask)
+void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_flags)
 {
 	c_simulation_world* world = simulation_get_world();
 	if (world->is_distributed() && world->is_authority())
 	{
 		c_simulation_entity_database* entity_database = world->get_entity_database();
 		if (entity_database->entity_is_local(entity_index))
-			entity_database->entity_update(entity_index, update_mask, false);
+			entity_database->entity_update(entity_index, update_flags, false);
+	}
+}
+
+e_simulation_entity_type simulation_entity_type_from_object_creation(long object_tag_index, datum_index object_index, bool recycling)
+{
+	s_object_definition* object_tag = (s_object_definition*)tag_get('obje', object_tag_index);
+	switch (object_tag->type.get())
+	{
+		case _object_type_biped:
+			return _simulation_entity_type_unit;
+		case _object_type_vehicle:
+			return _simulation_entity_type_vehicle;
+		case _object_type_weapon:
+			if (object_index != -1)
+				return k_simulation_entity_type_none;
+			return _simulation_entity_type_weapon;
+		case _object_type_equipment:
+			return _simulation_entity_type_item;
+		case _object_type_terminal:
+		case _object_type_machine:
+		case _object_type_control:
+			return _simulation_entity_type_device;
+		case _object_type_projectile:
+			return _simulation_entity_type_projectile;
+		case _object_type_armor: // i'm making an assumption that armors would've synced the same as scenery
+		case _object_type_scenery: // seeing as scenery tags were used before armor tags existed
+		{
+			if (game_engine_is_sandbox())
+			{
+				if (object_tag->multiplayer_object.count > 0)
+					return _simulation_entity_type_generic;
+			}
+			else if (object_tag->model.index != -1)
+			{
+				s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
+				if (model_tag->damage_info.count > 0)
+				{
+					s_global_damage_info_block* damage_info = model_tag->damage_info.address;
+					if (damage_info->damage_sections.count > 0)
+						return _simulation_entity_type_generic;
+					if (damage_info->damage_constraints.count > 0)
+						return _simulation_entity_type_generic;
+				}
+			}
+			return k_simulation_entity_type_none;
+		}
+		case _object_type_crate:
+		{
+			if (object_tag->model.index == -1)
+				return k_simulation_entity_type_none;
+			s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
+			s_physics_model_definition* physics_model_tag = (s_physics_model_definition*)tag_get('phmo', model_tag->physics_model.index);
+			if (model_tag->physics_model.index != -1 && physics_model_tag->flags.test(_physics_model_flags_make_physical_children_keyframed_bit))
+				return k_simulation_entity_type_none;
+			return recycling ? _simulation_entity_type_generic_garbage : _simulation_entity_type_generic;
+		}
+		default:
+			return k_simulation_entity_type_none;
+	}
+}
+
+void simulation_entity_delete(long entity_index, datum_index object_index, datum_index gamestate_index)
+{
+	c_simulation_world* world = simulation_get_world();
+	if (world->is_distributed())
+	{
+		c_simulation_entity_database* entity_database = world->get_entity_database();
+		s_simulation_entity* entity = entity_database->entity_get(entity_index);
+		assert(gamestate_index != NONE);
+		assert(entity->gamestate_index == gamestate_index);
+		assert(simulation_gamestate_entity_get_object_index(entity->gamestate_index) == object_index);
+		assert(entity->exists_in_gameworld);
+		if (entity_database->entity_is_local(entity_index))
+		{
+			entity->gamestate_index = -1;
+			entity->exists_in_gameworld = false;
+			entity_database->entity_delete(entity_index);
+			return;
+		}
+		if (!simulation_reset_in_progress() && game_in_progress())
+		{
+			if (object_index == -1)
+			{
+				printf("MP/NET/SIMULATION,ENTITY: simulation_entity_delete: game engine entity deleted with non-local entity 0x%08x type %d\n",
+					entity_index,
+					entity->entity_type);
+			}
+			else
+			{
+				// TODO finish print
+				printf("MP/NET/SIMULATION,ENTITY: simulation_entity_delete: object 0x%08x (%s) deleted with non-local entity 0x%08x type %d\n",
+					object_index,
+					/*tag_name_strip_path(tag_get_name(object_get(object_index)->definition_index))*/"tag_name",
+					entity_index,
+					entity->entity_type);
+			}
+		}
+		entity->gamestate_index = -1;
+		entity->exists_in_gameworld = false;
 	}
 }

@@ -182,9 +182,9 @@ public:
 		if (bit < k_count)
 		{
 			if (enable)
-				m_storage |= (1 << bit);
+				m_storage |= (1LL << bit);
 			else
-				m_storage &= ~(1 << bit);
+				m_storage &= ~(1LL << bit);
 		}
 	}
 
@@ -209,9 +209,19 @@ public:
 		return m_storage == 0;
 	}
 
+	void clear()
+	{
+		m_storage = 0;
+	}
+
 	bool operator==(t_type value)
 	{
 		return !!(m_storage & (1 << value));
+	}
+
+	void operator|=(t_type value)
+	{
+		m_storage |= value;
 	}
 
 	template <class T>

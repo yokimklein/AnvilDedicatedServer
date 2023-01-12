@@ -11,6 +11,7 @@ class c_network_message_type_collection;
 class c_network_message_gateway : c_network_out_of_band_consumer
 {
 public:
+	virtual bool __cdecl receive_out_of_band_packet(s_transport_address const* address, c_bitstream* packet);
 	c_network_link* get_network_link();
 	bool send_message_directed(s_transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 

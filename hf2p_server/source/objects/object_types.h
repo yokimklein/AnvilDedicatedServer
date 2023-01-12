@@ -1,0 +1,89 @@
+#pragma once
+#include "..\memory\data.h"
+#include "..\cseries\cseries.h"
+#include "..\dllmain.h"
+
+enum e_object_data_flags
+{
+	_object_type_biped,
+	_object_type_vehicle,
+	_object_type_weapon,
+	_object_type_armor,
+	_object_type_equipment,
+	_object_type_arg_device,
+	_object_type_terminal,
+	_object_type_projectile,
+	_object_type_scenery,
+	_object_type_machine,
+	_object_type_control,
+	_object_type_sound_scenery,
+	_object_type_crate,
+	_object_type_creature,
+	_object_type_giant,
+	_object_type_effect_scenery,
+
+	k_number_of_object_data_flags
+};
+
+struct s_object_placement_data;
+struct s_scenario_object;
+class c_mover_definition_data;
+
+struct s_object_type_definition
+{
+	const char* name;
+	tag group_tag;
+	short datum_size;
+	short placement_tag_block_offset;
+	short palette_tag_block_offset;
+	short placement_tag_block_element_size;
+	long maximum_placement_count;
+	long mixing_board_index;
+	c_mover_definition_data* mover_definition;
+	void(*initialize)(s_object_type_definition*, long);
+	void(*dispose)(void);
+	void(*initialize_for_new_map)(void);
+	void(*dispose_from_old_map)(void);
+	void(*initialize_for_new_structure_bsp)(long);
+	void(*disconnect_from_structure_bsp)(long);
+	void(*adjust_placement)(s_object_placement_data*);
+	bool(*new_)(long, s_object_placement_data*, bool*);
+	void(*place)(long, s_scenario_object*);
+	void(*unplace)(long);
+	void(*create_children)(long);
+	void(*delete_)(long);
+	long(*export_function_values_A)(long);
+	long(*export_function_values_B)(long);
+	void(*move)(long);
+	bool(*compute_activation)(long, long, long);
+	bool(*compute_function_value)(long, string_id, long, float*, bool*, long);
+	void(*attach_simulation_gamestate_index)(long);
+	void(*detach_simulation_gamestate_index)(long);
+	void(*attach_to_marker)(long, long, long);
+	void(*attach_to_node)(long, long, long);
+	void(*detach_from_parent)(long);
+	void(*handle_deleted_object)(long, long);
+	ulong handle_deleted_object_flags;
+	void(*handle_deleted_player)(long, long);
+	void(*unused)(long, long, long);
+	bool(*handle_parent_destroyed)(long);
+	void(*fix_transform)(long, real_vector3d*, real_vector3d*, real_vector3d*);
+	void(*fix_transform_to_physics)(long, real_matrix4x3*);
+	void(*fix_transform_from_physics)(long, real_matrix4x3*);
+	void(*preprocess_node_orientations)(long, long, long, long);
+	void(*preprocess_root_node_matrix)(long, real_matrix4x3*);
+	void(*postprocess_node_matrices)(long, long, real_matrix4x3*);
+	void(*reset)(long);
+	void(*notify_impulse_sound)(long, long, long);
+	void(*render_debug)(long);
+	void(*unknown)(long);
+	s_object_type_definition* child_types[k_number_of_object_data_flags];
+	s_object_type_definition* next_type;
+	ulong deleted_object_handler_mask;
+};
+static_assert(sizeof(s_object_type_definition) == 0xF8);
+
+static s_object_type_definition** object_type_definitions = (s_object_type_definition**)(module_base + 0xEB2448);
+
+void object_type_detach_gamestate_entity(datum_index object_index);
+s_object_type_definition* object_type_definition_get(e_object_data_flags object_type);

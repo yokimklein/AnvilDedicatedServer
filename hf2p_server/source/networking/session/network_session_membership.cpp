@@ -134,11 +134,11 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
     }
     this->add_player_internal(next_player_index, player_identifier, peer_index, this->get_current_membership()->player_sequence_number, join_from_recruiting);
     this->get_current_membership()->player_sequence_number = (this->get_current_membership()->player_sequence_number + 1) % 0x100000;
-    this->get_player(next_player_index)->configuration.client.multiplayer_team = -1;
+    this->get_player(next_player_index)->configuration.client.user_selected_team_index = -1;
     this->get_player(next_player_index)->configuration.client.active_armor_loadout = -1;
-    this->get_player(next_player_index)->configuration.client.unknown_bool2 = false;
-    this->get_player(next_player_index)->configuration.host.player_team = -1;
-    this->get_player(next_player_index)->configuration.host.player_assigned_team = -1;
+    this->get_player(next_player_index)->configuration.client.player_is_griefer = false;
+    this->get_player(next_player_index)->configuration.host.team_index = -1;
+    this->get_player(next_player_index)->configuration.host.user_selected_team_index = -1;
     this->increment_update();
     return next_player_index;
 }
@@ -156,8 +156,8 @@ s_network_session_player* c_network_session_membership::add_player_internal(long
     player->controller_index = -1;
     if (peer_index != -1)
         *(&this->get_peer(peer_index)->player_mask + (player_index >> 5)) |= mask_unknown;
-    player->configuration.host.player_team = -1;
-    player->configuration.host.player_assigned_team = -1;
+    player->configuration.host.team_index = -1;
+    player->configuration.host.user_selected_team_index = -1;
     return player;
 }
 
@@ -635,7 +635,7 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
             if (peer_name != L"" && (ustrncmp(player->configuration.host.player_name, peer_name, 16) != 0))
             {
                 ustrnzcpy(player->configuration.host.player_name, peer_name, 16);
-                ustrnzcpy(player->configuration.client.player_name, peer_name, 16);
+                ustrnzcpy(player->configuration.client.name, peer_name, 16);
             }
         }
 

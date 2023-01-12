@@ -21,7 +21,7 @@ long c_simulation_entity_database::entity_create(e_simulation_entity_type entity
 		entity_index = this->m_entity_manager->create_local_entity();
 		if (entity_index == -1)
 		{
-			printf("c_simulation_entity_database::entity_create: unable to allocate replication instance for new simulation entity (type %d)\n",
+			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: unable to allocate replication instance for new simulation entity (type %d)\n",
 				entity_type);
 		}
 		else
@@ -29,14 +29,14 @@ long c_simulation_entity_database::entity_create(e_simulation_entity_type entity
 			this->entity_create_internal(entity_index, entity_type, creation_data_size, creation_data, state_data_size, state_data);
 			creation_data = nullptr;
 			state_data = nullptr;
-			printf("c_simulation_entity_database::entity_create: created entity 0x%08X of type %d\n",
+			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: created entity 0x%08X of type %d\n",
 				entity_index,
 				entity_type);
 		}
 	}
 	else
 	{
-		printf("c_simulation_entity_database::entity_create: unable to allocate memory for new simulation entity (type %d)\n",
+		printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: unable to allocate memory for new simulation entity (type %d)\n",
 			entity_type);
 	}
 	if (creation_data != nullptr)
@@ -66,7 +66,7 @@ bool c_simulation_entity_database::entity_allocate_creation_data(e_simulation_en
 		else
 		{
 			char heap_description[1024];
-			printf("c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating creation data for new simulation entity (type %d, [%d] bytes) [%s]\n",
+			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating creation data for new simulation entity (type %d, [%d] bytes) [%s]\n",
 				entity_type,
 				creation_data_size,
 				network_heap_describe(heap_description, 1024));
@@ -96,7 +96,7 @@ bool c_simulation_entity_database::entity_allocate_state_data(e_simulation_entit
 	else
 	{
 		char heap_description[1024];
-		printf("c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating state data for new simulation entity (type %d, [%d] bytes) [%s]\n",
+		printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating state data for new simulation entity (type %d, [%d] bytes) [%s]\n",
 			entity_type,
 			state_data_size,
 			network_heap_describe(heap_description, 1024));
@@ -178,10 +178,10 @@ bool c_simulation_entity_database::entity_is_local(long entity_index)
 	return this->m_entity_manager->is_entity_local(entity_index);
 }
 
-void c_simulation_entity_database::entity_update(long entity_index, c_flags<long, ulong64, 64>* update_mask, bool force_mask_update)
+void c_simulation_entity_database::entity_update(long entity_index, c_flags<long, ulong64, 64>* update_flags, bool force_mask_update)
 {
 	s_simulation_entity* entity = this->entity_get(entity_index);
-	assert(!update_mask->is_clear());
+	assert(!update_flags->is_clear());
 	assert(entity->exists_in_gameworld);
 	assert(this->m_world);
 	assert(this->m_world->is_distributed());
@@ -194,7 +194,7 @@ void c_simulation_entity_database::entity_update(long entity_index, c_flags<long
 	{
 		if (simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index) != entity->entity_index)
 		{
-			printf("c_simulation_entity_database::entity_update: entity type %d index 0x%8X (!= 0x%08X) not attached properly to gamestate 0x%8X (update)\n",
+			printf("MP/NET/SIMULATION,ENTITY_DATABASE: c_simulation_entity_database::entity_update: entity type %d index 0x%8X (!= 0x%08X) not attached properly to gamestate 0x%8X (update)\n",
 				entity_index,
 				entity->entity_type,
 				simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index),
@@ -203,12 +203,76 @@ void c_simulation_entity_database::entity_update(long entity_index, c_flags<long
 	}
 	else
 	{
-		printf("c_simulation_entity_database::entity_update: entity type %d index 0x%8X not attached properly to gamestate 0x%8X (update)\n",
+		printf("MP/NET/SIMULATION,ENTITY_DATABASE: c_simulation_entity_database::entity_update: entity type %d index 0x%8X not attached properly to gamestate 0x%8X (update)\n",
 			entity->entity_type,
 			entity_index,
 			entity->gamestate_index);
 	}
-	entity->pending_update_mask |= update_mask->get_unsafe();
+	entity->pending_update_mask |= update_flags->get_unsafe();
 	if (force_mask_update)
-		entity->force_update_mask |= update_mask->get_unsafe();
+		entity->force_update_mask |= update_flags->get_unsafe();
+}
+
+void c_simulation_entity_database::entity_delete(long entity_index)
+{
+	assert(this->m_world);
+	assert(this->m_world->is_distributed());
+	assert(this->m_world->is_authority());
+	assert(this->m_entity_manager);
+	this->m_entity_manager->delete_local_entity(entity_index);
+}
+
+void c_simulation_entity_database::notify_mark_entity_for_deletion(long entity_index, bool unknown)
+{
+	this->entity_delete_gameworld(entity_index, unknown);
+}
+
+void c_simulation_entity_database::entity_delete_gameworld(long entity_index, bool unknown)
+{
+	s_simulation_entity* entity = this->entity_get(entity_index);
+	if (entity->gamestate_index != -1)
+	{
+		simulation_gamestate_entity_set_simulation_entity_index(entity->gamestate_index, -1);
+
+		FUNCTION_DEF(0x55B80, void, __fastcall, simulation_queue_entity_deletion_insert, s_simulation_entity* entity, bool unknown);
+		simulation_queue_entity_deletion_insert(entity, unknown);
+	}
+	entity->gamestate_index = -1;
+	entity->exists_in_gameworld = 0;
+	entity->pending_update_mask.clear();
+	entity->force_update_mask.clear();
+}
+
+void c_simulation_entity_database::entity_delete_internal(long entity_index)
+{
+	s_simulation_entity* entity = nullptr;
+	if (this->__unknown1)
+	{
+		long absolute_index = entity_index & 0x3FF;
+		assert(absolute_index >= 0 && absolute_index < NUMBEROF(m_entity_data));
+		entity = &this->m_entity_data[absolute_index];
+	}
+	else
+	{
+		entity = this->entity_get(entity_index);
+		assert(this->m_entity_manager);
+		assert(this->m_entity_manager->is_entity_allocated(entity_index));
+		assert(this->m_entity_manager->is_entity_being_deleted(entity_index));
+		assert(!entity->exists_in_gameworld);
+		assert(entity->gamestate_index == NONE);
+	}
+	if (entity->creation_data)
+	{
+		network_heap_free_block(entity->creation_data);
+		entity->creation_data = 0;
+		entity->creation_data_size = 0;
+	}
+	if (entity->state_data)
+	{
+		network_heap_free_block(entity->state_data);
+		entity->state_data = 0;
+		entity->state_data_size = 0;
+	}
+	entity->entity_type = k_simulation_entity_type_none;
+	entity->entity_index = -1;
 }

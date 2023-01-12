@@ -53,6 +53,15 @@ enum e_simulation_abort_reason
 	k_simulation_abort_reason_count
 };
 
+enum e_update_queue_node
+{
+	_update_queue_node_update,
+	_update_queue_node_playback_event,
+
+	k_update_queue_node_count,
+	k_update_queue_node_invalid = -1
+};
+
 struct simulation_machine_update
 {
 	dword machine_valid_mask;
@@ -87,7 +96,7 @@ struct simulation_update
 	simulation_machine_update machine_update;
 
 	dword valid_player_prediction_mask;
-	s_player_prediction player_prediction[k_network_maximum_players_per_session];
+	c_static_array<s_player_prediction, k_network_maximum_players_per_session> player_prediction;
 
 	long verify_game_time;
 	long verify_random;
@@ -101,6 +110,35 @@ struct simulation_update
 	c_simulation_queue game_simulation_queue;
 };
 static_assert(sizeof(simulation_update) == 0x1658);
+
+struct s_simulation_update_metadata
+{
+	dword_flags flags;
+	long saved_film_position;
+	long saved_film_tick;
+};
+static_assert(sizeof(s_simulation_update_metadata) == 0xC);
+
+struct s_simulation_update_playback_event
+{
+	byte __data0[0xC];
+	long event_update_number;
+};
+static_assert(sizeof(s_simulation_update_playback_event) == 0x10);
+
+// unknown struct name using `s_simulation_update_node` for now
+struct s_simulation_update_node
+{
+	c_enum<e_update_queue_node, long, k_update_queue_node_count> node_type;
+
+	byte __data0[0x4];
+
+	simulation_update update;
+	s_simulation_update_metadata metadata;
+	s_simulation_update_playback_event playback_event;
+	s_simulation_update_node* next;
+};
+static_assert(sizeof(s_simulation_update_node) == 0x1680);
 
 class c_simulation_world;
 class c_simulation_watcher;
@@ -150,3 +188,4 @@ static_assert(sizeof(s_simulation_globals) == 0x124); // 0x1784 in ms23
 static s_simulation_globals* simulation_globals = (s_simulation_globals*)(module_base + 0x4EBEBA8);
 
 //extern bool __cdecl simulation_starting_up(); // 0x004420E0 in ms23
+bool simulation_reset_in_progress();

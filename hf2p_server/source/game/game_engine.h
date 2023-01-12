@@ -92,10 +92,10 @@ struct s_game_engine_globals
 	word timer;
 	word __unknownF992;
 	dword game_variant_round_time_limit_ticks_per_second;
-	real __unknownF996[4];
-	byte __dataF9A8[2];
-	short __unknownF9A8;
-	long __unknownF9AC;
+	real fade_to_black_amount[4];
+	byte fade_to_black_active_user_mask;
+	ushort game_over_timer;
+	ushort next_shot_id;
 	c_static_array<s_dead_player_info, 64> spawn_influencers;
 	c_game_statborg statborg;
 	long __unknown102D4;
@@ -118,8 +118,6 @@ struct s_game_engine_globals
 static_assert(sizeof(s_game_engine_globals) == 0x15858);
 
 void game_engine_attach_to_simulation();
-bool game_engine_is_sandbox();
-c_game_engine* current_game_engine();
-bool game_engine_running();
+void game_engine_player_added(datum_index absolute_player_index);
 
 static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);

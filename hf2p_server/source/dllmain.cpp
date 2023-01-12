@@ -12,7 +12,9 @@
 #include "networking\network_utilities.h"
 #include "networking\session\network_managed_session.h"
 #include "main\main_game.h"
+#include "hf2p\hq.h"
 
+// TODO: enable write on rdata page
 void enable_memory_write(dword base)
 {
     // Enable write to all executable memory
@@ -58,9 +60,9 @@ long main_thread()
     auto engine_variant = _engine_variant_ctf;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading
-    while (!main_game_change_in_progress()) Sleep(k_game_tick_rate);
+    while (!main_game_change_in_progress()) Sleep(k_anvil_update_rate_ms);
     // we also need to wait for the network to avoid accessing uninitialised memory
-    while (!network_initialized()) Sleep(k_game_tick_rate);
+    while (!network_initialized()) Sleep(k_anvil_update_rate_ms);
 
     c_network_session* network_session = network_get_session_manager()->session[0];
 
@@ -68,14 +70,14 @@ long main_thread()
     while (true)
     {
         // wait to finish loading
-        while (main_game_change_in_progress()) Sleep(k_game_tick_rate);
+        while (main_game_change_in_progress()) Sleep(k_anvil_update_rate_ms);
 
         // create the session
         anvil_create_session();
 
         // wait for the managed session to create & for the session to establish
         auto managed_session = &online_session_manager_globals->managed_sessions[network_session->managed_session_index()];
-        while (!managed_session->flags.test(_online_managed_session_created_bit) || !network_session->established()) Sleep(k_game_tick_rate);
+        while (!managed_session->flags.test(_online_managed_session_created_bit) || !network_session->established()) Sleep(k_anvil_update_rate_ms);
 
         // log session connection info
         char address_str[0x100];
@@ -125,7 +127,7 @@ long main_thread()
                     anvil_session_set_gamemode(network_session, engine_variant);
                     anvil_session_set_map(map_id);
                     // wait for the error to update so we don't spam the set map call
-                    while (*start_error == _start_error_no_map_selected) Sleep(k_game_tick_rate);
+                    while (*start_error == _start_error_no_map_selected) Sleep(k_anvil_update_rate_ms);
                 }
                 // enable the launch key when the session is ready
                 else if (*start_status == _start_status_ready && anvil_key_pressed(VK_HOME, &key_held_home))
@@ -158,11 +160,23 @@ long main_thread()
                 network_session->get_session_parameters()->game_simulation_protocol.m_data = _network_game_simulation_distributed;
                 network_session->get_session_parameters()->game_simulation_protocol.notify_set_update_required();
             }
-            Sleep(k_game_tick_rate);
+            Sleep(k_anvil_update_rate_ms);
         }
         printf("Session disconnected!\n");
     }
-
+    
+    /*
+    // temp scenario launching loop
+    bool key_held_home = false;
+    while (true)
+    {
+        if (anvil_key_pressed(VK_HOME, &key_held_home))
+        {
+            printf("Launching scenario...\n");
+            anvil_launch_scenario("levels\\multi\\guardian\\guardian");
+        }
+    }
+    */
     // cleanup & eject
     fclose(f);
     FreeConsole();

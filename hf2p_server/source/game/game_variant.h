@@ -23,6 +23,7 @@ public:
 		m_game_engine_index = 0;
 		csmemset(m_storage.variant_data, 0, sizeof(this->m_storage));
 	};
+	c_game_engine_base_variant* get_active_variant();
 
 	c_enum<e_game_engine_type, long, k_game_engine_type_count> m_game_engine_index;
 	union game_engine_variants {

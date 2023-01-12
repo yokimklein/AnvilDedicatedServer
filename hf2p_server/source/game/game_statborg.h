@@ -1,5 +1,6 @@
 #pragma once
 #include "..\cseries\cseries.h"
+#include "..\memory\data.h"
 
 enum e_statborg_entry
 {
@@ -33,6 +34,10 @@ enum e_statborg_entry
 
 struct c_game_statborg
 {
+public:
+	void player_added(datum_index player_index);
+	void clear_player_stats(datum_index player_index);
+
 	short __unknown0[2];
 	c_static_array<c_static_array<short, 26>, 16> players_statistics;
 	c_static_array<c_static_array<short, 13>, 8> teams_statistics;
@@ -42,3 +47,5 @@ struct c_game_statborg
 	bool __unknown420;
 };
 static_assert(sizeof(c_game_statborg) == 0x424);
+
+c_game_statborg* game_engine_get_statborg();
