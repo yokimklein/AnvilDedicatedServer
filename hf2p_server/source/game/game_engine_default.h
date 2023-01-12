@@ -18,7 +18,7 @@ struct s_game_engine_event_data;
 enum e_simulation_event_type;
 struct s_multiplayer_runtime_globals_definition;
 
-struct c_game_engine
+class c_game_engine
 {
 public:
 	virtual long get_type() const;

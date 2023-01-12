@@ -11,3 +11,4 @@ void simulation_action_game_engine_player_create(short player_absolute_index);
 void simulation_action_breakable_surfaces_create();
 void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags);
 void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags);
+void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags);

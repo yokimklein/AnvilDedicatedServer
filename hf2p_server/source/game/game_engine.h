@@ -34,6 +34,20 @@ enum e_engine_variant : long
 	_engine_variant_infection,
 };
 
+enum e_game_engine_round_condition
+{
+	_game_engine_round_condition_unknown0,
+	_game_engine_round_condition_unknown1,
+	_game_engine_round_condition_unknown2,
+	_game_engine_round_condition_unknown3,
+	_game_engine_round_condition_unknown4,
+	_game_engine_round_condition_unknown5,
+	_game_engine_round_condition_unknown6,
+	_game_engine_round_condition_unknown7,
+
+	k_number_of_game_engine_round_conditions = 8
+};
+
 struct s_player_waypoint_data
 {
 	byte __data[0x1C];
@@ -69,7 +83,7 @@ struct s_game_engine_globals
 	short current_state;
 	short round_index;
 	dword round_timer;
-	byte round_condition_flags;
+	c_flags<e_game_engine_round_condition, byte, k_number_of_game_engine_round_conditions> round_condition_flags;
 	s_game_engine_score_list score_list;
 
 	union
@@ -119,5 +133,7 @@ static_assert(sizeof(s_game_engine_globals) == 0x15858);
 
 void game_engine_attach_to_simulation();
 void game_engine_player_added(datum_index absolute_player_index);
+long game_engine_round_time_get();
+void game_engine_update_round_conditions();
 
 static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);

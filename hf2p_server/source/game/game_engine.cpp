@@ -7,6 +7,10 @@
 #include "game.h"
 #include "game_engine_team.h"
 #include "game_results.h"
+#include "..\tag_files\string_ids.h"
+#include "assert.h"
+#include "game_time.h"
+#include "players.h"
 
 void game_engine_attach_to_simulation()
 {
@@ -32,15 +36,13 @@ void game_engine_player_added(datum_index player_index)
 		}
 
 		game_engine_assemble_player_traits(player_index);
-		c_game_engine* game_engine = current_game_engine();
-		game_engine->player_added(player_index);
-		c_game_statborg* statborg = game_engine_get_statborg();
-		statborg->player_added(player_index);
+		current_game_engine()->player_added(player_index);
+		game_engine_get_statborg()->player_added(player_index);
 
 		if (game_ticks_to_seconds(game_time_get()) > 1.0)
 		{
 			s_game_engine_event_data event_data;
-			game_engine_initialize_event(_game_engine_event_type_general, 0x40047, &event_data); // TODO: string_id for general_event_player_joined
+			game_engine_initialize_event(_game_engine_event_type_general, STRING_ID(game_engine, general_event_player_joined), &event_data);
 			game_engine_send_event(&event_data);
 		}
 
@@ -69,5 +71,52 @@ void game_engine_player_added(datum_index player_index)
 
 		game_results_notify_player_indices_changed();
 		//game_results_statistic_set(player_index, _game_team_none, 0, 1); // TODO REWRITE THIS
+	}
+}
+
+long game_engine_round_time_get()
+{
+	assert(game_is_authoritative());
+	long game_time = game_time_get();
+	if (game_time - get_tls()->game_engine_globals->round_timer < 0)
+		return 0;
+	else
+		return game_time - get_tls()->game_engine_globals->round_timer;
+}
+
+void game_engine_update_round_conditions()
+{
+	if (game_is_authoritative())
+	{
+		s_game_engine_globals* game_engine_globals = get_tls()->game_engine_globals;
+		long round_time = game_engine_round_time_get();
+		long game_over_timer = game_engine_globals->game_over_timer;
+		c_flags<e_game_engine_round_condition, byte, k_number_of_game_engine_round_conditions> condition;
+		condition.clear();
+		condition.set(_game_engine_round_condition_unknown0, round_time < 5);
+		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1));
+		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(3));
+		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(4));
+		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(11));
+		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5));
+		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(18));
+		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4));
+		if (game_engine_globals->round_condition_flags != condition)
+		{
+			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_unknown3) && !condition.test(_game_engine_round_condition_unknown3))
+			{
+				c_player_in_game_iterator player_iterator(get_tls()->players);
+				player_iterator.begin(get_tls()->players);
+				while (player_iterator.next())
+				{
+					long player_index = player_iterator.get_index();
+					current_game_engine()->emit_game_start_event(player_index); // player index is 0xEC700000 in ms29
+				}
+			}
+			c_flags<long, ulong64, 64> update_flags = {};
+			update_flags.set(6, true); // TODO: what is this flag?
+			simulation_action_game_engine_globals_update(&update_flags);
+			game_engine_globals->round_condition_flags = condition;
+		}
 	}
 }

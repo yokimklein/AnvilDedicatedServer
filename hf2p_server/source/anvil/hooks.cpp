@@ -218,10 +218,16 @@ void __fastcall object_scripting_clear_all_function_variables_hook(datum_index o
     object_scripting_clear_all_function_variables(object_index);
 }
 
+// TODO: this doesn't work outside of proxydll atm
 c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
 {
     static_string->print("Halo Online %s %s", anvil_get_config_string(), "Live_release_11.1.604673");
     return static_string;
+}
+
+void __cdecl game_engine_update_round_conditions_hook()
+{
+    game_engine_update_round_conditions();
 }
 
 void anvil_dedi_apply_patches()
@@ -266,6 +272,8 @@ void anvil_dedi_apply_hooks()
     Hook(0xBB084, player_set_facing_hook, HookFlags::IsCall).Apply();
     // add simulation_action_object_delete back to object_delete
     Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
+    // add simulation_action_game_engine_globals_update back to game_engine_update_round_conditions
+    Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
 
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal 
     // TODO: hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server

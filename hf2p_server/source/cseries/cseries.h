@@ -224,6 +224,11 @@ public:
 		m_storage |= value;
 	}
 
+	bool operator!=(t_type value)
+	{
+		return m_storage != value;
+	}
+
 	template <class T>
 	void operator= (T value)
 	{

@@ -9,7 +9,7 @@
 struct s_player_datum : s_datum_header
 {
 	short unknown;
-	dword_flags flags;
+	dword_flags player_flags;
 	s_player_identifier player_identifier;
 	ulong left_game_time;
 	s_machine_identifier machine_identifier; // secure_address / xnaddr
@@ -153,6 +153,22 @@ struct s_player_datum : s_datum_header
 	byte unknown_data[8];
 };
 static_assert(sizeof(s_player_datum) == 0x19B0);
+
+class c_player_in_game_iterator : public c_data_iterator<s_player_datum>
+{
+public:
+	using c_data_iterator<s_player_datum>::c_data_iterator;
+	bool next()
+	{
+		for (m_datum = (s_player_datum*)data_iterator_next(&m_iterator);
+			m_datum && TEST_BIT(m_datum->player_flags, 1);
+			m_datum = (s_player_datum*)data_iterator_next(&m_iterator))
+		{
+		}
+
+		return m_datum != nullptr;
+	}
+};
 
 bool player_identifier_is_valid(s_player_identifier const* identifier);
 const char* player_identifier_get_string(s_player_identifier const* identifier);

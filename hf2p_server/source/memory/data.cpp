@@ -38,16 +38,37 @@ s_datum_header* s_data_array::get_datum(const datum_index index) const
 	return datum;
 }
 
+long data_next_absolute_index(s_data_array const* data, long index)
+{
+	FUNCTION_DEF(0xA8FE0, long, __fastcall, data_next_absolute_index_call, s_data_array const* data, long index);
+	return data_next_absolute_index_call(data, index);
+}
+
 void data_iterator_begin(s_data_iterator* iterator, s_data_array* data)
 {
-	assert("FUNCTION NOT IMPLEMENTED" && 0);
-	INVOKE(0x0, data_iterator_begin, iterator, data); // 0x0055AE10 in ms23
+	iterator->data = data;
+	iterator->index = -1;
+	iterator->absolute_index = -1;
 }
 
 void* data_iterator_next(s_data_iterator* iterator)
 {
-	assert("FUNCTION NOT IMPLEMENTED" && 0);
-	return INVOKE(0x0, data_iterator_next, iterator); // 0x0055AE30 in ms23
+	char* result;
+	const s_data_array* data = iterator->data;
+	long index = data_next_absolute_index(iterator->data, iterator->absolute_index + 1);
+	if (index == -1)
+	{
+		iterator->absolute_index = data->maximum_count;
+		iterator->index = -1;
+		result = nullptr;
+	}
+	else
+	{
+		result = &data->data[index * data->size];
+		iterator->absolute_index = index;
+		iterator->index = index | (*result << 16);
+	}
+	return result;
 }
 
 void __cdecl datum_delete(s_data_array* data, long index)

@@ -63,3 +63,4 @@ static_assert(sizeof(s_game_time_globals) == 0x2C);
 
 long game_time_get();
 float game_ticks_to_seconds(long ticks);
+long game_seconds_integer_to_ticks(long seconds);
