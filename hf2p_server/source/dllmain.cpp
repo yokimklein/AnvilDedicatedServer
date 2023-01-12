@@ -47,9 +47,9 @@ long main_thread()
     AllocConsole();
     setlocale(LC_ALL, "");
     freopen_s(&f, "CONOUT$", "w", stdout);
-    printf("Anvil Station Dedicated Server\n");
-    printf(anvil_dedi_build_version());
-    printf("\nBase address: %p\n\n", (void*)module_base);
+    printf("%s %s\n", anvil_get_project_name_string(), anvil_get_config_string());
+    printf("%s\n", anvil_build_version_string());
+    printf("Base address: %p\n\n", (void*)module_base);
 
     enable_memory_write(module_base);
     anvil_dedi_apply_patches();

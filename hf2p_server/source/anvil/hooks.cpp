@@ -16,6 +16,7 @@
 #include "..\simulation\game_interface\simulation_game_action.h"
 #include "..\memory\tls.h"
 #include "..\simulation\game_interface\simulation_game_objects.h"
+#include "build_version.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -217,6 +218,12 @@ void __fastcall object_scripting_clear_all_function_variables_hook(datum_index o
     object_scripting_clear_all_function_variables(object_index);
 }
 
+c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
+{
+    static_string->print("Halo Online %s %s", anvil_get_config_string(), "Live_release_11.1.604673");
+    return static_string;
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -260,7 +267,13 @@ void anvil_dedi_apply_hooks()
     // add simulation_action_object_delete back to object_delete
     Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
 
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal 
+    // TODO: hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
+    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
+    // TODO: hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
+    // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
+    // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
+    // 
     // prevent the game from adding a player to the dedicated host
     Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
     Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
@@ -268,6 +281,8 @@ void anvil_dedi_apply_hooks()
     Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
     Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
     Hook(0x3AC243, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
+    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
     
     // output the message type for debugging
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
