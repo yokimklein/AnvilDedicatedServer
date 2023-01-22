@@ -101,6 +101,7 @@ long main_thread()
         bool key_held_insert = false;
         bool key_held_pgup = false;
         bool key_held_pgdown = false;
+        bool key_held_delete = false;
         // wait for game_start_status to unlock
         while (!network_session->get_session_parameters()->game_start_status.get_allowed());
         auto start_status_parameter = network_session->get_session_parameters()->game_start_status.get();
@@ -143,12 +144,7 @@ long main_thread()
                 else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
                 {
                     printf("Starting session countdown...\n");
-                    // TODO: c_network_session_parameter_countdown_timer::set
-                    network_session->get_session_parameters()->countdown_timer.m_data.countdown_timer = 5;
-                    network_session->get_session_parameters()->countdown_timer.m_data.delayed_reason = 2;
-                    network_session->get_session_parameters()->countdown_timer.m_state_flags |= 1;
-                    memset(network_session->get_session_parameters()->countdown_timer.m_peers_updated, 0, k_network_maximum_machines_per_session);
-                    network_session->get_session_parameters()->countdown_timer.notify_set_update_required();
+                    network_session->get_session_parameters()->countdown_timer.set(_countdown_type_game_start, 5);
                     e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
                     network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
                 }
@@ -169,7 +165,18 @@ long main_thread()
                     network_session->get_session_parameters()->lobby_vote_set.notify_set_update_required();
                     e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
                     network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
+                    network_session->get_session_parameters()->countdown_timer.set(_countdown_type_voting, 10);
                 }
+            }
+            // start countdown after voting finishes
+            else if (*start_status == _session_game_start_status_voting &&
+                *network_session->get_session_parameters()->dedicated_server_session_state.get() == _dedicated_server_session_state_voting &&
+                network_session->get_session_parameters()->countdown_timer.get_countdown_type() == _countdown_type_voting &&
+                network_session->get_session_parameters()->countdown_timer.get_countdown_timer() <= 0)
+            {
+                network_session->get_session_parameters()->countdown_timer.set(_countdown_type_game_start, 5);
+                e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+                network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
             }
             // enable the end game key once a game is started
             else if (*start_status == _session_game_start_status_none && anvil_key_pressed(VK_END, &key_held_end))
@@ -183,6 +190,12 @@ long main_thread()
             {
                 printf("Setting test player data...\n");
                 anvil_session_set_test_player_data(network_session->get_session_membership());
+            }
+            else if (anvil_key_pressed(VK_DELETE, &key_held_delete))
+            {
+                printf("Setting session to synchronous...\n");
+                e_network_game_simulation_protocol protocol = _network_game_simulation_synchronous;
+                network_session->get_session_parameters()->game_simulation_protocol.set(&protocol);
             }
             Sleep(k_anvil_update_rate_ms);
         }

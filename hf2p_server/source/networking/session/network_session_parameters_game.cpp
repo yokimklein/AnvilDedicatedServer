@@ -8,7 +8,7 @@ char const* k_game_start_status_strings[k_session_game_start_status_count] = {
     "join in progress",
     "loading",
     "ready leader",
-    "accelerate countdown",
+    "voting",
     "countdown",
     "error"
 };
@@ -53,4 +53,38 @@ s_network_session_parameter_game_start_status* c_network_session_parameter_game_
     printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::get: [%s] failed to get, unavailable\n",
         this->get_session_description());
     return nullptr;
+}
+
+bool c_network_session_parameter_countdown_timer::set(e_countdown_type countdown_type, long countdown_timer)
+{
+    if (this->set_allowed())
+    {
+        this->m_data.countdown_type = countdown_type;
+        this->m_data.countdown_timer = countdown_timer;
+        this->set_update_required();
+        if (!this->get_allowed())
+            this->set_update_required();
+        return true;
+    }
+    else
+    {
+        printf("MP/NET/SESSION,PARAMS: %s: [%s] can't set [%s]\n", __FUNCTION__, this->get_session_description(), this->get_set_denied_reason());
+        return false;
+    }
+}
+
+long c_network_session_parameter_countdown_timer::get_countdown_timer()
+{
+    if (this->get_allowed())
+        return this->m_data.countdown_timer;
+    else
+        return -1;
+}
+
+e_countdown_type c_network_session_parameter_countdown_timer::get_countdown_type()
+{
+    if (this->get_allowed())
+        return this->m_data.countdown_type;
+    else
+        return _countdown_type_none;
 }

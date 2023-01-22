@@ -36,7 +36,7 @@ enum e_session_game_start_status
 	_session_game_start_status_join_in_progress,
 	_session_game_start_status_loading,
 	_session_game_start_status_ready_leader,
-	_session_game_start_status_accelerate_countdown,
+	_session_game_start_status_voting,
 	_session_game_start_status_countdown,
 	_session_game_start_status_error,
 
@@ -67,6 +67,15 @@ enum e_session_game_start_error
 enum e_network_game_start_mode
 {
 
+};
+
+enum e_countdown_type
+{
+	_countdown_type_none,
+	_countdown_type_voting,
+	_countdown_type_game_start,
+
+	k_countdown_type_count
 };
 
 struct s_network_session_privacy_mode
@@ -121,14 +130,17 @@ static_assert(sizeof(c_network_session_parameter_game_start_status) == 0x48);
 
 struct s_network_session_parameter_countdown_timer
 {
-	long delayed_reason;
+	c_enum<e_countdown_type, long, k_countdown_type_count> countdown_type;
 	long countdown_timer;
 };
 static_assert(sizeof(s_network_session_parameter_countdown_timer) == 0x8);
 
-// TODO: remove public from parameter data parent
-class c_network_session_parameter_countdown_timer : public c_network_session_parameter_base, public c_generic_network_session_parameter_data<s_network_session_parameter_countdown_timer>
+class c_network_session_parameter_countdown_timer : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_parameter_countdown_timer>
 {
+public:
+	bool set(e_countdown_type countdown_type, long countdown_timer);
+	long get_countdown_timer();
+	e_countdown_type get_countdown_type();
 };
 static_assert(sizeof(c_network_session_parameter_countdown_timer) == 0x40);
 
