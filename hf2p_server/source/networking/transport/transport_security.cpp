@@ -1,6 +1,9 @@
 #include "transport_security.h"
 #include "..\..\dllmain.h"
 #include "transport_shim.h"
+#include <stdio.h>
+#include "..\..\anvil\server_tools.h"
+#include <winsock.h>
 
 char const* transport_secure_nonce_get_string(qword secure_nonce)
 {
@@ -126,4 +129,67 @@ char const* transport_unique_identifier_get_string(s_transport_unique_identifier
         unique_id->part8[6],
         unique_id->part8[7]);
     return unique_id_str;
+}
+
+void transport_secure_address_generate(s_transport_secure_address* secure_address)
+{
+    if (game_is_dedicated_server())
+        anvil_get_dedicated_secure_address(secure_address);
+    else
+        get_session_secure_address(secure_address);
+}
+
+// rewrote this for a hook, but xnet_shim_get_title_xnaddr doesn't play nice with it, so this goes unused
+// the mid section was reused however
+bool transport_secure_address_resolve()
+{
+    if (!transport_security_globals->address_resolved)
+    {
+        s_transport_address transport_addresses[8];
+        memset(transport_addresses, 0, sizeof(transport_addresses));
+        char host_name[256];
+        gethostname(host_name, 256);
+        host_name[255] = 0;
+        if (xnet_shim_get_title_xnaddr(transport_addresses))
+        {
+            transport_security_globals->address = transport_addresses[0];
+            transport_security_globals->address.port = *g_game_port;
+            memset(&transport_security_globals->secure_address, 0, sizeof(s_transport_secure_address));
+            transport_secure_address_generate(&transport_security_globals->secure_address);
+            transport_security_globals->address_resolved = true;
+            transport_secure_address_resolve();
+            memcpy(&transport_security_globals->local_unique_identifier, &transport_security_globals->secure_address, sizeof(s_transport_unique_identifier));
+        }
+        else
+        {
+            printf("MP/NET/TRANSPORT,SECURE: %s: Address resolution failed, networking is unavailable\n", __FUNCTION__);
+            transport_security_globals->address_resolved = false;
+        }
+    }
+    return transport_security_globals->address_resolved;
+}
+
+s_transport_secure_address* get_session_secure_address(s_transport_secure_address* out_address)
+{
+    *out_address = *g_session_secure_address;
+    return out_address;
+}
+
+bool transport_secure_key_create(s_transport_session_description* session_description)
+{
+    if (session_description != (s_transport_session_description*)0xFFFFFFF0) // what's up with this?
+        session_description->host_address = transport_security_globals->secure_address;
+
+    if (transport_security_globals->address_resolved)
+    {
+        xnet_shim_create_key(session_description);
+        // register the host address description to the xnet shim table on session creation
+        xnet_shim_register(&transport_security_globals->address, &session_description->host_address, &session_description->session_id);
+        return true;
+    }
+    else
+    {
+        printf("MP/NET/TRANSPORT,SEC: %s: failed to get IP address.\n", __FUNCTION__);
+        return false;
+    }
 }

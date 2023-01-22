@@ -155,11 +155,15 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
 
 bool __fastcall transport_secure_key_create_hook(s_transport_session_description* session_description)
 {
-    FUNCTION_DEF(0x3BC0, bool, __fastcall, transport_secure_key_create, s_transport_session_description* session_description);
-    bool result = transport_secure_key_create(session_description);
-    
-    xnet_shim_register(&transport_security_globals->address, &session_description->host_address, &session_description->session_id);
-    return result;
+    return transport_secure_key_create(session_description);
+}
+
+void __cdecl transport_secure_address_resolve_hook()
+{
+    memset(&transport_security_globals->secure_address, 0, sizeof(s_transport_secure_address));
+    transport_secure_address_generate(&transport_security_globals->secure_address);
+    transport_security_globals->address_resolved = true;
+    memcpy(&transport_security_globals->local_unique_identifier, &transport_security_globals->secure_address, sizeof(s_transport_unique_identifier));
 }
 
 void __fastcall managed_session_delete_session_internal_hook(long managed_session_index, c_managed_session* managed_session)
@@ -508,8 +512,8 @@ void anvil_dedi_apply_hooks()
     // add back network_session_check_properties
     Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    // register/unregister the host address description to the xnet shim table on session creation/destruction so we can locate them with one another
-    Hook(0x28E32, transport_secure_key_create_hook, HookFlags::IsCall).Apply();
+
+    // unregister the host address description to the xnet shim table on session destruction - the transport_secure_key_create hook further down handles session creation
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
@@ -557,15 +561,19 @@ void anvil_dedi_apply_hooks()
     Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
 
     // DEDICATED SERVER HOOKS
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal 
-    // TODO: hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
     // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
-    // TODO: hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
+    // hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
+    Hook(0x3BC0, transport_secure_key_create_hook).Apply();
+    // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
+    Patch::NopFill(Pointer::Base(0x3D17), 0x25);
+    Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
+
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
     // prevent the game from adding a player to the dedicated host
-    Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
-    Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
+    //Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
+    //Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
     // set peer & session name
     Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
     Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();

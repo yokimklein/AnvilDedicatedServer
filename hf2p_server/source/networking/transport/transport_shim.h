@@ -30,3 +30,5 @@ void xnet_shim_unregister(const s_transport_address* address);
 bool xnet_shim_inaddr_to_xnaddr(const s_transport_address* address, s_transport_secure_address* secure_address);
 bool xnet_shim_inaddr_to_xnaddr2(const s_transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);
 bool xnet_shim_xnaddr_to_inaddr(const s_transport_secure_address* secure_address, s_transport_address* address);
+bool xnet_shim_get_title_xnaddr(s_transport_address* out_addresses);
+s_transport_session_description* xnet_shim_create_key(s_transport_session_description* session_description);

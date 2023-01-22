@@ -1,5 +1,6 @@
 #include "transport_shim.h"
 #include "..\..\dllmain.h"
+#include "..\..\anvil\server_tools.h"
 
 // returns the index of the row with a matching transport address or secure address
 // returns -1 if no rows match & ignore_invalid_rows is true, otherwise it returns the first invalid/unused row
@@ -77,4 +78,26 @@ bool xnet_shim_xnaddr_to_inaddr(const s_transport_secure_address* secure_address
 		return false;
 	memcpy(address, &g_xnet_shim_table->rows[row_index].inaddr, sizeof(s_transport_address));
 	return true;
+}
+
+// XNetGetTitleXnAddr
+bool xnet_shim_get_title_xnaddr(s_transport_address* out_addresses)
+{
+	FUNCTION_DEF(0x6DE0, bool, __fastcall, XNetGetTitleXnAddr, s_transport_address* out_addresses);
+	return XNetGetTitleXnAddr(out_addresses);
+}
+
+// XNetCreateKey
+s_transport_session_description* xnet_shim_create_key(s_transport_session_description* session_description)
+{
+	if (game_is_dedicated_server())
+		anvil_get_dedicated_secure_identifier(&session_description->session_id);
+	else
+	{
+		GUID session_id;
+		CoCreateGuid(&session_id);
+		memcpy(&session_description->session_id, &session_id, sizeof(s_transport_secure_identifier));
+	}
+	memset(&session_description->key, 0, sizeof(s_transport_secure_key));
+	return session_description;
 }

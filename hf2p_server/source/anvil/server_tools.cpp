@@ -136,3 +136,19 @@ long anvil_get_update_rate_ms()
     // OR add AS update function to the game's main loop
     return 0; // get_tls()->game_time_globals->seconds_per_tick * 1000
 }
+
+// TODO: use this to retrieve a secure address from the API matchmaking service
+void anvil_get_dedicated_secure_address(s_transport_secure_address* secure_address)
+{
+    // cdbeb834-c1a4-9a4d-8dda-f540f378d644
+    byte temp_address[16] = { 0x34, 0xb8, 0xbe, 0xcd, 0xa4, 0xc1, 0x4d, 0x9a, 0x8d, 0xda, 0xf5, 0x40, 0xf3, 0x78, 0xd6, 0x44 };
+    memcpy(secure_address, temp_address, sizeof(s_transport_secure_address));
+}
+
+// TODO: above, but retrieve the lobby/party ID
+void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure_identifier)
+{
+    // 379bd202-9787-bd4a-ad96-a89bae9c7e4a
+    byte temp_identifier[16] = { 0x02, 0xd2, 0x9b, 0x37, 0x87, 0x97, 0x4a, 0xbd, 0xad, 0x96, 0xa8, 0x9b, 0xae, 0x9c, 0x7e, 0x4a };
+    memcpy(secure_identifier, temp_identifier, sizeof(s_transport_secure_identifier));
+}

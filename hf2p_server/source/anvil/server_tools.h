@@ -16,3 +16,6 @@ void anvil_launch_scenario(const char* scenario_path);
 
 bool anvil_key_pressed(long vkey, bool* key_held);
 long anvil_get_update_rate_ms();
+
+void anvil_get_dedicated_secure_address(s_transport_secure_address* secure_address);
+void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure_identifier);

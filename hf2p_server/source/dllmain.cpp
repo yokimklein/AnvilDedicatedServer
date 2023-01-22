@@ -33,12 +33,9 @@ void enable_memory_write(dword base)
     }
 }
 
-// set to false to run the game as a client with host features
 bool game_is_dedicated_server()
 {
-    // currently only prevents the game from creating a player instance for the host in a session
-    // i'll eventually also make this run the game headerless & use it to stop client specific code from running
-    return false;
+    return true;
 }
 
 long main_thread()
