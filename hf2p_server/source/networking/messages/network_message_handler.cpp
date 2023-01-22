@@ -458,9 +458,12 @@ void c_network_message_handler::handle_player_acknowledge(c_network_channel* cha
 
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-    // TODO test annoying usercall function
-    void(__thiscall* handle_synchronous_update)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_update)>(module_base + 0x25860);
-    handle_synchronous_update(channel);
+    const auto handle_synchronous_update = (void (*)(c_network_channel* channel))(module_base + 0x25860);
+    __asm
+    {
+        mov ecx, channel
+        call handle_synchronous_update
+    }
 }
 
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
