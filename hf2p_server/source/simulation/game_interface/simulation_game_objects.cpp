@@ -80,7 +80,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 	}
 }
 
-void simulation_action_object_update(datum_index object_index, c_flags<long, ulong64, 64>* update_flags)
+void simulation_action_object_update(datum_index object_index, c_flags<long, ulong64, 64>* update_flags) // TODO: flags are e_simulation_generic_update_flag
 {
 	if (game_is_distributed())
 	{

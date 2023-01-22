@@ -9,8 +9,7 @@ struct s_network_session_parameter_matchmaking_messaging
 };
 static_assert(sizeof(s_network_session_parameter_matchmaking_messaging) == 0xC);
 
-class c_network_session_parameter_matchmaking_messaging : public c_network_session_parameter_base
+class c_network_session_parameter_matchmaking_messaging : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_parameter_matchmaking_messaging>
 {
-	s_network_session_parameter_matchmaking_messaging m_data;
-	s_network_session_parameter_matchmaking_messaging m_requested_data;
 };
+static_assert(sizeof(c_network_session_parameter_matchmaking_messaging) == 0x48);

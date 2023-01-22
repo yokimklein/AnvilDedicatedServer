@@ -173,11 +173,15 @@
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
     <ClInclude Include="source\networking\network_memory.h" />
+    <ClInclude Include="source\networking\replication\replication_control_view.h" />
     <ClInclude Include="source\networking\replication\replication_entity_manager_view.h" />
     <ClInclude Include="source\networking\replication\replication_entity_manager.h" />
     <ClInclude Include="source\networking\replication\replication_event_manager.h" />
     <ClInclude Include="source\networking\replication\replication_event_manager_view.h" />
     <ClInclude Include="source\networking\replication\replication_scheduler.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_chunked.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_generic.h" />
+    <ClInclude Include="source\networking\session\network_session_state.h" />
     <ClInclude Include="source\objects\damage.h" />
     <ClInclude Include="source\objects\multiplayer_game_objects.h" />
     <ClInclude Include="source\objects\object_definitions.h" />
@@ -281,7 +285,7 @@
     <ClInclude Include="source\networking\session\network_session_parameter_types.h" />
     <ClInclude Include="source\networking\session\network_session_parameters_matchmaking.h" />
     <ClInclude Include="source\game\game_engine.h" />
-    <ClInclude Include="source\networking\session\network_session_parameter_saved_film.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_saved_film_game_options.h" />
     <ClInclude Include="source\memory\data.h" />
     <ClInclude Include="source\objects\objects.h" />
     <ClInclude Include="source\math\real_math.h" />
@@ -292,7 +296,7 @@
     <ClInclude Include="source\networking\session\network_session_parameters_game_variant.h" />
     <ClInclude Include="source\networking\session\network_session_parameters_game.h" />
     <ClInclude Include="source\networking\session\network_session_parameters_base.h" />
-    <ClInclude Include="source\networking\session\network_session_parameter_session.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_session.h" />
     <ClInclude Include="source\networking\session\network_session_membership.h" />
     <ClInclude Include="source\networking\session\network_observer.h" />
     <ClInclude Include="source\networking\session\network_session_manager.h" />
@@ -338,6 +342,7 @@
     <ClCompile Include="source\networking\network_memory.cpp" />
     <ClCompile Include="source\networking\replication\replication_entity_manager_view.cpp" />
     <ClCompile Include="source\networking\replication\replication_entity_manager.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp" />
     <ClCompile Include="source\objects\objects.cpp" />
     <ClCompile Include="source\objects\object_types.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_action.cpp" />
@@ -374,7 +379,7 @@
     <ClCompile Include="source\game\players.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_game.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_base.cpp" />
-    <ClCompile Include="source\networking\session\network_session_parameter_session.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_session.cpp" />
     <ClCompile Include="source\networking\session\network_session_membership.cpp" />
     <ClCompile Include="source\networking\session\network_observer.cpp" />
     <ClCompile Include="source\networking\session\network_session_manager.cpp" />

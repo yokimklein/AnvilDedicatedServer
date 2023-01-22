@@ -41,3 +41,31 @@ bool c_network_session_parameter_base::handle_change_request(void const* change_
 	}
 	return success;
 }
+
+void c_network_session_parameter_base::set_update_required()
+{
+	assert(this->set_allowed());
+	printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_base::set_update_required: [%s] parameter %d [%s] marking dirty\n",
+		this->get_session_description(),
+		this->m_type,
+		this->m_name);
+	this->m_state_flags |= 1;
+	memset(this->m_peers_updated, 0, k_network_maximum_machines_per_session);
+	this->notify_set_update_required();
+}
+
+const char* c_network_session_parameter_base::get_set_denied_reason()
+{
+	const char* reason = "NONE";
+	if (!this->set_allowed())
+	{
+		if (this->m_session->established())
+		{
+			if (!this->m_session->is_host())
+				reason = "not host";
+		}
+		else
+			reason = "not established";
+	}
+	return reason;
+}

@@ -1,6 +1,6 @@
 #pragma once
 #include "..\..\dllmain.h"
-#include "..\session\network_session_parameter_session.h"
+#include "..\session\network_session_parameters_session.h"
 #include "..\session\network_observer.h"
 
 static bool* life_cycle_initialized = (bool*)(module_base + 0x3EADFA8);

@@ -16,24 +16,6 @@ enum e_network_session_type
 	k_network_session_type_count
 };
 
-enum e_network_session_state : long
-{
-	_network_session_state_none,
-	_network_session_state_peer_creating,
-	_network_session_state_peer_joining,
-	_network_session_state_peer_join_abort,
-	_network_session_state_peer_established,
-	_network_session_state_peer_leaving,
-	_network_session_state_host_established,
-	_network_session_state_host_disband,
-	// removed in ms29
-	//_network_session_state_host_handoff,
-	//_network_session_state_host_reestablish,
-	//_network_session_state_election,
-
-	k_network_session_state_count
-};
-
 enum e_network_session_boot_reason : long // from ms23/ED
 {
 	_network_session_boot_reason_player_booted_player,

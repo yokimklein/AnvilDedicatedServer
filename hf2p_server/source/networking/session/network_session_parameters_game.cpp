@@ -1,19 +1,18 @@
 #include "network_session_parameters_game.h"
 #include <iostream>
 
-char const* k_game_start_status_strings[k_start_status_count] = {
+char const* k_game_start_status_strings[k_session_game_start_status_count] = {
     "none",
     "not pre game",
-    "not leader",
+    "changing settings member",
     "join in progress",
     "loading",
-    "ready",
+    "ready leader",
+    "accelerate countdown",
     "countdown",
-    "countdown unknown",
     "error"
 };
 
-// update this whenever the enum updates
 char const* k_game_start_error_strings[k_session_game_start_error_count] = {
     "none",
     "no map selected",
@@ -33,7 +32,7 @@ char const* k_game_start_error_strings[k_session_game_start_error_count] = {
 
 const char* multiplayer_game_start_error_to_string(e_session_game_start_error start_error)
 {
-    if (start_error < _start_error_none || start_error >= k_session_game_start_error_count)
+    if (start_error < _session_game_start_error_none || start_error >= k_session_game_start_error_count)
         return "unknown";
     else
         return k_game_start_error_strings[start_error];
@@ -41,16 +40,10 @@ const char* multiplayer_game_start_error_to_string(e_session_game_start_error st
 
 const char* multiplayer_game_start_status_to_string(e_session_game_start_status start_status)
 {
-    if (start_status < _start_status_none || start_status >= k_start_status_count)
+    if (start_status < _session_game_start_status_none || start_status >= k_session_game_start_status_count)
         return "unknown";
     else
         return k_game_start_status_strings[start_status];
-}
-
-bool c_network_session_parameter_ui_game_mode::request_change(e_gui_game_mode gui_gamemode)
-{
-    bool(__thiscall* request_change)(c_network_session_parameter_ui_game_mode* thisptr, e_gui_game_mode gui_gamemode) = reinterpret_cast<decltype(request_change)>(module_base + 0x3B4D0);
-    return request_change(this, gui_gamemode);
 }
 
 s_network_session_parameter_game_start_status* c_network_session_parameter_game_start_status::get()

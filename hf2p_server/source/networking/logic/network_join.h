@@ -5,6 +5,7 @@
 #include "..\transport\transport_address.h"
 #include "..\..\game\players.h"
 #include "..\..\simulation\simulation.h"
+#include "..\session\network_session_state.h"
 
 struct s_network_session_join_request;
 
@@ -92,12 +93,38 @@ enum e_join_remote_state : long
 
 enum e_join_type : long
 {
+    _join_type_squad = 0,
+    _join_type_group,
 
+    k_join_type_count
 };
 
 enum e_life_cycle_join_result : long
 {
+    _life_cycle_join_result_none = 0,
+    _life_cycle_join_result_join_in_progress,
+    _life_cycle_join_result_join_failed_generic_error,
+    _life_cycle_join_result_join_failed_to_find_session,
+    _life_cycle_join_result_join_failed_not_enough_space,
+    _life_cycle_join_result_join_failed_game_not_open,
+    _life_cycle_join_result_join_failed_target_is_matchmaking,
+    _life_cycle_join_result_join_failed_host_timed_out,
+    _life_cycle_join_result_join_failed_peer_version_too_low,
+    _life_cycle_join_result_join_failed_host_version_too_low,
+    _life_cycle_join_result_join_failed_unable_to_connect_open_nat,
+    _life_cycle_join_result_join_failed_unable_to_connect_moderate_nat,
+    _life_cycle_join_result_join_failed_unable_to_connect_closed_nat,
+    _life_cycle_join_result_join_failed_unable_to_connect_party_open_nat,
+    _life_cycle_join_result_join_failed_unable_to_connect_party_moderate_nat,
+    _life_cycle_join_result_join_failed_unable_to_connect_party_strict_nat,
+    _life_cycle_join_result_join_failed_party_member_not_online_enabled,
+    _life_cycle_join_result_join_failed_film_in_progress,
+    _life_cycle_join_result_join_failed_campaign_in_progress,
+    _life_cycle_join_result_join_failed_user_content_not_permitted,
+    _life_cycle_join_result_join_failed_survival_in_progress,
+    _life_cycle_join_result_join_failed_invalid_executable_type,
 
+    k_life_cycle_join_result_count
 };
 
 #pragma pack(push, 4)
@@ -167,15 +194,15 @@ static_assert(sizeof(s_join_queue_entry) == 0x260);
 
 struct s_network_session_remote_session_join_data
 {
-    e_join_remote_state join_state; // aka join_status
-    e_join_type join_to;
+    c_enum<e_join_remote_state, long, k_join_remote_state_count> join_state;
+    c_enum<e_join_type, long, k_join_type_count> join_to;
     qword join_nonce;
-    e_transport_platform platform;
+    c_enum<e_transport_platform, long, k_transport_platform_count> platform;
     s_transport_secure_identifier session_id;
     s_transport_secure_key session_key;
     s_transport_secure_address host_secure_address;
-    enum e_network_session_type session_class;
-    e_life_cycle_join_result join_result;
+    c_enum<e_network_session_class, long, k_network_session_class_count> session_class;
+    c_enum<e_life_cycle_join_result, long, k_life_cycle_join_result_count> join_result;
     bool join_to_public_slots;
 };
 static_assert(sizeof(s_network_session_remote_session_join_data) == 0x50);

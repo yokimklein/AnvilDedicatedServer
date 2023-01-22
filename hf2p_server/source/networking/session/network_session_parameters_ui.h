@@ -1,14 +1,25 @@
 #pragma once
 #include "network_session_parameters_base.h"
+#include "network_session_parameters_generic.h"
+#include "..\..\cseries\cseries.h"
+#include "..\..\interface\gui_pregame_setup_manager.h"
 
-struct s_network_session_parameter_lobby_vote_set
+enum e_network_ui_state_flags
 {
-	long : 32;
-	long : 32;
+	_network_ui_state_flag_game_setup_changing_bit = 0,
+
+	k_network_ui_state_flag_count
 };
 
-class c_network_session_parameter_lobby_vote_set : public c_network_session_parameter_base
+struct s_network_ui_state
 {
-	s_network_session_parameter_lobby_vote_set m_data;
-	s_network_session_parameter_lobby_vote_set m_requested_data;
+	c_flags<e_network_ui_state_flags, word, k_network_ui_state_flag_count> flags;
 };
+static_assert(sizeof(s_network_ui_state) == 0x2);
+
+class c_network_session_parameter_ui_game_mode : public c_network_session_parameter_base, c_generic_network_session_parameter_data<e_gui_game_mode>
+{
+public:
+	bool request_change(e_gui_game_mode gui_gamemode);
+};
+static_assert(sizeof(c_network_session_parameter_ui_game_mode) == 0x38);

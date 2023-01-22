@@ -444,22 +444,13 @@ bool c_network_session::is_host()
 
 bool c_network_session::join_allowed_by_privacy()
 {
+    assert(this->established() && this->is_host());
+
     if (!this->get_session_parameters()->privacy_mode.get_allowed())
         return true;
+    s_network_session_privacy_mode* privacy_mode = this->get_session_parameters()->privacy_mode.get();
+    return privacy_mode->closed_mode == _network_session_closed_none && !privacy_mode->is_closed_by_user;
 
-    if (this->get_session_parameters()->privacy_mode.get_allowed())
-    {
-        return this->get_session_parameters()->privacy_mode.m_data.closed_mode == _network_session_closed_none
-            && !this->get_session_parameters()->privacy_mode.m_data.is_closed_by_user;
-    }
-    else
-    {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_generic_network_session_parameter<struct s_network_session_privacy_mode>::get: [%s] failed to get parameter %d [%s], data not available\n",
-            this->get_session_parameters()->privacy_mode.get_session_description(),
-            this->get_session_parameters()->privacy_mode.m_type,
-            this->get_session_parameters()->privacy_mode.m_name);
-        return false;
-    }
 }
 
 e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown)
@@ -644,12 +635,12 @@ void c_network_session::idle()
                     }
                     if (this->get_session_parameters()->privacy_mode.get_allowed())
                     {
-                        auto privacy_mode_parameter = this->get_session_parameters()->privacy_mode.m_data;
-                        e_network_session_closed_status closed_mode = privacy_mode_parameter.closed_mode;
-                        bool is_closed_by_user = privacy_mode_parameter.is_closed_by_user;
+                        auto privacy_mode_parameter = this->get_session_parameters()->privacy_mode.get();
+                        e_network_session_closed_status closed_mode = privacy_mode_parameter->closed_mode;
+                        bool is_closed_by_user = privacy_mode_parameter->is_closed_by_user;
                         if (closed_mode == _network_session_closed_none && !is_closed_by_user)
                         {
-                            e_network_game_privacy privacy_mode = privacy_mode_parameter.privacy_mode;
+                            e_network_game_privacy privacy_mode = privacy_mode_parameter->privacy_mode;
                             if (privacy_mode == _network_game_privacy_open_to_public)
                             {
                                 friends_only = false;

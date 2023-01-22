@@ -1,4 +1,4 @@
-#include "network_session_parameter_session.h"
+#include "network_session_parameters_session.h"
 #include "..\..\simulation\simulation.h"
 #include <iostream>
 #include "..\..\dllmain.h"
@@ -17,12 +17,12 @@ long c_network_session_parameter_session_size::get_max_player_count()
 
 bool c_network_session_parameter_session_size::set_max_player_count(long player_count)
 {
-	bool(__thiscall* set_max_player_count)(c_network_session_parameter_session_size* session_size_parameter, long player_count) = reinterpret_cast<decltype(set_max_player_count)>(module_base + 0x2D670);
+	FUNCTION_DEF(0x2D670, bool, __thiscall, set_max_player_count, c_network_session_parameter_session_size* thisptr, long player_count);
 	return set_max_player_count(this, player_count);
 }
 
 bool c_network_session_parameter_session_mode::set(e_network_session_mode session_mode)
 {
-	bool(__thiscall* set)(c_network_session_parameter_session_mode* thisptr, e_network_session_mode session_mode) = reinterpret_cast<decltype(set)>(module_base + 0x2D820);
+	FUNCTION_DEF(0x2D820, bool, __thiscall, set, c_network_session_parameter_session_mode* thisptr, e_network_session_mode session_mode);
 	return set(this, session_mode);
 }

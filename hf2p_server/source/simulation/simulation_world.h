@@ -87,18 +87,19 @@ public:
 	bool m_synchronous_out_of_sync;
 	bool m_synchronous_determinism_failure;
 	byte __unknown3E; // pad?
-	byte __unknown3F; // pad?
 	// c_simulation_world::notify_gamestate_flush
 	bool m_notify_gamestate_flushed;
 	// c_simulation_world::notify_gamestate_flush_outside_game_tick
 	bool m_notify_gamestate_flushed_outside_game_tick;
+	// c_simulation_world::update_joining_view
+	bool __unknown41;
 	// c_simulation_world::attach_to_map
 	bool m_attached_to_map;
 	// c_simulation_world::skip_next_gamestate_flush
 	bool m_skipped_next_gamestate_flush;
 	long m_join_attempt_count;
 	long m_last_time_active;
-	long m_establishment_identifier;
+	long m_view_establishment_identifier;
 	long __unknown50;
 	long __unknown54;
 	long __unknown58;
@@ -108,8 +109,8 @@ public:
 	long __unknownA4;
 	c_static_array<c_simulation_player, k_network_maximum_players_per_session> m_players;
 	c_static_array<c_simulation_actor, k_network_maximum_players_per_session> m_actors;
-	long __unknown14E8;
 	long m_next_update_dequeue;
+	long m_update_queue_next_update_number_to_dequeue;
 	long m_update_queue_latest_entry_received_type;
 	long m_update_queue_latest_entry_received_update_number;
 	long m_update_queue_length;

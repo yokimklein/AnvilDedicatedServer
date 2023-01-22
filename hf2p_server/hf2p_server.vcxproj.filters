@@ -51,7 +51,7 @@
     <ClInclude Include="source\networking\session\network_session_membership.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\networking\session\network_session_parameter_session.h">
+    <ClInclude Include="source\networking\session\network_session_parameters_session.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\networking\session\network_session_parameters_base.h">
@@ -84,7 +84,7 @@
     <ClInclude Include="source\memory\data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\networking\session\network_session_parameter_saved_film.h">
+    <ClInclude Include="source\networking\session\network_session_parameters_saved_film_game_options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\game\game_engine.h">
@@ -510,6 +510,18 @@
     <ClInclude Include="source\networking\replication\replication_scheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\replication\replication_control_view.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\session\network_session_parameters_generic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\session\network_session_parameters_chunked.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\session\network_session_state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -554,7 +566,7 @@
     <ClCompile Include="source\networking\session\network_session_membership.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\networking\session\network_session_parameter_session.cpp">
+    <ClCompile Include="source\networking\session\network_session_parameters_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\session\network_session_parameters_base.cpp">
@@ -732,6 +744,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\objects\object_types.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

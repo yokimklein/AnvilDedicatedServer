@@ -296,8 +296,8 @@ struct s_global_damage_info_block
     short indirect_damage_section;
     short : 16;
     long : 32;
-    c_enum<e_damage_reporting_type, char, k_number_of_damage_reporting_types> collision_damage_reporting_type;
-    c_enum<e_damage_reporting_type, char, k_number_of_damage_reporting_types> response_damage_reporting_type;
+    c_enum<e_damage_reporting_type, char, k_damage_reporting_type_count> collision_damage_reporting_type;
+    c_enum<e_damage_reporting_type, char, k_damage_reporting_type_count> response_damage_reporting_type;
     short : 16;
     long : 32;
     long : 32;

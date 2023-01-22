@@ -10,8 +10,8 @@ void c_simulation_world::update_establishing_view(c_simulation_view* simulation_
         {
             if (simulation_view->m_valid_view_establishment_identifier == 1)
             {
-                long establishment_identifier = this->m_establishment_identifier;
-                this->m_establishment_identifier = establishment_identifier + 1;
+                long establishment_identifier = this->m_view_establishment_identifier;
+                this->m_view_establishment_identifier = establishment_identifier + 1;
                 simulation_view->set_view_establishment(_simulation_view_establishment_mode_established, establishment_identifier);
             }
         }

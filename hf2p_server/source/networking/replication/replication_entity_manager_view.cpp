@@ -51,7 +51,7 @@ void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_ind
 	else
 	{
 		this->set_state(entity_index, _replication_entity_view_state_none);
-		++this->m_statistics.unknown3;
+		++this->m_statistics.deletions_unknown;
 		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager_view::mark_entity_for_deletion: [%d] entity deleted from ready state 0x%08X\n",
 			this->m_view_index,
 			entity_index);

@@ -15,7 +15,7 @@ struct s_thread_local_storage
 	c_smart_data_array<s_object_header>* object_headers; // object
 	s_game_engine_globals* game_engine_globals;
 	byte* __unknown14; // prop_ref
-	byte* __unknown18; // det hs thread
+	byte* hs_thread_deterministic_data;
 	byte* __unknown1C;
 	struct global_preferences* global_preferences;
 	game_globals_storage* game_globals;

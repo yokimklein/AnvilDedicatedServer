@@ -68,12 +68,12 @@ enum e_damage_reporting_type
 	_damage_reporting_type_tripmine,
 	_damage_reporting_type_dmr,
 
-	k_number_of_damage_reporting_types
+	k_damage_reporting_type_count
 };
 
 struct s_damage_reporting_info
 {
-	c_enum<e_damage_reporting_type, short, k_number_of_damage_reporting_types> type;
+	c_enum<e_damage_reporting_type, short, k_damage_reporting_type_count> type;
 	char variant; // weapon variant
 	char modifier;
 };

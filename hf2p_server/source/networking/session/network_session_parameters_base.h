@@ -33,6 +33,8 @@ public:
 	bool set_allowed();
 	long get_change_request_size();
 	bool handle_change_request(void const* change_request, long change_request_size);
+	void set_update_required();
+	const char* get_set_denied_reason();
 
 	ulong m_type;
 	const char* m_name;
