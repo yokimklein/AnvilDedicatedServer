@@ -70,7 +70,7 @@ void game_engine_player_added(datum_index player_index)
 		}
 
 		game_results_notify_player_indices_changed();
-		//game_results_statistic_set(player_index, _game_team_none, 0, 1); // TODO REWRITE THIS
+		game_results_statistic_set((word)player_index, _game_team_none, 0, 1);
 	}
 }
 
@@ -91,15 +91,15 @@ void game_engine_update_round_conditions()
 		s_game_engine_globals* game_engine_globals = get_tls()->game_engine_globals;
 		long round_time = game_engine_round_time_get();
 		long game_over_timer = game_engine_globals->game_over_timer;
-		c_flags<e_game_engine_round_condition, byte, k_number_of_game_engine_round_conditions> condition;
+		c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> condition;
 		condition.clear();
 		condition.set(_game_engine_round_condition_unknown0, round_time < 5);
 		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1));
 		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(3));
-		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(4));
-		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(11));
-		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5));
-		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(18));
+		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(4)); // team voice announcer
+		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(11)); // player control
+		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // team intro widget
+		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(18)); // camera position
 		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4));
 		if (game_engine_globals->round_condition_flags != condition)
 		{
@@ -110,7 +110,7 @@ void game_engine_update_round_conditions()
 				while (player_iterator.next())
 				{
 					long player_index = player_iterator.get_index();
-					current_game_engine()->emit_game_start_event(player_index); // player index is 0xEC700000 in ms29
+					current_game_engine()->emit_game_start_event(player_index);
 				}
 			}
 			c_flags<long, ulong64, 64> update_flags = {};
@@ -119,4 +119,42 @@ void game_engine_update_round_conditions()
 			game_engine_globals->round_condition_flags = condition;
 		}
 	}
+}
+
+bool game_engine_round_condition_test(e_game_engine_round_condition condition)
+{
+	assert(VALID_INDEX(condition, k_game_engine_round_condition_count));
+	return get_tls()->game_engine_globals->round_condition_flags.test(condition);
+}
+
+// I started rewriting this before inserting x86 into the existing function to add back the sim update calls
+void game_engine_update_time()
+{
+	/*
+	if (game_engine_in_round() && !game_is_predicted() && !game_engine_round_condition_test(_game_engine_round_condition_unknown4))
+	{
+		if (game_engine_get_round_time_limit_seconds())
+		{
+			s_game_engine_globals* game_engine_globals = get_tls()->game_engine_globals;
+			long round_time_limit_tps = game_engine_globals->game_variant_round_time_limit_ticks_per_second;
+			if (round_time_limit_tps > 0)
+				game_engine_globals->game_variant_round_time_limit_ticks_per_second = round_time_limit_tps - 1;
+			long time_left_in_ticks = game_engine_get_time_left_in_ticks(true);
+			float time_left_in_seconds = game_ticks_to_seconds(time_left_in_ticks);
+			// ??
+
+			c_flags<long, ulong64, 64> update_flags = {};
+			update_flags.set(5, true); // TODO: what is this flag?
+			simulation_action_game_engine_globals_update(&update_flags);
+		}
+	}
+	*/
+}
+
+bool game_engine_in_round()
+{
+	if (current_game_engine() && get_tls()->game_engine_globals->current_state == 1 && (game_is_predicted() || get_tls()->game_engine_globals->desired_state == 1))
+		return true;
+	else
+		return false;
 }

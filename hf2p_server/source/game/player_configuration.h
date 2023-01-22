@@ -17,9 +17,18 @@ enum e_game_team
 	_game_team_gold,
 	_game_team_brown,
 	_game_team_pink,
-	_game_team_observer = 16, // also 8?
 
-	k_maximum_teams = _game_team_observer
+	k_maximum_teams
+	//_game_team_observer = 16, // also 8? -1 seems to behave as a spectator mode?
+};
+
+enum e_player_vote_selection
+{
+	_player_vote_none,
+	_player_vote_option1,
+	_player_vote_option2,
+
+	k_player_vote_selection_count
 };
 
 struct s_machine_identifier
@@ -58,7 +67,7 @@ struct s_player_configuration_from_client
 
 	wchar_t name[16];
 	c_enum<e_game_team, byte, k_maximum_teams> user_selected_team_index;
-	char vote_selection_index;
+	c_enum<e_player_vote_selection, byte, k_player_vote_selection_count> vote_selection_index;
 	char active_armor_loadout;
 	char active_weapon_loadout; // this might now be unused or something under a different name?
 	bool player_is_griefer;

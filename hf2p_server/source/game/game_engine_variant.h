@@ -28,7 +28,7 @@ class c_game_engine_base_variant
 {
 public:
 	c_game_engine_base_variant() :
-		__unknown4(),
+		m_checksum(),
 		m_name(),
 		m_metadata(),
 		m_miscellaneous_options(),
@@ -55,7 +55,7 @@ public:
 	c_game_engine_miscellaneous_options* get_miscellaneous_options();
 	c_game_engine_respawn_options* get_respawn_options();
 
-	dword __unknown4;
+	dword m_checksum;
 	string m_name;
 	s_saved_game_item_metadata m_metadata;
 	c_game_engine_miscellaneous_options m_miscellaneous_options;

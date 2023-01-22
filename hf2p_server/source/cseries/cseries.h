@@ -219,9 +219,9 @@ public:
 		return !!(m_storage & (1 << value));
 	}
 
-	void operator|=(t_type value)
+	void operator|=(t_storage_type raw_bits)
 	{
-		m_storage |= value;
+		m_storage |= raw_bits;
 	}
 
 	bool operator!=(t_type value)

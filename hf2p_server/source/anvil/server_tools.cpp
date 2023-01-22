@@ -33,6 +33,9 @@ bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant eng
 {
     c_game_variant game_variant = c_game_variant();
     build_default_game_variant(&game_variant, engine_variant);
+    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_round_time_limit = 1;
+    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 3;
+    //game_variant.m_storage.m_slayer_variant.m_score_to_win = 1;
 
     //game_variant.m_storage.m_base_variant.m_respawn_options.m_flags.set(_game_engine_respawn_options_auto_respawn_disabled, false);
     //wchar_t variant_name[16] = L"RESPAWN TEST";
@@ -80,6 +83,8 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         // display server-set loadouts in the client's UI
         host_configuration->s3d_player_customization.override_api_data = true;
         host_configuration->s3d_player_container.override_api_data = true;
+        // zzVertigo user id
+        host_configuration->player_xuid.data = 2;
 
         // host player data
         if (current_player->peer_index == membership->host_peer_index())
@@ -90,6 +95,8 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
             host_configuration->user_selected_team_index = _game_team_red;
             host_configuration->team_index = _game_team_red;
             current_player->controller_index = 0;
+            // JocKe user id
+            host_configuration->player_xuid.data = 1;
         }
     }
     // push update
@@ -126,5 +133,6 @@ void anvil_launch_scenario(const char* scenario_path)
 long anvil_get_update_rate_ms()
 {
     // TODO: get main game tls and save address globally so we can access it here
+    // OR add AS update function to the game's main loop
     return 0; // get_tls()->game_time_globals->seconds_per_tick * 1000
 }

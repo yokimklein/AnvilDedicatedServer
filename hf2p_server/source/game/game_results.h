@@ -3,126 +3,129 @@
 #include "..\simulation\simulation.h"
 #include "players.h"
 #include "player_configuration.h"
+#include "game_options.h"
+#include "..\models\damage_info_definitions.h"
+#include "..\text\unicode.h"
 
-enum e_player_statistics
+enum e_game_results_statistic
 {
-	_games_played,
-	_games_completed,
-	_games_won,
-	_games_tied,
-	_rounds_completed,
-	_rounds_won,
-	_in_round_score,
-	_in_game_total_score,
-	_kills,
-	_assists,
-	_deaths,
-	_betrayals,
-	_suicides,
-	_most_kills_in_a_row,
-	_seconds_alive,
-	_ctf_flag_scores,
-	_ctf_flag_grabs,
-	_ctf_flag_carrier_kills,
-	_ctf_flag_returns,
-	_assault_bomb_arms,
-	_assault_bomb_grabs,
-	_assault_bomb_disarms,
-	_assault_bomb_detonations,
-	_oddball_time_with_ball,
-	_oddball_unused,
-	_oddball_kills_as_carrier,
-	_oddball_ball_carrier_kills,
-	_king_time_on_hill,
-	_king_total_control_time,
-	_king_unused1, // both are just 'king-unused' in the original array
-	_king_unused2, //
-	_unused1, // all 3 are just 'unused' in original array
-	_unused2, // 
-	_unused3, // 
-	_vip_takedowns,
-	_vip_kills_as_vip,
-	_vip_guard_time,
-	_vip_time_as_vip,
-	_vip_lives_as_vip,
-	_juggernaut_kills,
-	_juggernaut_kills_as_juggernaut,
-	_juggernaut_total_control_time,
-	_total_wp,
-	_juggernaut_unused,
-	_territories_owned,
-	_territories_captures,
-	_territories_ousts,
-	_territories_time_in_territory,
-	_infection_zombie_kills,
-	_infection_infections,
-	_infection_time_as_human,
+	_game_results_statistic_games_played = 0,
+	_game_results_statistic_games_completed,
+	_game_results_statistic_games_won,
+	_game_results_statistic_games_tied,
+	_game_results_statistic_rounds_completed,
+	_game_results_statistic_rounds_won,
+	_game_results_statistic_in_round_score,
+	_game_results_statistic_in_game_total_score,
+	_game_results_statistic_kills,
+	_game_results_statistic_assists,
+	_game_results_statistic_deaths,
+	_game_results_statistic_betrayals,
+	_game_results_statistic_suicides,
+	_game_results_statistic_most_kills_in_a_row,
+	_game_results_statistic_seconds_alive,
+	_game_results_statistic_ctf_flag_scores,
+	_game_results_statistic_ctf_flag_grabs,
+	_game_results_statistic_ctf_flag_carrier_kills,
+	_game_results_statistic_ctf_flag_returns,
+	_game_results_statistic_assault_bomb_arms,
+	_game_results_statistic_assault_bomb_grabs,
+	_game_results_statistic_assault_bomb_disarms,
+	_game_results_statistic_assault_bomb_detonations,
+	_game_results_statistic_oddball_time_with_ball,
+	_game_results_statistic_oddball_unused,
+	_game_results_statistic_oddball_kills_as_carrier,
+	_game_results_statistic_oddball_ball_carrier_kills,
+	_game_results_statistic_king_time_on_hill,
+	_game_results_statistic_king_total_control_time,
+	_game_results_statistic_king_unused0,
+	_game_results_statistic_king_unused1,
+	_game_results_statistic_unused0,
+	_game_results_statistic_unused1,
+	_game_results_statistic_unused2,
+	_game_results_statistic_vip_takedowns,
+	_game_results_statistic_vip_kills_as_vip,
+	_game_results_statistic_vip_guard_time,
+	_game_results_statistic_vip_time_as_vip,
+	_game_results_statistic_vip_lives_as_vip,
+	_game_results_statistic_juggernaut_kills,
+	_game_results_statistic_juggernaut_kills_as_juggernaut,
+	_game_results_statistic_juggernaut_total_control_time,
+	_game_results_statistic_total_wp,
+	_game_results_statistic_juggernaut_unused,
+	_game_results_statistic_territories_owned,
+	_game_results_statistic_territories_captures,
+	_game_results_statistic_territories_ousts,
+	_game_results_statistic_territories_time_in_territory,
+	_game_results_statistic_infection_zombie_kills,
+	_game_results_statistic_infection_infections,
+	_game_results_statistic_infection_time_as_human,
 
-	k_player_statistics_count
+	k_game_results_statistic_count
 };
 
-enum e_medals
+enum e_game_results_medal
 {
-	_medal_extermination,
-	_medal_perfection,
-	_medal_multiple_kill_2,
-	_medal_multiple_kill_3,
-	_medal_multiple_kill_4,
-	_medal_multiple_kill_5,
-	_medal_multiple_kill_6,
-	_medal_multiple_kill_7,
-	_medal_multiple_kill_8,
-	_medal_multiple_kill_9,
-	_medal_multiple_kill_10,
-	_medal_5_kills_in_a_row,
-	_medal_10_kills_in_a_row,
-	_medal_15_kills_in_a_row,
-	_medal_20_kills_in_a_row,
-	_medal_25_kills_in_a_row,
-	_medal_30_kills_in_a_row,
-	_medal_sniper_kill_5,
-	_medal_sniper_kill_10,
-	_medal_shotgun_kill_5,
-	_medal_shotgun_kill_10,
-	_medal_collision_kill_5,
-	_medal_collision_kill_10,
-	_medal_sword_kill_5,
-	_medal_sword_kill_10,
-	_medal_juggernaut_kill_5,
-	_medal_juggernaut_kill_10,
-	_medal_zombie_kill_5,
-	_medal_zombie_kill_10,
-	_medal_human_kill_5,
-	_medal_human_kill_10,
-	_medal_human_kill_15,
-	_medal_koth_kill_5,
-	_medal_shotgun_kill_sword,
-	_medal_vehicle_impact_kill,
-	_medal_vehicle_hijack,
-	_medal_aircraft_hijack,
-	_medal_deadplayer_kill,
-	_medal_player_kill_spreeplayer,
-	_medal_spartanlaser_kill,
-	_medal_stickygrenade_kill,
-	_medal_sniper_kill,
-	_medal_bashbehind_kill,
-	_medal_bash_kill,
-	_medal_flame_kill,
-	_medal_driver_assist_gunner,
-	_medal_assault_bomb_planted,
-	_medal_assault_player_kill_carrier,
-	_medal_vip_player_kill_vip,
-	_medal_juggernaut_player_kill_juggernaut,
-	_medal_oddball_carrier_kill_player,
-	_medal_ctf_flag_captured,
-	_medal_ctf_flag_player_kill_carrier,
-	_medal_ctf_flag_carrier_kill_player,
-	_medal_infection_survive,
-	_medal_unused1, // all 3 are just 'unused1/2/3' in the original array
-	_medal_unused2, //
-	_medal_unused3, //
+	_game_results_medal_extermination = 0,
+	_game_results_medal_perfection,
+	_game_results_medal_multiple_kill_2,
+	_game_results_medal_multiple_kill_3,
+	_game_results_medal_multiple_kill_4,
+	_game_results_medal_multiple_kill_5,
+	_game_results_medal_multiple_kill_6,
+	_game_results_medal_multiple_kill_7,
+	_game_results_medal_multiple_kill_8,
+	_game_results_medal_multiple_kill_9,
+	_game_results_medal_multiple_kill_10,
+	_game_results_medal_5_kills_in_a_row,
+	_game_results_medal_10_kills_in_a_row,
+	_game_results_medal_15_kills_in_a_row,
+	_game_results_medal_20_kills_in_a_row,
+	_game_results_medal_25_kills_in_a_row,
+	_game_results_medal_30_kills_in_a_row,
+	_game_results_medal_sniper_kill_5,
+	_game_results_medal_sniper_kill_10,
+	_game_results_medal_shotgun_kill_5,
+	_game_results_medal_shotgun_kill_10,
+	_game_results_medal_collision_kill_5,
+	_game_results_medal_collision_kill_10,
+	_game_results_medal_sword_kill_5,
+	_game_results_medal_sword_kill_10,
+	_game_results_medal_juggernaut_kill_5,
+	_game_results_medal_juggernaut_kill_10,
+	_game_results_medal_zombie_kill_5,
+	_game_results_medal_zombie_kill_10,
+	_game_results_medal_human_kill_5,
+	_game_results_medal_human_kill_10,
+	_game_results_medal_human_kill_15,
+	_game_results_medal_koth_kill_5,
+	_game_results_medal_shotgun_kill_sword,
+	_game_results_medal_vehicle_impact_kill,
+	_game_results_medal_vehicle_hijack,
+	_game_results_medal_aircraft_hijack,
+	_game_results_medal_deadplayer_kill,
+	_game_results_medal_player_kill_spreeplayer,
+	_game_results_medal_spartanlaser_kill,
+	_game_results_medal_stickygrenade_kill,
+	_game_results_medal_sniper_kill,
+	_game_results_medal_bashbehind_kill,
+	_game_results_medal_bash_kill,
+	_game_results_medal_flame_kill,
+	_game_results_medal_driver_assist_gunner,
+	_game_results_medal_assault_bomb_planted,
+	_game_results_medal_assault_player_kill_carrier,
+	_game_results_medal_vip_player_kill_vip,
+	_game_results_medal_juggernaut_player_kill_juggernaut,
+	_game_results_medal_oddball_carrier_kill_player,
+	_game_results_medal_ctf_flag_captured,
+	_game_results_medal_ctf_flag_player_kill_carrier,
+	_game_results_medal_ctf_flag_carrier_kill_player,
+	_game_results_medal_infection_survive,
+	_game_results_medal_unused1,
+	_game_results_medal_unused2,
+	_game_results_medal_unused3,
 
-	k_medals_count
+	k_game_results_medal_count
 };
 
 enum e_achievement
@@ -178,158 +181,321 @@ enum e_achievement
 	k_achievement_count
 };
 
-enum e_damage
+enum e_game_results_damage_statistic
 {
-	_damage_kills,
-	_damage_deaths,
-	_damage_betrayals,
-	_damage_suicides,
-	_damage_headshots,
+	_game_results_damage_statistic_damage_kills = 0,
+	_game_results_damage_statistic_damage_deaths,
+	_game_results_damage_statistic_damage_betrayals,
+	_game_results_damage_statistic_damage_suicides,
+	_game_results_damage_statistic_damage_headshots,
 
-	k_damage_count
+	k_game_results_damage_statistic_count
 };
 
-enum e_player_vs_player
+enum e_game_results_player_vs_player_statistic
 {
-	_player_vs_player_kills,
-	_player_vs_player_deaths,
+	_game_results_player_vs_player_statistic_player_vs_player_kills = 0,
+	_game_results_player_vs_player_statistic_player_vs_player_deaths,
 
-	k_player_vs_player_count
+	k_game_results_player_vs_player_statistic_count
 };
 
-#pragma pack(push, 1)
+struct s_integer_statistic_update
+{
+	word statistic;
+};
+
 struct s_game_results_player_data
 {
 	bool player_exists;
 	byte machine_index;
-	s_player_identifier player_identifier;
-	byte pad2[6];
-	s_player_configuration player_data;
+
+	union
+	{
+#pragma pack(push, 1)
+		struct
+		{
+			s_player_identifier player_identifier;
+			byte __padA[0x6];
+		} s;
+#pragma pack(pop)
+
+		byte data[sizeof(s)];
+	};
+
+	s_player_configuration configuration;
+
 	byte player_standing;
-	byte pad3[11];
-	short player_score;
-	byte pad4[2];
+	byte __pad1631[0xB];
+
+	long player_score;
 };
 static_assert(sizeof(s_game_results_player_data) == 0xB90);
 
-struct s_game_results_player
+class s_game_results_player_data_update
 {
-	bool player_valid;
-	bool player_data_valid;
-	byte pad1[6];
-	s_game_results_player_data player_data;
+public:
+	bool valid;
+	bool data_valid;
+	byte __pad2[0x6];
+	s_game_results_player_data update;
 };
-static_assert(sizeof(s_game_results_player) == 0xB98);
+static_assert(sizeof(s_game_results_player_data_update) == 0xB98);
 
 struct s_game_results_team_data
 {
 	bool team_exists;
 	byte team_standing;
-	short team_score;
+	word team_score;
 };
 static_assert(sizeof(s_game_results_team_data) == 0x4);
 
-struct s_game_results_team
+struct s_game_results_team_data_update
 {
-	bool team_valid;
-	bool team_data_valid;
-	s_game_results_team_data team_data;
-};
-static_assert(sizeof(s_game_results_team) == 0x6);
+	bool valid;
+	bool data_valid;
 
-struct s_game_results_player_statistics_update
-{
-	bool player_statistics_valid;
-	ushort player_statistics_update[k_player_statistics_count];
+	s_game_results_team_data update;
 };
-static_assert(sizeof(s_game_results_player_statistics_update) == 0x67);
+static_assert(sizeof(s_game_results_team_data_update) == 0x6);
 
-struct s_game_results_player_medals_statistics_update
+struct s_game_results_player_medal_statistics_update
 {
-	bool player_medals_valid;
-	byte pad[1];
-	ushort medals_statistics_update[k_medals_count];
+	bool valid;
+	byte __pad[1]; // statistics_valid?
+	s_integer_statistic_update statistics[k_game_results_medal_count];
 };
-static_assert(sizeof(s_game_results_player_medals_statistics_update) == 0x76);
+static_assert(sizeof(s_game_results_player_medal_statistics_update) == 0x76);
 
-struct s_game_results_player_achievements_statistics_update
+struct s_game_results_player_achievement_statistics_update
 {
-	bool player_achievements_valid;
-	byte pad[1];
-	ushort achievements_statistics_update[k_achievement_count];
+	bool valid;
+	byte __pad[1]; // statistics_valid?
+	s_integer_statistic_update statistics[k_achievement_count];
 };
-static_assert(sizeof(s_game_results_player_achievements_statistics_update) == 0x60);
+static_assert(sizeof(s_game_results_player_achievement_statistics_update) == 0x60);
 
 struct s_game_results_player_damage_statistics_update
 {
-	bool player_damage;
-	byte pad[1];
-	ushort damage_statistics_update[k_damage_count];
+	bool valid;
+	byte __pad1[1]; // statistics_valid?
+	s_integer_statistic_update statistics[k_game_results_damage_statistic_count];
 };
 static_assert(sizeof(s_game_results_player_damage_statistics_update) == 0xC);
 
 struct s_game_results_player_statistics
 {
-	bool player_valid;
-	s_game_results_player_statistics_update player_statistics;
-	s_game_results_player_medals_statistics_update medals_statistics;
-	s_game_results_player_achievements_statistics_update achievements_statistics;
-	s_game_results_player_damage_statistics_update damage_statistics[64]; // why 64? for each simulation event?
-};
-static_assert(sizeof(s_game_results_player_statistics) == 0x43E);
+	s_integer_statistic_update statistics[k_game_results_statistic_count];
 
-struct s_game_results_player_vs_player
+	s_integer_statistic_update medals[k_game_results_medal_count];
+	s_integer_statistic_update achievements[k_achievement_count];
+
+	s_game_results_player_damage_statistics_update damage[k_damage_reporting_type_count];
+};
+static_assert(sizeof(s_game_results_player_statistics) == 0x438);
+
+struct s_game_results_player_statistics_update
 {
-	bool player_vs_player_valid;
-	byte pad[1];
-	ushort player_vs_player_statistics[k_player_vs_player_count];
+	bool valid;
+	bool statistics_valid;
+	s_integer_statistic_update statistics[k_game_results_statistic_count];
+	s_game_results_player_medal_statistics_update medals;
+	s_game_results_player_achievement_statistics_update achievements;
+	s_game_results_player_damage_statistics_update damage[k_damage_reporting_type_count];
 };
-static_assert(sizeof(s_game_results_player_vs_player) == 0x6);
+static_assert(sizeof(s_game_results_player_statistics_update) == 0x43E);
 
-struct s_game_results_player_team_valid
+struct s_game_results_player_vs_player_statistics
+{
+	s_integer_statistic_update statistics[k_game_results_player_vs_player_statistic_count];
+};
+static_assert(sizeof(s_game_results_player_vs_player_statistics) == 0x4);
+
+struct s_game_results_player_vs_player_statistics_update
+{
+	bool valid;
+	byte __pad1[1]; // statistics_valid?
+	s_game_results_player_vs_player_statistics update;
+};
+static_assert(sizeof(s_game_results_player_vs_player_statistics_update) == 0x6);
+
+struct s_game_results_team_statistics
+{
+	s_integer_statistic_update statistics[k_game_results_statistic_count];
+};
+static_assert(sizeof(s_game_results_team_statistics) == 0x66);
+
+struct s_game_results_team_statistics_update
 {
 	bool team_valid;
-	byte pad[1];
-	ushort player_team_valid_statistics[k_player_statistics_count];
+	byte __pad1[1]; // statistics_valid?
+	s_game_results_team_statistics update;
 };
-static_assert(sizeof(s_game_results_player_team_valid) == 0x68);
+static_assert(sizeof(s_game_results_team_statistics_update) == 0x68);
 
-struct s_game_results_machine
+struct s_game_results_statistics
 {
-	bool machine_valid;
-	byte pad1[1];
+	c_static_array<s_game_results_player_statistics, 16> player;
+
+	// player_vs_player[subject_player_absolute_index][reference_player_absolute_index].statistics
+	c_static_array<c_static_array<s_game_results_player_vs_player_statistics, 16>, 16> player_vs_player;
+
+	c_static_array<s_game_results_team_statistics, 16> team;
+};
+static_assert(sizeof(s_game_results_statistics) == 0x4DE0);
+
+struct s_game_results_statistics_update
+{
+	c_static_array<s_game_results_player_statistics_update, 16> player;
+
+	// player_vs_player[subject_player_absolute_index][reference_player_absolute_index].statistics
+	c_static_array<c_static_array<s_game_results_player_vs_player_statistics_update, 16>, 16> player_vs_player;
+
+	c_static_array<s_game_results_team_statistics_update, 16> team;
+};
+static_assert(sizeof(s_game_results_statistics_update) == 0x5060);
+
+#pragma pack(push, 1)
+struct s_game_results_machine_data
+{
 	s_machine_identifier machine_identifier;
+
 	bool machine_exists;
 	bool machine_connected;
 	bool machine_host;
 	bool machine_initial_host;
 	bool machine_voluntary_quit;
-	byte pad2[1];
-	byte machine_bandwidth_estimate[10]; // could be just a int64 with 2 bytes of padding at the end
+
+	byte __pad17[1];
+
+	struct
+	{
+		// TODO
+		byte __data[0xA];
+	} machine_bandwidth_estimate;
 };
-static_assert(sizeof(s_game_results_machine) == 0x22);
+static_assert(sizeof(s_game_results_machine_data) == 0x20);
+#pragma pack(pop)
+
+struct s_game_results_machine_data_update
+{
+	bool machine_valid;
+	byte __pad1[1];
+
+	s_game_results_machine_data update;
+};
+static_assert(sizeof(s_game_results_machine_data_update) == 0x22);
 
 struct s_game_results_incremental_update
 {
 	bool started;
-	byte pad1[3];
-	ulong start_time;
+	dword start_time;
 	bool finished;
-	byte pad2[3];
-	ulong finish_time;
+	dword finish_time;
 	bool finalized;
-	byte pad3[3];
-	ulong finish_reason; // unused
-	s_game_results_player players[k_network_maximum_players_per_session];
-	s_game_results_team teams[k_network_maximum_players_per_session];
-	s_game_results_player_statistics player_statistics[k_network_maximum_players_per_session];
-	s_game_results_player_vs_player player_vs_player_statistics[k_network_maximum_players_per_session][k_network_maximum_players_per_session];
-	s_game_results_player_team_valid player_valid_teams[k_network_maximum_players_per_session];
-	s_game_results_machine machines[k_network_maximum_machines_per_session];
-	byte pad4[6];
+	dword finish_reason;
+	c_static_array<s_game_results_player_data_update, 16> player_updates; // 0x1648 - 0xB98
+	c_static_array<s_game_results_team_data_update, 16> team_updates;
+	s_game_results_statistics_update statistics;
+	c_static_array<s_game_results_machine_data_update, 17> machines;
+	byte __pad1[6];
 };
 static_assert(sizeof(s_game_results_incremental_update) == 0x10CA0);
-#pragma pack(pop)
+
+struct s_game_results_incremental
+{
+	bool finalized;
+	bool started;
+	dword start_time;
+	bool finished;
+	dword finish_time;
+	c_static_array<s_game_results_player_data, 16> players;
+	c_static_array<s_game_results_team_data, 16> teams;
+	s_game_results_statistics statistics;
+	c_static_array<s_game_results_machine_data, 17> machines;
+};
+static_assert(sizeof(s_game_results_incremental) == 0x10950);
+
+struct s_game_results_event
+{
+	byte type;
+	byte player_index;
+	byte union_storage[0x1E];
+	dword time;
+};
+static_assert(sizeof(s_game_results_event) == 0x24);
+
+struct c_game_results
+{
+	byte finish_reason;
+	bool initialized;
+	bool finalized;
+	// is this game result specific version of `s_game_matchmaking_options`?
+	s_game_matchmaking_options matchmaking_options;
+
+	bool team_game;
+	byte __data65[7]; // pad?
+	qword game_instance;
+	c_game_variant game_variant;
+	c_static_wchar_string<32> map_variant_name;
+	long map_id;
+	c_static_string<260> scenario_path;
+
+	bool started;
+	dword start_time;
+	bool finished;
+	dword finish_time;
+
+	byte __data24C[2];
+	bool simulation_aborted;
+	byte __data24F[1]; // pad?
+
+	c_static_array<s_game_results_player_data, 16> players;
+	c_static_array<s_game_results_team_data, 16> teams;
+	s_game_results_statistics statistics;
+	c_static_array<s_game_results_event, 1000> events;
+	c_static_array<s_game_results_machine_data, 17> machines;
+};
+static_assert(sizeof(c_game_results) == 0x19A10);
+
+struct s_game_results_globals
+{
+	bool recording;
+	bool recording_paused;
+	bool updating;
+	long event_index;
+	dword __time8;
+	c_game_results* results;
+};
+static_assert(sizeof(s_game_results_globals) == 0x10);
+
+class c_simulation_view;
+struct c_game_results_replicator
+{
+	c_simulation_view* m_view;
+	bool m_has_fatal_error;
+	bool m_sending_updates;
+	bool m_receiving_updates;
+	long m_incremental_update_number;
+	dword __unknownC;
+	s_game_results_incremental m_incremental;
+	dword __time1B460;
+	byte __data1B464[4];
+};
+static_assert(sizeof(c_game_results_replicator) == 0x10968);
+
+struct s_integer_statistic_definition
+{
+	const char* name;
+
+	// type?
+	dword __unknown4;
+
+	word minimum_value;
+	word maximum_value;
+	dword encoding_bits;
+};
+static_assert(sizeof(s_integer_statistic_definition) == 0x10);
 
 void game_results_notify_player_indices_changed();
 void game_results_statistic_set(datum_index absolute_player_index, e_game_team team_index, long statistic, long value);

@@ -64,7 +64,9 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
     }
 }
 
-// TODO: set player name, loadouts and teams here
+// TODO: set player name, loadouts, teams and vote selection here
+// if dedicated_server_session_state == voting, and new selection index != old, increment vote count for new choice and decrement for old (so long as old isn't 0)
+// make sure to sanitise vote inputs, if players set to an invalid index/enum, update their player data to set it back to 0 and remove their vote
 void network_session_check_properties(c_network_session* session)
 {
     /* TODO - once mulg definition is implemented & tag interface

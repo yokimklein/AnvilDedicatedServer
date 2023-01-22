@@ -14,7 +14,7 @@
 #include "main\main_game.h"
 #include "hf2p\hq.h"
 
-// TODO: enable write on rdata page
+// TODO: enable write on rdata page to overwrite tutorial scenario path for easy scenario laucnhing
 void enable_memory_write(dword base)
 {
     // Enable write to all executable memory
@@ -101,64 +101,88 @@ long main_thread()
         bool key_held_insert = false;
         bool key_held_pgup = false;
         bool key_held_pgdown = false;
-        auto start_status_parameter = &network_session->get_session_parameters()->game_start_status;
-        e_session_game_start_status* start_status = &start_status_parameter->m_data.game_start_status;
-        e_session_game_start_status start_status_previous = (e_session_game_start_status)-1;
-        e_session_game_start_error* start_error = &start_status_parameter->m_data.game_start_error;
-        e_session_game_start_error start_error_previous = (e_session_game_start_error)-1;
+        // wait for game_start_status to unlock
+        while (!network_session->get_session_parameters()->game_start_status.get_allowed());
+        auto start_status_parameter = network_session->get_session_parameters()->game_start_status.get();
+        e_session_game_start_status* start_status = (e_session_game_start_status*)&start_status_parameter->game_start_status;
+        e_session_game_start_status start_status_previous = _session_game_start_status_none;
+        e_session_game_start_error* start_error = (e_session_game_start_error*)&start_status_parameter->game_start_error;
+        e_session_game_start_error start_error_previous = _session_game_start_error_none;
+
+        e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
+        network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
 
         while (network_session->established())
         {
-            if (start_status_parameter->get_allowed())
+            // log if the status or error codes have updated
+            if (*start_status != start_status_previous || *start_error != start_error_previous)
             {
-                // log if the status or error codes have updated
-                if (*start_status != start_status_previous || *start_error != start_error_previous)
-                {
-                    printf("start status updated: %s (error: %s)\n",
-                        multiplayer_game_start_status_to_string(*start_status),
-                        multiplayer_game_start_error_to_string(*start_error));
-                    start_status_previous = *start_status;
-                    start_error_previous = *start_error;
-                }
+                printf("start status updated: %s (error: %s)\n",
+                    multiplayer_game_start_status_to_string(*start_status),
+                    multiplayer_game_start_error_to_string(*start_error));
+                start_status_previous = *start_status;
+                start_error_previous = *start_error;
+            }
 
-                // set the map when none is selected
-                if (*start_error == _start_error_no_map_selected)
-                {
-                    anvil_session_set_gamemode(network_session, engine_variant);
-                    anvil_session_set_map(map_id);
-                    // wait for the error to update so we don't spam the set map call
-                    while (*start_error == _start_error_no_map_selected) Sleep(k_anvil_update_rate_ms);
-                }
-                // enable the launch key when the session is ready
-                else if (*start_status == _start_status_ready && anvil_key_pressed(VK_HOME, &key_held_home))
+            // set the map when none is selected
+            if (*start_error == _session_game_start_error_no_map_selected)
+            {
+                anvil_session_set_gamemode(network_session, engine_variant);
+                anvil_session_set_map(map_id);
+                // wait for the error to update so we don't spam the set map call
+                while (*start_error == _session_game_start_error_no_map_selected) Sleep(k_anvil_update_rate_ms);
+            }
+            // enable the launch key when the session is ready
+            else if (*start_status == _session_game_start_status_ready_leader)
+            {
+                if (anvil_key_pressed(VK_HOME, &key_held_home))
                 {
                     printf("Launching session...\n");
                     network_session->m_session_parameters.session_mode.set(_network_session_mode_setup);
                 }
-                // enable the end game key once a game is started
-                else if (*start_status == _start_status_none && anvil_key_pressed(VK_END, &key_held_end))
+                else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
                 {
-                    printf("Ending game...\n");
-                    network_session->m_session_parameters.session_mode.set(_network_session_mode_end_game);
+                    printf("Starting session countdown...\n");
+                    // TODO: c_network_session_parameter_countdown_timer::set
+                    network_session->get_session_parameters()->countdown_timer.m_data.countdown_timer = 5;
+                    network_session->get_session_parameters()->countdown_timer.m_data.delayed_reason = 2;
+                    network_session->get_session_parameters()->countdown_timer.m_state_flags |= 1;
+                    memset(network_session->get_session_parameters()->countdown_timer.m_peers_updated, 0, k_network_maximum_machines_per_session);
+                    network_session->get_session_parameters()->countdown_timer.notify_set_update_required();
+                    e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+                    network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
+                }
+                else if (anvil_key_pressed(VK_NEXT, &key_held_pgdown))
+                {
+                    printf("Lobby vote set test...\n");
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[0].gamemode = 1;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[0].map = 9;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[0].number_of_votes = 0;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[1].gamemode = 0;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[1].map = 10;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.vote_options[1].number_of_votes = 0;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.__unknown6 = 0;
+                    network_session->get_session_parameters()->lobby_vote_set.m_data.__unknown7 = 0;
+
+                    network_session->get_session_parameters()->lobby_vote_set.m_state_flags |= 1;
+                    memset(network_session->get_session_parameters()->lobby_vote_set.m_peers_updated, 0, k_network_maximum_machines_per_session);
+                    network_session->get_session_parameters()->lobby_vote_set.notify_set_update_required();
+                    e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
+                    network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
                 }
             }
+            // enable the end game key once a game is started
+            else if (*start_status == _session_game_start_status_none && anvil_key_pressed(VK_END, &key_held_end))
+            {
+                printf("Ending game...\n");
+                network_session->m_session_parameters.session_mode.set(_network_session_mode_end_game);
+            }
+
             // always available in established session
             if (anvil_key_pressed(VK_INSERT, &key_held_insert))
             {
                 printf("Setting test player data...\n");
                 anvil_session_set_test_player_data(network_session->get_session_membership());
-            }
-            if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
-            {
-                printf("Setting simulation protocol to synchronous...\n");
-                network_session->get_session_parameters()->game_simulation_protocol.m_data = _network_game_simulation_synchronous;
-                network_session->get_session_parameters()->game_simulation_protocol.notify_set_update_required();
-            }
-            if (anvil_key_pressed(VK_NEXT, &key_held_pgdown))
-            {
-                printf("Setting simulation protocol to distributed...\n");
-                network_session->get_session_parameters()->game_simulation_protocol.m_data = _network_game_simulation_distributed;
-                network_session->get_session_parameters()->game_simulation_protocol.notify_set_update_required();
             }
             Sleep(k_anvil_update_rate_ms);
         }

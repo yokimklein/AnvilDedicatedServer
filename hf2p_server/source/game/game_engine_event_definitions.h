@@ -16,7 +16,7 @@ enum e_game_engine_event_type
 	_game_engine_event_type_assault,
 	_game_engine_event_type_infection,
 	_game_engine_event_type_survival,
-	_game_engine_event_type_unknown,
+	_game_engine_event_type_earn_wp, // saber scoring
 
 	k_number_of_game_engine_event_types
 };

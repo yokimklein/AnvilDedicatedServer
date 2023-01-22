@@ -91,7 +91,6 @@ void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badn
 	quality_statistics_get_ratings(this, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
 
-// TODO - test this with more than one peer
 long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel)
 {
 	long channel_index = -1;

@@ -45,8 +45,40 @@ enum e_game_engine_round_condition
 	_game_engine_round_condition_unknown6,
 	_game_engine_round_condition_unknown7,
 
-	k_number_of_game_engine_round_conditions = 8
+	k_game_engine_round_condition_count = 8
 };
+
+enum e_game_engine_end_condition
+{
+	_game_engine_end_condition_end_default = 0,
+	_game_engine_end_condition_game_end_scripting,
+	_game_engine_end_condition_should_end_not_enough_living,
+	_game_engine_end_condition_should_end_all_dead,
+	_game_engine_end_condition_should_end_current_engine_override,
+	_game_engine_end_condition_round_end_team_scoring,
+	_game_engine_end_condition_round_end_scoring,
+	_game_engine_end_condition_game_end_rounds,
+	_game_engine_end_condition_game_end_rounds_team_early_victory,
+	_game_engine_end_condition_game_end_rounds_early_victory,
+	_game_engine_end_condition_game_end_rounds_exceeded,
+	_game_engine_end_condition_round_end_time_ran_out,
+	_game_engine_end_condition_game_end_external,
+	_game_engine_end_condition_game_end_invalid_team_mapping,
+	_game_engine_end_condition_game_end_due_to_automation,
+	_game_engine_end_condition_game_end_exceeded_maximum_rounds,
+	_game_engine_end_condition_round_end_juggernaut_left,
+	_game_engine_end_condition_round_end_juggernaut_unknown1,
+	_game_engine_end_condition_round_end_juggernaut_unknown2,
+	_game_engine_end_condition_round_end_infection,
+	_game_engine_end_condition_round_end_ctf_sides,
+	_game_engine_end_condition_round_end_editor_reset,
+	_game_engine_end_condition_round_end_editor_change_mode,
+	_game_engine_end_condition_round_end_vip_vip_killed,
+
+	k_game_engine_end_condition_count
+};
+
+//.data:0189ECF0 ; char const* k_game_engine_end_conditions[k_game_engine_end_condition_count]
 
 struct s_player_waypoint_data
 {
@@ -83,7 +115,7 @@ struct s_game_engine_globals
 	short current_state;
 	short round_index;
 	dword round_timer;
-	c_flags<e_game_engine_round_condition, byte, k_number_of_game_engine_round_conditions> round_condition_flags;
+	c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> round_condition_flags;
 	s_game_engine_score_list score_list;
 
 	union
@@ -135,5 +167,8 @@ void game_engine_attach_to_simulation();
 void game_engine_player_added(datum_index absolute_player_index);
 long game_engine_round_time_get();
 void game_engine_update_round_conditions();
+bool game_engine_round_condition_test(e_game_engine_round_condition condition);
+void game_engine_update_time();
+bool game_engine_in_round();
 
 static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);

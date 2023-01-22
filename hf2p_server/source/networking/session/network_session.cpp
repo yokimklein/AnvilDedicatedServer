@@ -1394,7 +1394,6 @@ bool c_network_session::handle_player_properties(c_network_channel* channel, s_n
 
     if (this->established() && this->is_host())
     {
-        // TODO: sometimes this fails to retrieve peer_index for the first peer that joins? needs investigating
         long channel_index = this->m_observer->observer_channel_find_by_network_channel(this->observer_owner(), channel);
         long peer_index = this->get_session_membership()->get_peer_from_observer_channel(channel_index);
         if (peer_index == -1 || peer_index == this->get_session_membership()->local_peer_index())
