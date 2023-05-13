@@ -3,7 +3,7 @@
 #include "..\cseries\cseries.h"
 #include "..\dllmain.h"
 
-enum e_object_data_flags
+enum e_object_type
 {
 	_object_type_biped,
 	_object_type_vehicle,
@@ -22,7 +22,9 @@ enum e_object_data_flags
 	_object_type_giant,
 	_object_type_effect_scenery,
 
-	k_number_of_object_data_flags
+	//_object_mask_unit = _object_mask_biped | _object_mask_vehicle | _object_mask_giant,
+
+	k_object_types_count
 };
 
 struct s_object_placement_data;
@@ -77,7 +79,7 @@ struct s_object_type_definition
 	void(*notify_impulse_sound)(long, long, long);
 	void(*render_debug)(long);
 	void(*unknown)(long);
-	s_object_type_definition* child_types[k_number_of_object_data_flags];
+	s_object_type_definition* child_types[k_object_types_count];
 	s_object_type_definition* next_type;
 	ulong deleted_object_handler_mask;
 };
@@ -86,4 +88,4 @@ static_assert(sizeof(s_object_type_definition) == 0xF8);
 static s_object_type_definition** object_type_definitions = (s_object_type_definition**)(module_base + 0xEB2448);
 
 void object_type_detach_gamestate_entity(datum_index object_index);
-s_object_type_definition* object_type_definition_get(e_object_data_flags object_type);
+s_object_type_definition* object_type_definition_get(e_object_type object_type);

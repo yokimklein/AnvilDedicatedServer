@@ -522,6 +522,12 @@
     <ClInclude Include="source\networking\session\network_session_state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\objects\target_tracking.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hf2p\hf2p.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -747,6 +753,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hf2p\hf2p.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

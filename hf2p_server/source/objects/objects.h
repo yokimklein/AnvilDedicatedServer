@@ -7,31 +7,36 @@
 
 enum e_object_header_flags
 {
-	_object_header_being_deleted_bit = 4,
+	_object_header_active_bit = 0,
+	_object_header_awake_bit = 1,
+	_object_header_requires_motion_bit = 2,
+	_object_header_being_deleted_bit = 4, // is networked bit?
+	_object_header_connected_to_map_bit = 6,
+	_object_header_child_bit = 7,
 
 	k_number_of_object_header_flags
 };
 
-enum e_object_flags
+enum e_object_data_flags
 {
-	_object_unknown0_bit,
-	_object_unknown1_bit,
+	_object_hidden_bit,
+	_object_unknown1_bit, // mp/cluster related?
 	_object_unknown2_bit,
-	_object_unknown3_bit,
-	_object_unknown4_bit,
-	_object_unknown5_bit,
-	_object_unknown6_bit,
-	_object_unknown7_bit,
-	_object_unknown8_bit,
-	_object_unknown9_bit,
-	_object_unknown10_bit,
-	_object_unknown11_bit,
+	_object_unknown3_bit, // when set, the object can't be a simulation multiplayer item
+	_object_has_attached_lights_bit,
+	_object_has_attached_looping_sounds_bit,
+	_object_has_unattached_lights_bit,
+	_object_in_limbo_bit,
+	_object_connected_to_map_bit,
+	_object_unknown9_bit, // related to 8,9,10 - markers, nodes, attachments?
+	_object_unknown10_bit, // related to 8,9,10 - markers, nodes, attachments?
+	_object_unknown11_bit, // object creation, allocation?
 	_object_unknown12_bit,
 	_object_unknown13_bit,
 	_object_unknown14_bit,
 	_object_unknown15_bit,
 	_object_unknown16_bit,
-	_object_unknown17_bit,
+	_object_unknown17_bit, // clusters, if not predicted? used in object_new
 	_object_unknown18_bit,
 	_object_unknown19_bit,
 	_object_unknown20_bit,
@@ -39,7 +44,7 @@ enum e_object_flags
 	_object_unknown22_bit,
 	_object_unknown23_bit,
 	_object_unknown24_bit,
-	_object_unknown25_bit,
+	_object_has_override_bit,
 	_object_unknown26_bit,
 	_object_unknown27_bit,
 	_object_unknown28_bit,
@@ -52,28 +57,45 @@ enum e_object_flags
 
 enum e_object_recycling_flags
 {
-	_object_recycling_bit0,
-	_object_recycling_bit1,
+	_object_recycling_unknown0,
+	_object_recycling_candidate,
+	_object_recycling_unknown2,
+	_object_recycling_unknown3,
+	_object_recycling_unknown4,
 
 	k_number_of_object_recycling_flags
 };
 
+// verified for ms23
 enum e_object_simulation_flags
 {
-	_object_simulation_bit0,
-	_object_simulation_is_cinematic_object,
+	_object_simulation_requires_interpolation_bit,
+	_object_simulation_is_multiplayer_cinematic_object,
+	//_object_simulation_has_used_death_grenade_bit = 2, // assumed - unused? string ref in h3debug
+	//_object_simulation_is_multiplayer_item = 2, // non original name, not used after h3debug?
+	_object_simulation_candy_monitored_object = 2, // non original name
 
 	k_number_of_object_simulation_flags
+};
+
+enum e_object_physics_flags
+{
+	_object_is_early_mover_bit = 0,
+	_object_is_early_mover_child_bit = 4,
+	_object_connected_to_physics_bit = 7,
+	_object_has_proxy_bit = 14,
+
+	k_number_of_object_physics_flags
 };
 
 class c_object_identifier
 {
 public:
-	e_object_data_flags get_type();
+	e_object_type get_type();
 
 	datum_index unique_id;
 	short origin_bsp_index;
-	c_enum<e_object_data_flags, byte, k_number_of_object_data_flags> type;
+	c_enum<e_object_type, byte, k_object_types_count> type;
 	byte source;
 };
 static_assert(sizeof(c_object_identifier) == 0x8);
@@ -88,7 +110,7 @@ static_assert(sizeof(s_object_header_block_reference) == 0x4);
 struct s_object_data
 {
 	long definition_index;
-	c_flags<e_object_flags, long, k_number_of_object_flags> object_flags;
+	c_flags<e_object_data_flags, long, k_number_of_object_flags> flags;
 	ulong extra_object_state;
 	datum_index next_object_index;
 	datum_index first_child_object_index;
@@ -118,7 +140,7 @@ struct s_object_data
 	long havok_component_index;
 	long local_physics_space_object_index;
 	long last_motion_time;
-	ulong physics_flags;
+	c_flags<e_object_physics_flags, long, k_number_of_object_physics_flags> physics_flags;
 	uchar physics_deactivation_count;
 	uchar physically_attached_node;
 	uchar phantom_power_scale;
@@ -188,8 +210,8 @@ static_assert(sizeof(s_object_data) == 0x178);
 struct s_object_header : s_datum_header
 {
 	c_flags<e_object_header_flags, byte, k_number_of_object_header_flags> flags;
-	c_enum<e_object_data_flags, byte, k_number_of_object_data_flags> type;
-	short cluster;
+	c_enum<e_object_type, byte, k_object_types_count> type;
+	short cluster_reference;
 	word data_size;
 	long pool_handle;
 	s_object_data* data;
@@ -201,3 +223,7 @@ bool object_is_multiplayer_cinematic_object(datum_index object_index);
 datum_index object_get_ultimate_parent(datum_index object_index);
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
+const static auto sub_123B00 = (void (*)(void* unknown))(module_base + 0x123B00);
+const static auto object_set_requires_motion = (void (*)(datum_index object_index))(module_base + 0x403E50);
+const static auto object_needs_rigid_body_update = (bool (*)(datum_index object_index))(module_base + 0x3FE620);
+const static auto attachments_update = (void (*)(datum_index object_index))(module_base + 0x409070);

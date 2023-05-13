@@ -19,7 +19,7 @@ bool object_is_multiplayer_cinematic_object(datum_index object_index)
 {
 	assert(object_index != NONE);
 	s_object_data* object = object_get(object_index);
-	return object->simulation_flags.test(_object_simulation_is_cinematic_object);
+	return object->simulation_flags.test(_object_simulation_is_multiplayer_cinematic_object);
 }
 
 datum_index object_get_ultimate_parent(datum_index object_index)
@@ -56,7 +56,7 @@ void object_detach_gamestate_entity(datum_index object_index, datum_index gamest
 	object->simulation_flags = 0;
 }
 
-e_object_data_flags c_object_identifier::get_type()
+e_object_type c_object_identifier::get_type()
 {
 	return this->type.get();
 }

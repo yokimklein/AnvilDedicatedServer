@@ -9,20 +9,20 @@
 
 enum e_object_definition_flags
 {
-	_object_definition_does_not_cast_shadow_bit,
-	_object_definition_search_cardinal_direction_lightmaps_bit,
-	_object_definition_flags_unused2_bit,
-	_object_definition_not_a_pathfinding_obstacle_bit,
-	_object_definition_extension_of_parent_bit,
-	_object_definition_does_not_cause_collision_damage_bit,
-	_object_definition_early_mover_bit,
-	_object_definition_early_mover_localized_physics_bit,
-	_object_definition_use_static_massive_lightmap_sample_bit,
-	_object_definition_scales_attachments_bit,
-	_object_definition_inherits_player_appearance_bit,
-	_object_definition_dead_bipeds_cannot_localize_bit,
-	_object_definition_attach_to_clusters_by_dynamic_sphere_bit,
-	_object_definition_effects_do_not_spawn_objects_in_multiplayer_bit,
+	_object_does_not_cast_shadow_bit,
+	_object_search_cardinal_direction_lightmaps_bit,
+	_object_definition_unused2_bit,
+	_object_not_a_pathfinding_obstacle_bit,
+	_object_extension_of_parent_bit,
+	_object_does_not_cause_collision_damage_bit,
+	_object_early_mover_bit,
+	_object_early_mover_localized_physics_bit,
+	_object_use_static_massive_lightmap_sample_bit,
+	_object_scales_attachments_bit,
+	_object_inherits_player_appearance_bit,
+	_object_dead_bipeds_cannot_localize_bit,
+	_object_attach_to_clusters_by_dynamic_sphere_bit,
+	_object_effects_do_not_spawn_objects_in_multiplayer_bit,
 
 	k_number_of_object_definition_flags
 };
@@ -303,7 +303,7 @@ static_assert(sizeof(s_object_model_data_definition) == 0x14);
 
 struct s_object_definition
 {
-	c_enum<e_object_data_flags, short, k_number_of_object_data_flags> type;
+	c_enum<e_object_type, short, k_object_types_count> type;
 	c_flags<e_object_definition_flags, short, k_number_of_object_definition_flags> object_flags;
 	real bounding_radius;
 	real_point3d bounding_offset;

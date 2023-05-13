@@ -54,6 +54,7 @@ static_assert(sizeof(s_simulation_entity) == 0x30);
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index);
 e_simulation_entity_type simulation_entity_type_from_game_engine();
-void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_flags);
+void simulation_entity_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags);
 e_simulation_entity_type simulation_entity_type_from_object_creation(long object_tag_index, datum_index object_index, bool recycling);
 void simulation_entity_delete(long entity_index, datum_index object_index, datum_index gamestate_index);
+void simulation_entity_force_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags);

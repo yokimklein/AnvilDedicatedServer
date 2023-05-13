@@ -63,7 +63,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 	datum_index object_ultimate_parent = object_get_ultimate_parent(object_index);
 	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->gamestate_index == -1 && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
 	{
-		e_simulation_entity_type entity_type = simulation_entity_type_from_object_creation(object->definition_index, last_object_index, object->recycling_flags.test(_object_recycling_bit1));
+		e_simulation_entity_type entity_type = simulation_entity_type_from_object_creation(object->definition_index, last_object_index, object->recycling_flags.test(_object_recycling_candidate));
 		if (entity_type != k_simulation_entity_type_none && *out_entity_count < maximum_entity_count)
 		{
 			assert(VALID_INDEX(*out_entity_count, maximum_entity_count));
@@ -73,7 +73,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 			for (datum_index i = object->first_child_object_index; i != -1; i = current_object->next_object_index)
 			{
 				current_object = object_get(i);
-				if (current_object->object_flags.test(_object_unknown26_bit))
+				if (current_object->flags.test(_object_unknown26_bit))
 					simulation_action_object_create_build_entity_types(i, object_index, maximum_entity_count, out_entity_count, entity_types, entity_object_indices);
 			}
 		}

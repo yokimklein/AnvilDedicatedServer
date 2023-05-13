@@ -129,6 +129,7 @@ public:
 	c_map_variant();
 	void create_default(e_map_id map_id);
 	datum_index get_chunk_gamestate_index(long chunk_index);
+	void place_new_object(long map_variant_index, long unknown, bool do_not_force);
 
 	short version; // 12 in HO
 	ushort scenario_object_count;

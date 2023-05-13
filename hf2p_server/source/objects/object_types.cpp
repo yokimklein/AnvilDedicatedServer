@@ -16,9 +16,9 @@ void object_type_detach_gamestate_entity(datum_index object_index)
 	}
 }
 
-s_object_type_definition* object_type_definition_get(e_object_data_flags object_type)
+s_object_type_definition* object_type_definition_get(e_object_type object_type)
 {
-	assert(object_type >= _object_type_biped && object_type < k_number_of_object_data_flags);
+	assert(object_type >= _object_type_biped && object_type < k_object_types_count);
 	assert(object_type_definitions[object_type]);
 	assert(object_type_definitions[object_type]->group_tag);
 	return (object_type_definitions)[object_type];

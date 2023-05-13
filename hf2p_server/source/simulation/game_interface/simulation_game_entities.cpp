@@ -45,7 +45,7 @@ e_simulation_entity_type simulation_entity_type_from_game_engine()
 	return game_engine_globals_get_simulation_entity_type();
 }
 
-void simulation_entity_update(long entity_index, long unknown, c_flags<long, ulong64, 64>* update_flags)
+void simulation_entity_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags)
 {
 	c_simulation_world* world = simulation_get_world();
 	if (world->is_distributed() && world->is_authority())
@@ -152,5 +152,17 @@ void simulation_entity_delete(long entity_index, datum_index object_index, datum
 		}
 		entity->gamestate_index = -1;
 		entity->exists_in_gameworld = false;
+	}
+}
+
+void simulation_entity_force_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags)
+{
+	c_simulation_world* world = simulation_get_world();
+	e_simulation_world_type world_type = world->m_world_type;
+	if ((world_type == _simulation_world_type_distributed_game_authority || world_type == _simulation_world_type_distributed_game_client) && world_type != _simulation_world_type_distributed_game_client)
+	{
+		c_simulation_distributed_world* distributed_world = world->m_distributed_world;
+		if (distributed_world->m_entity_database.entity_is_local(entity_index))
+			distributed_world->m_entity_database.entity_update(entity_index, update_flags, true);
 	}
 }

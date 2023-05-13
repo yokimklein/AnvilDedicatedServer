@@ -9,7 +9,7 @@ REFERENCE_DECLARE(module_base + 0x1038283, bool, g_network_interface_fake_latenc
 
 bool g_network_debug_globals_latency_and_framerate_metrics_enabled = []() -> bool
 {
-	g_network_interface_show_latency_and_framerate_metrics_on_chud = true;
+	g_network_interface_show_latency_and_framerate_metrics_on_chud = false; // set to true to enable
 	g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
 
 	return true;

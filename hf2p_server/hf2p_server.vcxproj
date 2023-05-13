@@ -26,19 +26,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -168,6 +168,7 @@
     <ClInclude Include="source\game\game_statborg.h" />
     <ClInclude Include="source\game\game_time.h" />
     <ClInclude Include="source\game\player_mapping.h" />
+    <ClInclude Include="source\hf2p\hf2p.h" />
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
@@ -186,6 +187,7 @@
     <ClInclude Include="source\objects\multiplayer_game_objects.h" />
     <ClInclude Include="source\objects\object_definitions.h" />
     <ClInclude Include="source\objects\object_types.h" />
+    <ClInclude Include="source\objects\target_tracking.h" />
     <ClInclude Include="source\physics\physics_model_definitions.h" />
     <ClInclude Include="source\render\render_visibility_collection.h" />
     <ClInclude Include="source\saved_games\scenario_map_variant.h" />
@@ -337,6 +339,7 @@
     <ClCompile Include="source\game\game_time.cpp" />
     <ClCompile Include="source\game\game_variant.cpp" />
     <ClCompile Include="source\game\player_mapping.cpp" />
+    <ClCompile Include="source\hf2p\hf2p.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\network_memory.cpp" />
