@@ -13,8 +13,8 @@
 #include "networking\session\network_managed_session.h"
 #include "main\main_game.h"
 #include "hf2p\hq.h"
+#include "hf2p\hf2p.h"
 
-// TODO: enable write on rdata page to overwrite tutorial scenario path for easy scenario laucnhing
 void enable_memory_write(dword base)
 {
     // Enable write to all executable memory
@@ -53,8 +53,8 @@ long main_thread()
     anvil_dedi_apply_hooks();
 
     // SESSION MAP & VARIANT
-    auto map_id = _s3d_edge;
-    auto engine_variant = _engine_variant_ctf;
+    auto map_id = _s3d_reactor;
+    auto engine_variant = _engine_variant_slayer;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading
     while (!main_game_change_in_progress()) Sleep(k_anvil_update_rate_ms);
@@ -127,6 +127,7 @@ long main_thread()
             {
                 anvil_session_set_gamemode(network_session, engine_variant);
                 anvil_session_set_map(map_id);
+
                 // wait for the error to update so we don't spam the set map call
                 while (*start_error == _session_game_start_error_no_map_selected) Sleep(k_anvil_update_rate_ms);
             }
@@ -190,9 +191,11 @@ long main_thread()
             }
             else if (anvil_key_pressed(VK_DELETE, &key_held_delete))
             {
-                printf("Setting session to synchronous...\n");
-                e_network_game_simulation_protocol protocol = _network_game_simulation_synchronous;
-                network_session->get_session_parameters()->game_simulation_protocol.set(&protocol);
+                printf("Triggering podium action...\n");
+                s_player_podium* player_podium = &g_player_podiums[0];
+                player_podium->loop_count++;
+                //e_network_game_simulation_protocol protocol = _network_game_simulation_synchronous;
+                //network_session->get_session_parameters()->game_simulation_protocol.set(&protocol);
             }
             Sleep(k_anvil_update_rate_ms);
         }
