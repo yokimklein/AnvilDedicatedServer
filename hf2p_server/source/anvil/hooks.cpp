@@ -18,6 +18,8 @@
 #include "..\simulation\game_interface\simulation_game_objects.h"
 #include "build_version.h"
 #include "..\game\game_results.h"
+#include "..\hf2p\hf2p.h"
+#include "..\objects\objects.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -196,7 +198,7 @@ void __fastcall game_engine_player_added_hook(datum_index absolute_player_index)
     game_engine_player_added(absolute_player_index);
 }
 
-void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* forward)
+void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {
     s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
     c_flags<long, ulong64, 64> update_flags = {};
@@ -211,7 +213,11 @@ void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* 
     //  game_engine_spawn_influencer_record_player_spawn(player_index3);
     //}
 
-    FUNCTION_DEF(0xB6300, void, __fastcall, player_set_facing, datum_index player_index, real_vector3d* forward);
+    player_set_facing(player_index, forward);
+}
+
+void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* forward)
+{
     player_set_facing(player_index, forward);
 }
 
@@ -260,6 +266,20 @@ void __cdecl simulation_action_game_statborg_update_with_flag(long flag)
     c_flags<long, ulong64, 64> update_flags = {};
     update_flags.set(flag, true);
     simulation_action_game_statborg_update(&update_flags);
+}
+
+void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_index player_index, ulong64 raw_bits)
+{
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set_raw_bits(raw_bits);
+    simulation_action_game_engine_player_update((word)player_index, &update_flags);
+}
+
+void __cdecl simulation_action_object_update_with_bitmask(datum_index object_index, ulong64 raw_bits)
+{
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set_raw_bits(raw_bits);
+    simulation_action_object_update(object_index, &update_flags);
 }
 
 // doing this from now on, we have so many simulation update calls to add back that rewriting each
@@ -453,12 +473,77 @@ __declspec(naked) void stats_reset_for_round_switch_hook2()
         call simulation_action_game_statborg_update_with_flag
         add esp, 4
 
-        // restore register
-
         // return back to the original code
         mov eax, module_base
         add eax, 0x1AEF20
         jmp eax
+    }
+}
+
+__declspec(naked) void player_spawn_hook()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        call hf2p_set_user_loadout
+
+        // save registers across the function call
+        //push eax
+
+        // call our inserted function
+        test byte ptr[ebx + 4], 8 // if ((player_data->flags & 8) != 0)
+        jz end_label
+        push 0
+        push 262144 // flag 22 (1 << 22)
+        push esi // player_index
+        call simulation_action_game_engine_player_update_with_bitmask
+        add esp, 12
+
+        // restore registers - TODO ARE THESE NEEDED? CHECK!!
+        //pop eax
+
+        // return back to the original code
+        end_label:
+        mov ecx, module_base
+        add ecx, 0xBB098
+        jmp ecx
+    }
+}
+
+__declspec(naked) void object_update_part()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov ecx, edi
+        call attachments_update
+
+        // return back to the original code
+        mov edx, module_base
+        add edx, 0x40490E
+        jmp edx
+    }
+}
+
+// why isn't the object_needs_rigid_body_update check ever succeeding? do we need a create elsewhere for this to work? or is the call fucked?
+__declspec(naked) void object_update_hook()
+{
+    __asm
+    {
+        // call our inserted function
+        mov ecx, edi
+        call object_needs_rigid_body_update
+        movzx eax, al
+        test eax, eax
+        je end_label
+        push 0
+        push 16384 // flag 14 (1 << 14)
+        push edi // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        end_label:
+        jmp object_update_part
     }
 }
 
@@ -484,6 +569,23 @@ void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long 
     simulation_action_game_engine_player_update((word)player_index, &update_flags);
 }
 
+void __fastcall hf2p_player_podium_initialize_hook(long podium_biped_index, long player_index)
+{
+    hf2p_player_podium_initialize(podium_biped_index, player_index);
+}
+
+void __cdecl draw_watermark_hook()
+{
+    // empty function
+}
+
+void __fastcall game_engine_register_object_hook(datum_index object_index)
+{
+    FUNCTION_DEF(0x172600, void, __fastcall, game_engine_register_object, datum_index object_index);
+    game_engine_register_object(object_index);
+    simulation_action_object_create(object_index);
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -493,8 +595,8 @@ void anvil_dedi_apply_patches()
     // contrail gpu freeze fix - twister
     Patch(0x1D6B70, { 0xC3 }).Apply();
     // enable netdebug
-    g_network_interface_show_latency_and_framerate_metrics_on_chud = true;
-    g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
+    //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
+    //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
 }
 
 void anvil_dedi_apply_hooks()
@@ -512,7 +614,6 @@ void anvil_dedi_apply_hooks()
     // add back network_session_check_properties
     Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-
     // unregister the host address description to the xnet shim table on session destruction - the transport_secure_key_create hook further down handles session creation
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
@@ -526,7 +627,12 @@ void anvil_dedi_apply_hooks()
     // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
     Hook(0xFA2D0, game_engine_player_added_hook).Apply();
     // add simulation updates back to player_spawn
-    Hook(0xBB084, player_set_facing_hook, HookFlags::IsCall).Apply();
+    Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
+    // add back simulation_action_game_engine_player_update to player_spawn
+    Pointer::Base(0xBB093).WriteJump(player_spawn_hook, HookFlags::None);
+    // add simulation_action_object_update back to player_set_facing
+    Hook(0xB6300, player_set_facing_hook).Apply();
+
     // add simulation_action_object_delete back to object_delete
     Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
     // add simulation_action_game_engine_globals_update back to game_engine_update_round_conditions
@@ -559,6 +665,15 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    // add simulation_action_object_update back to object_update
+    Pointer::Base(0x404907).WriteJump(object_update_hook, HookFlags::None);
+    Pointer::Base(0x4047B4).WriteJump(object_update_part, HookFlags::None);
+    // add simulation_action_object_create back to c_map_variant::create_object
+    Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply();
+    // add simulation_action_object_create back to c_candy_spawner:spawn_object
+    Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply();
+    // add simulation_action_object_create back to object_new_from_scenario_internal
+    Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply();
 
     // DEDICATED SERVER HOOKS
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
@@ -590,4 +705,8 @@ void anvil_dedi_apply_hooks()
     Hook(0x28A38A, contrail_fix_hook).Apply();
     // temporary test to force elite ui model on mainmenu
     //Hook(0x2059B0, ui_get_player_model_id_evaluate_hook).Apply();
+    // podium animation testing
+    Hook(0x2E8750, hf2p_player_podium_initialize_hook).Apply();
+    // disable build watermark text
+    Hook(0x1B0AB0, draw_watermark_hook).Apply();
 }
