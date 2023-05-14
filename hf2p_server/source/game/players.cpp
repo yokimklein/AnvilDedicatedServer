@@ -56,3 +56,8 @@ void player_control_set_facing(long input_user_index, real_vector3d* forward)
 	FUNCTION_DEF(0x106780, void, __fastcall, player_control_set_facing_call, long input_user_index, real_vector3d* forward);
 	player_control_set_facing_call(input_user_index, forward);
 }
+
+long player_index_from_absolute_player_index(short absolute_player_index)
+{
+	return datum_absolute_index_to_index(get_tls()->players, absolute_player_index);
+}

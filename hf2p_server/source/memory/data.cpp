@@ -129,3 +129,21 @@ void* datum_get(s_data_array const* data, datum_index index)
 {
 	return (void*)&data->data[data->size * (word)index];
 }
+
+void* __cdecl datum_try_and_get_absolute(s_data_array const* data, long absolute_index)
+{
+	if (absolute_index >= 0 && absolute_index < data->first_unallocated)
+	{
+		if (*&data->data[absolute_index * data->size])
+			return &data->data[absolute_index * data->size];
+	}
+	return nullptr;
+}
+
+long __cdecl datum_absolute_index_to_index(s_data_array const* data, long absolute_index)
+{
+	long index = -1;
+	if (absolute_index != -1)
+		index = absolute_index | (*&data->data[absolute_index * data->size] << 16);
+	return index;
+}

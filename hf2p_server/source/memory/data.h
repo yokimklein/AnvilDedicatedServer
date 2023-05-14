@@ -208,13 +208,13 @@ void* datum_get(s_data_array const* data, datum_index index);
 //extern long __cdecl data_next_index(s_data_array const* data, long index);
 //extern long __cdecl data_previous_index(s_data_array* data, long index);
 //extern void __cdecl data_set_new_base_address(s_data_array** out_data, s_data_array* data);
-//extern long __cdecl datum_absolute_index_to_index(s_data_array const* data, long index);
+long __cdecl datum_absolute_index_to_index(s_data_array const* data, long absolute_index);
 //extern bool __cdecl datum_available_at_index(s_data_array const* data, long index);
 //extern long __cdecl datum_new_at_absolute_index(s_data_array* data, long index);
 //extern long __cdecl datum_new_at_index(s_data_array* data, long index);
 //extern long __cdecl datum_new_in_range(s_data_array* data, long begin_index, long end_index, bool initialize);
 //extern void* __cdecl datum_try_and_get(s_data_array const* data, long index);
-//extern void* __cdecl datum_try_and_get_absolute(s_data_array const* data, long index);
+void* __cdecl datum_try_and_get_absolute(s_data_array const* data, long absolute_index);
 //extern void* __cdecl datum_try_and_get_unsafe(s_data_array const* data, long index);
 
 template<typename t_datum_type>

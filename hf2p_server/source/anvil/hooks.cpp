@@ -20,6 +20,7 @@
 #include "..\game\game_results.h"
 #include "..\hf2p\hf2p.h"
 #include "..\objects\objects.h"
+#include "..\simulation\game_interface\simulation_game_events.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -547,6 +548,49 @@ __declspec(naked) void object_update_hook()
     }
 }
 
+__declspec(naked) void player_spawn_hook2()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        and ecx, 0x0FFFFFFF7
+        mov[ebx + 4], ecx
+
+        // call our inserted function
+        push 0
+        push 1 // flag 1
+        push[ebp - 24] // player_index3
+        call simulation_action_game_engine_player_update_with_bitmask
+        add esp, 12
+
+        // return back to the original code
+        mov ecx, module_base
+        add ecx, 0xBB43B
+        jmp ecx
+    }
+}
+
+__declspec(naked) void player_spawn_hook3()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov byte ptr[ebx + 0x1754], 0
+
+        // call our inserted function
+        push 0
+        push 2 // flag 2
+        push[ebp - 24] // player_index3
+        call simulation_action_game_engine_player_update_with_bitmask
+        add esp, 12
+
+        // return back to the original code
+        mov ecx, module_base
+        add ecx, 0xBB460
+        jmp ecx
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -565,7 +609,7 @@ void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long 
     FUNCTION_DEF(0xC7700, void, __fastcall, game_engine_player_set_spawn_timer, long player_index, long countdown_ticks);
     game_engine_player_set_spawn_timer(player_index, countdown_ticks);
     c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(1, true);
+    update_flags.set_raw_bits(1);
     simulation_action_game_engine_player_update((word)player_index, &update_flags);
 }
 
@@ -633,8 +677,6 @@ void anvil_dedi_apply_hooks()
     // add simulation_action_object_update back to player_set_facing
     Hook(0xB6300, player_set_facing_hook).Apply();
 
-    // add simulation_action_object_delete back to object_delete
-    Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
     // add simulation_action_game_engine_globals_update back to game_engine_update_round_conditions
     Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
     // TODO: nop out leftover instructions
@@ -659,12 +701,19 @@ void anvil_dedi_apply_hooks()
     // add simulation_action_game_statborg_update back to c_game_statborg::stats_reset_for_round_switch
     Pointer::Base(0x1AEE9B).WriteJump(stats_reset_for_round_switch_hook1, HookFlags::None);
     Pointer::Base(0x1AEF0C).WriteJump(stats_reset_for_round_switch_hook2, HookFlags::None);
-    // add simulation_action_game_engine_player_update back to game_engine_player_set_spawn_timer (sync spawn countdown? may be internal only)
+    // add simulation_action_game_engine_player_update back to game_engine_player_set_spawn_timer
     Hook(0xFA07F, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
     Hook(0xFBC5B, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    // add more player updates back to player_spawn - should sync respawn timers
+    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
+    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
+
+    // fix object creation & deletion syncing
+    // add simulation_action_object_delete back to object_delete
+    Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
     // add simulation_action_object_update back to object_update
     Pointer::Base(0x404907).WriteJump(object_update_hook, HookFlags::None);
     Pointer::Base(0x4047B4).WriteJump(object_update_part, HookFlags::None);
@@ -674,6 +723,9 @@ void anvil_dedi_apply_hooks()
     Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply();
     // add simulation_action_object_create back to object_new_from_scenario_internal
     Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply();
+
+    // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
+    Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?
 
     // DEDICATED SERVER HOOKS
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal

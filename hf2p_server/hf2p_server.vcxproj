@@ -362,6 +362,7 @@
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameter_type_collection.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_entities.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_objects.cpp" />
     <ClCompile Include="source\simulation\simulation_entity_database.cpp" />
     <ClCompile Include="source\simulation\simulation_gamestate_entities.cpp" />

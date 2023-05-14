@@ -47,3 +47,5 @@ enum e_simulation_event_type
 
 	k_simulation_event_type_maximum_count = 64
 };
+
+bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload);

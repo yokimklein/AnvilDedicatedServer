@@ -758,5 +758,8 @@
     <ClCompile Include="source\hf2p\hf2p.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
