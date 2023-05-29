@@ -38,7 +38,7 @@ struct s_player_datum : s_datum_header
 	bool is_sprinting;
 	bool is_crouching;
 	bool is_firing_left;
-	bool is_friing_right;
+	bool is_firing_right;
 	uchar field_5B;
 	ushort magnification_level;
 	bool sprint_longerupted_firing;

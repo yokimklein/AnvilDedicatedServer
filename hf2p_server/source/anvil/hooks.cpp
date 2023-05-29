@@ -242,6 +242,28 @@ void __cdecl game_engine_update_round_conditions_hook()
     game_engine_update_round_conditions();
 }
 
+// TODO: fix crashing
+void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_player_datum* player_data)
+{
+    FUNCTION_DEF(0xE05E0, void, __cdecl, sub_E05E0, s_player_identifier player_xuid);
+
+    byte active_armor_loadout = player_data->configuration.client.active_armor_loadout;
+    byte character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
+    if (active_armor_loadout <= 2u)
+        character_active_index = active_armor_loadout;
+    if (character_active_index != player_data->character_type_index)
+    {
+        s_player_identifier player_xuid = player_data->configuration.host.player_xuid;
+        *(&player_data->field_2E14 + 1) = 0;
+        player_data->character_type_index = character_active_index;
+        sub_E05E0(player_xuid);
+
+        c_flags<long, ulong64, 64> update_flags = {};
+        update_flags.set(17, true);
+        simulation_action_game_engine_player_update((word)player_index, &update_flags);
+    }
+}
+
 //long __cdecl ui_get_player_model_id_evaluate_hook(long a1, long a2)
 //{
 //    FUNCTION_DEF(0x1210F0, long, __fastcall, hs_return, long a1, long a2);
@@ -591,6 +613,144 @@ __declspec(naked) void player_spawn_hook3()
     }
 }
 
+// TODO: fix the crashes here
+_declspec(naked) void hf2p_loadout_update_active_character_call_hook()
+{
+    __asm
+    {
+        mov eax, eax
+        mov ebx, ebx
+        mov ecx, ecx
+        mov edx, edx
+        // execute the original instruction(s) we replaced
+        mov ecx, esi // player_index
+        call hf2p_loadout_update_active_character_hook
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0xBAF29
+        jmp eax
+    }
+}
+
+__declspec(naked) void object_set_position_internal_hook1()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov eax, [edx + 8]
+        mov[ecx + 0x5C], eax
+
+        // eax, ecx & edx are caller-saved across a cdecl function call - save their values
+        push eax
+        push ecx
+
+        // call our inserted function
+        push 0
+        push 2 // flag 1 (1 << 1)
+        push edi // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop ecx
+        pop eax
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x3FC03E
+        jmp eax
+    }
+}
+
+__declspec(naked) void object_set_position_internal_hook2()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov eax, [eax + 8]
+        mov[ecx + 0x74], eax
+
+        // eax, ecx & edx are caller-saved across a cdecl function call - save their values
+        push eax
+        push ecx
+
+        // call our inserted function
+        push 0
+        push 4 // flag 2 (1 << 2)
+        push edi // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop ecx
+        pop eax
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x3FC066
+        jmp eax
+    }
+}
+
+__declspec(naked) void object_set_position_internal_hook3()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov eax, [esp + 0x70 - 4]
+        mov [ecx + 0x5C], eax
+
+        // eax, ecx & edx are caller-saved across a cdecl function call - save their values
+        push ecx
+        push edx
+
+        // call our inserted function
+        push 0
+        push 2 // flag 1 (1 << 1)
+        push ebx // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop edx
+        pop ecx
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x404ABB
+        jmp eax
+    }
+}
+
+__declspec(naked) void object_set_position_internal_hook4()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        mov eax, [esi + 8]
+        mov [ecx + 0x74], eax
+
+        // eax, ecx & edx are caller-saved across a cdecl function call - save their values
+        push eax
+
+        // call our inserted function
+        push 0
+        push 4 // flag 2 (1 << 2)
+        push ebx // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop eax
+
+        // return back to the original code
+        mov edx, module_base
+        add edx, 0x404ADD
+        jmp edx
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -609,7 +769,7 @@ void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long 
     FUNCTION_DEF(0xC7700, void, __fastcall, game_engine_player_set_spawn_timer, long player_index, long countdown_ticks);
     game_engine_player_set_spawn_timer(player_index, countdown_ticks);
     c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set_raw_bits(1);
+    update_flags.set(0, true);
     simulation_action_game_engine_player_update((word)player_index, &update_flags);
 }
 
@@ -630,6 +790,16 @@ void __fastcall game_engine_register_object_hook(datum_index object_index)
     simulation_action_object_create(object_index);
 }
 
+long __cdecl exceptions_update_hook()
+{
+    FUNCTION_DEF(0x167CF0, long, __cdecl, exceptions_update);
+    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)(module_base + 0x106DEC8);
+    if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
+        return 0;
+
+    return exceptions_update();
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -645,6 +815,20 @@ void anvil_dedi_apply_patches()
 
 void anvil_dedi_apply_hooks()
 {
+    // hook exceptions_update to catch esoteric crashes
+    Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9AB6B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9ABAB, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9EFE3, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9F07C, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9F8B1, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0xC3E8B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0xDCCBD, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
+
     // SESSION HOOKS
     // add back missing host code by replacing existing stripped down functions
     Hook(0x25110, handle_out_of_band_message_hook).Apply();
@@ -707,9 +891,14 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    // add more player updates back to player_spawn - should sync respawn timers
+    // add more player updates back to player_spawn - syncs player data info?
     Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
     Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
+
+    // add player update back to hf2p function - TODO fix crashing
+    //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
+    //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
+    //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
 
     // fix object creation & deletion syncing
     // add simulation_action_object_delete back to object_delete
@@ -723,6 +912,16 @@ void anvil_dedi_apply_hooks()
     Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply();
     // add simulation_action_object_create back to object_new_from_scenario_internal
     Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply();
+
+    // OBJECT PHYSICS UPDATES
+    // object_set_position_internal
+    Pointer::Base(0x3FC038).WriteJump(object_set_position_internal_hook1, HookFlags::None);
+    Pointer::Base(0x3FC060).WriteJump(object_set_position_internal_hook2, HookFlags::None);
+    Pointer::Base(0x404AB4).WriteJump(object_set_position_internal_hook3, HookFlags::None); // inlined call in object_move_respond_to_physics
+    Pointer::Base(0x404AD7).WriteJump(object_set_position_internal_hook4, HookFlags::None); // inlined call in object_move_respond_to_physics
+    // object_apply_acceleration
+    // object_set_velocities_internal
+    // object_set_at_rest 45x inlined calls
 
     // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
     Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?

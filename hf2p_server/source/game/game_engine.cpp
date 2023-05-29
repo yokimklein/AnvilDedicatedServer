@@ -55,7 +55,7 @@ void game_engine_player_added(datum_index player_index)
 			byte lives_per_round = respawn_options->get_lives_per_round();
 			player_data->lives = lives_per_round;
 			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(_simulation_entity_type_game_engine_player, true);
+			update_flags.set(10, true);
 			simulation_action_game_engine_player_update((word)player_index, &update_flags);
 		}
 
