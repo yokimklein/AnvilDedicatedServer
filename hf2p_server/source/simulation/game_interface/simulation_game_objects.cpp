@@ -6,7 +6,7 @@
 #include "..\simulation_world.h"
 #include "..\..\memory\tls.h"
 
-void simulation_action_object_create(datum_index object_index)
+void __cdecl simulation_action_object_create(datum_index object_index)
 {
 	if (game_is_server() && game_is_distributed())
 	{

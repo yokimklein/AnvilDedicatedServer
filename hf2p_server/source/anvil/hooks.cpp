@@ -1095,6 +1095,22 @@ void __fastcall object_set_at_rest_hook(datum_index object_index)
     object_set_at_rest_simulation_update(object_index);
 }
 
+__declspec(naked) void event_generate_part_hook()
+{
+    __asm
+    {
+        // call our inserted function
+        push esi // object_index
+        call simulation_action_object_create
+        add esp, 4
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x114BF5
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1232,6 +1248,9 @@ void anvil_dedi_apply_hooks()
     Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_map_variant::create_object
     Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
     Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
+    // effect object spawning
+    Pointer::Base(0x114A58).WriteJump(event_generate_part_hook, HookFlags::None);
+    Pointer::Base(0x114A6C).WriteJump(event_generate_part_hook, HookFlags::None);
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
