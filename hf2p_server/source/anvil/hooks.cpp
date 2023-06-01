@@ -76,7 +76,7 @@ void __fastcall network_life_cycle_end_hook()
     network_life_cycle_end();
 }
 
-// contrail gpu freeze fix
+// disable contrails to prevent gpu freezing
 __declspec(naked) void contrail_fix_hook()
 {
     __asm
@@ -86,9 +86,9 @@ __declspec(naked) void contrail_fix_hook()
         jg render
         push 0x68A3E3
         retn
-        render :
+        render:
         push 0x68A390
-            retn
+        retn
     }
 }
 
@@ -308,26 +308,24 @@ void __cdecl simulation_action_object_update_with_bitmask(datum_index object_ind
     simulation_action_object_update(object_index, &update_flags);
 }
 
-// doing this from now on, we have so many simulation update calls to add back that rewriting each
-// function that calls them would be untenable. this allows us to insert them into the existing code
 __declspec(naked) void game_engine_update_time_hook()
 {
     __asm
     {
-        // save ecx register across function call (time remaining events won't trigger otherwise)
+        // preserve register across call
         push ecx
 
         // call our inserted function
         push 0
-        push 32 // set flag 5
+        push 32 // flag 5 (1 << 5)
         call simulation_action_game_engine_globals_update_with_bitmask
         add esp, 8
 
-        // restore ecx register
+        // restore register
         pop ecx
 
         // execute the original instruction(s) we replaced
-        cmp ecx, 708h
+        cmp ecx, 0x708
 
         // return back to the original code
         mov eax, module_base
@@ -801,9 +799,11 @@ __declspec(naked) void object_set_velocities_internal_hook()
         push edx // transitional_velocity
         push ecx // object_index
         call object_set_velocities_internal
-        add esp, 16
-
-        mov edx, ebx // match behaviour of the original - set return edx to transitional_velocity
+        // match behaviour of the original optimised calling convention
+        // return velocity values
+        pop ecx
+        pop edx
+        add esp, 8
 
         // cleanup
         mov esp, ebp
@@ -1196,67 +1196,53 @@ void anvil_dedi_apply_hooks()
     Hook(0x370E0, update_establishing_view_hook).Apply();
     // add game_engine_attach_to_simulation back to game_engine_game_starting
     Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
+
+    // STATBORG UPDATES
     // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
     Hook(0xFA2D0, game_engine_player_added_hook).Apply();
-    // add simulation updates back to player_spawn
-    Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
-    // add back simulation_action_game_engine_player_update to player_spawn
-    Pointer::Base(0xBB093).WriteJump(player_spawn_hook, HookFlags::None);
-    // add simulation_action_object_update back to player_set_facing
-    Hook(0xB6300, player_set_facing_hook).Apply();
-
-    // add simulation_action_game_engine_globals_update back to game_engine_update_round_conditions
-    Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
-    // TODO: nop out leftover instructions
-    // add simulation_action_game_engine_globals_update back to game_engine_update_time
-    Pointer::Base(0xC98CB).WriteJump(game_engine_update_time_hook, HookFlags::None);
-    // add simulation_action_game_statborg_update back to c_game_statborg::stats_finalize_for_game_end
+    // c_game_statborg::stats_finalize_for_game_end
     Pointer::Base(0xCA2F0).WriteJump(stats_finalize_for_game_end_hook, HookFlags::None);
-    // add simulation_action_game_statborg_update back to c_game_statborg::adjust_player_stat
+    // c_game_statborg::adjust_player_stat
     Pointer::Base(0x1AF61D).WriteJump(adjust_player_stat_hook, HookFlags::None);
-    // add simulation_action_game_statborg_update back to c_game_statborg::adjust_team_stat
+    // c_game_statborg::adjust_team_stat
     Hook(0x1AF710, adjust_team_stat_hook).Apply();
-    // add simulation_action_game_statborg_update back to game_engine_end_round_with_winner > c_game_statborg::adjust_team_stat
-    Hook(0xC8A6E, game_results_statistic_set_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0xC8A76), 3); // nop stack callup our wrapper for game_results_statistic_set is already handling
-    // add simulation_action_game_statborg_update back to c_game_engine::recompute_team_score > c_game_statborg::adjust_team_stat
-    Hook(0x1C7FCD, game_results_statistic_set_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x1C7FD8), 3); // nop stack callup our wrapper for game_results_statistic_set is already handling
-    // add simulation_action_game_statborg_update back to c_game_statborg::player_changed_teams
+    // c_game_statborg::adjust_team_stat
+    Hook(0xC8A6E, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in game_engine_end_round_with_winner
+    Hook(0x1C7FCD, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in c_game_engine::recompute_team_score
+    Patch::NopFill(Pointer::Base(0xC8A76), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
+    Patch::NopFill(Pointer::Base(0x1C7FD8), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
+    // c_game_statborg::player_changed_teams
     Pointer::Base(0xFA956).WriteJump(player_changed_teams_hook, HookFlags::None);
-    // add simulation_action_game_statborg_update back to game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped
+    // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
     Pointer::Base(0xFA7B1).WriteJump(player_indices_swapped_hook, HookFlags::None);
-    // add simulation_action_game_statborg_update back to c_game_statborg::stats_reset_for_round_switch
+    // c_game_statborg::stats_reset_for_round_switch
     Pointer::Base(0x1AEE9B).WriteJump(stats_reset_for_round_switch_hook1, HookFlags::None);
     Pointer::Base(0x1AEF0C).WriteJump(stats_reset_for_round_switch_hook2, HookFlags::None);
-    // add simulation_action_game_engine_player_update back to game_engine_player_set_spawn_timer
-    Hook(0xFA07F, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    Hook(0xFBC5B, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
-    Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
-    Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    // add more player updates back to player_spawn - syncs player data info?
-    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
-    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
 
-    // add player update back to hf2p function - TODO fix crashing
-    //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
-    //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
-    //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
+    // GLOBALS UPDATES
+    // pre-game camera countdown
+    Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
+    // round timer - why isn't this also causing x minutes remaining events to generate?
+    Pointer::Base(0xC98CB).WriteJump(game_engine_update_time_hook, HookFlags::None);
 
-    // fix object creation & deletion syncing
+    // OBJECT CREATION
+    // create & update player biped on spawn (player_spawn)
+    Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
+    // map variant object spawning
+    Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_map_variant::create_object
+    Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
+    Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
+
+    // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
     Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
+
+    // OBJECT UPDATES
     // add simulation_action_object_update back to object_update
     Pointer::Base(0x404907).WriteJump(object_update_hook, HookFlags::None);
     Pointer::Base(0x4047B4).WriteJump(object_update_part, HookFlags::None);
-    // add simulation_action_object_create back to c_map_variant::create_object
-    Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply();
-    // add simulation_action_object_create back to c_candy_spawner:spawn_object
-    Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply();
-    // add simulation_action_object_create back to object_new_from_scenario_internal
-    Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply();
-
+    // add simulation_action_object_update back to player_set_facing
+    Hook(0xB6300, player_set_facing_hook).Apply();
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
     Pointer::Base(0x3FC038).WriteJump(object_set_position_internal_hook1, HookFlags::None);
@@ -1304,17 +1290,33 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4BFF76).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
     Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // UNTESTED!! // unit_custom_animation_play_animation_submit
 
+    // PLAYER UPDATES
+    // add back simulation_action_game_engine_player_update to player_spawn
+    Pointer::Base(0xBB093).WriteJump(player_spawn_hook, HookFlags::None);
+    // game_engine_player_set_spawn_timer
+    Hook(0xFA07F, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    Hook(0xFBC5B, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
+    Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
+    Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    // add more player updates back to player_spawn - syncs player data info? TODO: investigate
+    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
+    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
     // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
     Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?
+    // add player update back to hf2p function - TODO fix crashing
+    //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
+    //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
+    //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
 
     // DEDICATED SERVER HOOKS
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
-    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
     // hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
     Hook(0x3BC0, transport_secure_key_create_hook).Apply();
     // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
     Patch::NopFill(Pointer::Base(0x3D17), 0x25);
     Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
+    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
 
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam

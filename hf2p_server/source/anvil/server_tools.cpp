@@ -86,8 +86,8 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         // display server-set loadouts in the client's UI
         host_configuration->s3d_player_customization.override_api_data = true;
         host_configuration->s3d_player_container.override_api_data = true;
-        // zzVertigo user id
-        host_configuration->player_xuid.data = 2;
+        // JocKe user id
+        host_configuration->player_xuid.data = 1;
 
         // host player data
         if (current_player->peer_index == membership->host_peer_index())
@@ -100,8 +100,8 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
             host_configuration->user_selected_team_index = _game_team_red;
             host_configuration->team_index = _game_team_red;
             current_player->controller_index = 0;
-            // JocKe user id
-            host_configuration->player_xuid.data = 1;
+            // SYSTEM / invalid player id
+            host_configuration->player_xuid.data = -1;
         }
     }
     // push update
