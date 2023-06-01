@@ -1,3 +1,6 @@
+// TODO: This file needs some serious cleanup, I'm sorry to anyone who has to sift through all of this
+// I will eventually make it look better - Yokim
+
 #include "hooks.h"
 #include "patch\Patch.hpp"
 
@@ -751,6 +754,347 @@ __declspec(naked) void object_set_position_internal_hook4()
     }
 }
 
+__declspec(naked) void object_apply_acceleration_hook()
+{
+    __asm
+    {
+        // save object_index value
+        push ecx
+
+        // execute the original instruction(s) we replaced
+        mov ecx, [eax + ebx * 8 + 0x0C]
+        movq qword ptr[ecx + 0x78], xmm0
+        mov eax, [esp + 0x30 + -0xC + 0x8]
+        mov [ecx + 0x80], eax
+        movq xmm0, qword ptr[esp + 0x30 + -0x18]
+        movq qword ptr[ecx + 0x84], xmm0
+        mov eax, [esp + 0x30 + -0x18 + 0x8]
+        mov [ecx + 0x8C], eax
+
+        // retrieve object_index value
+        pop ecx
+        // call our inserted function
+        push 0
+        push 48 // flags 4 & 5 (1 << 4) + (1 << 5)
+        push ecx // object_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return back to the original code
+        mov ecx, module_base
+        add ecx, 0x3FC833
+        jmp ecx
+    }
+}
+
+__declspec(naked) void object_set_velocities_internal_hook()
+{
+    __asm
+    {
+        // wrap usercall function to rewritten function
+        push ebp
+        mov ebp, esp
+        and esp, 0x0FFFFFFF8
+        
+        push 0 // skip_update = false
+        push [ebp + 0x8] // angular_velocity
+        push edx // transitional_velocity
+        push ecx // object_index
+        call object_set_velocities_internal
+        add esp, 16
+
+        mov edx, ebx // match behaviour of the original - set return edx to transitional_velocity
+
+        // cleanup
+        mov esp, ebp
+        pop ebp
+        retn
+    }
+}
+
+void __cdecl object_set_at_rest_simulation_update(datum_index object_index)
+{
+    s_object_data* object = object_get(object_index); // just for debugging
+
+    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
+    auto object_type = (object_header_data)[(word)object_index].type;
+    // if item (weapon or equipment)
+    if ((object_type.get() & 0x14) != 0)
+    {
+        c_flags<long, ulong64, 64> update_flags = {};
+        update_flags.set(0xE, true);
+        simulation_action_object_update(object_index, &update_flags); // e_simulation_item_update_flag
+    }
+    // else if projectile
+    else if ((object_type.get() & 0x80) != 0)
+    {
+        c_flags<long, ulong64, 64> update_flags = {};
+        update_flags.set(0xE, true);
+        simulation_action_object_update(object_index, &update_flags); // e_simulation_projectile_update_flag
+    }
+}
+
+// c_simulation_generic_entity_definition::object_required_to_join_game - UNTESTED!! TODO: figure out how to call this!
+__declspec(naked) void object_set_at_rest_hook2()
+{
+    __asm
+    {
+        // call our inserted function
+        push edi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        mov eax, edi
+        pop edi
+        pop esi
+        mov esp, ebp
+        pop ebp
+        retn 0x14
+    }
+}
+
+// c_simulation_vehicle_entity_definition::create_object - UNTESTED!!TODO: figure out how to call this!
+__declspec(naked) void object_set_at_rest_hook3()
+{
+    __asm
+    {
+        // call our inserted function
+        push edi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        movzx ecx, word ptr[ebx + 8]
+        mov eax, 0x3EDDCDC
+        add eax, module_base
+        mov eax, ds:[eax]
+
+        // return back to the original code
+        mov edx, module_base
+        add edx, 0x725B1
+        jmp edx
+    }
+}
+
+// object_attach_to_node_immediate
+__declspec(naked) void object_set_at_rest_hook4()
+{
+    __asm
+    {
+        // call our inserted function
+        push edi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        mov esi, [esp + 0x88 - 0x74]
+        mov ecx, esi
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x400AD7
+        jmp eax
+    }
+}
+
+// projectile_attach
+__declspec(naked) void object_set_at_rest_hook5()
+{
+    __asm
+    {
+        // preserve register
+        push edx
+
+        // call our inserted function
+        push [esp + 0x5C - 0x48]  // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // restore register
+        pop edx
+
+        // execute the original instruction(s) we replaced
+        cmp ebx, 0x0FFFFFFFF
+        jz if_label
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x467DF0
+        jmp eax
+
+        if_label:
+        mov eax, module_base
+        add eax, 0x467F3C
+        jmp eax
+    }
+}
+
+// projectile_collision
+__declspec(naked) void object_set_at_rest_hook6()
+{
+    __asm
+    {
+        // execute the original instruction(s) we replaced
+        test eax, 0x7377
+        jz if_label1
+        mov eax, [edx + 0xAC]
+        shr eax, 7
+        test al, 1
+        jz if_label1
+        cmp dword ptr[edx + 0xA0], 0x0FFFFFFFF
+        jnz if_label2
+
+        if_label1:
+        or dword ptr[edx + 0xAC], 0x200
+        
+        if_label2:
+        // preserve register
+        push eax
+
+        // call our inserted function
+        push [esp + 0x25C - 0x210]  // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // restore register
+        pop eax
+
+        // execute the original instruction(s) we replaced
+        mov ecx, [esp + 0x258 - 0x248]
+
+        // return back to the original code
+        mov edx, module_base
+        add edx, 0x464ECB
+        jmp edx
+    }
+}
+
+// projectile_initial_update - called for conically fired projectiles, ie shotguns
+__declspec(naked) void object_set_at_rest_hook7()
+{
+    __asm
+    {
+        // call our inserted function
+        push [esp + 0x298 - 0x28C]  // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        movss xmm0, dword ptr[edi + 0x60]
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x462436
+        jmp eax
+    }
+}
+
+// object_early_mover_delete - UNTESTED!! TODO: check once we have an early mover to test with! create one with an existing vehicle?
+__declspec(naked) void object_set_at_rest_hook8()
+{
+    __asm
+    {
+        // call our inserted function
+        push esi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        mov eax, [edi + 0x0C]
+        mov ecx, [esp + 0x28 - 0x18]
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x46D288
+        jmp eax
+    }
+}
+
+// swarm_accelerate > creature_accelerate inlined > object_set_at_rest - UNTESTED!! TODO: I'm pretty sure swarms are only used for the flood, so it's probably fine to ignore this
+__declspec(naked) void object_set_at_rest_hook9()
+{
+    __asm
+    {
+        // call our inserted function
+        push esi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        push 0
+        lea edx, [esp + 0x3C - 0xC]
+        mov ecx, esi
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x6D50F7
+        jmp eax
+    }
+}
+
+// scenery_new
+void __fastcall object_set_at_rest_hook10(datum_index object_index)
+{
+    FUNCTION_DEF(0x490200, void, __fastcall, scenery_animation_idle, datum_index object_index);
+
+    object_set_at_rest_simulation_update(object_index);
+    scenery_animation_idle(object_index);
+}
+
+// vehicle_program_activate
+__declspec(naked) void object_set_at_rest_hook11()
+{
+    __asm
+    {
+        // call our inserted function
+        push esi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // execute the original instruction(s) we replaced
+        or eax, 0x0FFFFFFFF
+        mov[esp + 0x80 - 0x34], ax
+
+        // return back to the original code
+        mov ecx, module_base
+        add ecx, 0x4BEBBF
+        jmp ecx
+    }
+}
+
+// vehicle_program_update - UNTESTED!! TODO: figure out how to call this!
+__declspec(naked) void object_set_at_rest_hook12()
+{
+    __asm
+    {
+        // call our inserted function
+        push edi // object_index
+        call object_set_at_rest_simulation_update
+        add esp, 4
+
+        // return back to the original code
+        mov eax, module_base
+        add eax, 0x4C055D
+        jmp eax
+    }
+}
+
+// unit_custom_animation_play_animation_submit - UNTESTED!! TODO: figure out how to call this!
+void __fastcall object_set_at_rest_hook13(datum_index object_index)
+{
+    FUNCTION_DEF(0x4056A0, void, __fastcall, object_compute_node_matrices, datum_index object_index);
+
+    object_set_at_rest_simulation_update(object_index);
+    object_compute_node_matrices(object_index);
+}
+
+void __fastcall object_set_at_rest_hook(datum_index object_index)
+{
+    object_wake(object_index);
+    object_set_at_rest_simulation_update(object_index);
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -919,9 +1263,46 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x3FC060).WriteJump(object_set_position_internal_hook2, HookFlags::None);
     Pointer::Base(0x404AB4).WriteJump(object_set_position_internal_hook3, HookFlags::None); // inlined call in object_move_respond_to_physics
     Pointer::Base(0x404AD7).WriteJump(object_set_position_internal_hook4, HookFlags::None); // inlined call in object_move_respond_to_physics
-    // object_apply_acceleration
     // object_set_velocities_internal
-    // object_set_at_rest 45x inlined calls
+    Pointer::Base(0x3FC808).WriteJump(object_apply_acceleration_hook, HookFlags::None); // inlined call in object_apply_acceleration
+    Hook(0x3FC500, object_set_velocities_internal_hook).Apply();
+    // object_set_at_rest
+    Hook(0x4011F0, object_set_at_rest).Apply(); // add updates back to original call
+    // hook nearby object_wake calls in inlined object_set_at_rest instances to add back sim updates
+    Hook(0x6BBB8, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // c_simulation_object_entity_definition::object_apply_update
+    Hook(0x773D6, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // c_simulation_generic_entity_definition::handle_delete_object
+    Hook(0xC82A1, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // garbage_collect_multiplayer
+    Hook(0x172CB3, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // c_candy_spawner::spawn_object
+    Hook(0x1282B8, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // c_havok_component::wake_all_bodies_in_phantoms
+    Hook(0x3FBF35, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // object_reset
+    Hook(0x419397, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // unit_fix_position
+    Hook(0x413DD3, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // damage_response_fire
+    Hook(0x415DC3, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // object_damage_constraints
+    Hook(0x43DAF6, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // biped_update_without_parent
+    Hook(0x4632B7, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // projectile_accelerate
+    Hook(0x456EB5, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // motor_animation_exit_seat_immediate_internal
+    Hook(0x1EF12D, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // object_wake_physics - inlined into object_wake_physics_evaluate w/ object_wake call
+    Hook(0x46D33E, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // object_early_mover_delete
+    Hook(0x4848B8, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // item_multiplayer_at_rest_state_initialize 
+    Hook(0x4980E3, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // biped_stun_submit
+    Hook(0x4A9126, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // c_vehicle_type_mantis::update_physics
+    Hook(0x4A4300, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // biped_dead_force_airborne
+    Hook(0x4A1F00, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // biped_exit_relaxation
+    Hook(0x4A2396, object_set_at_rest_hook, HookFlags::IsCall).Apply(); // biped_start_relaxation
+    // more inlined object_set_at_rest instances
+    Pointer::Base(0x77142).WriteJump(object_set_at_rest_hook2, HookFlags::None); // UNTESTED!! // c_simulation_generic_entity_definition::object_required_to_join_game
+    Pointer::Base(0x725A8).WriteJump(object_set_at_rest_hook3, HookFlags::None); // UNTESTED!! // c_simulation_vehicle_entity_definition::create_object
+    Pointer::Base(0x400AD1).WriteJump(object_set_at_rest_hook4, HookFlags::None); // object_attach_to_node_immediate
+    Pointer::Base(0x467DE7).WriteJump(object_set_at_rest_hook5, HookFlags::None); // projectile_attach
+    Pointer::Base(0x464EA0).WriteJump(object_set_at_rest_hook6, HookFlags::None); // projectile_collision
+    Pointer::Base(0x462431).WriteJump(object_set_at_rest_hook7, HookFlags::None); // projectile_initial_update
+    Pointer::Base(0x46D281).WriteJump(object_set_at_rest_hook8, HookFlags::None); // UNTESTED!! // object_early_mover_delete
+    Pointer::Base(0x6D50EF).WriteJump(object_set_at_rest_hook9, HookFlags::None); // UNTESTED!! // swarm_accelerate > creature_accelerate inlined > object_set_at_rest inlined
+    Hook(0x48FB9A, object_set_at_rest_hook10, HookFlags::IsCall).Apply(); // scenery_new, hooked scenery_animation_idle call
+    Pointer::Base(0x4BEBB7).WriteJump(object_set_at_rest_hook11, HookFlags::None); // vehicle_program_activate
+    Pointer::Base(0x4BFF66).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
+    Pointer::Base(0x4BFF76).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
+    Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // UNTESTED!! // unit_custom_animation_play_animation_submit
 
     // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
     Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?

@@ -4,6 +4,7 @@
 #include "object_types.h"
 #include "..\scenario\scenario_definitions.h"
 #include "damage.h"
+#include "..\dllmain.h"
 
 enum e_object_header_flags
 {
@@ -137,7 +138,7 @@ struct s_object_data
 	short name_index;
 	char bsp_placement_policy;
 	char keyframed_object_collision_damage_ticks;
-	long havok_component_index;
+	datum_index havok_component_index;
 	long local_physics_space_object_index;
 	long last_motion_time;
 	c_flags<e_object_physics_flags, long, k_number_of_object_physics_flags> physics_flags;
@@ -223,7 +224,11 @@ bool object_is_multiplayer_cinematic_object(datum_index object_index);
 datum_index object_get_ultimate_parent(datum_index object_index);
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
-const static auto sub_123B00 = (void (*)(void* unknown))(module_base + 0x123B00);
+void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update);
+void __fastcall object_set_at_rest(datum_index object_index, bool force_activate);
+//const static auto c_havok_component__pre_simulation_update = (void (*)(void* thisptr))(module_base + 0x123B00);
 const static auto object_set_requires_motion = (void (*)(datum_index object_index))(module_base + 0x403E50);
 const static auto object_needs_rigid_body_update = (bool (*)(datum_index object_index))(module_base + 0x3FE620);
 const static auto attachments_update = (void (*)(datum_index object_index))(module_base + 0x409070);
+
+FUNCTION_DEF(0x3FBE70, void, __fastcall, object_wake, datum_index object_index);

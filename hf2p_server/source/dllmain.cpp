@@ -53,7 +53,7 @@ long main_thread()
     anvil_dedi_apply_hooks();
 
     // SESSION MAP & VARIANT
-    auto map_id = _s3d_reactor;
+    auto map_id = _s3d_turf;
     auto engine_variant = _engine_variant_slayer;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading

@@ -224,6 +224,11 @@ public:
 		m_storage |= raw_bits;
 	}
 
+	void operator&=(t_storage_type raw_bits)
+	{
+		m_storage &= raw_bits;
+	}
+
 	bool operator!=(t_type value)
 	{
 		return m_storage != value;

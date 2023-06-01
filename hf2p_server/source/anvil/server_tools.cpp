@@ -21,11 +21,12 @@ bool anvil_create_session()
 
 bool anvil_session_set_map(e_map_id map_id)
 {
-    c_map_variant map_variant = c_map_variant();
-    map_variant.create_default(map_id);
-    bool success = user_interface_squad_set_multiplayer_map(&map_variant);
+    c_map_variant* map_variant = new c_map_variant();
+    map_variant->create_default(map_id);
+    bool success = user_interface_squad_set_multiplayer_map(map_variant);
     if (success == false)
         printf("Failed to set map variant!\n");
+    delete map_variant;
     return success;
 }
 
@@ -34,8 +35,10 @@ bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant eng
     c_game_variant game_variant = c_game_variant();
     build_default_game_variant(&game_variant, engine_variant);
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_round_time_limit = 1;
-    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 3;
+    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
+    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_early_victory_win_count = 1;
     //game_variant.m_storage.m_slayer_variant.m_score_to_win = 1;
+    //game_variant.m_storage.m_slayer_variant.m_suicide_points = 1;
 
     //game_variant.m_storage.m_base_variant.m_respawn_options.m_flags.set(_game_engine_respawn_options_auto_respawn_disabled, false);
     //wchar_t variant_name[16] = L"RESPAWN TEST";
@@ -64,13 +67,13 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         memcpy(&host_configuration->player_appearance.service_tag, service_tag, 10);
         host_configuration->user_selected_team_index = _game_team_blue;
         host_configuration->team_index = _game_team_blue;
-        host_configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
-        host_configuration->s3d_player_customization.colors[_secondary] = 0x003750;
+        host_configuration->s3d_player_customization.colors[_primary] = 0xFF230A; // red
+        host_configuration->s3d_player_customization.colors[_secondary] = 0xFFFFFF; // white
         host_configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
         host_configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
         host_configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
-        host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scout;
-        host_configuration->s3d_player_container.loadouts[0].primary_weapon = _smg_v5;
+        host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
+        host_configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle; // _smg_v5
         host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _bomb_run;
@@ -90,7 +93,9 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         if (current_player->peer_index == membership->host_peer_index())
         {
             wchar_t host_name[16] = L"HOST PLAYER";
-            host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
+            host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
+            host_configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
+            host_configuration->s3d_player_customization.colors[_secondary] = 0x003750;
             memcpy(&host_configuration->player_name, host_name, 32);
             host_configuration->user_selected_team_index = _game_team_red;
             host_configuration->team_index = _game_team_red;

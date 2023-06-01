@@ -2,6 +2,7 @@
 #include "..\memory\tls.h"
 #include "assert.h"
 #include <stdio.h>
+#include "..\simulation\game_interface\simulation_game_objects.h"
 
 s_object_data* object_get(datum_index object_index)
 {
@@ -59,4 +60,65 @@ void object_detach_gamestate_entity(datum_index object_index, datum_index gamest
 e_object_type c_object_identifier::get_type()
 {
 	return this->type.get();
+}
+
+void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update)
+{
+	s_object_data* object = object_get(object_index);
+	c_flags<long, ulong64, 64> update_flags = {};
+	if (transitional_velocity)
+	{
+		object->transitional_velocity = *transitional_velocity;
+		update_flags.set(4, true);
+	}
+	if (angular_velocity)
+	{
+		object->angular_velocity = *angular_velocity;
+		update_flags.set(5, true);
+	}
+	if (!skip_update)
+	{
+		if (update_flags)
+			simulation_action_object_update(object_index, &update_flags);
+	}
+}
+
+void __fastcall object_set_at_rest(datum_index object_index, bool force_activate)
+{
+	FUNCTION_DEF(0x127C30, void, __thiscall, c_havok_component__force_activate, void* thisptr, bool unknown);
+	s_data_array* g_havok_components = (s_data_array*)*(long*)(module_base + 0x1046CDC);
+
+	s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
+	s_object_data* object = object_get(object_index);
+	if (((1 << object_header_data[(word)object_index].type.get()) & 0x7377) != 0
+		&& (object->physics_flags.get_unsafe() & 0x80) != 0
+		&& (object->havok_component_index != -1))
+	{
+		if (force_activate)
+			goto simulation_update;
+		c_havok_component__force_activate(&g_havok_components->data[128 * (word)object->havok_component_index], false);
+	}
+	else if (force_activate)
+	{
+		object->physics_flags |= 0x200u;
+		return;
+	}
+	object->physics_flags &= ~0x200u;
+	object_wake(object_index);
+	// update here
+simulation_update:
+	// if item (weapon or equipment)
+	if ((object_header_data[(word)object_index].type.get() & 0x14) != 0)
+	{
+		c_flags<long, ulong64, 64> update_flags = {};
+		update_flags.set(14, true);
+		simulation_action_object_update(object_index, &update_flags); // e_simulation_item_update_flag
+	}
+	// else if projectile
+	else if ((object_header_data[(word)object_index].type.get() & 0x80) != 0)
+	{
+		c_flags<long, ulong64, 64> update_flags = {};
+		update_flags.set(14, true);
+		simulation_action_object_update(object_index, &update_flags); // e_simulation_projectile_update_flag
+	}
 }
