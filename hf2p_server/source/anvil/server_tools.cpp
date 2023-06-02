@@ -73,12 +73,12 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         host_configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
         host_configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
         host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
-        host_configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle; // _smg_v5
+        host_configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle;
         host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _bomb_run;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _concussive_blast;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _hologram;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _bubbleshield;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _regenerator;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _deployable_cover;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_grenade_warning] = 1;

@@ -1146,6 +1146,49 @@ __declspec(naked) void weapon_barrel_create_projectiles_hook2()
     }
 }
 
+__declspec(naked) void throw_release_hook1()
+{
+    __asm
+    {
+        cmp [ebp + 0x20], 0
+        jnz sim_update
+        mov eax, module_base
+        add eax, 0x47CFC7
+        jmp eax
+
+        sim_update:
+        push esi // object_index
+        call simulation_action_object_create
+        add esp, 4
+
+        mov eax, module_base
+        add eax, 0x47D185
+        jmp eax
+    }
+}
+
+__declspec(naked) void throw_release_hook2()
+{
+    __asm
+    {
+        add esp, 4
+        test al, al
+        jnz sim_update
+        mov eax, module_base
+        add eax, 0x47D17B
+        jmp eax
+
+        sim_update:
+        push esi // object_index
+        call simulation_action_object_create
+        add esp, 4
+        
+        mov eax, module_base
+        add eax, 0x47D185
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1289,6 +1332,9 @@ void anvil_dedi_apply_hooks()
     // weapon_barrel_create_projectiles
     Hook(0x4391D4, weapon_barrel_create_projectiles_hook1, HookFlags::IsCall).Apply(); // crate projectiles // hooks nearby object_new
     Pointer::Base(0x4394A2).WriteJump(weapon_barrel_create_projectiles_hook2, HookFlags::None); // standard projectiles
+    // grenade & equipment throw spawning
+    Pointer::Base(0x47CFBD).WriteJump(throw_release_hook1, HookFlags::None);
+    Pointer::Base(0x47D174).WriteJump(throw_release_hook2, HookFlags::None);
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
