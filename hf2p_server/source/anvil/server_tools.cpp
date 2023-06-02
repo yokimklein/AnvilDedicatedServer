@@ -75,9 +75,9 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         host_configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle;
         host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _bubbleshield;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _regenerator;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _deployable_cover;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _deployable_cover;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _hologram;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _regenerator;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;

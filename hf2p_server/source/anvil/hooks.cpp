@@ -1189,6 +1189,31 @@ __declspec(naked) void throw_release_hook2()
     }
 }
 
+__declspec(naked) void equipment_activate_hook()
+{
+    __asm
+    {
+        // preserve register
+        push eax
+
+        push eax // object_index
+        call simulation_action_object_create
+        add esp, 4
+
+        // restore register
+        pop eax
+
+        // original replaced instructions
+        mov ecx, [esp + 0x358 - 0x348]
+        mov[ecx + 0x1A0], eax
+
+        // return
+        mov eax, module_base
+        add eax, 0x451498
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1335,6 +1360,8 @@ void anvil_dedi_apply_hooks()
     // grenade & equipment throw spawning
     Pointer::Base(0x47CFBD).WriteJump(throw_release_hook1, HookFlags::None);
     Pointer::Base(0x47D174).WriteJump(throw_release_hook2, HookFlags::None);
+    // hologram spawning
+    Pointer::Base(0x45113A).WriteJump(equipment_activate_hook, HookFlags::None);
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
