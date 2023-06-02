@@ -1111,6 +1111,41 @@ __declspec(naked) void event_generate_part_hook()
     }
 }
 
+datum_index __fastcall weapon_barrel_create_projectiles_hook1(void* thisptr)
+{
+    FUNCTION_DEF(0x3FCEE0, datum_index, __thiscall, object_new, void* thisptr);
+
+    datum_index object_index = object_new(thisptr);
+    if (object_index != -1)
+        simulation_action_object_create(object_index);
+    return object_index;
+}
+
+__declspec(naked) void weapon_barrel_create_projectiles_hook2()
+{
+    __asm
+    {
+        // call our inserted function
+        // if (v220) 
+        cmp [esp + 0x2250 - 0x2244], 0 // v220
+        jz if_failed
+
+        push [esp + 0x2250 - 0x2230] // object_index
+        call simulation_action_object_create
+        add esp, 4
+
+        if_failed:
+        // execute the instructions we replaced
+        mov eax, [esp + 0x2250 - 0x21F8]
+        xor dl, dl
+
+        // return back to the original code
+        mov ecx, module_base
+        add ecx, 0x4394A8
+        jmp ecx
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1251,6 +1286,9 @@ void anvil_dedi_apply_hooks()
     // effect object spawning
     Pointer::Base(0x114A58).WriteJump(event_generate_part_hook, HookFlags::None);
     Pointer::Base(0x114A6C).WriteJump(event_generate_part_hook, HookFlags::None);
+    // weapon_barrel_create_projectiles
+    Hook(0x4391D4, weapon_barrel_create_projectiles_hook1, HookFlags::IsCall).Apply(); // crate projectiles // hooks nearby object_new
+    Pointer::Base(0x4394A2).WriteJump(weapon_barrel_create_projectiles_hook2, HookFlags::None); // standard projectiles
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
