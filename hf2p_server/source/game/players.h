@@ -5,6 +5,7 @@
 #include "..\memory\data.h"
 #include "player_configuration.h"
 #include "game_engine_player_traits.h"
+#include "..\dllmain.h"
 
 struct s_player_datum : s_datum_header
 {
@@ -176,3 +177,5 @@ long player_mapping_get_input_user(word player_index);
 void player_set_facing(datum_index player_index, real_vector3d* forward);
 void player_control_set_facing(long input_user_index, real_vector3d* forward);
 long player_index_from_absolute_player_index(short absolute_player_index);
+
+FUNCTION_DEF(0xBA0F0, void, __fastcall, player_clear_assassination_state, datum_index player_index);

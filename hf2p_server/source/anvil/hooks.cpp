@@ -25,6 +25,7 @@
 #include "..\objects\objects.h"
 #include "..\simulation\game_interface\simulation_game_events.h"
 #include "..\game\game.h"
+#include "..\units\units.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -1284,6 +1285,7 @@ __declspec(naked) void c_map_variant__remove_object_hook()
         push 8192 // flag 13 (1 << 13)
         push [ebp + 0xC] // object_index
         call simulation_action_object_update_with_bitmask
+        add esp, 12
 
         // return
         return_label:
@@ -1301,8 +1303,9 @@ __declspec(naked) void c_map_variant__unknown4_hook1()
         push 6 // flags 1 and 2 (1 << 1) + (1 << 2)
         push [ebx + esi + 0x134] // object_index
         call simulation_action_object_update_with_bitmask
+        add esp, 12
 
-        // original replaced if statement
+        // execute instructions we replaced
         mov ax, [ebx + esi + 0x130]
         shr ax, 9
 
@@ -1317,7 +1320,7 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
 {
     __asm
     {
-        // original replaced if statement
+        // execute instructions we replaced
         mov eax, [esp + 0x84 - 0x70]
         add esp, 4
 
@@ -1328,6 +1331,7 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
         push 2048 // flag 11 (1 << 11)
         push[ebx + esi + 0x134] // object_index
         call simulation_action_object_update_with_bitmask
+        add esp, 12
 
         // restore register
         pop eax
@@ -1335,6 +1339,34 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
         // return
         mov ecx, module_base
         add ecx, 0xABAAA
+        jmp ecx
+    }
+}
+
+void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
+{
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set(0xE, true);
+    simulation_action_object_update(unit_index, &update_flags);
+    unit_set_actively_controlled(unit_index, unknown);
+}
+
+__declspec(naked) void player_set_unit_index_hook2()
+{
+    __asm
+    {
+        // original replaced if statement
+        call player_clear_assassination_state
+
+        push 1 // flag 32 (1 << 32)
+        push 0
+        push [edi + 0x30] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov ecx, module_base
+        add ecx, 0xB628E
         jmp ecx
     }
 }
@@ -1505,8 +1537,12 @@ void anvil_dedi_apply_hooks()
     // c_map_variant::remove_object - should fix map variant object respawn times
     Pointer::Base(0xADB2B).WriteJump(c_map_variant__remove_object_hook, HookFlags::None);
     // c_map_variant::unknown4 - called when objects spawn/respawn on sandtrap's elephants
-    Pointer::Base(0xABA7E).WriteJump(c_map_variant__unknown4_hook1, HookFlags::None);
-    Pointer::Base(0xABAA3).WriteJump(c_map_variant__unknown4_hook2, HookFlags::None);
+    Pointer::Base(0xABA7E).WriteJump(c_map_variant__unknown4_hook1, HookFlags::None); // UNTESTED!!
+    Pointer::Base(0xABAA3).WriteJump(c_map_variant__unknown4_hook2, HookFlags::None); // UNTESTED!!
+    // player_set_unit_index
+    Hook(0xB5F8E, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
+    Hook(0xB60E4, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
+    Pointer::Base(0xB6289).WriteJump(player_set_unit_index_hook2, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

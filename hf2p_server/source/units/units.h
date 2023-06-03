@@ -6,6 +6,7 @@
 #include "..\game\aim_assist.h"
 #include "..\objects\objects.h"
 #include "..\objects\target_tracking.h"
+#include "..\dllmain.h"
 
 enum e_weapon_set
 {
@@ -230,3 +231,5 @@ struct s_unit_data : s_motor_data
 	long : 32;
 };
 static_assert(sizeof(s_unit_data) == 0x590);
+
+FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
