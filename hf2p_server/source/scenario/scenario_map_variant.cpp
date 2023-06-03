@@ -30,6 +30,8 @@ datum_index c_map_variant::get_chunk_gamestate_index(long chunk_index)
 	return this->simulation_gamestate_indices[chunk_index];
 }
 
+// this method was stripped out of client builds
+// only used by forge, there's no need to reimplement this yet
 void c_map_variant::place_new_object(long map_variant_index, long unknown, bool do_not_force)
 {
 	if (game_is_server() && game_is_distributed() && game_engine_is_sandbox() && !game_is_playback())

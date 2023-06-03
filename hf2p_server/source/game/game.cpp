@@ -58,7 +58,7 @@ bool game_is_predicted()
 	return game_simulation_get() == _game_simulation_distributed_client;
 }
 
-bool game_is_authoritative()
+bool __cdecl game_is_authoritative()
 {
 	return !game_is_predicted();
 }

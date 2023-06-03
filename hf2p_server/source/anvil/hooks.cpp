@@ -24,6 +24,7 @@
 #include "..\hf2p\hf2p.h"
 #include "..\objects\objects.h"
 #include "..\simulation\game_interface\simulation_game_events.h"
+#include "..\game\game.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -1258,6 +1259,40 @@ __declspec(naked) void item_in_unit_inventory_hook2()
     }
 }
 
+__declspec(naked) void c_map_variant__remove_object_hook()
+{
+    __asm
+    {
+        // original replaced if statement
+        cmp ecx, 0x0FFFFFFFF
+        jz sim_update
+        mov eax, [esi]
+        movzx ecx, cx
+        mov eax, [eax + 0x0C]
+        add ecx, ecx
+        mov eax, [eax + 0x44]
+        mov eax, [eax + ecx * 8 + 0x0C]
+        mov [eax + 0x1C], dx
+        jmp sim_update
+
+        sim_update:
+        // if (game_is_authoritative())
+        call game_is_authoritative
+        test al, al
+        jz return_label
+        push 0
+        push 8192 // flag 13 (1 << 13)
+        push [ebp + 0xC] // object_index
+        call simulation_action_object_update_with_bitmask
+
+        // return
+        return_label:
+        mov eax, module_base
+        add eax, 0xADB52
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1421,6 +1456,9 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4047B4).WriteJump(object_update_part, HookFlags::None);
     // add simulation_action_object_update back to player_set_facing
     Hook(0xB6300, player_set_facing_hook).Apply();
+    // c_map_variant::remove_object - should fix map variant object respawn times
+    Pointer::Base(0xADB2B).WriteJump(c_map_variant__remove_object_hook, HookFlags::None);
+
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
     Pointer::Base(0x3FC038).WriteJump(object_set_position_internal_hook1, HookFlags::None);
