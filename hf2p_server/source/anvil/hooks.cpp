@@ -1293,6 +1293,52 @@ __declspec(naked) void c_map_variant__remove_object_hook()
     }
 }
 
+__declspec(naked) void c_map_variant__unknown4_hook1()
+{
+    __asm
+    {
+        push 0
+        push 6 // flags 1 and 2 (1 << 1) + (1 << 2)
+        push [ebx + esi + 0x134] // object_index
+        call simulation_action_object_update_with_bitmask
+
+        // original replaced if statement
+        mov ax, [ebx + esi + 0x130]
+        shr ax, 9
+
+        // return
+        mov ecx, module_base
+        add ecx, 0xABA8A
+        jmp ecx
+    }
+}
+
+__declspec(naked) void c_map_variant__unknown4_hook2()
+{
+    __asm
+    {
+        // original replaced if statement
+        mov eax, [esp + 0x84 - 0x70]
+        add esp, 4
+
+        // preserve register
+        push eax
+
+        push 0
+        push 2048 // flag 11 (1 << 11)
+        push[ebx + esi + 0x134] // object_index
+        call simulation_action_object_update_with_bitmask
+
+        // restore register
+        pop eax
+
+        // return
+        mov ecx, module_base
+        add ecx, 0xABAAA
+        jmp ecx
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1458,6 +1504,9 @@ void anvil_dedi_apply_hooks()
     Hook(0xB6300, player_set_facing_hook).Apply();
     // c_map_variant::remove_object - should fix map variant object respawn times
     Pointer::Base(0xADB2B).WriteJump(c_map_variant__remove_object_hook, HookFlags::None);
+    // c_map_variant::unknown4 - called when objects spawn/respawn on sandtrap's elephants
+    Pointer::Base(0xABA7E).WriteJump(c_map_variant__unknown4_hook1, HookFlags::None);
+    Pointer::Base(0xABAA3).WriteJump(c_map_variant__unknown4_hook2, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
