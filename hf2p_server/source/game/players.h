@@ -27,7 +27,7 @@ struct s_player_datum : s_datum_header
 	ushort unknown_simulation_ticks4; // hf2p cooldown?
 	ushort unknownflags3;
 	uchar unknown_simulation_ticks;
-	uchar field_4A;
+	uchar control_context_identifier;
 	uchar field_4C;
 	uchar field_4B;
 	__int16 character_type_index;
@@ -177,5 +177,6 @@ long player_mapping_get_input_user(word player_index);
 void player_set_facing(datum_index player_index, real_vector3d* forward);
 void player_control_set_facing(long input_user_index, real_vector3d* forward);
 long player_index_from_absolute_player_index(short absolute_player_index);
+void __fastcall player_increment_control_context(datum_index player_index);
 
 FUNCTION_DEF(0xBA0F0, void, __fastcall, player_clear_assassination_state, datum_index player_index);

@@ -1543,6 +1543,8 @@ void anvil_dedi_apply_hooks()
     Hook(0xB5F8E, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
     Hook(0xB60E4, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
     Pointer::Base(0xB6289).WriteJump(player_set_unit_index_hook2, HookFlags::None);
+    // player_increment_control_context
+    Hook(0xB9A90, player_increment_control_context).Apply();
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

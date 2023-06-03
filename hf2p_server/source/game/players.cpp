@@ -61,3 +61,19 @@ long player_index_from_absolute_player_index(short absolute_player_index)
 {
 	return datum_absolute_index_to_index(get_tls()->players, absolute_player_index);
 }
+
+void __fastcall player_increment_control_context(datum_index player_index)
+{
+	s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
+	datum_index unit_index = player_data->unit_index;
+	if (unit_index != -1)
+	{
+		s_unit_data* unit = (s_unit_data*)datum_get(get_tls()->object_headers, unit_index);
+		unit->control_context_identifier = player_data->control_context_identifier;
+
+		c_flags<long, ulong64, 64> update_flags = {};
+		update_flags.set(31, true);
+		simulation_action_object_update(unit_index, &update_flags);
+	}
+	player_data->control_context_identifier = (player_data->control_context_identifier + 1) & 0xF;
+}
