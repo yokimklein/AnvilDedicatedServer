@@ -1214,6 +1214,50 @@ __declspec(naked) void equipment_activate_hook()
     }
 }
 
+__declspec(naked) void item_in_unit_inventory_hook1()
+{
+    __asm
+    {
+        push edi // object_index
+        call simulation_action_object_create
+        add esp, 4
+
+        // original replaced instructions
+        mov eax, [ebx + 0x0C]
+        mov ecx, [ebp - 0x08]
+
+        // return
+        mov edx, module_base
+        add edx, 0x48433D
+        jmp edx
+    }
+}
+
+__declspec(naked) void item_in_unit_inventory_hook2()
+{
+    __asm
+    {
+        // original replaced instructions
+        or eax, 0x0FFFFFFFF
+        mov [esi + 0x1E], ax
+
+        // preserve register
+        push ecx
+
+        push edi // object_index
+        call simulation_action_object_delete
+        add esp, 4
+
+        // restore register
+        pop ecx
+
+        // return
+        mov eax, module_base
+        add eax, 0x48418D
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1362,10 +1406,14 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x47D174).WriteJump(throw_release_hook2, HookFlags::None);
     // hologram spawning
     Pointer::Base(0x45113A).WriteJump(equipment_activate_hook, HookFlags::None);
+    // item inventory
+    Pointer::Base(0x484337).WriteJump(item_in_unit_inventory_hook1, HookFlags::None);
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
     Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
+    // item inventory
+    Pointer::Base(0x484186).WriteJump(item_in_unit_inventory_hook2, HookFlags::None);
 
     // OBJECT UPDATES
     // add simulation_action_object_update back to object_update
