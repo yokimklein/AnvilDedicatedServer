@@ -1371,6 +1371,45 @@ __declspec(naked) void player_set_unit_index_hook2()
     }
 }
 
+__declspec(naked) void unit_died_hook()
+{
+    __asm
+    {
+        // original replaced if statement
+        movss dword ptr[eax + 0x404], xmm0
+
+        // preserve register
+        push edx
+
+        // biped/vehicle update
+        cmp byte ptr[eax + 0x9A], 1
+        jnz biped_update
+
+        // vehicle update
+        mov eax, 131072 // flag 17 (1 << 17)
+        jmp sim_update
+
+        // biped update
+        biped_update:
+        mov eax, 134217728 // flag 27 (1 << 27)
+
+        sim_update:
+        push 0
+        push eax
+        push [esp + 0x70 - 0x60] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore register
+        pop edx
+
+        // return
+        mov eax, module_base
+        add eax, 0x421471
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1543,8 +1582,10 @@ void anvil_dedi_apply_hooks()
     Hook(0xB5F8E, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
     Hook(0xB60E4, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
     Pointer::Base(0xB6289).WriteJump(player_set_unit_index_hook2, HookFlags::None);
-    // player_increment_control_context
+    // player_increment_control_context - fixes player control after respawning
     Hook(0xB9A90, player_increment_control_context).Apply();
+    // unit_died - sync unit deaths
+    Pointer::Base(0x421469).WriteJump(unit_died_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
