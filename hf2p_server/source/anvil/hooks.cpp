@@ -1082,7 +1082,7 @@ __declspec(naked) void object_set_at_rest_hook12()
     }
 }
 
-// unit_custom_animation_play_animation_submit - UNTESTED!! TODO: figure out how to call this!
+// unit_custom_animation_play_animation_submit
 void __fastcall object_set_at_rest_hook13(datum_index object_index)
 {
     FUNCTION_DEF(0x4056A0, void, __fastcall, object_compute_node_matrices, datum_index object_index);
@@ -1490,6 +1490,26 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
     }
 }
 
+__declspec(naked) void unit_update_control_hook()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov [edi + 0x1E4], eax
+
+        push 0
+        push 65536 // flag 16 (1 << 16)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov eax, module_base
+        add eax, 0x418550
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1672,6 +1692,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4243D8).WriteJump(unit_add_grenade_to_inventory_hook, HookFlags::None);
     // sync equipment pickup
     Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
+    // TODO: find out what this does
+    Pointer::Base(0x41854A).WriteJump(unit_update_control_hook, HookFlags::None); // UNTESTED!!
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
@@ -1718,7 +1740,7 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4BEBB7).WriteJump(object_set_at_rest_hook11, HookFlags::None); // vehicle_program_activate
     Pointer::Base(0x4BFF66).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
     Pointer::Base(0x4BFF76).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
-    Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // UNTESTED!! // unit_custom_animation_play_animation_submit
+    Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // unit_custom_animation_play_animation_submit // plays on podium
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn
