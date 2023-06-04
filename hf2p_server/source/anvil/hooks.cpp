@@ -1355,7 +1355,7 @@ __declspec(naked) void player_set_unit_index_hook2()
 {
     __asm
     {
-        // original replaced if statement
+        // original replaced instructions
         call player_clear_assassination_state
 
         push 1 // flag 32 (1 << 32)
@@ -1375,7 +1375,7 @@ __declspec(naked) void unit_died_hook()
 {
     __asm
     {
-        // original replaced if statement
+        // original replaced instructions
         movss dword ptr[eax + 0x404], xmm0
 
         // preserve register
@@ -1406,6 +1406,34 @@ __declspec(naked) void unit_died_hook()
         // return
         mov eax, module_base
         add eax, 0x421471
+        jmp eax
+    }
+}
+
+__declspec(naked) void grenade_throw_move_to_hand_hook()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov [ecx + 0x324], al
+
+        // preserve registers across call
+        push ecx
+        push edx
+
+        push 0
+        push 67108864 // flag 26 (1 << 26)
+        push [ebp - 0x08] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop edx
+        pop ecx
+
+        // return
+        mov eax, module_base
+        add eax, 0x47D435
         jmp eax
     }
 }
@@ -1586,6 +1614,8 @@ void anvil_dedi_apply_hooks()
     Hook(0xB9A90, player_increment_control_context).Apply();
     // unit_died - sync unit deaths
     Pointer::Base(0x421469).WriteJump(unit_died_hook, HookFlags::None);
+    // sync grenade count after throw
+    Pointer::Base(0x47D42F).WriteJump(grenade_throw_move_to_hand_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
