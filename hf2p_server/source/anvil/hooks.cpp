@@ -1464,6 +1464,32 @@ __declspec(naked) void unit_add_grenade_to_inventory_hook()
     }
 }
 
+__declspec(naked) void unit_add_equipment_to_inventory_hook()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov [ecx + 0x314], eax
+
+        // preserve registers across call
+        push ecx
+
+        push 0
+        push 805306368 // flags 28 & 29 (1 << 28) + (1 << 29)
+        push[esp + 0x20 - 0x0C] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop ecx
+
+        // return
+        mov eax, module_base
+        add eax, 0x42458C
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1644,6 +1670,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x47D42F).WriteJump(grenade_throw_move_to_hand_hook, HookFlags::None);
     // sync grenade pickups
     Pointer::Base(0x4243D8).WriteJump(unit_add_grenade_to_inventory_hook, HookFlags::None);
+    // sync equipment pickup
+    Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
