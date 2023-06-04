@@ -259,7 +259,7 @@ void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_p
     if (character_active_index != player_data->character_type_index)
     {
         s_player_identifier player_xuid = player_data->configuration.host.player_xuid;
-        *(&player_data->field_2E14 + 1) = 0;
+        player_data->revenge_shield_boost_multiplier = 0;
         player_data->character_type_index = character_active_index;
         sub_E05E0(player_xuid);
 
@@ -1386,21 +1386,23 @@ __declspec(naked) void unit_died_hook()
         jnz biped_update
 
         // vehicle update
-        mov eax, 131072 // flag 17 (1 << 17)
-        jmp sim_update
+        push 0
+        push 131072 // flag 17 (1 << 17)
+        push 0 // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+        jmp return_label
 
         // biped update
         biped_update:
-        mov eax, 134217728 // flag 27 (1 << 27)
-
-        sim_update:
         push 0
-        push eax
-        push [esp + 0x70 - 0x60] // unit_index
+        push 134217728 // flag 27 (1 << 27)
+        push 0 // unit_index
         call simulation_action_object_update_with_bitmask
         add esp, 12
 
         // restore register
+        return_label:
         pop edx
 
         // return
@@ -1476,7 +1478,7 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
 
         push 0
         push 805306368 // flags 28 & 29 (1 << 28) + (1 << 29)
-        push[esp + 0x20 - 0x0C] // unit_index
+        push[esp + 0x2C - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
         add esp, 12
 
@@ -1506,6 +1508,62 @@ __declspec(naked) void unit_update_control_hook()
         // return
         mov eax, module_base
         add eax, 0x418550
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_add_initial_loadout_hook0()
+{
+    __asm
+    {
+        // create a new variable to preserve player_object_index in
+        sub esp, 0x1C0 // originally sub esp, 0x1BC
+        mov[ebp - 0x1BC], ecx
+
+        // return
+        mov eax, module_base
+        add eax, 0xFB6E9
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_add_initial_loadout_hook1()
+{
+    __asm
+    {
+        push 0
+        push 67108864 // flag 26 (1 << 26)
+        push[ebp - 0x1BC] // player object index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // original replaced instructions
+        mov ecx, [ebx + 0x4C]
+        cmp ecx, 0x0FFFFFFFF
+
+        // return
+        mov eax, module_base
+        add eax, 0xFBA3A
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_add_initial_loadout_hook2()
+{
+    __asm
+    {
+        push 0
+        push 128 // flag 7 (1 << 7)
+        push[ebp - 0x1BC] // player object index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // original replaced instructions
+        mov byte ptr[ebx + 0x18B4], 0
+
+        // return
+        mov eax, module_base
+        add eax, 0xFBAE0
         jmp eax
     }
 }
@@ -1694,6 +1752,10 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
     // TODO: find out what this does
     Pointer::Base(0x41854A).WriteJump(unit_update_control_hook, HookFlags::None); // UNTESTED!!
+    // unit_add_initial_loadout
+    Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
+    Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None); 
+    Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

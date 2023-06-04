@@ -120,6 +120,9 @@ struct s_player_datum : s_datum_header
 	short : 16;
 	short nemesis_totals[16];
 	char field_2E14;
+	char field_2E15;
+	char revenge_shield_boost_multiplier;
+	char field_2E17;
 	ulong last_hit_marker_game_time;
 	long revenge_player_Index;
 	s_damage_reporting_info revenge_event_type;

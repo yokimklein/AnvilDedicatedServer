@@ -96,6 +96,7 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
             host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
             host_configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
             host_configuration->s3d_player_customization.colors[_secondary] = 0x003750;
+            host_configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = (ulong)5.0f;
             memcpy(&host_configuration->player_name, host_name, 32);
             host_configuration->user_selected_team_index = _game_team_red;
             host_configuration->team_index = _game_team_red;
