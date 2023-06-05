@@ -233,3 +233,5 @@ struct s_unit_data : s_motor_data
 static_assert(sizeof(s_unit_data) == 0x590);
 
 FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
+
+void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);

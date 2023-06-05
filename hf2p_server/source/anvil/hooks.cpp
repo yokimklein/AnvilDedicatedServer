@@ -1518,7 +1518,7 @@ __declspec(naked) void unit_add_initial_loadout_hook0()
     {
         // create a new variable to preserve player_object_index in
         sub esp, 0x1C0 // originally sub esp, 0x1BC
-        mov[ebp - 0x1BC], ecx
+        mov[ebp - 0x1BC], ecx // ecx is player_object_index
 
         // return
         mov eax, module_base
@@ -1596,6 +1596,67 @@ __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 
         // return
         return_label:
+        pop edi
+        pop esi
+        pop ebx
+        mov esp, ebp
+        pop ebp
+        retn
+    }
+}
+
+__declspec(naked) void unit_inventory_set_weapon_index_hook0()
+{
+    __asm
+    {
+        // create a new variable to preserve unit_index in
+        push ebp
+        mov ebp, esp
+        sub esp, 0x10 // originally sub esp, 0x0C
+
+        mov[ebp - 0x0C], ecx // ecx is unit_index
+
+        // return
+        mov eax, module_base
+        add eax, 0x426D16
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_inventory_set_weapon_index_hook1()
+{
+    __asm
+    {
+        //c_flags<long, ulong64, 64> update_flags = {};
+        //update_flags.set(inventory_index + 18, true);
+        //update_flags.set(inventory_index + 22, true);
+        //simulation_action_object_update(unit_index, &update_flags);
+
+        // flags1 = (1 << (inventory_index + 18))
+        mov ecx, [ebp - 0x02] // inventory_index
+        add ecx, 18 // inventory_index + 18
+        mov edx, 1
+        shl edx, cl
+        mov eax, edx
+
+        // flags2 = (1 << (inventory_index + 22))
+        mov ecx, [ebp - 0x02] // inventory_index
+        add ecx, 22 // inventory_index + 22
+        mov edx, 1
+        shl edx, cl
+
+        or edx, eax // update_flags = flags1 | flags2;
+
+        push 0
+        push edx // update_flags
+        push[ebp - 0x0C] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        mov ecx, [ebp - 0x0C] // unit_index
+        call unit_inventory_cycle_weapon_set_identifier // fastcall
+
+        // return
         pop edi
         pop esi
         pop ebx
@@ -1844,6 +1905,11 @@ void anvil_dedi_apply_hooks()
     // WEAPON STATE UPDATES
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
+    // weapon set index updates
+    Pointer::Base(0x426D10).WriteJump(unit_inventory_set_weapon_index_hook0, HookFlags::None);
+    Pointer::Base(0x426D8E).WriteJump(unit_inventory_set_weapon_index_hook1, HookFlags::None);
+    // weapon set identifier updates
+    Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn
