@@ -5,6 +5,8 @@
 #include "..\simulation_world.h"
 #include "assert.h"
 #include <stdio.h>
+#include "simulation_game_objects.h"
+#include "..\..\items\weapons.h"
 
 void simulation_action_game_engine_globals_create()
 {
@@ -178,6 +180,23 @@ void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* up
 				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_update: game engine globals has invalid entity index (gamestate 0x%8X) can't update\n", gamestate_index);
 			else
 				simulation_entity_update(entity_index, -1, update_flags);
+		}
+	}
+}
+
+void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
+{
+	FUNCTION_DEF(0x433D90, long, __fastcall, weapon_get_owner_unit_inventory_index, datum_index weapon_index);
+
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		datum_index owner_unit_index = weapon_get_owner_unit_index(weapon_index);
+		datum_index owner_unit_inventory_index = weapon_get_owner_unit_inventory_index(weapon_index);
+		if (owner_unit_index != -1 && owner_unit_inventory_index < 4)
+		{
+			c_flags<long, ulong64, 64> update_flags = {};
+			update_flags.set(owner_unit_inventory_index + 22, true);
+			simulation_action_object_update(owner_unit_index, &update_flags);
 		}
 	}
 }

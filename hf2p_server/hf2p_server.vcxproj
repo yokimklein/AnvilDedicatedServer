@@ -153,6 +153,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\game\aim_target.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\game\game_engine_area_set.h" />
@@ -170,6 +171,8 @@
     <ClInclude Include="source\game\player_mapping.h" />
     <ClInclude Include="source\hf2p\hf2p.h" />
     <ClInclude Include="source\hf2p\hq.h" />
+    <ClInclude Include="source\items\items.h" />
+    <ClInclude Include="source\items\weapons.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
@@ -340,6 +343,7 @@
     <ClCompile Include="source\game\game_variant.cpp" />
     <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\hf2p\hf2p.cpp" />
+    <ClCompile Include="source\items\weapons.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\network_memory.cpp" />

@@ -189,7 +189,7 @@ struct s_object_data
 	long parent_recycling_group;
 	long next_recycling_group_member;
 	long next_sync_action_participant_index;
-	long sync_action_name;
+	long sync_action_name; // same offset in ms23 & ms29
 	long sync_animation_id;
 	long ai_sync_action_arranger_index;
 	short render_flags;
@@ -202,7 +202,7 @@ struct s_object_data
 	s_object_header_block_reference change_colors;
 	s_object_header_block_reference animation;
 	s_object_header_block_reference multiplayer;
-	short first_extension_offset;
+	short : 16;
 	long air_probe_index;
 	long air_probe_index2;
 };

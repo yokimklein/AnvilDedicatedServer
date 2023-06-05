@@ -528,6 +528,15 @@
     <ClInclude Include="source\hf2p\hf2p.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\items\items.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\items\weapons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\animations\animation_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -759,6 +768,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\items\weapons.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
