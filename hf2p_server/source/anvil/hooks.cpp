@@ -1568,6 +1568,43 @@ __declspec(naked) void unit_add_initial_loadout_hook2()
     }
 }
 
+__declspec(naked) void weapon_handle_potential_inventory_item_hook()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov al, [ebp - 0x01]
+        add esp, 8
+
+        push [ebp - 0x30] // weapon index
+        call simulation_action_weapon_state_update
+        add esp, 4
+
+        // if ( ((1 << *item_tag) & 4) != 0 ) // if statement passes for weapons, but not ammo packs?
+        mov ecx, [ebp - 0x28] // item tag
+        mov eax, 1
+        mov cl, [ecx]
+        shl eax, cl
+        test al, 4
+        je return_label
+
+        push 0
+        push 1048576 // flag 20 (1 << 20)
+        push [ebp - 0x24] // item index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        return_label:
+        pop edi
+        pop esi
+        pop ebx
+        mov esp, ebp
+        pop ebp
+        retn
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1803,6 +1840,10 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4BFF66).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
     Pointer::Base(0x4BFF76).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
     Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // unit_custom_animation_play_animation_submit // plays on podium
+
+    // WEAPON STATE UPDATES
+    // ammo pickup
+    Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn
