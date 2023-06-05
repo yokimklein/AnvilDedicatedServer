@@ -18,3 +18,32 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
         simulation_action_object_update(unit_index, &update_flags);
     }
 }
+
+void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
+{
+    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
+    s_unit_data* unit = (s_unit_data*)object_get(unit_index);
+    long counter = 0;
+    do
+    {
+        if (unit->weapon_object_indices[counter] != -1)
+            unit_inventory_set_weapon_index(unit_index, counter, -1, _unit_drop_type_delete);
+        counter++;
+    }
+    while (counter < 4);
+}
+
+void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type)
+{
+    // convert fastcall to usercall
+    const auto unit_inventory_set_weapon_index_call = (void*)(module_base + 0x426D10);
+    __asm
+    {
+        push drop_type
+        push item_index
+        mov ecx, unit_index
+        mov edx, inventory_index
+        call unit_inventory_set_weapon_index_call
+        add esp, 8
+    }
+}

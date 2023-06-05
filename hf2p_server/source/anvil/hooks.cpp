@@ -1633,7 +1633,7 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
         //simulation_action_object_update(unit_index, &update_flags);
 
         // flags1 = (1 << (inventory_index + 18))
-        mov ecx, [ebp - 0x02] // inventory_index
+        mov ecx, [ebp - 0x02] // inventory_index - TODO: is this a datum_index in the original code? make sure those top 16 bits won't interfere with this
         add ecx, 18 // inventory_index + 18
         mov edx, 1
         shl edx, cl
@@ -1910,6 +1910,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x426D8E).WriteJump(unit_inventory_set_weapon_index_hook1, HookFlags::None);
     // weapon set identifier updates
     Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
+    // add inlined unit_inventory_set_weapon_index with sim updates back to unit_delete_all_weapons_internal
+    Hook(0x424E60, unit_delete_all_weapons_internal).Apply();
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn

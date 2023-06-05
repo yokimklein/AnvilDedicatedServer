@@ -34,8 +34,8 @@ bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant eng
 {
     c_game_variant game_variant = c_game_variant();
     build_default_game_variant(&game_variant, engine_variant);
+    game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_round_time_limit = 1;
-    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_early_victory_win_count = 1;
     //game_variant.m_storage.m_slayer_variant.m_score_to_win = 1;
     //game_variant.m_storage.m_slayer_variant.m_suicide_points = 1;

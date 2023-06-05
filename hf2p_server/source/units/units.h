@@ -26,6 +26,18 @@ enum e_unit_control_flags
 	k_unit_control_flags_count
 };
 
+enum e_unit_drop_type : long
+{
+	_unit_drop_type_none = -1,
+	_unit_drop_type_0,
+	_unit_drop_type_delete,
+	_unit_drop_type_2,
+	_unit_drop_type_3,
+	_unit_drop_type_response_to_deletion,
+
+	k_unit_drop_type_count
+};
+
 struct s_unit_weapon_set
 {
 	word set_identifier;
@@ -235,3 +247,5 @@ static_assert(sizeof(s_unit_data) == 0x590);
 FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
 
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
+void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
+void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
