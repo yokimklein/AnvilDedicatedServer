@@ -47,3 +47,13 @@ void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_in
         add esp, 8 // this is the only real difference as far as i can tell
     }
 }
+
+void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
+{
+    FUNCTION_DEF(0x41BA10, void, __fastcall, unit_control_call, datum_index unit_index, void* unit_control_data);
+    unit_control_call(unit_index, unit_control_data);
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set(16, true);
+    update_flags.set(17, true);
+    simulation_action_object_update(unit_index, &update_flags);
+}

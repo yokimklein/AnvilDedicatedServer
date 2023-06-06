@@ -1911,6 +1911,13 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
     // rewrite biped_update_melee_turning w/ updates
     Hook(0x440E30, biped_update_melee_turning).Apply();
+    // unit_control
+    Hook(0x2BB82, unit_control, HookFlags::IsCall).Apply();
+    Hook(0xBD4E7, unit_control, HookFlags::IsCall).Apply();
+    Hook(0xBD573, unit_control, HookFlags::IsCall).Apply();
+    Hook(0x181410, unit_control, HookFlags::IsCall).Apply();
+    Hook(0x69BB96, unit_control, HookFlags::IsCall).Apply();
+    Hook(0x69DA76, unit_control, HookFlags::IsCall).Apply();
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
