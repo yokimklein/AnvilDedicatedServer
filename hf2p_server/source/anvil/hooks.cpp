@@ -1568,6 +1568,40 @@ __declspec(naked) void unit_add_initial_loadout_hook2()
     }
 }
 
+__declspec(naked) void projectile_attach_hook()
+{
+    __asm
+    {
+        // original replaced instructions
+        movss dword ptr[esi + 0x18C], xmm1
+
+        // preserve registers across call
+        push eax
+        push ecx
+        push edx
+
+        push 0
+        push 2048 // flag 11 (1 << 11)
+        push [esp + 0x6C - 0x48] // projectile_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore registers
+        pop edx
+        pop ecx
+        pop eax
+
+        // replaced instructions
+        mov eax, [eax + 0x0C]
+        mov eax, [eax + 0x44]
+        mov cl, [eax + ecx * 8 + 3]
+        // return
+        mov eax, module_base
+        add eax, 0x467F23
+        jmp eax
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -1872,6 +1906,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
     Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None); 
     Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
+    // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
+    Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
