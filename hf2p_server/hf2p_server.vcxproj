@@ -326,6 +326,7 @@
     <ClInclude Include="source\text\unicode.h" />
     <ClInclude Include="source\tools\network_webstats.h" />
     <ClInclude Include="source\interface\user_interface_session.h" />
+    <ClInclude Include="source\units\bipeds.h" />
     <ClInclude Include="source\units\units.h" />
   </ItemGroup>
   <ItemGroup>
@@ -406,6 +407,7 @@
     <ClCompile Include="source\simulation\simulation_debug_globals.cpp" />
     <ClCompile Include="source\tag_files\string_ids.cpp" />
     <ClCompile Include="source\text\unicode.cpp" />
+    <ClCompile Include="source\units\bipeds.cpp" />
     <ClCompile Include="source\units\units.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

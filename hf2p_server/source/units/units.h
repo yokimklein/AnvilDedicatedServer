@@ -102,7 +102,7 @@ struct s_unit_data : s_motor_data
 	long desired_animation_seat;
 	real_vector3d facing_vector;
 	real_vector3d aiming_vector;
-	real_vector3d unknown_vector;
+	real_vector3d melee_aiming_vector;
 	real_vector3d field_1D0;
 	real_vector3d looking_vector;
 	real_vector3d previous_looking_vector;

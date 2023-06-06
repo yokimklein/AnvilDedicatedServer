@@ -537,6 +537,9 @@
     <ClInclude Include="source\animations\animation_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\units\bipeds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -771,6 +774,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\items\weapons.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\units\bipeds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

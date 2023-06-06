@@ -26,6 +26,7 @@
 #include "..\simulation\game_interface\simulation_game_events.h"
 #include "..\game\game.h"
 #include "..\units\units.h"
+#include "..\units\bipeds.h"
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -1908,6 +1909,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
     // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
     Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
+    // rewrite biped_update_melee_turning w/ updates
+    Hook(0x440E30, biped_update_melee_turning).Apply();
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
