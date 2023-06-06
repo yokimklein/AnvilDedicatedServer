@@ -1666,6 +1666,24 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
     }
 }
 
+__declspec(naked) void unit_handle_deleted_object_hook()
+{
+    __asm
+    {
+        // replace inlined unit_inventory_set_weapon_index call with our rewritten one
+        push 4 // drop_type
+        push -1 // item_index
+        mov edx, ebx // inventory_index
+        mov ecx, [ebp + 0x08] // unit index
+        call unit_inventory_set_weapon_index
+
+        // return
+        mov eax, module_base
+        add eax, 0x427178
+        jmp eax
+    }
+}
+
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
@@ -1912,6 +1930,8 @@ void anvil_dedi_apply_hooks()
     Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
     // add inlined unit_inventory_set_weapon_index with sim updates back to unit_delete_all_weapons_internal
     Hook(0x424E60, unit_delete_all_weapons_internal).Apply();
+    // add inlined unit_inventory_set_weapon_index with sim updates back to unit_handle_deleted_object
+    Pointer::Base(0x427119).WriteJump(unit_handle_deleted_object_hook, HookFlags::None);
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn

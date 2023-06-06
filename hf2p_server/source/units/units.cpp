@@ -41,9 +41,9 @@ void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_in
     {
         push drop_type
         push item_index
-        mov ecx, unit_index
         mov edx, inventory_index
+        mov ecx, unit_index
         call unit_inventory_set_weapon_index_call
-        add esp, 8
+        add esp, 8 // this is the only real difference as far as i can tell
     }
 }
