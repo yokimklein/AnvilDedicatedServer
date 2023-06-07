@@ -57,3 +57,16 @@ void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
     update_flags.set(17, true);
     simulation_action_object_update(unit_index, &update_flags);
 }
+
+void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector)
+{
+    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
+    s_unit_data* unit = (s_unit_data*)object_get(unit_index);
+
+    unit->aiming_vector = *aiming_vector;
+    unit->looking_vector = *looking_vector;
+
+    c_flags<long, ulong64, 64> update_flags = {};
+    update_flags.set(16, true);
+    simulation_action_object_update(unit_index, &update_flags);
+}

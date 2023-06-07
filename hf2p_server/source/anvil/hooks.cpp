@@ -1603,6 +1603,59 @@ __declspec(naked) void projectile_attach_hook()
     }
 }
 
+__declspec(naked) void unit_set_aiming_vectors_hook1() // c_simulation_unit_entity_definition::apply_object_update
+{
+    __asm
+    {
+        push [edi + 0x0B4] // looking_vector
+        mov edx, [edi + 0xB4] // aiming_vector
+        mov ecx, ebx // unit_index
+        call unit_set_aiming_vectors
+
+        // return
+        mov eax, module_base
+        add eax, 0x59F48
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fire_event_definition::apply_object_update
+{
+    __asm
+    {
+        // replaced instructions
+        mov[ecx + 0x1E4], eax
+
+        push 0
+        push 65536 // flag 16 (1 << 16)
+        push [esp + 0xE8 - 0xC0] // unit_index // TODO: this would sometimes be wrong and crash - this doesn't happen anymore since I changed how this hook is structured - investigate if it happens again
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov ecx, module_base
+        add ecx, 0x610CF
+        jmp ecx
+    }
+}
+
+__declspec(naked) void unit_set_aiming_vectors_hook3() // c_vehicle_auto_turret::control
+{
+    __asm
+    {
+        lea eax, [esi + 0x8BC]
+        push eax // looking_vector
+        mov edx, eax // aiming_vector
+        mov ecx, ebx // unit_index
+        call unit_set_aiming_vectors
+
+        // return
+        mov eax, module_base
+        add eax, 0x4A1010
+        jmp eax
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -1918,6 +1971,15 @@ void anvil_dedi_apply_hooks()
     Hook(0x181410, unit_control, HookFlags::IsCall).Apply();
     Hook(0x69BB96, unit_control, HookFlags::IsCall).Apply();
     Hook(0x69DA76, unit_control, HookFlags::IsCall).Apply();
+    // unit_set_aiming_vectors
+    Hook(0x42A490, unit_set_aiming_vectors).Apply(); // UNTESTED!! called by c_game_engine::apply_player_update & player_teleport_on_bsp_switch
+    Patch::NopFill(Pointer::Base(0x1C9AF5), 3);// remove push 4 after original call to convert usercall to fastcall
+    Pointer::Base(0xB911B).Write<byte>(0x20); // 0x24 to 0x20 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
+    Pointer::Base(0xB911E).Write<byte>(0x10); // 0x14 to 0x10 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
+    Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
+    Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // c_simulation_weapon_fire_event_definition::apply_object_update
+    Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // c_vehicle_auto_turret::control
+    // 
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

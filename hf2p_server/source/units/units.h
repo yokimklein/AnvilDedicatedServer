@@ -250,3 +250,4 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data);
+void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector);
