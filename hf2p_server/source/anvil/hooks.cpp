@@ -1493,7 +1493,7 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
     }
 }
 
-__declspec(naked) void unit_update_control_hook()
+__declspec(naked) void unit_update_control_hook1()
 {
     __asm
     {
@@ -1509,6 +1509,58 @@ __declspec(naked) void unit_update_control_hook()
         // return
         mov eax, module_base
         add eax, 0x418550
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_update_control_hook2()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov [edi + 0x1B4], eax
+
+        // preserve register across call
+        push ecx
+
+        push 0
+        push 65536 // flag 16 (1 << 16)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore register
+        pop ecx
+        
+        // return
+        mov eax, module_base
+        add eax, 0x418693
+        jmp eax
+    }
+}
+
+__declspec(naked) void unit_update_control_hook3()
+{
+    __asm
+    {
+        // original replaced instructions
+        mov eax, [edx + 0x1A4]
+
+        // preserve register across call
+        push edx
+
+        push 0
+        push 65536 // flag 16 (1 << 16)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore register
+        pop edx
+
+        // return
+        mov eax, module_base
+        add eax, 0x418A79
         jmp eax
     }
 }
@@ -1954,8 +2006,10 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4243D8).WriteJump(unit_add_grenade_to_inventory_hook, HookFlags::None);
     // sync equipment pickup
     Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
-    // TODO: find out what this does
-    Pointer::Base(0x41854A).WriteJump(unit_update_control_hook, HookFlags::None); // UNTESTED!!
+    // unit_update_control
+    Pointer::Base(0x41854A).WriteJump(unit_update_control_hook1, HookFlags::None); // UNTESTED!!
+    Pointer::Base(0x41868D).WriteJump(unit_update_control_hook2, HookFlags::None); // called for units with flag bit 2 set
+    Pointer::Base(0x418A73).WriteJump(unit_update_control_hook3, HookFlags::None); // sets aim & look vectors for controlled units - ie driving vehicles
     // unit_add_initial_loadout
     Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
     Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None); 
@@ -1977,8 +2031,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xB911B).Write<byte>(0x20); // 0x24 to 0x20 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
     Pointer::Base(0xB911E).Write<byte>(0x10); // 0x14 to 0x10 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
     Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
-    Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // c_simulation_weapon_fire_event_definition::apply_object_update
-    Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // c_vehicle_auto_turret::control
+    Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
+    Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
     // 
 
     // OBJECT PHYSICS UPDATES
