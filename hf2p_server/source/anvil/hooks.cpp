@@ -1743,6 +1743,26 @@ __declspec(naked) void unit_set_aiming_vectors_hook3() // c_vehicle_auto_turret:
     }
 }
 
+__declspec(naked) void equipment_activate_hook2()
+{
+    __asm
+    {
+        // replaced instructions
+        mov [edi + 0x198], eax
+
+        push 0
+        push 65536 // flag 16 (1 << 16)
+        push [esp + 0x360 - 0x328] // equipment_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov eax, module_base
+        add eax, 0x4514E2
+        jmp eax
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -2073,6 +2093,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
     Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
     Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
+    // equipment_activate
+    Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // this doesn't seem to work?
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
