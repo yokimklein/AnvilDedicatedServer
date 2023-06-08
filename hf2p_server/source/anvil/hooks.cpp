@@ -344,7 +344,7 @@ __declspec(naked) void stats_finalize_for_game_end_hook()
     __asm
     {
         // execute the original instruction(s) we replaced
-        mov byte ptr[eax + 1056], 1
+        mov byte ptr [eax + 1056], 1
 
         // call our inserted function
         push 0
@@ -365,7 +365,7 @@ __declspec(naked) void adjust_player_stat_hook()
     {
         // execute the original instruction(s) we replaced
         mov edx, [ebp + 20]
-        mov[edi + 4], ax
+        mov [edi + 4], ax
 
         // save registers across the function call
         push eax
@@ -448,13 +448,13 @@ __declspec(naked) void stats_reset_for_round_switch_hook1()
     __asm
     {
         // execute the original instruction(s) we replaced
-        cmp byte ptr[ecx + 106724], 0
+        cmp byte ptr [ecx + 0x1A0E4], 0
         jz short else_label
-        mov byte ptr[eax + 18], 1
+        mov byte ptr [eax + 0x12], 1
         jmp short end_label
         else_label:
         xor ecx, ecx
-        mov[eax - 28], cx
+        mov [eax - 0x1C], cx
         end_label:
 
         // save registers across the function call
@@ -486,11 +486,11 @@ __declspec(naked) void stats_reset_for_round_switch_hook2()
         // execute the original instruction(s) we replaced
         cmp byte ptr[eax + 106724], 0
         jz short else_label
-        mov byte ptr[esi], 1
+        mov byte ptr [esi], 1
         jmp short end_label
         else_label:
         xor eax, eax
-        mov[esi - 24], ax
+        mov [esi - 24], ax
         end_label:
 
         // call our inserted function
@@ -580,7 +580,7 @@ __declspec(naked) void player_spawn_hook2()
     {
         // execute the original instruction(s) we replaced
         and ecx, 0x0FFFFFFF7
-        mov[ebx + 4], ecx
+        mov [ebx + 4], ecx
 
         // call our inserted function
         push 0
@@ -601,12 +601,12 @@ __declspec(naked) void player_spawn_hook3()
     __asm
     {
         // execute the original instruction(s) we replaced
-        mov byte ptr[ebx + 0x1754], 0
+        mov byte ptr [ebx + 0x1754], 0
 
         // call our inserted function
         push 0
         push 2 // flag 2
-        push[ebp - 24] // player_index3
+        push [ebp - 24] // player_index3
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
 
@@ -643,7 +643,7 @@ __declspec(naked) void object_set_position_internal_hook1()
     {
         // execute the original instruction(s) we replaced
         mov eax, [edx + 8]
-        mov[ecx + 0x5C], eax
+        mov [ecx + 0x5C], eax
 
         // eax, ecx & edx are caller-saved across a cdecl function call - save their values
         push eax
@@ -673,7 +673,7 @@ __declspec(naked) void object_set_position_internal_hook2()
     {
         // execute the original instruction(s) we replaced
         mov eax, [eax + 8]
-        mov[ecx + 0x74], eax
+        mov [ecx + 0x74], eax
 
         // eax, ecx & edx are caller-saved across a cdecl function call - save their values
         push eax
@@ -764,11 +764,11 @@ __declspec(naked) void object_apply_acceleration_hook()
 
         // execute the original instruction(s) we replaced
         mov ecx, [eax + ebx * 8 + 0x0C]
-        movq qword ptr[ecx + 0x78], xmm0
+        movq qword ptr [ecx + 0x78], xmm0
         mov eax, [esp + 0x30 + -0xC + 0x8]
         mov [ecx + 0x80], eax
-        movq xmm0, qword ptr[esp + 0x30 + -0x18]
-        movq qword ptr[ecx + 0x84], xmm0
+        movq xmm0, qword ptr [esp + 0x30 + -0x18]
+        movq qword ptr [ecx + 0x84], xmm0
         mov eax, [esp + 0x30 + -0x18 + 0x8]
         mov [ecx + 0x8C], eax
 
@@ -868,7 +868,7 @@ __declspec(naked) void object_set_at_rest_hook3()
         add esp, 4
 
         // execute the original instruction(s) we replaced
-        movzx ecx, word ptr[ebx + 8]
+        movzx ecx, word ptr [ebx + 8]
         mov eax, 0x3EDDCDC
         add eax, module_base
         mov eax, ds:[eax]
@@ -918,7 +918,7 @@ __declspec(naked) void object_set_at_rest_hook5()
         pop edx
 
         // execute the original instruction(s) we replaced
-        cmp ebx, 0x0FFFFFFFF
+        cmp ebx, 0xFFFFFFFF
         jz if_label
 
         // return back to the original code
@@ -945,7 +945,7 @@ __declspec(naked) void object_set_at_rest_hook6()
         shr eax, 7
         test al, 1
         jz if_label1
-        cmp dword ptr[edx + 0xA0], 0x0FFFFFFFF
+        cmp dword ptr[edx + 0xA0], 0xFFFFFFFF
         jnz if_label2
 
         if_label1:
@@ -984,7 +984,7 @@ __declspec(naked) void object_set_at_rest_hook7()
         add esp, 4
 
         // execute the original instruction(s) we replaced
-        movss xmm0, dword ptr[edi + 0x60]
+        movss xmm0, dword ptr [edi + 0x60]
 
         // return back to the original code
         mov eax, module_base
@@ -1056,8 +1056,8 @@ __declspec(naked) void object_set_at_rest_hook11()
         add esp, 4
 
         // execute the original instruction(s) we replaced
-        or eax, 0x0FFFFFFFF
-        mov[esp + 0x80 - 0x34], ax
+        or eax, 0xFFFFFFFF
+        mov [esp + 0x80 - 0x34], ax
 
         // return back to the original code
         mov ecx, module_base
@@ -1208,7 +1208,7 @@ __declspec(naked) void equipment_activate_hook()
 
         // original replaced instructions
         mov ecx, [esp + 0x358 - 0x348]
-        mov[ecx + 0x1A0], eax
+        mov [ecx + 0x1A0], eax
 
         // return
         mov eax, module_base
@@ -1241,7 +1241,7 @@ __declspec(naked) void item_in_unit_inventory_hook2()
     __asm
     {
         // original replaced instructions
-        or eax, 0x0FFFFFFFF
+        or eax, 0xFFFFFFFF
         mov [esi + 0x1E], ax
 
         // preserve register
@@ -1266,7 +1266,7 @@ __declspec(naked) void c_map_variant__remove_object_hook()
     __asm
     {
         // original replaced if statement
-        cmp ecx, 0x0FFFFFFFF
+        cmp ecx, 0xFFFFFFFF
         jz sim_update
         mov eax, [esi]
         movzx ecx, cx
@@ -1377,7 +1377,7 @@ __declspec(naked) void unit_died_hook()
     __asm
     {
         // original replaced instructions
-        movss dword ptr[eax + 0x404], xmm0
+        movss dword ptr [eax + 0x404], xmm0
 
         // preserve register
         push edx
@@ -1571,7 +1571,7 @@ __declspec(naked) void unit_add_initial_loadout_hook0()
     {
         // create a new variable to preserve player_object_index in
         sub esp, 0x1C0 // originally sub esp, 0x1BC
-        mov[ebp - 0x1BC], ecx // ecx is player_object_index
+        mov [ebp - 0x1BC], ecx // ecx is player_object_index
 
         // return
         mov eax, module_base
@@ -1592,7 +1592,7 @@ __declspec(naked) void unit_add_initial_loadout_hook1()
 
         // original replaced instructions
         mov ecx, [ebx + 0x4C]
-        cmp ecx, 0x0FFFFFFFF
+        cmp ecx, 0xFFFFFFFF
 
         // return
         mov eax, module_base
@@ -1612,7 +1612,7 @@ __declspec(naked) void unit_add_initial_loadout_hook2()
         add esp, 12
 
         // original replaced instructions
-        mov byte ptr[ebx + 0x18B4], 0
+        mov byte ptr [ebx + 0x18B4], 0
 
         // return
         mov eax, module_base
@@ -1626,7 +1626,7 @@ __declspec(naked) void projectile_attach_hook()
     __asm
     {
         // original replaced instructions
-        movss dword ptr[esi + 0x18C], xmm1
+        movss dword ptr [esi + 0x18C], xmm1
 
         // preserve registers across call
         push eax
@@ -1671,16 +1671,51 @@ __declspec(naked) void unit_set_aiming_vectors_hook1() // c_simulation_unit_enti
     }
 }
 
+__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook1()
+{
+    __asm
+    {
+        // original replaced instruction
+        mov dword ptr [esp + 0xE0 - 0xC0], 0xFFFFFFFF
+
+        // set new variable
+        mov dword ptr [esp + 0xE0 - 0xD4], 0xFFFFFFFF
+
+        // return
+        mov edx, module_base
+        add edx, 0x60BE5
+        jmp edx
+    }
+}
+
+__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook2()
+{
+    __asm
+    {
+        // original replaced instruction
+        mov eax, [esp + 0xE0 - 0xC4]
+        mov [esp + 0xE0 - 0xC0], edi
+
+        // set new variable
+        mov [esp + 0xE0 - 0xD4], edi
+
+        // return
+        mov ecx, module_base
+        add ecx, 0x60C74
+        jmp ecx
+    }
+}
+
 __declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fire_event_definition::apply_object_update
 {
     __asm
     {
         // replaced instructions
-        mov[ecx + 0x1E4], eax
+        mov [ecx + 0x1E4], eax
 
         push 0
         push 65536 // flag 16 (1 << 16)
-        push [esp + 0xE8 - 0xC0] // unit_index // TODO: this would sometimes be wrong and crash - this doesn't happen anymore since I changed how this hook is structured - investigate if it happens again
+        push [esp + 0xE8 - 0xD4] // unit_index
         call simulation_action_object_update_with_bitmask
         add esp, 12
 
@@ -1754,7 +1789,7 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook0()
         mov ebp, esp
         sub esp, 0x10 // originally sub esp, 0x0C
 
-        mov[ebp - 0x0C], ecx // ecx is unit_index
+        mov [ebp - 0x0C], ecx // ecx is unit_index
 
         // return
         mov eax, module_base
@@ -1886,6 +1921,8 @@ void anvil_dedi_apply_patches()
     //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
 }
 
+// TODO: verify all hooks are working as intended
+// check for register corruption - especially where i've added new variables
 void anvil_dedi_apply_hooks()
 {
     // hook exceptions_update to catch esoteric crashes
@@ -2033,7 +2070,9 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
     Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
     Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
-    // 
+    Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
+    Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
+    Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
