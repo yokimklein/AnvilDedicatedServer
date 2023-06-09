@@ -1763,6 +1763,26 @@ __declspec(naked) void equipment_activate_hook2()
     }
 }
 
+__declspec(naked) void unit_update_energy_hook()
+{
+    __asm
+    {
+        // replaced instructions
+        mov [esi + 0x31C], eax
+
+        push 0
+        push 1073741824 // flag 30 (1 << 30)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov eax, module_base
+        add eax, 0x41B606
+        jmp eax
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -2094,7 +2114,9 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
     Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
     // equipment_activate
-    Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // this doesn't seem to work?
+    Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // TODO: this doesn't seem to work the way I expect it to - deployable covers still don't activate for clients
+    // unit_update_energy
+    Pointer::Base(0x41B600).WriteJump(unit_update_energy_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

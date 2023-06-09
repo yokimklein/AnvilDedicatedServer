@@ -139,6 +139,10 @@ struct s_unit_data : s_motor_data
 	c_static_array<long, 4> equipment_object_indices;
 	long active_equipment_object_indices[4];
 	long equipment_pickup_time;
+	
+	// TODO: an extra 4 byte field was seemingly added somewhere BEFORE this line
+	long unknown_field_todo;
+
 	long consumable_energy_level;
 	long consumable_energy_restored_game_time;
 	short weapon_firing_time;
@@ -242,7 +246,7 @@ struct s_unit_data : s_motor_data
 	long : 32;
 	long : 32;
 };
-static_assert(sizeof(s_unit_data) == 0x590);
+static_assert(sizeof(s_unit_data) == 0x594); // 0x590 in ms23 - ms29 seemed to add a new field - TODO: verify size!
 
 FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
 
