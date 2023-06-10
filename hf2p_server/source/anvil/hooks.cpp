@@ -1389,7 +1389,7 @@ __declspec(naked) void unit_died_hook()
         // vehicle update
         push 0
         push 131072 // flag 17 (1 << 17)
-        push 0 // unit_index
+        push esi // unit_index
         call simulation_action_object_update_with_bitmask
         add esp, 12
         jmp return_label
@@ -1398,7 +1398,7 @@ __declspec(naked) void unit_died_hook()
         biped_update:
         push 0
         push 134217728 // flag 27 (1 << 27)
-        push 0 // unit_index
+        push esi // unit_index
         call simulation_action_object_update_with_bitmask
         add esp, 12
 
@@ -1854,6 +1854,49 @@ __declspec(naked) void equipment_handle_energy_cost_hook2()
     }
 }
 
+__declspec(naked) void unit_set_hologram_hook()
+{
+    __asm
+    {
+        // replaced instructions
+        mov dword ptr[eax + 0x400], 0x3F800000
+
+        // save register across call
+        push ecx
+        push edx
+
+        // biped/vehicle update
+        cmp byte ptr[esi + 0x9A], 1
+        jnz biped_update
+
+        // vehicle update
+        push 0
+        push 131072 // flag 17 (1 << 17)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+        jmp return_label
+
+        // biped update
+        biped_update:
+        push 0
+        push 134217728 // flag 27 (1 << 27)
+        push ebx // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // restore register
+        return_label:
+        pop edx
+        pop ecx
+
+        // return
+        mov eax, module_base
+        add eax, 0x42C578
+        jmp eax
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -2192,6 +2235,8 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
     Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
     Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
+    // unit_set_hologram
+    Pointer::Base(0x42C56E).WriteJump(unit_set_hologram_hook, HookFlags::None);
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

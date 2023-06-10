@@ -141,7 +141,7 @@ struct s_unit_data : s_motor_data
 	long equipment_pickup_time;
 
 	// TODO: an extra 4 byte field was added BEFORE consumable_energy_level and AFTER equipment_object_indices
-	long unknown_field_todo;
+	long unknown_todo;
 
 	long consumable_energy_level; // offset 0x318
 	long consumable_energy_restored_game_time; // offset 0x31C
@@ -174,7 +174,7 @@ struct s_unit_data : s_motor_data
 	long predicted_simulation_actor_spawn_point_index;
 	c_static_array<s_unit_predicted_weapon_state, 4> predicted_weapon_state;
 	real active_camouflage;
-	real active_camouflage_maximum;
+	real active_camouflage_maximum; // 0x400 - TODO, this is -4 bytes offset
 	real active_camouflage_regrowth;
 	long active_camouflage_end_time;
 	real last_used_healthpack_game_time;
@@ -191,12 +191,15 @@ struct s_unit_data : s_motor_data
 	long flaming_death_attacker_object_index;
 	real run_blindly_angle;
 	real run_blindly_angular_velocity;
-	long hologram_creator_weak_unit_index;
-	long hologram_creation_time;
-	long hologram_ticks_left;
-	long hologram_definition_index;
-	real hologram_shimmer_value;
-	real_point3d hologram_destination;
+
+	long unknown_todo2; // TODO: a new field was added somewhere before this point - find out what this is
+
+	long hologram_creator_weak_unit_index; // 0x43C
+	long hologram_creation_time; // 0x440
+	long hologram_ticks_left; // 0x444
+	long hologram_definition_index; // 0x448
+	real hologram_shimmer_value; // 0x44C
+	real_point3d hologram_destination; // 0x450
 	long sync_action_type;
 	real_point3d sync_action_origin;
 	real_vector3d sync_action_forward;
@@ -245,7 +248,6 @@ struct s_unit_data : s_motor_data
 	long : 32;
 	long : 32;
 	long : 32;
-	long : 32; // TODO: a new field was added somewhere since ms23, I'm putting it here for now
 };
 static_assert(sizeof(s_unit_data) == 0x598);
 static_assert(0x188 == OFFSETOF(s_unit_data, actor_index));
@@ -260,9 +262,15 @@ static_assert(0x2D0 == OFFSETOF(s_unit_data, weapon_object_indices));
 static_assert(0x2F0 == OFFSETOF(s_unit_data, equipment_object_indices));
 static_assert(0x318 == OFFSETOF(s_unit_data, consumable_energy_level));
 static_assert(0x31C == OFFSETOF(s_unit_data, consumable_energy_restored_game_time));
+//static_assert(0x400 == OFFSETOF(s_unit_data, active_camouflage_maximum));
+static_assert(0x43C == OFFSETOF(s_unit_data, hologram_creator_weak_unit_index));
+static_assert(0x440 == OFFSETOF(s_unit_data, hologram_creation_time));
+static_assert(0x444 == OFFSETOF(s_unit_data, hologram_ticks_left));
+static_assert(0x448 == OFFSETOF(s_unit_data, hologram_definition_index));
+static_assert(0x44C == OFFSETOF(s_unit_data, hologram_shimmer_value));
+static_assert(0x450 == OFFSETOF(s_unit_data, hologram_destination));
 
 FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
-
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
