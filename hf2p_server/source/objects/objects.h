@@ -189,7 +189,7 @@ struct s_object_data
 	long parent_recycling_group;
 	long next_recycling_group_member;
 	long next_sync_action_participant_index;
-	long sync_action_name; // same offset in ms23 & ms29
+	long sync_action_name; // 0x13C
 	long sync_animation_id;
 	long ai_sync_action_arranger_index;
 	short render_flags;
@@ -202,11 +202,12 @@ struct s_object_data
 	s_object_header_block_reference change_colors;
 	s_object_header_block_reference animation;
 	s_object_header_block_reference multiplayer;
-	short : 16;
 	long air_probe_index;
 	long air_probe_index2;
+	long unknown; // TODO: verify where this new field goes!
 };
-static_assert(sizeof(s_object_data) == 0x178);
+static_assert(sizeof(s_object_data) == 0x17C);
+static_assert(0x13C == OFFSETOF(s_object_data, sync_action_name));
 
 struct s_object_header : s_datum_header
 {

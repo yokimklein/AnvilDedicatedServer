@@ -38,3 +38,5 @@ static s_player_podium* g_player_podiums = (s_player_podium*)(module_base + 0x4A
 
 void hf2p_player_podium_initialize(long podium_biped_index, long player_index);
 const static auto hf2p_set_user_loadout = (void (*)(long player_object_index))(module_base + 0xFB6E0);
+const auto hf2p_set_player_cooldown = (void*)(module_base + 0xC19E0);
+const auto sub_2E7BE0 = (void*)(module_base + 0x2E7BE0);

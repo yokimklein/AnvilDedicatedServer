@@ -86,31 +86,31 @@ struct s_motor_data : s_object_data
 	s_object_header_block_reference motor_state;
 	s_object_header_block_reference action_state_storage;
 };
-static_assert(sizeof(s_motor_data) == 0x184);
+static_assert(sizeof(s_motor_data) == 0x188);
 
 struct s_unit_data : s_motor_data
 {
-	long awake_tick_count;
-	long actor_index;
-	long simulation_actor_index;
+	//long awake_tick_count; // seems to have been removed since ms23
+	long actor_index; // 0x188
+	long simulation_actor_index; // 0x18C
 	c_flags<e_unit_flags, ulong, k_unit_flags_count> unit_flags;
 	long team;
-	long player_index;
+	long player_index; // 0x198
 	long last_weak_player_index;
 	long game_time_at_last_unit_effect;
 	long unit_control_flags;
 	long desired_animation_seat;
 	real_vector3d facing_vector;
-	real_vector3d aiming_vector;
+	real_vector3d aiming_vector; // 0x1B8
 	real_vector3d melee_aiming_vector;
 	real_vector3d field_1D0;
-	real_vector3d looking_vector;
+	real_vector3d looking_vector; // 0x1DC
 	real_vector3d previous_looking_vector;
 	real_vector3d field_1F4;
 	real_point3d gaze_position;
 	real_vector3d throttle;
 	real_vector3d control_throttle;
-	uchar control_context_identifier;
+	uchar control_context_identifier; // 0x224
 	char aiming_speed;
 	s_damage_reporting_info special_death_damage_reporting_info;
 	char special_death_type;
@@ -132,19 +132,19 @@ struct s_unit_data : s_motor_data
 	real self_illumination;
 	real mouth_aperture;
 	real mouth_time;
-	s_unit_weapon_set current_weapon_set;
-	s_unit_weapon_set desired_weapon_set;
-	c_static_array<long, 4> weapon_object_indices;
+	s_unit_weapon_set current_weapon_set; // 0x2C8
+	s_unit_weapon_set desired_weapon_set; // 0x2CC
+	c_static_array<long, 4> weapon_object_indices; // offset 0x2D0
 	c_static_array<long, 4> weapon_last_used_at_game_time;
-	c_static_array<long, 4> equipment_object_indices;
-	long active_equipment_object_indices[4];
+	c_static_array<long, 4> equipment_object_indices; // offset 0x2F0
+	c_static_array<long, 4> active_equipment_object_indices;
 	long equipment_pickup_time;
-	
-	// TODO: an extra 4 byte field was seemingly added somewhere BEFORE this line
+
+	// TODO: an extra 4 byte field was added BEFORE consumable_energy_level and AFTER equipment_object_indices
 	long unknown_field_todo;
 
-	long consumable_energy_level;
-	long consumable_energy_restored_game_time;
+	long consumable_energy_level; // offset 0x318
+	long consumable_energy_restored_game_time; // offset 0x31C
 	short weapon_firing_time;
 	char current_grenade_index;
 	char desired_grenade_index;
@@ -245,8 +245,21 @@ struct s_unit_data : s_motor_data
 	long : 32;
 	long : 32;
 	long : 32;
+	long : 32; // TODO: a new field was added somewhere since ms23, I'm putting it here for now
 };
-static_assert(sizeof(s_unit_data) == 0x594); // 0x590 in ms23 - ms29 seemed to add a new field - TODO: verify size!
+static_assert(sizeof(s_unit_data) == 0x598);
+static_assert(0x188 == OFFSETOF(s_unit_data, actor_index));
+static_assert(0x18C == OFFSETOF(s_unit_data, simulation_actor_index));
+static_assert(0x198 == OFFSETOF(s_unit_data, player_index));
+static_assert(0x1B8 == OFFSETOF(s_unit_data, aiming_vector));
+static_assert(0x1DC == OFFSETOF(s_unit_data, looking_vector));
+static_assert(0x224 == OFFSETOF(s_unit_data, control_context_identifier));
+static_assert(0x2C8 == OFFSETOF(s_unit_data, current_weapon_set));
+static_assert(0x2CC == OFFSETOF(s_unit_data, desired_weapon_set));
+static_assert(0x2D0 == OFFSETOF(s_unit_data, weapon_object_indices));
+static_assert(0x2F0 == OFFSETOF(s_unit_data, equipment_object_indices));
+static_assert(0x318 == OFFSETOF(s_unit_data, consumable_energy_level));
+static_assert(0x31C == OFFSETOF(s_unit_data, consumable_energy_restored_game_time));
 
 FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
 

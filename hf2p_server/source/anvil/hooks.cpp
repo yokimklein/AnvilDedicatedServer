@@ -1783,6 +1783,77 @@ __declspec(naked) void unit_update_energy_hook()
     }
 }
 
+__declspec(naked) void equipment_handle_energy_cost_hook0()
+{
+    __asm
+    {
+        // add new variable to preserve unit_index in
+        sub esp, 0x10 // increased by 4 bytes from 0x0C
+        push ebx
+        push esi
+        push edi
+        mov edi, [eax]
+        mov esi, ecx
+
+        // preserve unit_index in new variable
+        mov dword ptr [esp + 0x18 - 0x0C], esi
+
+        // return
+        mov eax, module_base
+        add eax, 0x42D2A6
+        jmp eax
+    }
+}
+
+__declspec(naked) void equipment_handle_energy_cost_hook1()
+{
+    __asm
+    {
+        // replaced instructions
+        call sub_2E7BE0
+
+        push 0
+        push 1073741824 // flag 30 (1 << 30)
+        push [esp + 0x20 - 0x0C] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        // return
+        mov eax, module_base
+        add eax, 0x42D39D
+        jmp eax
+    }
+}
+
+__declspec(naked) void equipment_handle_energy_cost_hook2()
+{
+    __asm
+    {
+        // replaced instructions
+        call hf2p_set_player_cooldown
+
+        push 0
+        push 536870912 // flag 29 (1 << 29)
+        push [esp + 0x20 - 0x0C] // unit_index
+        call simulation_action_object_update_with_bitmask
+        add esp, 12
+
+        push 0
+        push 262144 // flag 18 (1 << 18)
+        push [ebx + 0x198] // unit->player_index
+        call simulation_action_game_engine_player_update_with_bitmask
+        add esp, 12
+
+        // return
+        pop edi
+        pop esi
+        pop ebx
+        mov esp, ebp
+        pop ebp
+        retn
+    }
+}
+
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -2115,8 +2186,12 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
     // equipment_activate
     Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // TODO: this doesn't seem to work the way I expect it to - deployable covers still don't activate for clients
-    // unit_update_energy
+    // sync unit energy levels
     Pointer::Base(0x41B600).WriteJump(unit_update_energy_hook, HookFlags::None);
+    // sync energy costs / energy levels decreasing when throwing an equipment
+    Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
+    Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
+    Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal

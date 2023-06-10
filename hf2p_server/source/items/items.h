@@ -3,10 +3,6 @@
 
 struct s_item_data : s_object_data
 {
-	// s_item_data is 4 bytes longer in ms29 vs ms23
-	// an extra long was added somewhere before unknown_state - TODO: FINISH RESEARCHING THIS
-	long unknown;
-
 	char item_flags;
 	char unknown_state;
 	char : 8;
