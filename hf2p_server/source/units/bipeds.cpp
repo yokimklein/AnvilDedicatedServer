@@ -14,11 +14,7 @@ bool __fastcall biped_update_melee_turning(datum_index biped_index)
 	biped->aiming_vector = biped->melee_aiming_vector;
 	biped->looking_vector = biped->melee_aiming_vector;
 	biped->previous_looking_vector = biped->melee_aiming_vector;
-
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(16, true);
-	simulation_action_object_update(biped_index, &update_flags);
-
+	simulation_action_object_update(biped_index, _simulation_biped_update_desired_aiming_vector);
 	biped->biped_flags.set(_biped_flag0, true);
 	return true;
 }

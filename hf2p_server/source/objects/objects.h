@@ -221,6 +221,7 @@ struct s_object_header : s_datum_header
 static_assert(sizeof(s_object_header) == 0x10);
 
 s_object_data* object_get(datum_index object_index);
+e_object_type object_get_type(datum_index object_index);
 bool object_is_multiplayer_cinematic_object(datum_index object_index);
 datum_index object_get_ultimate_parent(datum_index object_index);
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index);

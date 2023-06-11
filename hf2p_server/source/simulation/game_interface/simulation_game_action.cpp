@@ -193,10 +193,6 @@ void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
 		datum_index owner_unit_index = weapon_get_owner_unit_index(weapon_index);
 		datum_index owner_unit_inventory_index = weapon_get_owner_unit_inventory_index(weapon_index);
 		if (owner_unit_index != -1 && owner_unit_inventory_index < 4)
-		{
-			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(owner_unit_inventory_index + 22, true);
-			simulation_action_object_update(owner_unit_index, &update_flags);
-		}
+			simulation_action_object_update(owner_unit_index, (e_simulation_biped_update_flag)(owner_unit_inventory_index + _simulation_biped_update_weapon1_state));
 	}
 }

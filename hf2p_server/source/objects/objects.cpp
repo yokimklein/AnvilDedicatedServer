@@ -16,6 +16,14 @@ s_object_data* object_get(datum_index object_index)
 	return object_header->data;
 }
 
+e_object_type object_get_type(datum_index object_index)
+{
+	s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
+	e_object_type object_type = (object_header_data)[(word)object_index].type;
+
+	return object_type;
+}
+
 bool object_is_multiplayer_cinematic_object(datum_index object_index)
 {
 	assert(object_index != NONE);
@@ -65,21 +73,21 @@ e_object_type c_object_identifier::get_type()
 void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update)
 {
 	s_object_data* object = object_get(object_index);
-	c_flags<long, ulong64, 64> update_flags = {};
+	c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
 	if (transitional_velocity)
 	{
 		object->transitional_velocity = *transitional_velocity;
-		update_flags.set(4, true);
+		update_flags.set_flag(object_index, _simulation_object_update_translational_velocity);
 	}
 	if (angular_velocity)
 	{
 		object->angular_velocity = *angular_velocity;
-		update_flags.set(5, true);
+		update_flags.set_flag(object_index, _simulation_object_update_angular_velocity);
 	}
 	if (!skip_update)
 	{
-		if (update_flags)
-			simulation_action_object_update(object_index, &update_flags);
+		if (!update_flags.m_flags.is_clear())
+			simulation_action_object_update_internal(object_index, update_flags);
 	}
 }
 
@@ -88,9 +96,8 @@ void __fastcall object_set_at_rest(datum_index object_index, bool force_activate
 	FUNCTION_DEF(0x127C30, void, __thiscall, c_havok_component__force_activate, void* thisptr, bool unknown);
 	s_data_array* g_havok_components = (s_data_array*)*(long*)(module_base + 0x1046CDC);
 
-	s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
 	s_object_data* object = object_get(object_index);
-	if (((1 << object_header_data[(word)object_index].type.get()) & 0x7377) != 0
+	if (TEST_BIT(_object_mask_physics, object_get_type(object_index))
 		&& (object->physics_flags.get_unsafe() & 0x80) != 0
 		&& (object->havok_component_index != -1))
 	{
@@ -107,18 +114,8 @@ void __fastcall object_set_at_rest(datum_index object_index, bool force_activate
 	object_wake(object_index);
 	// update here
 simulation_update:
-	// if item (weapon or equipment)
-	if ((object_header_data[(word)object_index].type.get() & 0x14) != 0)
-	{
-		c_flags<long, ulong64, 64> update_flags = {};
-		update_flags.set(14, true);
-		simulation_action_object_update(object_index, &update_flags); // e_simulation_item_update_flag
-	}
-	// else if projectile
-	else if ((object_header_data[(word)object_index].type.get() & 0x80) != 0)
-	{
-		c_flags<long, ulong64, 64> update_flags = {};
-		update_flags.set(14, true);
-		simulation_action_object_update(object_index, &update_flags); // e_simulation_projectile_update_flag
-	}
+	if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
+		simulation_action_object_update(object_index, _simulation_item_update_unknown14);
+	else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
+		simulation_action_object_update(object_index, _simulation_projectile_update_unknown);
 }

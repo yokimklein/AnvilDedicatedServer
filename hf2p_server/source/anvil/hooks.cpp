@@ -208,10 +208,8 @@ void __fastcall game_engine_player_added_hook(datum_index absolute_player_index)
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {
     s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(14, true);
     simulation_action_object_create(player_data->unit_index);
-    simulation_action_object_update(player_data->unit_index, &update_flags);
+    simulation_action_object_update(player_data->unit_index, _simulation_biped_update_control);
 
     // this part was removed from HO
     //if ( game_is_multiplayer() )
@@ -304,11 +302,12 @@ void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_inde
     simulation_action_game_engine_player_update((word)player_index, &update_flags);
 }
 
-void __cdecl simulation_action_object_update_with_bitmask(datum_index object_index, ulong64 raw_bits)
+// TODO: replace this with new update call
+void __stdcall simulation_action_object_update_with_bitmask(datum_index object_index, ulong64 raw_bits)
 {
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set_raw_bits(raw_bits);
-    simulation_action_object_update(object_index, &update_flags);
+    c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+    update_flags.set_raw(raw_bits);
+    simulation_action_object_update_internal(object_index, update_flags);
 }
 
 __declspec(naked) void game_engine_update_time_hook()
@@ -552,7 +551,7 @@ __declspec(naked) void object_update_part()
     }
 }
 
-// why isn't the object_needs_rigid_body_update check ever succeeding? do we need a create elsewhere for this to work? or is the call fucked?
+// TODO: why isn't the object_needs_rigid_body_update check ever succeeding? is the hook broken or do no rigid bodies exist? the only one I know of is the flood tentacle on cold storage
 __declspec(naked) void object_update_hook()
 {
     __asm
@@ -564,10 +563,9 @@ __declspec(naked) void object_update_hook()
         test eax, eax
         je end_label
         push 0
-        push 16384 // flag 14 (1 << 14)
+        push 16384 // _simulation_generic_update_rigid_body (1 << 14)
         push edi // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         end_label:
         jmp object_update_part
@@ -651,10 +649,9 @@ __declspec(naked) void object_set_position_internal_hook1()
 
         // call our inserted function
         push 0
-        push 2 // flag 1 (1 << 1)
+        push 2 // _simulation_object_update_position (1 << 1)
         push edi // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop ecx
@@ -681,10 +678,9 @@ __declspec(naked) void object_set_position_internal_hook2()
 
         // call our inserted function
         push 0
-        push 4 // flag 2 (1 << 2)
+        push 4 // _simulation_object_update_forward_and_up (1 << 2)
         push edi // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop ecx
@@ -711,10 +707,9 @@ __declspec(naked) void object_set_position_internal_hook3()
 
         // call our inserted function
         push 0
-        push 2 // flag 1 (1 << 1)
+        push 2 // _simulation_object_update_position (1 << 1)
         push ebx // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop edx
@@ -740,10 +735,9 @@ __declspec(naked) void object_set_position_internal_hook4()
 
         // call our inserted function
         push 0
-        push 4 // flag 2 (1 << 2)
+        push 4 // _simulation_object_update_forward_and_up (1 << 2)
         push ebx // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop eax
@@ -776,10 +770,9 @@ __declspec(naked) void object_apply_acceleration_hook()
         pop ecx
         // call our inserted function
         push 0
-        push 48 // flags 4 & 5 (1 << 4) + (1 << 5)
+        push 48 // _simulation_object_update_translational_velocity & _simulation_object_update_angular_velocity ((1 << 4) | (1 << 5))
         push ecx // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return back to the original code
         mov ecx, module_base
@@ -817,24 +810,10 @@ __declspec(naked) void object_set_velocities_internal_hook()
 
 void __cdecl object_set_at_rest_simulation_update(datum_index object_index)
 {
-    s_object_data* object = object_get(object_index); // just for debugging
-
-    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
-    auto object_type = (object_header_data)[(word)object_index].type;
-    // if item (weapon or equipment)
-    if ((object_type.get() & 0x14) != 0)
-    {
-        c_flags<long, ulong64, 64> update_flags = {};
-        update_flags.set(0xE, true);
-        simulation_action_object_update(object_index, &update_flags); // e_simulation_item_update_flag
-    }
-    // else if projectile
-    else if ((object_type.get() & 0x80) != 0)
-    {
-        c_flags<long, ulong64, 64> update_flags = {};
-        update_flags.set(0xE, true);
-        simulation_action_object_update(object_index, &update_flags); // e_simulation_projectile_update_flag
-    }
+    if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
+        simulation_action_object_update(object_index, _simulation_item_update_unknown14);
+    else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
+        simulation_action_object_update(object_index, _simulation_projectile_update_unknown);
 }
 
 // c_simulation_generic_entity_definition::object_required_to_join_game - UNTESTED!! TODO: figure out how to call this!
@@ -1283,10 +1262,9 @@ __declspec(naked) void c_map_variant__remove_object_hook()
         test al, al
         jz return_label
         push 0
-        push 8192 // flag 13 (1 << 13)
+        push 8192 // _simulation_object_update_map_variant_index (1 << 13)
         push [ebp + 0xC] // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         return_label:
@@ -1301,10 +1279,9 @@ __declspec(naked) void c_map_variant__unknown4_hook1()
     __asm
     {
         push 0
-        push 6 // flags 1 and 2 (1 << 1) + (1 << 2)
+        push 6 // _simulation_object_update_position and _simulation_object_update_forward_and_up ((1 << 1) | (1 << 2))
         push [ebx + esi + 0x134] // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // execute instructions we replaced
         mov ax, [ebx + esi + 0x130]
@@ -1329,10 +1306,9 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
         push eax
 
         push 0
-        push 2048 // flag 11 (1 << 11)
+        push 2048 // _simulation_object_update_parent_state (1 << 11)
         push[ebx + esi + 0x134] // object_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore register
         pop eax
@@ -1346,9 +1322,7 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
 {
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(0xE, true);
-    simulation_action_object_update(unit_index, &update_flags);
+    simulation_action_object_update(unit_index, _simulation_biped_update_control);
     unit_set_actively_controlled(unit_index, unknown);
 }
 
@@ -1359,11 +1333,10 @@ __declspec(naked) void player_set_unit_index_hook2()
         // original replaced instructions
         call player_clear_assassination_state
 
-        push 1 // flag 32 (1 << 32)
+        push 1 // _simulation_unit_update_assassination_data (1 << 32)
         push 0
         push [edi + 0x30] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov ecx, module_base
@@ -1388,19 +1361,17 @@ __declspec(naked) void unit_died_hook()
 
         // vehicle update
         push 0
-        push 131072 // flag 17 (1 << 17)
+        push 131072 // _simulation_vehicle_update_active_camo (1 << 17)
         push esi // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
         jmp return_label
 
         // biped update
         biped_update:
         push 0
-        push 134217728 // flag 27 (1 << 27)
+        push 134217728 // _simulation_unit_update_active_camo (1 << 27)
         push esi // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore register
         return_label:
@@ -1425,10 +1396,9 @@ __declspec(naked) void grenade_throw_move_to_hand_hook()
         push edx
 
         push 0
-        push 67108864 // flag 26 (1 << 26)
+        push 67108864 // _simulation_biped_update_grenade_counts (1 << 26)
         push [ebp - 0x08] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop edx
@@ -1452,10 +1422,9 @@ __declspec(naked) void unit_add_grenade_to_inventory_hook()
         push edx
 
         push 0
-        push 67108864 // flag 26 (1 << 26)
+        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
         push [ebp - 0x08] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop edx
@@ -1478,10 +1447,9 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
         push ecx
 
         push 0
-        push 805306368 // flags 28 & 29 (1 << 28) + (1 << 29)
-        push[esp + 0x2C - 0x0C] // unit_index
+        push 805306368 // _simulation_biped_update_equipment & _simulation_biped_update_equipment_charges ((1 << 28) | (1 << 29))
+        push [esp + 0x2C - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop ecx
@@ -1501,10 +1469,9 @@ __declspec(naked) void unit_update_control_hook1()
         mov [edi + 0x1E4], eax
 
         push 0
-        push 65536 // flag 16 (1 << 16)
+        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov eax, module_base
@@ -1524,10 +1491,9 @@ __declspec(naked) void unit_update_control_hook2()
         push ecx
 
         push 0
-        push 65536 // flag 16 (1 << 16)
+        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore register
         pop ecx
@@ -1550,10 +1516,9 @@ __declspec(naked) void unit_update_control_hook3()
         push edx
 
         push 0
-        push 65536 // flag 16 (1 << 16)
+        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore register
         pop edx
@@ -1585,10 +1550,9 @@ __declspec(naked) void unit_add_initial_loadout_hook1()
     __asm
     {
         push 0
-        push 67108864 // flag 26 (1 << 26)
-        push[ebp - 0x1BC] // player object index
+        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
+        push [ebp - 0x1BC] // player object index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // original replaced instructions
         mov ecx, [ebx + 0x4C]
@@ -1606,10 +1570,9 @@ __declspec(naked) void unit_add_initial_loadout_hook2()
     __asm
     {
         push 0
-        push 128 // flag 7 (1 << 7)
+        push 128 // _simulation_object_update_shield_vitality (1 << 7)
         push[ebp - 0x1BC] // player object index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // original replaced instructions
         mov byte ptr [ebx + 0x18B4], 0
@@ -1634,10 +1597,9 @@ __declspec(naked) void projectile_attach_hook()
         push edx
 
         push 0
-        push 2048 // flag 11 (1 << 11)
+        push 2048 // _simulation_object_update_parent_state (1 << 11)
         push [esp + 0x6C - 0x48] // projectile_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore registers
         pop edx
@@ -1714,10 +1676,9 @@ __declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fi
         mov [ecx + 0x1E4], eax
 
         push 0
-        push 65536 // flag 16 (1 << 16)
+        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
         push [esp + 0xE8 - 0xD4] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov ecx, module_base
@@ -1751,10 +1712,9 @@ __declspec(naked) void equipment_activate_hook2()
         mov [edi + 0x198], eax
 
         push 0
-        push 65536 // flag 16 (1 << 16)
+        push 65536 // _simulation_item_update_unknown16 (1 << 16)
         push [esp + 0x360 - 0x328] // equipment_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov eax, module_base
@@ -1771,10 +1731,9 @@ __declspec(naked) void unit_update_energy_hook()
         mov [esi + 0x31C], eax
 
         push 0
-        push 1073741824 // flag 30 (1 << 30)
+        push 1073741824 // _simulation_biped_update_consumable_energy (1 << 30)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov eax, module_base
@@ -1813,10 +1772,9 @@ __declspec(naked) void equipment_handle_energy_cost_hook1()
         call sub_2E7BE0
 
         push 0
-        push 1073741824 // flag 30 (1 << 30)
+        push 1073741824 // _simulation_biped_update_consumable_energy (1 << 30)
         push [esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         mov eax, module_base
@@ -1833,10 +1791,9 @@ __declspec(naked) void equipment_handle_energy_cost_hook2()
         call hf2p_set_player_cooldown
 
         push 0
-        push 536870912 // flag 29 (1 << 29)
+        push 536870912 // _simulation_biped_update_equipment_charges (1 << 29)
         push [esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         push 0
         push 262144 // flag 18 (1 << 18)
@@ -1871,19 +1828,17 @@ __declspec(naked) void unit_set_hologram_hook()
 
         // vehicle update
         push 0
-        push 131072 // flag 17 (1 << 17)
+        push 131072 // _simulation_vehicle_update_active_camo (1 << 17)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
         jmp return_label
 
         // biped update
         biped_update:
         push 0
-        push 134217728 // flag 27 (1 << 27)
+        push 134217728 // _simulation_biped_update_active_camo (1 << 27)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // restore register
         return_label:
@@ -1918,10 +1873,9 @@ __declspec(naked) void weapon_handle_potential_inventory_item_hook()
         je return_label
 
         push 0
-        push 1048576 // flag 20 (1 << 20)
+        push 1048576 // _simulation_weapon_update_ammo (1 << 20)
         push [ebp - 0x24] // item index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         // return
         return_label:
@@ -1961,16 +1915,16 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
         //update_flags.set(inventory_index + 22, true);
         //simulation_action_object_update(unit_index, &update_flags);
 
-        // flags1 = (1 << (inventory_index + 18))
+        // flags1 = (1 << (inventory_index + _simulation_biped_update_weapon1_type))
         mov ecx, [ebp - 0x02] // inventory_index - TODO: is this a datum_index in the original code? make sure those top 16 bits won't interfere with this
-        add ecx, 18 // inventory_index + 18
+        add ecx, 18 // inventory_index + _simulation_biped_update_weapon1_type
         mov edx, 1
         shl edx, cl
         mov eax, edx
 
-        // flags2 = (1 << (inventory_index + 22))
+        // flags2 = (1 << (inventory_index + _simulation_biped_update_weapon1_state))
         mov ecx, [ebp - 0x02] // inventory_index
-        add ecx, 22 // inventory_index + 22
+        add ecx, 22 // inventory_index + _simulation_biped_update_weapon1_state
         mov edx, 1
         shl edx, cl
 
@@ -1978,9 +1932,8 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
 
         push 0
         push edx // update_flags
-        push[ebp - 0x0C] // unit_index
+        push [ebp - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
-        add esp, 12
 
         mov ecx, [ebp - 0x0C] // unit_index
         call unit_inventory_cycle_weapon_set_identifier // fastcall

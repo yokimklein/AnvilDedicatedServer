@@ -80,26 +80,6 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 	}
 }
 
-void simulation_action_object_update(datum_index object_index, c_flags<long, ulong64, 64>* update_flags) // TODO: flags are e_simulation_generic_update_flag
-{
-	if (game_is_distributed())
-	{
-		if (game_is_server())
-		{
-			if (!game_is_playback())
-			{
-				s_object_data* object = object_get(object_index);
-				if (object->gamestate_index != -1)
-				{
-					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
-					if (entity_index != -1)
-						simulation_entity_update(entity_index, object_index, update_flags);
-				}
-			}
-		}
-	}
-}
-
 void simulation_action_object_delete(datum_index object_index)
 {
 	if (game_is_server())
@@ -119,6 +99,26 @@ void simulation_action_object_delete(datum_index object_index)
 				}
 				simulation_gamestate_entity_delete(object->gamestate_index);
 				object_detach_gamestate_entity(object_index, object->gamestate_index);
+			}
+		}
+	}
+}
+
+void simulation_action_object_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags)
+{
+	if (game_is_distributed())
+	{
+		if (game_is_server())
+		{
+			if (!game_is_playback())
+			{
+				s_object_data* object = object_get(object_index);
+				if (object->gamestate_index != -1)
+				{
+					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
+					if (entity_index != -1)
+						simulation_entity_update(entity_index, object_index, &update_flags.m_flags);
+				}
 			}
 		}
 	}

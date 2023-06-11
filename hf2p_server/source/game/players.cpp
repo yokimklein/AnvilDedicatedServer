@@ -40,10 +40,7 @@ void player_set_facing(datum_index player_index, real_vector3d* forward)
 			unit_data->facing_vector = *forward;
 			unit_data->aiming_vector = *forward;
 			unit_data->looking_vector = *forward;
-
-			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(16, true);
-			simulation_action_object_update(player_data->unit_index, &update_flags);
+			simulation_action_object_update(player_data->unit_index, _simulation_biped_update_desired_aiming_vector);
 		}
 	}
 	long input_user_index = player_mapping_get_input_user((word)player_index);
@@ -70,10 +67,7 @@ void __fastcall player_increment_control_context(datum_index player_index)
 	{
 		s_unit_data* unit = (s_unit_data*)datum_get(get_tls()->object_headers, unit_index);
 		unit->control_context_identifier = player_data->control_context_identifier;
-
-		c_flags<long, ulong64, 64> update_flags = {};
-		update_flags.set(31, true);
-		simulation_action_object_update(unit_index, &update_flags);
+		simulation_action_object_update(unit_index, _simulation_biped_update_control_context);
 	}
 	player_data->control_context_identifier = (player_data->control_context_identifier + 1) & 0xF;
 }

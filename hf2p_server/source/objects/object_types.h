@@ -22,9 +22,31 @@ enum e_object_type
 	_object_type_giant,
 	_object_type_effect_scenery,
 
-	//_object_mask_unit = _object_mask_biped | _object_mask_vehicle | _object_mask_giant,
-
 	k_object_types_count
+};
+
+enum e_object_mask
+{
+	_object_mask_biped = FLAG(_object_type_biped),
+	_object_mask_vehicle = FLAG(_object_type_vehicle),
+	_object_mask_weapon = FLAG(_object_type_weapon),
+	_object_mask_armor = FLAG(_object_type_armor),
+	_object_mask_equipment = FLAG(_object_type_equipment),
+	_object_mask_arg_device = FLAG(_object_type_arg_device),
+	_object_mask_terminal = FLAG(_object_type_terminal),
+	_object_mask_projectile = FLAG(_object_type_projectile),
+	_object_mask_scenery = FLAG(_object_type_scenery),
+	_object_mask_machine = FLAG(_object_type_machine),
+	_object_mask_control = FLAG(_object_type_control),
+	_object_mask_sound_scenery = FLAG(_object_type_sound_scenery),
+	_object_mask_crate = FLAG(_object_type_crate),
+	_object_mask_creature = FLAG(_object_type_creature),
+	_object_mask_giant = FLAG(_object_type_giant),
+	_object_mask_effect_scenery = FLAG(_object_type_effect_scenery),
+
+	_object_mask_item = (_object_mask_weapon | _object_mask_equipment),
+	_object_mask_unit = (_object_mask_biped | _object_mask_vehicle | _object_mask_giant),
+	_object_mask_physics = (_object_mask_biped | _object_mask_vehicle | _object_mask_weapon | _object_mask_equipment | _object_mask_arg_device | _object_mask_terminal | _object_mask_scenery | _object_mask_machine | _object_mask_crate | _object_mask_creature | _object_mask_giant)
 };
 
 struct s_object_placement_data;
