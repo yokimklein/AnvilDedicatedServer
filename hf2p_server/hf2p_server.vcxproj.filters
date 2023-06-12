@@ -108,9 +108,6 @@
     <ClInclude Include="source\game\players.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\dllmain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\networking\delivery\network_connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>

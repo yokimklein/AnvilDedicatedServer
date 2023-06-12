@@ -4,7 +4,6 @@
 #include "game.h"
 #include "assert.h"
 #include "..\simulation\game_interface\simulation_game_action.h"
-#include "..\dllmain.h"
 #include "game_results.h"
 
 c_game_statborg* game_engine_get_statborg()

@@ -17,7 +17,6 @@
 #include "game_engine_assault.h"
 #include "game_engine_infection.h"
 #include "game_engine_simulation.h"
-#include "..\dllmain.h"
 
 enum e_engine_variant : long
 {

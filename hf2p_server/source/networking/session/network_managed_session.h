@@ -2,7 +2,6 @@
 #include "..\..\cseries\cseries.h"
 #include "..\transport\transport_security.h"
 #include "..\..\simulation\simulation.h"
-#include "..\..\dllmain.h"
 #include "network_session_parameters_session.h"
 
 enum e_online_context_id : ulong

@@ -82,3 +82,10 @@ bool game_in_progress()
 	else
 		return false;
 }
+
+bool game_is_dedicated_server()
+{
+	// TODO: change this with build configuration
+	// dedicated server mode should disable rendering, sound, host player
+	return true;
+}

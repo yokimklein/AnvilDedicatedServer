@@ -1,5 +1,4 @@
 #include "game_engine_traits.h"
-#include "..\dllmain.h"
 
 bool c_game_engine_miscellaneous_options::get_teams_enabled()
 {

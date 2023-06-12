@@ -1,5 +1,4 @@
 #pragma once
-#include "..\dllmain.h"
 #include "..\cseries\cseries.h"
 #include "session\network_session_manager.h"
 

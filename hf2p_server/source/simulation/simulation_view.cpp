@@ -1,5 +1,4 @@
 #include "simulation_view.h"
-#include "..\dllmain.h"
 
 void c_simulation_view::set_view_establishment(e_simulation_view_establishment_mode establishment_mode, long establishment_identifier)
 {

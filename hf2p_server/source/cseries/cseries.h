@@ -6,6 +6,7 @@
 #include "..\math\real_math.h"
 
 #include <stdarg.h> 
+#include <windows.h>
 
 #define _STRCONCAT(x, y) x ## y
 #define STRCONCAT(x, y) _STRCONCAT(x, y)
@@ -23,6 +24,10 @@
 #define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *reinterpret_cast<c_static_array<type, count>*>(address)
 
 #define try_bool(X) if (!X) return false
+
+#define FUNCTION_DEF(ADDR, RET, CC, NAME, ...) static const auto NAME = (RET(CC*)(__VA_ARGS__))(module_base + ADDR) // TODO: REPLACE THIS WITH DECLFUNC
+static const size_t module_base = (size_t)GetModuleHandle(NULL);
+inline static const size_t base_address(size_t address) { return (size_t)((size_t)module_base + address); };
 
 // 4-character tag group identifier
 typedef unsigned long tag;

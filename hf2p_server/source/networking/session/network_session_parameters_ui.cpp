@@ -1,5 +1,4 @@
 #include "network_session_parameters_ui.h"
-#include "..\..\dllmain.h"
 
 bool c_network_session_parameter_ui_game_mode::request_change(e_gui_game_mode gui_gamemode)
 {

@@ -1,6 +1,5 @@
 #include "network_observer.h"
 #include "assert.h"
-#include "..\..\dllmain.h"
 
 char const* k_observer_state_strings[k_observer_state_count]
 {

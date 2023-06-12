@@ -1,6 +1,5 @@
 #pragma once
 #include "..\saved_games\saved_game_files.h"
-#include "..\dllmain.h"
 
 constexpr long k_number_of_map_variant_simulation_entities = 80;
 

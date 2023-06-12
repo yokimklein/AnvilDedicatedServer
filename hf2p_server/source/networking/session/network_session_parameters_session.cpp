@@ -1,7 +1,6 @@
 #include "network_session_parameters_session.h"
 #include "..\..\simulation\simulation.h"
 #include <iostream>
-#include "..\..\dllmain.h"
 
 long c_network_session_parameter_session_size::get_max_player_count()
 {

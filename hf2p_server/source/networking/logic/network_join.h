@@ -1,6 +1,5 @@
 #pragma once
 #include "..\..\cseries\cseries.h"
-#include "..\..\dllmain.h"
 #include "..\transport\transport_security.h"
 #include "..\transport\transport_address.h"
 #include "..\..\game\players.h"

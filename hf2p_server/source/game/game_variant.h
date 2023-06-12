@@ -13,7 +13,6 @@
 #include "game_engine_territories.h"
 #include "game_engine_assault.h"
 #include "game_engine_infection.h"
-#include "..\dllmain.h"
 
 class c_game_variant
 {

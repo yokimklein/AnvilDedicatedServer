@@ -1,5 +1,4 @@
 #include "network_channel.h"
-#include "..\..\dllmain.h"
 #include "assert.h"
 #include "..\session\network_observer.h"
 #include "..\session\network_session.h"

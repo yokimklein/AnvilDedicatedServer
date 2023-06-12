@@ -1,5 +1,4 @@
 #include "data.h"
-#include "..\dllmain.h"
 #include "assert.h"
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/memory/data.cpp

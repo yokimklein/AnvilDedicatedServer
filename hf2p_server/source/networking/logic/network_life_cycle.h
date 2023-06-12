@@ -1,5 +1,4 @@
 #pragma once
-#include "..\..\dllmain.h"
 #include "..\session\network_session_parameters_session.h"
 #include "..\session\network_observer.h"
 

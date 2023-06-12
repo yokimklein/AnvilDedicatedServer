@@ -5,7 +5,6 @@
 #include "..\memory\data.h"
 #include "player_configuration.h"
 #include "game_engine_player_traits.h"
-#include "..\dllmain.h"
 
 struct s_player_datum : s_datum_header
 {

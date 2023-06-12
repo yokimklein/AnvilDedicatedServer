@@ -1,5 +1,4 @@
 #include "network_session_membership.h"
-#include "..\..\dllmain.h"
 #include "..\network_globals.h"
 #include <iostream>
 #include "..\network_utilities.h"

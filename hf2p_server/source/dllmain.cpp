@@ -1,4 +1,3 @@
-#include "dllmain.h"
 #include <iostream>
 #include "anvil\dllproxy.h"
 #include "anvil\build_version.h"
@@ -33,11 +32,6 @@ void enable_memory_write(dword base)
     }
 }
 
-bool game_is_dedicated_server()
-{
-    return true;
-}
-
 long main_thread()
 {
     FILE* f;
@@ -53,7 +47,7 @@ long main_thread()
     anvil_dedi_apply_hooks();
 
     // SESSION MAP & VARIANT
-    auto map_id = _s3d_turf;
+    auto map_id = _s3d_reactor;
     auto engine_variant = _engine_variant_slayer;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading

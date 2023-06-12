@@ -4,7 +4,6 @@
 #include "object_types.h"
 #include "..\scenario\scenario_definitions.h"
 #include "damage.h"
-#include "..\dllmain.h"
 
 enum e_object_header_flags
 {

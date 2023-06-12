@@ -1,6 +1,5 @@
 #include "simulation_debug_globals.h"
 #include "..\cseries\cseries.h"
-#include "..\dllmain.h"
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/simulation/simulation_debug_globals.cpp
 

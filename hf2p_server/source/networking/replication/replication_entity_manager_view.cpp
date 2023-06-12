@@ -1,6 +1,5 @@
 #include "replication_entity_manager_view.h"
 #include "replication_entity_manager.h"
-#include "..\..\dllmain.h"
 #include "assert.h"
 #include <stdio.h>
 

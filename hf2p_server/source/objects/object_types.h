@@ -1,7 +1,6 @@
 #pragma once
 #include "..\memory\data.h"
 #include "..\cseries\cseries.h"
-#include "..\dllmain.h"
 
 enum e_object_type
 {

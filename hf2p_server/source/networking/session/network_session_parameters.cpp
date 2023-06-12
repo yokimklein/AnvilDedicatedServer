@@ -1,5 +1,4 @@
 #include "network_session_parameters.h"
-#include "..\..\dllmain.h"
 #include "network_session.h"
 #include <stdio.h>
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "..\dllmain.h"
 #include "..\game\game_variant.h"
 #include "..\scenario\scenario_map_variant.h"
 #include "user_interface_networking.h"

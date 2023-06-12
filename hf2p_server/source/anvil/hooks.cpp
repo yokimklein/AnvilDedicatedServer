@@ -4,6 +4,7 @@
 #include "hooks.h"
 #include "patch\Patch.hpp"
 
+#include "..\cseries\cseries.h"
 #include "..\networking\session\network_session.h"
 #include "..\networking\messages\network_message_handler.h"
 #include "..\simulation\simulation_world.h"

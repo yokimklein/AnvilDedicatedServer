@@ -1,6 +1,5 @@
 #include "tls.h"
 #include <windows.h>
-#include "..\dllmain.h"
 
 s_thread_local_storage* get_tls()
 {

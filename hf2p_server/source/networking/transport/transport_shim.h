@@ -1,5 +1,4 @@
 #pragma once
-#include "..\..\dllmain.h"
 #include "transport_address.h"
 #include "..\network_globals.h"
 #include "..\..\simulation\simulation.h"

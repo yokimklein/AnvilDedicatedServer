@@ -1,7 +1,6 @@
 #pragma once
 #include "..\..\cseries\cseries.h"
 #include "transport_address.h"
-#include "..\..\dllmain.h"
 
 struct s_transport_unique_identifier
 {

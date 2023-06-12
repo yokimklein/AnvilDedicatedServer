@@ -1,6 +1,5 @@
 #include "game_engine_team.h"
 #include "assert.h"
-#include "..\dllmain.h"
 
 bool game_engine_variant_has_teams(c_game_variant* variant)
 {

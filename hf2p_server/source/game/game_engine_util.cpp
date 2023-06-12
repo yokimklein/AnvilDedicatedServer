@@ -2,7 +2,6 @@
 #include "..\memory\tls.h"
 #include "game.h"
 #include "assert.h"
-#include "..\dllmain.h"
 
 // TODO
 bool game_engine_is_sandbox()

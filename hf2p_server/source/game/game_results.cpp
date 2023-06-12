@@ -1,5 +1,4 @@
 #include "game_results.h"
-#include "..\dllmain.h"
 
 void game_results_notify_player_indices_changed()
 {

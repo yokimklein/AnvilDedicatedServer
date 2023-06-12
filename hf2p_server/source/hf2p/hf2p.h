@@ -1,5 +1,4 @@
 #pragma once
-#include "..\dllmain.h"
 #include "..\cseries\cseries.h"
 
 enum e_podium_action

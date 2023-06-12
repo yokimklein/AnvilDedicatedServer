@@ -6,7 +6,6 @@
 #include "..\game\aim_assist.h"
 #include "..\objects\objects.h"
 #include "..\objects\target_tracking.h"
-#include "..\dllmain.h"
 
 enum e_weapon_set
 {

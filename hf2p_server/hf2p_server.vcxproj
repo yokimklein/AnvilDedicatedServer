@@ -285,7 +285,6 @@
     <ClInclude Include="source\simulation\simulation.h" />
     <ClInclude Include="source\networking\messages\network_message_queue.h" />
     <ClInclude Include="source\networking\delivery\network_connection.h" />
-    <ClInclude Include="source\dllmain.h" />
     <ClInclude Include="source\game\players.h" />
     <ClInclude Include="source\interface\gui_pregame_setup_manager.h" />
     <ClInclude Include="source\networking\session\network_session_parameters_ui.h" />

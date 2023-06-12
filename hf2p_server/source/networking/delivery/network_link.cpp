@@ -1,5 +1,4 @@
 #include "network_link.h"
-#include "..\..\dllmain.h"
 
 c_network_channel* c_network_link::get_associated_channel(s_transport_address const* address)
 {

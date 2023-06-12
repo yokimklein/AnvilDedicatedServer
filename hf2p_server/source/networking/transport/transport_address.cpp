@@ -1,5 +1,4 @@
 #include "transport_address.h"
-#include "..\..\dllmain.h"
 #include <assert.h>
 #include "transport_security.h"
 #include <stdio.h>

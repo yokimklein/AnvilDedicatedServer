@@ -1,6 +1,6 @@
 // we delete build_info.obj every pre-build so the build date & time are forced to regenerate
 #include "build_version.h"
-#include "..\dllmain.h"
+#include "..\game\game.h"
 
 #define PROJECT_NAME "Anvil Station"
 #define BUILD_CONFIG_DS "Dedicated Server"
