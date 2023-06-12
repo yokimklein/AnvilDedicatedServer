@@ -120,7 +120,7 @@ public:
 void simulation_action_object_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags);
 
 template <typename t_update_type>
-void __stdcall simulation_action_object_update(datum_index object_index, t_update_type update_type)
+void __fastcall simulation_action_object_update(datum_index object_index, t_update_type update_type)
 {
 	c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
 	update_flags.set_flag(object_index, update_type);

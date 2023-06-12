@@ -28,6 +28,77 @@
 #include "..\units\units.h"
 #include "..\units\bipeds.h"
 
+// This only works with parameterless functions - start_address is a baseless offset
+// Inserted function must have runtime checks, safebuffers & JustMyCode disabled 
+void insert_hook(size_t start_address, long length, size_t return_address, void* inserted_function)
+{
+    long code_offset = 0;
+    byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
+    byte restore_registers[3] = { 0x5A, 0x59, 0x58 }; // pop edx, pop ecx, pop eax
+    byte preserve_stackpointer[3] = { 0x55, 0x89, 0xE5 }; // push ebp, mov ebp, esp
+    byte restore_stackpointer[3] = { 0x89, 0xEC, 0x5D }; // mov esp, ebp, pop ebp
+    byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder nops where the function address will go
+    byte return_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
+    byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
+
+    if (length < sizeof(jump_code))
+    {
+        printf("The hook requires at least %d bytes available to overwrite!\n", sizeof(jump_code));
+        return;
+    }
+
+    // initialise our new code block
+    long inserted_code_size = length + sizeof(preserve_registers) + sizeof(preserve_stackpointer) + sizeof(call_code) + sizeof(restore_stackpointer) + sizeof(restore_registers) + sizeof(return_code);
+    byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    
+    if (inserted_code == NULL)
+    {
+        printf("Failed to allocate memory for hook!\n");
+        return;
+    }
+
+    // copy the instructions we're replacing into our new code block
+    memcpy(inserted_code, (void*)(module_base + start_address), length);
+    code_offset += length;
+
+    // preserve registers across call
+    memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
+    code_offset += sizeof(preserve_registers);
+
+    // preserve stack pointer across call so our inserted function can create new variables
+    memcpy(inserted_code + code_offset, preserve_stackpointer, sizeof(preserve_stackpointer));
+    code_offset += sizeof(preserve_stackpointer);
+
+    // call inserted function
+    size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
+    memcpy(&call_code[1], &call_offset, sizeof(call_code));
+    memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
+    code_offset += sizeof(call_code);
+
+    // restore stack pointer
+    memcpy(inserted_code + code_offset, restore_stackpointer, sizeof(restore_stackpointer));
+    code_offset += sizeof(restore_stackpointer);
+
+    // restore registers
+    memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
+    code_offset += sizeof(restore_registers);
+
+    // return
+    size_t return_offset = ((size_t)(module_base + return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
+    memcpy(&return_code[1], &return_offset, sizeof(return_code));
+    memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
+    code_offset += sizeof(return_code);
+
+    // write jump to inserted function
+    size_t jump_offset = ((size_t)(inserted_code) - (size_t)(module_base + start_address) - sizeof(jump_code));
+    memcpy(&jump_code[1], &jump_offset, sizeof(jump_code));
+    memcpy((void*)(module_base + start_address), jump_code, sizeof(jump_code));
+
+    // nop the bytes leftover between the original overwritten instructions and the return point
+    // this isn't really necessary but it makes looking at the disassembly less cluttered
+    memset((void*)(module_base + start_address + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+}
+
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
 {
@@ -635,34 +706,17 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
     }
 }
 
-__declspec(naked) void object_set_position_internal_hook1()
+// NEW HOOKS START HERE
+// runtime checks need to be disabled for these, make sure to write them within the pragmas
+// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
+#pragma runtime_checks("", off)
+__declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
 {
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov eax, [edx + 8]
-        mov [ecx + 0x5C], eax
-
-        // eax, ecx & edx are caller-saved across a cdecl function call - save their values
-        push eax
-        push ecx
-
-        // call our inserted function
-        push 0
-        push 2 // _simulation_object_update_position (1 << 1)
-        push edi // object_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore registers
-        pop ecx
-        pop eax
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0x3FC03E
-        jmp eax
-    }
+    datum_index object_index;
+    __asm mov object_index, edi
+    simulation_action_object_update(object_index, _simulation_object_update_position);
 }
+#pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
 {
@@ -2193,7 +2247,7 @@ void anvil_dedi_apply_hooks()
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
-    Pointer::Base(0x3FC038).WriteJump(object_set_position_internal_hook1, HookFlags::None);
+    insert_hook(0x3FC038, 6, 0x3FC03E, object_set_position_internal_hook1);
     Pointer::Base(0x3FC060).WriteJump(object_set_position_internal_hook2, HookFlags::None);
     Pointer::Base(0x404AB4).WriteJump(object_set_position_internal_hook3, HookFlags::None); // inlined call in object_move_respond_to_physics
     Pointer::Base(0x404AD7).WriteJump(object_set_position_internal_hook4, HookFlags::None); // inlined call in object_move_respond_to_physics
