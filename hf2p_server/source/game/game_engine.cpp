@@ -114,9 +114,7 @@ void game_engine_update_round_conditions()
 					current_game_engine()->emit_game_start_event(player_index);
 				}
 			}
-			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(6, true); // TODO: what is this flag?
-			simulation_action_game_engine_globals_update(&update_flags);
+			simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_condition);
 			game_engine_globals->round_condition_flags = condition;
 		}
 	}
@@ -144,9 +142,7 @@ void game_engine_update_time()
 			float time_left_in_seconds = game_ticks_to_seconds(time_left_in_ticks);
 			// ??
 
-			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(5, true); // TODO: what is this flag?
-			simulation_action_game_engine_globals_update(&update_flags);
+			simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_timer);
 		}
 	}
 	*/

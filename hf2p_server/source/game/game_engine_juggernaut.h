@@ -88,10 +88,10 @@ struct c_juggernaut_engine : c_game_engine
 
 struct s_juggernaut_globals
 {
-	dword __unknown0;
-	word __unknown4;
+	dword juggernaut_player_index;
+	word unknown_seconds;
 	byte __unknown6;
-	dword __unknown8;
+	dword unknown_ticks; // __unknown4 in ticks
 	c_area_set<c_area, 12> area_set;
 	c_static_array<long, 16> __unknown4CC;
 };

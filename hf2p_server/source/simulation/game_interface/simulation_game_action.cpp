@@ -184,6 +184,13 @@ void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* up
 	}
 }
 
+void simulation_action_game_engine_globals_update(long update_flag)
+{
+	c_flags<long, ulong64, 64> update_flags = {};
+	update_flags.set(update_flag, true);
+	simulation_action_game_engine_globals_update(&update_flags);
+}
+
 void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
 {
 	FUNCTION_DEF(0x433D90, long, __fastcall, weapon_get_owner_unit_inventory_index, datum_index weapon_index);
