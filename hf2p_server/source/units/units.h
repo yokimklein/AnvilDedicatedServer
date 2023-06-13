@@ -2,10 +2,10 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/units/units.hpp
 
-#include "..\cseries\cseries.h"
-#include "..\game\aim_assist.h"
-#include "..\objects\objects.h"
-#include "..\objects\target_tracking.h"
+#include <cseries\cseries.h>
+#include <game\aim_assist.h>
+#include <objects\objects.h>
+#include <objects\target_tracking.h>
 
 enum e_weapon_set
 {

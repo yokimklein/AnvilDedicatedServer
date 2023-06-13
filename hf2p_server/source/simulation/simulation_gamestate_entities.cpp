@@ -1,5 +1,5 @@
 #include "simulation_gamestate_entities.h"
-#include "..\memory\tls.h"
+#include <memory\tls.h>
 #include "assert.h"
 #include <stdio.h>
 

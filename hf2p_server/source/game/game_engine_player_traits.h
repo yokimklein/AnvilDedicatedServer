@@ -1,6 +1,6 @@
 #pragma once
 #pragma pack(push, 1)
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 enum e_damage_resistance_percentage_setting
 {

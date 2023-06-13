@@ -1,5 +1,5 @@
 #pragma once
-#include "..\game\aim_target.h"
+#include <game\aim_target.h>
 
 class c_tracked_target
 {

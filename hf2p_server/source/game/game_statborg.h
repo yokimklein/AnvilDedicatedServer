@@ -1,8 +1,8 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\memory\data.h"
-#include "player_configuration.h"
-#include "game_engine_simulation.h"
+#include <cseries\cseries.h>
+#include <memory\data.h>
+#include <game\player_configuration.h>
+#include <game\game_engine_simulation.h>
 
 enum e_statborg_entry
 {

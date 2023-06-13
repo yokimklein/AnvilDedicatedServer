@@ -1,11 +1,11 @@
 #include "network_session.h"
 #include <iostream>
-#include "..\messages\network_message_gateway.h"
-#include "..\network_utilities.h"
-#include "..\logic\network_join.h"
-#include "network_managed_session.h"
-#include "..\transport\transport_shim.h"
-#include "..\..\hf2p\hf2p_session.h"
+#include <networking\messages\network_message_gateway.h>
+#include <networking\network_utilities.h>
+#include <networking\logic\network_join.h>
+#include <networking\session\network_managed_session.h>
+#include <networking\transport\transport_shim.h>
+#include <hf2p\hf2p_session.h>
 #include "assert.h"
 
 char const* k_session_type_strings[k_network_session_type_count] = {

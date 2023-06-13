@@ -1,7 +1,7 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\simulation\simulation_entity_database.h"
-#include "replication_entity_manager_view.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation_entity_database.h>
+#include <networking\replication\replication_entity_manager_view.h>
 
 enum e_replication_entity_flags
 {

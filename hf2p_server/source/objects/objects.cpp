@@ -1,8 +1,8 @@
 #include "objects.h"
-#include "..\memory\tls.h"
+#include <memory\tls.h>
 #include "assert.h"
 #include <stdio.h>
-#include "..\simulation\game_interface\simulation_game_objects.h"
+#include <simulation\game_interface\simulation_game_objects.h>
 
 s_object_data* object_get(datum_index object_index)
 {

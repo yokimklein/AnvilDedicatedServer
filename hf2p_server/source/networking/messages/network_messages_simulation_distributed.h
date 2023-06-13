@@ -1,6 +1,6 @@
 #pragma once
-#include "network_message_type_collection.h"
-#include "..\..\game\game_results.h"
+#include <networking\messages\network_message_type_collection.h>
+#include <game\game_results.h>
 
 struct s_network_message_distributed_game_results : s_network_message
 {

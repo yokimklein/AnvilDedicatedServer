@@ -1,6 +1,6 @@
 #pragma once
-#include "..\memory\bitstream.h"
-#include "game_interface\simulation_game_entities.h"
+#include <memory\bitstream.h>
+#include <simulation\game_interface\simulation_game_entities.h>
 
 constexpr long k_simulation_entity_maximum_creation_data_size = 128;
 constexpr long k_simulation_entity_maximum_state_data_size = 1024;

@@ -1,5 +1,5 @@
 #include "replication_entity_manager_view.h"
-#include "replication_entity_manager.h"
+#include <networking\replication\replication_entity_manager.h>
 #include "assert.h"
 #include <stdio.h>
 

@@ -1,8 +1,8 @@
 #include "replication_entity_manager.h"
 #include "assert.h"
 #include <stdio.h>
-#include "..\..\simulation\simulation_entity_definition.h"
-#include "replication_entity_manager_view.h"
+#include <simulation\simulation_entity_definition.h>
+#include <networking\replication\replication_entity_manager_view.h>
 
 long c_replication_entity_manager::create_local_entity()
 {

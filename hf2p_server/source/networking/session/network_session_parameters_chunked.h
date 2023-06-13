@@ -1,6 +1,6 @@
 #pragma once
-#include "network_session_parameters_generic.h"
-#include "..\..\simulation\simulation.h"
+#include <networking\session\network_session_parameters_generic.h>
+#include <simulation\simulation.h>
 
 template <typename t_type, long k_payload_size>
 struct c_network_session_parameter_chunked :

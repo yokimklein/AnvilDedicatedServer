@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\objects\objects.h"
+#include <cseries\cseries.h>
+#include <objects\objects.h>
 
 // this probably belongs in saved_games\\content_catalogue.h
 enum e_content_item

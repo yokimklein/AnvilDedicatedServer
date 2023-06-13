@@ -1,10 +1,10 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\game\aim_target.h"
-#include "..\objects\damage.h"
-#include "..\memory\data.h"
-#include "player_configuration.h"
-#include "game_engine_player_traits.h"
+#include <cseries\cseries.h>
+#include <game\aim_target.h>
+#include <objects\damage.h>
+#include <memory\data.h>
+#include <game\player_configuration.h>
+#include <game\game_engine_player_traits.h>
 
 struct s_player_datum : s_datum_header
 {

@@ -1,18 +1,18 @@
 #include <iostream>
-#include "anvil\dllproxy.h"
-#include "anvil\build_version.h"
-#include "anvil\hooks.h"
-#include "anvil\server_tools.h"
-#include "networking\session\network_session.h"
-#include "game\game_engine.h"
-#include "networking\session\network_session_manager.h"
-#include "interface\user_interface_session.h"
-#include "hf2p\hf2p_session.h"
-#include "networking\network_utilities.h"
-#include "networking\session\network_managed_session.h"
-#include "main\main_game.h"
-#include "hf2p\hq.h"
-#include "hf2p\hf2p.h"
+#include <anvil\dllproxy.h>
+#include <anvil\build_version.h>
+#include <anvil\hooks.h>
+#include <anvil\server_tools.h>
+#include <networking\session\network_session.h>
+#include <game\game_engine.h>
+#include <networking\session\network_session_manager.h>
+#include <interface\user_interface_session.h>
+#include <hf2p\hf2p_session.h>
+#include <networking\network_utilities.h>
+#include <networking\session\network_managed_session.h>
+#include <main\main_game.h>
+#include <hf2p\hq.h>
+#include <hf2p\hf2p.h>
 
 void enable_memory_write(dword base)
 {

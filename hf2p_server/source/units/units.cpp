@@ -1,7 +1,7 @@
 #include "units.h"
-#include "..\game\game.h"
-#include "..\memory\tls.h"
-#include "..\simulation\game_interface\simulation_game_objects.h"
+#include <game\game.h>
+#include <memory\tls.h>
+#include <simulation\game_interface\simulation_game_objects.h>
 
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index)
 {

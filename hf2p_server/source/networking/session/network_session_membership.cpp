@@ -1,12 +1,12 @@
 #include "network_session_membership.h"
-#include "..\network_globals.h"
+#include <networking\network_globals.h>
 #include <iostream>
-#include "..\network_utilities.h"
-#include "network_session.h"
-#include "network_managed_session.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\..\math\fast_checksum.h"
-#include "..\..\text\unicode.h"
+#include <networking\network_utilities.h>
+#include <networking\session\network_session.h>
+#include <networking\session\network_managed_session.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <math\fast_checksum.h>
+#include <text\unicode.h>
 #include "assert.h"
 
 char const* network_session_peer_states[k_network_session_peer_state_count] = {

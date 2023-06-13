@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "player_appearance.h"
+#include <cseries\cseries.h>
+#include <game\player_appearance.h>
 
 // e_multiplayer_team
 // k_multiplayer_team_none = -1

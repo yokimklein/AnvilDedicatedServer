@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "network_globals.h"
+#include <cseries\cseries.h>
+#include <networking\network_globals.h>
 
 enum e_life_cycle_session_type
 {

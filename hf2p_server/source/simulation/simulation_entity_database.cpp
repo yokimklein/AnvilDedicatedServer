@@ -1,8 +1,8 @@
 #include "simulation_entity_database.h"
 #include "assert.h"
 #include <stdio.h>
-#include "..\networking\network_memory.h"
-#include "simulation_gamestate_entities.h"
+#include <networking\network_memory.h>
+#include <simulation\simulation_gamestate_entities.h>
 
 long c_simulation_entity_database::entity_create(e_simulation_entity_type entity_type)
 {

@@ -1,10 +1,10 @@
 #include "game_statborg.h"
-#include "game_engine_util.h"
-#include "..\memory\tls.h"
-#include "game.h"
+#include <game\game_engine_util.h>
+#include <memory\tls.h>
+#include <game\game.h>
 #include "assert.h"
-#include "..\simulation\game_interface\simulation_game_action.h"
-#include "game_results.h"
+#include <simulation\game_interface\simulation_game_action.h>
+#include <game\game_results.h>
 
 c_game_statborg* game_engine_get_statborg()
 {

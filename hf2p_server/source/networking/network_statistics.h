@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\memory\bitstream.h"
+#include <cseries\cseries.h>
+#include <memory\bitstream.h>
 
 #pragma pack(push, 1)
 class c_network_time_statistics

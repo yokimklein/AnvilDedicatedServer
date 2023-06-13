@@ -1,10 +1,10 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\transport\transport_security.h"
-#include "..\transport\transport_address.h"
-#include "..\..\game\players.h"
-#include "..\..\simulation\simulation.h"
-#include "..\session\network_session_state.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_security.h>
+#include <networking\transport\transport_address.h>
+#include <game\players.h>
+#include <simulation\simulation.h>
+#include <networking\session\network_session_state.h>
 
 struct s_network_session_join_request;
 

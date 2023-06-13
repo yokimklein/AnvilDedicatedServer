@@ -1,12 +1,12 @@
 #pragma once
-#include "..\saved_games\saved_game_files.h"
+#include <saved_games\saved_game_files.h>
 
 constexpr long k_number_of_map_variant_simulation_entities = 80;
 
 // uncommented maps are included in cache 11.1.601838
 enum e_map_id : long
 {
-	           _mainmenu = 0x10231971, // Mainmenu (this is the birthday of a halo 3 dev's wife, 23rd October 1971)
+	           _mainmenu = 0x10231971, // Mainmenu (this is the birthday of one of the halo 3 developer's wife, 23rd October 1971)
 	           _zanzibar = 30,  // Last Resort
 	           _s3d_turf = 31,  // Icebox
 //            _construct = 300, // Construct

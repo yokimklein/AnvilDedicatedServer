@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "session\network_session_manager.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session_manager.h>
 
 constexpr long k_network_maximum_sessions = 3;
 // reach replaced this with get_network_protocol_version()

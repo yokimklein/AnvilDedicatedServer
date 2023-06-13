@@ -1,9 +1,9 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\transport\transport_security.h"
-#include "..\..\game\players.h"
-#include "..\..\simulation\simulation.h"
-#include "..\..\game\player_configuration.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_security.h>
+#include <game\players.h>
+#include <simulation\simulation.h>
+#include <game\player_configuration.h>
 #include <cstring>
 
 enum e_peer_map_status : long

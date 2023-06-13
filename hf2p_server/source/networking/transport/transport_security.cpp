@@ -1,9 +1,9 @@
 #include "transport_security.h"
-#include "transport_shim.h"
+#include <networking\transport\transport_shim.h>
 #include <stdio.h>
-#include "..\..\anvil\server_tools.h"
+#include <anvil\server_tools.h>
 #include <winsock.h>
-#include "..\..\game\game.h"
+#include <game\game.h>
 
 char const* transport_secure_nonce_get_string(qword secure_nonce)
 {

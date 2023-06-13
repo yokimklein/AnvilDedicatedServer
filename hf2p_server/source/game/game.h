@@ -1,5 +1,5 @@
 #pragma once
-#include "game_options.h"
+#include <game\game_options.h>
 
 game_options* game_options_get();
 e_game_simulation_type game_simulation_get();

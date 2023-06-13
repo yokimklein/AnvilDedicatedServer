@@ -1,10 +1,10 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\game\game_progression.h"
-#include "..\..\game\game_options.h"
-#include "network_session_parameters_base.h"
-#include "network_session_parameters_generic.h"
-#include "network_session_parameters_chunked.h"
+#include <cseries\cseries.h>
+#include <game\game_progression.h>
+#include <game\game_options.h>
+#include <networking\session\network_session_parameters_base.h>
+#include <networking\session\network_session_parameters_generic.h>
+#include <networking\session\network_session_parameters_chunked.h>
 
 // non-original names, may be incorrect
 enum e_network_game_privacy

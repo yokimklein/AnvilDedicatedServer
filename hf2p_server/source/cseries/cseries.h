@@ -2,8 +2,8 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/cseries.hpp
 
-#include "..\math\integer_math.h"
-#include "..\math\real_math.h"
+#include <math\integer_math.h>
+#include <math\real_math.h>
 
 #include <stdarg.h> 
 #include <windows.h>

@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_message_type_collection.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
 
 class c_network_out_of_band_consumer
 {

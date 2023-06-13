@@ -1,11 +1,11 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\game\players.h"
-#include "data.h"
-#include "..\game\game_globals.h"
-#include "..\simulation\simulation_gamestate_entities.h"
-#include "..\game\player_mapping.h"
-#include "..\game\game_time.h"
+#include <cseries\cseries.h>
+#include <game\players.h>
+#include <memory\data.h>
+#include <game\game_globals.h>
+#include <simulation\simulation_gamestate_entities.h>
+#include <game\player_mapping.h>
+#include <game\game_time.h>
 
 struct s_thread_local_storage
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
-#include "files_windows.h"
+#include <cseries\cseries.h>
+#include <tag_files\files_windows.h>
 
 struct s_file_reference
 {

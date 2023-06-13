@@ -1,7 +1,7 @@
 #pragma once
-#include "items.h"
-#include "..\objects\target_tracking.h"
-#include "..\animations\animation_data.h"
+#include <items\items.h>
+#include <objects\target_tracking.h>
+#include <animations\animation_data.h>
 
 enum e_weapon_barrel_state
 {

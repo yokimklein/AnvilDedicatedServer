@@ -1,9 +1,9 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
-#include "game_engine_default.h"
-#include "game_engine_variant.h"
-#include "game_engine_slayer_traits.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_default.h>
+#include <game\game_engine_variant.h>
+#include <game\game_engine_slayer_traits.h>
 
 class c_game_engine_slayer_variant : c_game_engine_base_variant
 {

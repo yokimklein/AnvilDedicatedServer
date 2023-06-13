@@ -1,7 +1,7 @@
 #pragma once
-#include "transport_address.h"
-#include "..\network_globals.h"
-#include "..\..\simulation\simulation.h"
+#include <networking\transport\transport_address.h>
+#include <networking\network_globals.h>
+#include <simulation\simulation.h>
 
 // 51 rows, it being sessions * peers is assumed and not confirmed
 constexpr long k_xnet_shim_table_rows = k_network_maximum_machines_per_session * k_network_maximum_sessions;

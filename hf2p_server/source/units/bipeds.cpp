@@ -1,6 +1,6 @@
 #include "bipeds.h"
-#include "..\memory\tls.h"
-#include "..\simulation\game_interface\simulation_game_objects.h"
+#include <memory\tls.h>
+#include <simulation\game_interface\simulation_game_objects.h>
 
 bool __fastcall biped_update_melee_turning(datum_index biped_index)
 {

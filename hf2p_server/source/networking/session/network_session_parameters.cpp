@@ -1,5 +1,5 @@
 #include "network_session_parameters.h"
-#include "network_session.h"
+#include <networking\session\network_session.h>
 #include <stdio.h>
 
 void c_network_session_parameters::check_to_send_updates()

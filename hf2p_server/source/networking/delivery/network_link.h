@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\transport\transport_address.h"
-#include "..\network_statistics.h"
-#include "..\transport\transport_endpoint_winsock.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_address.h>
+#include <networking\network_statistics.h>
+#include <networking\transport\transport_endpoint_winsock.h>
 
 class c_network_channel;
 class c_network_message_gateway;

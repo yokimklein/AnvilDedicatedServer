@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 class c_simulation_world;
 class c_replication_event_manager;

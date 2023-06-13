@@ -1,7 +1,7 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "game_engine_player_traits.h"
-#include "..\memory\data.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_player_traits.h>
+#include <memory\data.h>
 
 enum e_base_variant_flags
 {

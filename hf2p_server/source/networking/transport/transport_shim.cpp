@@ -1,6 +1,6 @@
 #include "transport_shim.h"
-#include "..\..\anvil\server_tools.h"
-#include "..\..\game\game.h"
+#include <anvil\server_tools.h>
+#include <game\game.h>
 
 // returns the index of the row with a matching transport address or secure address
 // returns -1 if no rows match & ignore_invalid_rows is true, otherwise it returns the first invalid/unused row

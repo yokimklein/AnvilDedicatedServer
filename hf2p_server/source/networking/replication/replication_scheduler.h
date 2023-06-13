@@ -1,5 +1,5 @@
 #pragma once
-#include "..\delivery\network_connection.h"
+#include <networking\delivery\network_connection.h>
 
 enum e_network_read_result;
 class c_bitstream;

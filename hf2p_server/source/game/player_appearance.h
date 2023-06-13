@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 constexpr long k_player_configuration_maximum_loadouts = 3; // 5 in earlier builds
 

@@ -1,10 +1,10 @@
 #include "simulation_game_objects.h"
-#include "..\..\game\game.h"
+#include <game\game.h>
 #include "assert.h"
-#include "..\simulation_gamestate_entities.h"
+#include <simulation\simulation_gamestate_entities.h>
 #include <stdio.h>
-#include "..\simulation_world.h"
-#include "..\..\memory\tls.h"
+#include <simulation\simulation_world.h>
+#include <memory\tls.h>
 
 void __cdecl simulation_action_object_create(datum_index object_index)
 {

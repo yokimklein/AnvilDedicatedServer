@@ -1,7 +1,7 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_message_type_collection.h"
-#include "..\transport\transport_security.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\transport\transport_security.h>
 
 #pragma pack(push, 8)
 struct s_network_message_join_request : s_network_message

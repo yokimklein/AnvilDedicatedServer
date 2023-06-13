@@ -1,6 +1,6 @@
 #pragma once
-#include "..\session\network_session_parameters_session.h"
-#include "..\session\network_observer.h"
+#include <networking\session\network_session_parameters_session.h>
+#include <networking\session\network_observer.h>
 
 static bool* life_cycle_initialized = (bool*)base_address(0x3EADFA8);
 

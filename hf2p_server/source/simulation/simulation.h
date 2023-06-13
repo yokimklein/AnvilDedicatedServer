@@ -2,12 +2,12 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/simulation/simulation.hpp
 
-#include "..\cseries\cseries.h"
-#include "..\game\player_control.h"
-#include "..\game\players.h"
-#include "..\replication\replication_encoding.h"
-#include "..\units\units.h"
-#include "simulation_queue.h"
+#include <cseries\cseries.h>
+#include <game\player_control.h>
+#include <game\players.h>
+#include <replication\replication_encoding.h>
+#include <units\units.h>
+#include <simulation\simulation_queue.h>
 
 constexpr long k_network_maximum_machines_per_session = 17; // 16 in h3 debug
 constexpr long k_network_maximum_players_per_session = 16;

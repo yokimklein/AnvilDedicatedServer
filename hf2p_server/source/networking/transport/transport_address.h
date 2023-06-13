@@ -1,5 +1,5 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 // wherever this is used seems to come from a precompiler macro specifying the build platform
 enum e_transport_platform : long

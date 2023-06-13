@@ -1,6 +1,6 @@
 #include "game_time.h"
 #include "assert.h"
-#include "..\memory\tls.h"
+#include <memory\tls.h>
 
 long game_time_get()
 {

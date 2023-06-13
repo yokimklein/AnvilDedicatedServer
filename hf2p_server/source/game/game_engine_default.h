@@ -1,8 +1,8 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
-#include "game_engine_traits.h"
-#include "..\tag_files\files.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_traits.h>
+#include <tag_files\files.h>
 
 enum e_multiplayer_team;
 enum e_team_scoring_method;

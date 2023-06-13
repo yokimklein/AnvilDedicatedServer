@@ -1,8 +1,8 @@
 #include "players.h"
 #include <stdio.h>
-#include "..\memory\tls.h"
-#include "game.h"
-#include "..\simulation\game_interface\simulation_game_objects.h"
+#include <memory\tls.h>
+#include <game\game.h>
+#include <simulation\game_interface\simulation_game_objects.h>
 
 bool player_identifier_is_valid(s_player_identifier const* identifier)
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 enum e_damage_reporting_type
 {

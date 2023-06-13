@@ -1,7 +1,7 @@
 #pragma once
-#include "..\game\game_engine.h"
-#include "..\networking\session\network_session.h"
-#include "..\game\game_time.h"
+#include <game\game_engine.h>
+#include <networking\session\network_session.h>
+#include <game\game_time.h>
 
 // TODO: replace this with anvil_get_update_rate_ms
 constexpr long k_anvil_update_rate_ms = 1000 / 60;

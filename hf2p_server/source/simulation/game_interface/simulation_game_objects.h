@@ -1,6 +1,6 @@
 #pragma once
-#include "simulation_game_entities.h"
-#include "..\..\cseries\cseries.h"
+#include <simulation\game_interface\simulation_game_entities.h>
+#include <cseries\cseries.h>
 
 enum e_simulation_object_update_flag : long
 {

@@ -1,9 +1,9 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_message_type_collection.h"
-#include "..\transport\transport_address.h"
-#include "..\..\memory\bitstream.h"
-#include "network_messages_out_of_band.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\transport\transport_address.h>
+#include <memory\bitstream.h>
+#include <networking\messages\network_messages_out_of_band.h>
 
 class c_network_link;
 class c_network_message_handler;

@@ -1,11 +1,11 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\tag_files\tag_field.h"
-#include "..\tag_files\tag_block.h"
-#include "damage.h"
-#include "..\tag_files\tag_field.h"
-#include "..\tag_files\tag_block.h"
-#include "multiplayer_game_objects.h"
+#include <cseries\cseries.h>
+#include <tag_files\tag_field.h>
+#include <tag_files\tag_block.h>
+#include <objects\damage.h>
+#include <tag_files\tag_field.h>
+#include <tag_files\tag_block.h>
+#include <objects\multiplayer_game_objects.h>
 
 enum e_object_definition_flags
 {

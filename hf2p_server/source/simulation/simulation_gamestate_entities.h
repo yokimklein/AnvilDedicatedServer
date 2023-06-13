@@ -1,5 +1,5 @@
 #pragma once
-#include "..\memory\data.h"
+#include <memory\data.h>
 
 struct simulation_gamestate_entity_datum : s_datum_header
 {

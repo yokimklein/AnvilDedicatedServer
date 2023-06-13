@@ -1,8 +1,8 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "game_interface\simulation_game_entities.h"
-#include "game_interface\simulation_game_events.h"
-#include "simulation_entity_definition.h"
+#include <cseries\cseries.h>
+#include <simulation\game_interface\simulation_game_entities.h>
+#include <simulation\game_interface\simulation_game_events.h>
+#include <simulation\simulation_entity_definition.h>
 
 struct c_simulation_event_definition;
 class c_simulation_type_collection

@@ -1,18 +1,18 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_session_parameters_session.h"
-#include "network_session_parameters_game.h"
-#include "network_session_parameters_game_variant.h"
-#include "network_session_parameters_map_variant.h"
-#include "network_session_parameters_saved_film_game_options.h"
-#include "network_session_parameters_matchmaking.h"
-#include "network_session_parameter_types.h"
-#include "network_session_parameters_ui.h"
-#include "..\messages\network_messages_session_parameters.h"
-#include "network_session_parameters_generic.h"
-#include "..\..\shell\shell.h"
-#include "..\..\simulation\simulation.h"
-#include "network_session_state.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session_parameters_session.h>
+#include <networking\session\network_session_parameters_game.h>
+#include <networking\session\network_session_parameters_game_variant.h>
+#include <networking\session\network_session_parameters_map_variant.h>
+#include <networking\session\network_session_parameters_saved_film_game_options.h>
+#include <networking\session\network_session_parameters_matchmaking.h>
+#include <networking\session\network_session_parameter_types.h>
+#include <networking\session\network_session_parameters_ui.h>
+#include <networking\messages\network_messages_session_parameters.h>
+#include <networking\session\network_session_parameters_generic.h>
+#include <shell\shell.h>
+#include <simulation\simulation.h>
+#include <networking\session\network_session_state.h>
 
 #pragma pack(push, 4)
 class c_network_session;

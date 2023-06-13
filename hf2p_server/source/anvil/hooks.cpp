@@ -2,32 +2,32 @@
 // I will eventually make it look better - Yokim
 
 #include "hooks.h"
-#include "patch\Patch.hpp"
+#include <anvil\patch\Patch.hpp> // TODO: replace & remove ED's patch system
 
-#include "..\cseries\cseries.h"
-#include "..\networking\session\network_session.h"
-#include "..\networking\messages\network_message_handler.h"
-#include "..\simulation\simulation_world.h"
-#include "..\networking\messages\network_message_gateway.h"
-#include "..\networking\logic\network_session_interface.h"
-#include "..\networking\network_globals.h"
-#include "backend.h"
-#include "..\networking\logic\network_life_cycle.h"
-#include "..\networking\transport\transport_shim.h"
-#include "..\networking\session\network_managed_session.h"
-#include "server_tools.h"
-#include "..\simulation\simulation_debug_globals.h"
-#include "..\simulation\game_interface\simulation_game_action.h"
-#include "..\memory\tls.h"
-#include "..\simulation\game_interface\simulation_game_objects.h"
-#include "build_version.h"
-#include "..\game\game_results.h"
-#include "..\hf2p\hf2p.h"
-#include "..\objects\objects.h"
-#include "..\simulation\game_interface\simulation_game_events.h"
-#include "..\game\game.h"
-#include "..\units\units.h"
-#include "..\units\bipeds.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session.h>
+#include <networking\messages\network_message_handler.h>
+#include <simulation\simulation_world.h>
+#include <networking\messages\network_message_gateway.h>
+#include <networking\logic\network_session_interface.h>
+#include <networking\network_globals.h>
+#include <anvil\backend.h>
+#include <networking\logic\network_life_cycle.h>
+#include <networking\transport\transport_shim.h>
+#include <networking\session\network_managed_session.h>
+#include <anvil\server_tools.h>
+#include <simulation\simulation_debug_globals.h>
+#include <simulation\game_interface\simulation_game_action.h>
+#include <memory\tls.h>
+#include <simulation\game_interface\simulation_game_objects.h>
+#include <anvil\build_version.h>
+#include <game\game_results.h>
+#include <hf2p\hf2p.h>
+#include <objects\objects.h>
+#include <simulation\game_interface\simulation_game_events.h>
+#include <game\game.h>
+#include <units\units.h>
+#include <units\bipeds.h>
 
 // This only works with parameterless functions - start_address is a baseless offset
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled 

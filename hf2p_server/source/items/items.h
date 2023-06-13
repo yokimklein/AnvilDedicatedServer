@@ -1,5 +1,5 @@
 #pragma once
-#include "..\objects\objects.h"
+#include <objects\objects.h>
 
 struct s_item_data : s_object_data
 {

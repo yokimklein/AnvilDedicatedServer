@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "transport_address.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_address.h>
 
 struct s_transport_unique_identifier
 {

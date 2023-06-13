@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 #pragma pack(push, 4)
 class c_bitstream

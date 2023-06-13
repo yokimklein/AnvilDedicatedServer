@@ -1,11 +1,11 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\simulation\simulation.h"
-#include "players.h"
-#include "player_configuration.h"
-#include "game_options.h"
-#include "..\models\damage_info_definitions.h"
-#include "..\text\unicode.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation.h>
+#include <game\players.h>
+#include <game\player_configuration.h>
+#include <game\game_options.h>
+#include <models\damage_info_definitions.h>
+#include <text\unicode.h>
 
 enum e_game_results_statistic
 {

@@ -1,8 +1,8 @@
 #pragma once
-#include "..\tag_files\tag_field.h"
-#include "..\tag_files\tag_block.h"
-#include "damage_info_definitions.h"
-#include "..\math\real_math.h"
+#include <tag_files\tag_field.h>
+#include <tag_files\tag_block.h>
+#include <models\damage_info_definitions.h>
+#include <math\real_math.h>
 
 constexpr long k_maximum_number_of_model_regions = 16;
 constexpr long k_maximum_number_of_model_region_permutations = 12;

@@ -1,5 +1,5 @@
 #pragma once
-#include "..\transport\transport_security.h"
+#include <networking\transport\transport_security.h>
 
 class c_network_session;
 class c_network_session_manager

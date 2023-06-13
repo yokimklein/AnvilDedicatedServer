@@ -1,9 +1,9 @@
 #include "network_message_handler.h"
 #include <iostream>
-#include "network_message_gateway.h"
-#include "..\session\network_session_manager.h"
-#include "..\session\network_session.h"
-#include "..\network_utilities.h"
+#include <networking\messages\network_message_gateway.h>
+#include <networking\session\network_session_manager.h>
+#include <networking\session\network_session.h>
+#include <networking\network_utilities.h>
 
 void c_network_message_handler::handle_ping(s_transport_address const* outgoing_address, s_network_message_ping const* message)
 {

@@ -1,10 +1,10 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\game\players.h"
-#include "..\networking\delivery\network_channel.h"
-#include "..\networking\replication\replication_event_manager_view.h"
-#include "..\networking\replication\replication_entity_manager_view.h"
-#include "..\networking\replication\replication_control_view.h"
+#include <cseries\cseries.h>
+#include <game\players.h>
+#include <networking\delivery\network_channel.h>
+#include <networking\replication\replication_event_manager_view.h>
+#include <networking\replication\replication_entity_manager_view.h>
+#include <networking\replication\replication_control_view.h>
 
 enum e_simulation_view_establishment_mode : long
 {

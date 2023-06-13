@@ -1,8 +1,8 @@
 #pragma once
-#include "network_session_parameters_base.h"
-#include "network_session_parameters_generic.h"
-#include "..\..\cseries\cseries.h"
-#include "..\..\interface\gui_pregame_setup_manager.h"
+#include <networking\session\network_session_parameters_base.h>
+#include <networking\session\network_session_parameters_generic.h>
+#include <cseries\cseries.h>
+#include <interface\gui_pregame_setup_manager.h>
 
 enum e_network_ui_state_flags
 {

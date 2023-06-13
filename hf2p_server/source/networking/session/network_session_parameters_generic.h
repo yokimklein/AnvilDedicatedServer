@@ -1,5 +1,5 @@
 #pragma once
-#include "network_session_parameters_base.h"
+#include <networking\session\network_session_parameters_base.h>
 #include <iostream>
 #include "assert.h"
 

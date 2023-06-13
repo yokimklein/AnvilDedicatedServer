@@ -1,12 +1,12 @@
 #include "simulation_game_action.h"
-#include "..\..\game\game.h"
-#include "..\simulation_gamestate_entities.h"
-#include "simulation_game_entities.h"
-#include "..\simulation_world.h"
+#include <game\game.h>
+#include <simulation\simulation_gamestate_entities.h>
+#include <simulation\game_interface\simulation_game_entities.h>
+#include <simulation\simulation_world.h>
 #include "assert.h"
 #include <stdio.h>
-#include "simulation_game_objects.h"
-#include "..\..\items\weapons.h"
+#include <simulation\game_interface\simulation_game_objects.h>
+#include <items\weapons.h>
 
 void simulation_action_game_engine_globals_create()
 {

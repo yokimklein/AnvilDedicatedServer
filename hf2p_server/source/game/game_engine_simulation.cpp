@@ -1,7 +1,7 @@
 #include "game_engine_simulation.h"
 #include "assert.h"
-#include "..\memory\tls.h"
-#include "game_engine_util.h"
+#include <memory\tls.h>
+#include <game\game_engine_util.h>
 
 // do these belong in game_globals.cpp?
 void game_engine_globals_set_statborg_gamestate_index(datum_index index)

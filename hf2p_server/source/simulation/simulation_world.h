@@ -1,14 +1,14 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "simulation_view.h"
-#include "simulation.h"
-#include "simulation_actors.h"
-#include "simulation_players.h"
-#include "simulation_watcher.h"
-#include "simulation_queue.h"
-#include "simulation_entity_database.h"
-#include "..\networking\replication\replication_event_manager.h"
-#include "..\networking\replication\replication_entity_manager.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation_view.h>
+#include <simulation\simulation.h>
+#include <simulation\simulation_actors.h>
+#include <simulation\simulation_players.h>
+#include <simulation\simulation_watcher.h>
+#include <simulation\simulation_queue.h>
+#include <simulation\simulation_entity_database.h>
+#include <networking\replication\replication_event_manager.h>
+#include <networking\replication\replication_entity_manager.h>
 
 enum e_simulation_world_type : long
 {

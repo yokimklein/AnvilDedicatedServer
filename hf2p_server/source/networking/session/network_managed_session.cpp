@@ -1,9 +1,9 @@
 #include "network_managed_session.h"
-#include "..\..\cseries\cseries.h"
-#include "network_session.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session.h>
 #include <iostream>
 #include <assert.h>
-#include "..\network_time.h"
+#include <networking\network_time.h>
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {

@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\memory\bitstream.h"
-#include "network_session_parameter_types.h"
+#include <memory\bitstream.h>
+#include <networking\session\network_session_parameter_types.h>
 
 struct c_network_session_parameter_type_collection
 {

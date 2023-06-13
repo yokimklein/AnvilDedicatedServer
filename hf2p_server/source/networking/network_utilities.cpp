@@ -1,6 +1,6 @@
 #include "network_utilities.h"
 #include <timeapi.h>
-#include "network_time.h"
+#include <networking\network_time.h>
 
 void network_get_build_identifiers(long* executable_type, long* executable_version, long* compatible_version)
 {

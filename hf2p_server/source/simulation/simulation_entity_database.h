@@ -1,6 +1,6 @@
 #pragma once
-#include "game_interface\simulation_game_entities.h"
-#include "simulation_event_handler.h"
+#include <simulation\game_interface\simulation_game_entities.h>
+#include <simulation\simulation_event_handler.h>
 
 class c_simulation_world;
 class c_replication_entity_manager;

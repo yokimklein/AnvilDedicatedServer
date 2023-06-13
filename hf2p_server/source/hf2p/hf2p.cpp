@@ -1,5 +1,5 @@
 #include "hf2p.h"
-#include "..\memory\tls.h"
+#include <memory\tls.h>
 
 void hf2p_player_podium_initialize(long podium_biped_index, long player_index)
 {

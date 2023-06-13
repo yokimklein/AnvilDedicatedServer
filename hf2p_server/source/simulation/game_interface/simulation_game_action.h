@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "simulation_game_entities.h"
+#include <cseries\cseries.h>
+#include <simulation\game_interface\simulation_game_entities.h>
 
 void simulation_action_game_engine_globals_create();
 void simulation_action_game_statborg_create();

@@ -1,8 +1,8 @@
 #include "network_channel.h"
 #include "assert.h"
-#include "..\session\network_observer.h"
-#include "..\session\network_session.h"
-#include "..\..\text\unicode.h"
+#include <networking\session\network_observer.h>
+#include <networking\session\network_session.h>
+#include <text\unicode.h>
 
 char const* k_network_channel_reason_names[k_network_channel_reason_count] =
 {

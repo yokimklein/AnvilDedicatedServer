@@ -2,8 +2,7 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/cseries.cpp
 
-#include "..\memory\byte_swapping.h"
-//#include "..\tag_files\string_ids.h"
+#include <memory\byte_swapping.h>
 
 #include <assert.h>
 #include <ctype.h>

@@ -1,9 +1,9 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_session_parameters_base.h"
-#include "network_session_parameters_generic.h"
-#include "..\logic\network_join.h"
-#include "network_session_state.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session_parameters_base.h>
+#include <networking\session\network_session_parameters_generic.h>
+#include <networking\logic\network_join.h>
+#include <networking\session\network_session_state.h>
 
 struct s_network_session_parameter_session_mode
 {

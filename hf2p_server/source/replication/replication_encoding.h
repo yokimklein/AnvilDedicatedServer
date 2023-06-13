@@ -2,9 +2,9 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/replication/replication_encoding.hpp
 
-#include "..\cseries\cseries.h"
-#include "..\game\aim_target.h"
-#include "..\units\units.h"
+#include <cseries\cseries.h>
+#include <game\aim_target.h>
+#include <units\units.h>
 
 struct s_player_prediction
 {

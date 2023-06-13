@@ -1,6 +1,6 @@
 #pragma once
-#include "..\memory\data.h"
-#include "..\cseries\cseries.h"
+#include <memory\data.h>
+#include <cseries\cseries.h>
 
 struct s_player_mapping
 {

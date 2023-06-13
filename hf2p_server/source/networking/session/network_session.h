@@ -1,11 +1,11 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_session_membership.h"
-#include "network_session_parameters.h"
-#include "network_observer.h"
-#include "..\messages\network_messages_session_membership.h"
-#include "..\messages\network_messages_session_protocol.h"
-#include "..\..\game\players.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session_membership.h>
+#include <networking\session\network_session_parameters.h>
+#include <networking\session\network_observer.h>
+#include <networking\messages\network_messages_session_membership.h>
+#include <networking\messages\network_messages_session_protocol.h>
+#include <game\players.h>
 
 enum e_network_session_type
 {

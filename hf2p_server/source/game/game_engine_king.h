@@ -1,9 +1,9 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
-#include "game_engine_default.h"
-#include "game_engine_koth_traits.h"
-#include "game_engine_variant.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_default.h>
+#include <game\game_engine_koth_traits.h>
+#include <game\game_engine_variant.h>
 
 class c_game_engine_king_variant : c_game_engine_base_variant
 {

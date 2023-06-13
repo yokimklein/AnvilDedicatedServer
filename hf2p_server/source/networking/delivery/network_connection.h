@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\memory\sliding_window.h"
+#include <cseries\cseries.h>
+#include <memory\sliding_window.h>
 
 enum e_network_read_result;
 enum e_network_channel_closure_reason;

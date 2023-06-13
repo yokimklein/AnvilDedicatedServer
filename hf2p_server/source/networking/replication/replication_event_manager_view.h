@@ -1,7 +1,7 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "replication_scheduler.h"
-#include "replication_event_manager.h"
+#include <cseries\cseries.h>
+#include <networking\replication\replication_scheduler.h>
+#include <networking\replication\replication_event_manager.h>
 
 struct s_replication_event_manager_view_statistics
 {

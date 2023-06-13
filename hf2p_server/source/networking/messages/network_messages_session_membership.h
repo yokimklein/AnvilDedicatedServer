@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\game\players.h"
-#include "..\..\game\player_configuration.h"
-#include "..\session\network_session_membership.h"
+#include <cseries\cseries.h>
+#include <game\players.h>
+#include <game\player_configuration.h>
+#include <networking\session\network_session_membership.h>
 
 #pragma pack(push, 1)
 struct s_network_message_membership_update_player

@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "tag_field.h"
+#include <cseries\cseries.h>
+#include <tag_files\tag_field.h>
 
 enum e_tag_data_flags
 {

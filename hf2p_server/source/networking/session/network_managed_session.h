@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\transport\transport_security.h"
-#include "..\..\simulation\simulation.h"
-#include "network_session_parameters_session.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_security.h>
+#include <simulation\simulation.h>
+#include <networking\session\network_session_parameters_session.h>
 
 enum e_online_context_id : ulong
 {

@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_message_type_collection.h"
-#include "..\session\network_session_parameter_types.h"
-#include "..\transport\transport_security.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\session\network_session_parameter_types.h>
+#include <networking\transport\transport_security.h>
 
 #pragma pack(push, 8)
 struct s_network_message_parameters_update : s_network_message

@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\units\units.h"
+#include <cseries\cseries.h>
+#include <units\units.h>
 
 class c_simulation_world;
 struct c_simulation_actor

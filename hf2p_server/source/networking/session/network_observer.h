@@ -1,7 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\delivery\network_channel.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\delivery\network_channel.h>
+#include <networking\network_statistics.h>
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 

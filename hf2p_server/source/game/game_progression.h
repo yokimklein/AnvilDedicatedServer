@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 enum e_game_progression_level
 {

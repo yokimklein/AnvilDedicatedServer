@@ -1,6 +1,6 @@
-#include "networK_memory.h"
+#include "network_memory.h"
 #include "assert.h"
-#include "..\memory\rockall_heap.h"
+#include <memory\rockall_heap.h>
 
 void* network_heap_allocate_block(long block_size)
 {

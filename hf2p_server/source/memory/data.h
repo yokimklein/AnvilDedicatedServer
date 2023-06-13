@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/memory/data.hpp
 

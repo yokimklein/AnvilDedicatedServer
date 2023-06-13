@@ -1,5 +1,5 @@
 #pragma once
-#include "..\memory\data.h"
+#include <memory\data.h>
 
 enum e_tag_field_type
 {

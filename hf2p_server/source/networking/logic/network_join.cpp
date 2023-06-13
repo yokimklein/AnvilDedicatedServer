@@ -1,8 +1,8 @@
 #include "network_join.h"
 #include <iostream>
-#include "..\network_utilities.h"
-#include "..\messages\network_message_type_collection.h"
-#include "..\session\network_session.h"
+#include <networking\network_utilities.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\session\network_session.h>
 
 void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request)
 {

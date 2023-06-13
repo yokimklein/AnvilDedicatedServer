@@ -1,13 +1,13 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\simulation\simulation.h"
-#include "..\shell\shell.h"
-#include "game_progression.h"
-#include "game_variant.h"
-#include "..\tools\network_webstats.h"
-#include "..\scenario\scenario_map_variant.h"
-#include "players.h"
-#include "player_configuration.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation.h>
+#include <shell\shell.h>
+#include <game\game_progression.h>
+#include <game\game_variant.h>
+#include <tools\network_webstats.h>
+#include <scenario\scenario_map_variant.h>
+#include <game\players.h>
+#include <game\player_configuration.h>
 
 #pragma pack(push, 1)
 struct game_machine_options

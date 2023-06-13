@@ -1,8 +1,8 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\tag_files\tag_field.h"
-#include "..\tag_files\tag_block.h"
-#include "..\objects\damage.h"
+#include <cseries\cseries.h>
+#include <tag_files\tag_field.h>
+#include <tag_files\tag_block.h>
+#include <objects\damage.h>
 
 enum e_global_damage_info_flags
 {

@@ -1,9 +1,9 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_session_parameters_chunked.h"
-#include "..\..\game\game_options.h"
-#include "..\..\shell\shell.h"
-#include "..\..\text\unicode.h"
+#include <cseries\cseries.h>
+#include <networking\session\network_session_parameters_chunked.h>
+#include <game\game_options.h>
+#include <shell\shell.h>
+#include <text\unicode.h>
 
 struct s_saved_film_description
 {

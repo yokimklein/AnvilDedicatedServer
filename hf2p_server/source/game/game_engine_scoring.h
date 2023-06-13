@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 struct s_game_engine_score_list
 {

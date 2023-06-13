@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\simulation\simulation.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation.h>
 
 // these both may be inaccurate for ms29, TODO - VERIFY!
 const long k_network_session_parameters_update_payload_size = 0x20000;

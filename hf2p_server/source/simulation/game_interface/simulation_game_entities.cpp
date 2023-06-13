@@ -1,18 +1,18 @@
 #include "simulation_game_entities.h"
 #include "assert.h"
-#include "..\..\cseries\cseries.h"
-#include "..\simulation_world.h"
+#include <cseries\cseries.h>
+#include <simulation\simulation_world.h>
 #include <stdio.h>
-#include "..\simulation_gamestate_entities.h"
-#include "..\simulation_type_collection.h"
-#include "..\..\game\game_engine_simulation.h"
-#include "..\..\tag_files\tag_files.h"
-#include "..\..\game\game_engine_util.h"
-#include "..\..\models\model_definitions.h"
-#include "..\..\models\damage_info_definitions.h"
-#include "..\..\objects\object_definitions.h"
-#include "..\..\physics\physics_model_definitions.h"
-#include "..\..\game\game.h"
+#include <simulation\simulation_gamestate_entities.h>
+#include <simulation\simulation_type_collection.h>
+#include <game\game_engine_simulation.h>
+#include <tag_files\tag_files.h>
+#include <game\game_engine_util.h>
+#include <models\model_definitions.h>
+#include <models\damage_info_definitions.h>
+#include <objects\object_definitions.h>
+#include <physics\physics_model_definitions.h>
+#include <game\game.h>
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index)
 {

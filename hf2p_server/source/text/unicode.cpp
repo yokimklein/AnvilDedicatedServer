@@ -1,5 +1,5 @@
 #include "unicode.h"
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 #include <assert.h>
 #include <stdio.h>

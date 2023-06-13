@@ -1,9 +1,9 @@
 #include "scenario_map_variant.h"
 #include "assert.h"
-#include "..\memory\tls.h"
-#include "..\game\game_engine.h"
-#include "..\game\game_engine_util.h"
-#include "..\game\game.h"
+#include <memory\tls.h>
+#include <game\game_engine.h>
+#include <game\game_engine_util.h>
+#include <game\game.h>
 
 c_map_variant::c_map_variant()
 {

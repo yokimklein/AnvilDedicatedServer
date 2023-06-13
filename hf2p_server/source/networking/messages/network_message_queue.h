@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\memory\sliding_window.h"
-#include "network_message_type_collection.h"
-#include "..\delivery\network_connection.h"
+#include <cseries\cseries.h>
+#include <memory\sliding_window.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <networking\delivery\network_connection.h>
 
 class c_network_message_queue : c_network_channel_client
 {

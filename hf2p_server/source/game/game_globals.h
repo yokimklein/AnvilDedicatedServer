@@ -1,7 +1,7 @@
 #pragma once
-#include "game_options.h"
-#include "game_progression.h"
-#include "..\render\render_visibility_collection.h"
+#include <game\game_options.h>
+#include <game\game_progression.h>
+#include <render\render_visibility_collection.h>
 
 struct game_globals_storage
 {

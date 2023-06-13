@@ -1,8 +1,8 @@
 #include "game.h"
 #include "assert.h"
-#include "game_globals.h"
-#include "game_engine_util.h"
-#include "game_engine_team.h"
+#include <game\game_globals.h>
+#include <game\game_engine_util.h>
+#include <game\game_engine_team.h>
 
 game_options* game_options_get()
 {

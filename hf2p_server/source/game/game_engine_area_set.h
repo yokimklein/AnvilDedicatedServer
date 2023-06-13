@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\objects\multiplayer_game_objects.h"
+#include <cseries\cseries.h>
+#include <objects\multiplayer_game_objects.h>
 
 struct c_area
 {

@@ -1,7 +1,7 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\memory\data.h"
-#include "..\simulation\game_interface\simulation_game_entities.h"
+#include <cseries\cseries.h>
+#include <memory\data.h>
+#include <simulation\game_interface\simulation_game_entities.h>
 
 constexpr short k_maximum_multiplayer_players = 16;
 

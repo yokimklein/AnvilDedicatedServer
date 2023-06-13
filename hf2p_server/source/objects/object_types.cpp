@@ -1,5 +1,5 @@
 #include "object_types.h"
-#include "objects.h"
+#include <objects\objects.h>
 #include "assert.h"
 
 void object_type_detach_gamestate_entity(datum_index object_index)

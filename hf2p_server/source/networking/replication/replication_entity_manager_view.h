@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "replication_scheduler.h"
+#include <cseries\cseries.h>
+#include <networking\replication\replication_scheduler.h>
 
 enum e_replication_entity_view_state
 {

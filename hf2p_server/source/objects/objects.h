@@ -1,9 +1,9 @@
 #pragma once
-#include "..\memory\data.h"
-#include "..\cseries\cseries.h"
-#include "object_types.h"
-#include "..\scenario\scenario_definitions.h"
-#include "damage.h"
+#include <memory\data.h>
+#include <cseries\cseries.h>
+#include <objects\object_types.h>
+#include <scenario\scenario_definitions.h>
+#include <objects\damage.h>
 
 enum e_object_header_flags
 {

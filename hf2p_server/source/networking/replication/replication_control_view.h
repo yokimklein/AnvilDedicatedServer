@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\replication\replication_encoding.h"
-#include "..\..\game\game_results.h"
-#include "replication_scheduler.h"
+#include <cseries\cseries.h>
+#include <replication\replication_encoding.h>
+#include <game\game_results.h>
+#include <networking\replication\replication_scheduler.h>
 
 struct c_simulation_view_telemetry_provider;
 struct c_replication_control_view : c_replication_scheduler_client

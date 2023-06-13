@@ -2,8 +2,8 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/game/aim_assist.hpp
 
-#include "..\cseries\cseries.h"
-#include "aim_target.h"
+#include <cseries\cseries.h>
+#include <game\aim_target.h>
 
 struct s_aim_assist_targeting_result
 {

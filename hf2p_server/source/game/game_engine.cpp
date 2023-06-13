@@ -1,16 +1,16 @@
 #include "game_engine.h"
-#include "..\simulation\simulation.h"
-#include "..\simulation\game_interface\simulation_game_action.h"
-#include "..\memory\tls.h"
-#include "game_engine_util.h"
-#include "game_engine_event_definitions.h"
-#include "game.h"
-#include "game_engine_team.h"
-#include "game_results.h"
-#include "..\tag_files\string_ids.h"
+#include <simulation\simulation.h>
+#include <simulation\game_interface\simulation_game_action.h>
+#include <memory\tls.h>
+#include <game\game_engine_util.h>
+#include <game\game_engine_event_definitions.h>
+#include <game\game.h>
+#include <game\game_engine_team.h>
+#include <game\game_results.h>
+#include <tag_files\string_ids.h>
 #include "assert.h"
-#include "game_time.h"
-#include "players.h"
+#include <game\game_time.h>
+#include <game\players.h>
 
 void game_engine_attach_to_simulation()
 {

@@ -1,7 +1,7 @@
 #pragma once
-#include "game_engine.h"
-#include "game_variant.h"
-#include "game_engine_event_definitions.h"
+#include <game\game_engine.h>
+#include <game\game_variant.h>
+#include <game\game_engine_event_definitions.h>
 
 bool game_engine_is_sandbox();
 c_game_engine* current_game_engine();

@@ -1,8 +1,8 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\game\players.h"
-#include "..\game\player_control.h"
-#include "..\game\player_configuration.h"
+#include <cseries\cseries.h>
+#include <game\players.h>
+#include <game\player_control.h>
+#include <game\player_configuration.h>
 
 #pragma pack(push, 1)
 class c_simulation_world;

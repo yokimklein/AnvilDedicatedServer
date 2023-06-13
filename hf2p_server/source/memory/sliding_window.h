@@ -1,6 +1,6 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "ring_buffer.h"
+#include <cseries\cseries.h>
+#include <memory\ring_buffer.h>
 
 class c_sliding_window
 {

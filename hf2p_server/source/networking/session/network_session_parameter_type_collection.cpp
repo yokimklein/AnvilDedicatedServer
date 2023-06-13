@@ -1,5 +1,5 @@
 #include "network_session_parameter_type_collection.h"
-#include "network_session_parameters_base.h"
+#include <networking\session\network_session_parameters_base.h>
 #include <cassert>
 
 void c_network_session_parameter_type_collection::register_session_parameter_type(

@@ -1,11 +1,11 @@
 #include "server_tools.h"
 #include <iostream>
-#include "..\hf2p\hf2p_session.h"
-#include "..\interface\user_interface_session.h"
-#include "..\networking\session\network_session.h"
-#include "..\text\unicode.h"
-#include "..\hf2p\hq.h"
-#include "..\memory\tls.h"
+#include <hf2p\hf2p_session.h>
+#include <interface\user_interface_session.h>
+#include <networking\session\network_session.h>
+#include <text\unicode.h>
+#include <hf2p\hq.h>
+#include <memory\tls.h>
 
 bool anvil_create_session()
 {

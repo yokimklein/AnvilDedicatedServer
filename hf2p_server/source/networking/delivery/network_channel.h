@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\transport\transport_address.h"
-#include "..\messages\network_message_queue.h"
-#include "..\network_statistics.h"
+#include <cseries\cseries.h>
+#include <networking\transport\transport_address.h>
+#include <networking\messages\network_message_queue.h>
+#include <networking\network_statistics.h>
 
 constexpr long k_network_channel_maximum_clients = 6;
 constexpr long k_network_channel_maximum_base_clients = 3;

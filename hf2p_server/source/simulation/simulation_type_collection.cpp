@@ -1,6 +1,6 @@
 #include "simulation_type_collection.h"
 #include "assert.h"
-#include "simulation_world.h"
+#include <simulation\simulation_world.h>
 
 c_simulation_entity_definition* c_simulation_type_collection::get_entity_definition(e_simulation_entity_type entity_type)
 {

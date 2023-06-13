@@ -1,10 +1,10 @@
 #include "network_session_interface.h"
-#include "..\session\network_session.h"
-#include "..\..\text\unicode.h"
-#include "..\network_time.h"
+#include <networking\session\network_session.h>
+#include <text\unicode.h>
+#include <networking\network_time.h>
 #include <iostream>
-#include "network_life_cycle.h"
-#include "..\..\anvil\server_tools.h"
+#include <networking\logic\network_life_cycle.h>
+#include <anvil\server_tools.h>
 
 void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {

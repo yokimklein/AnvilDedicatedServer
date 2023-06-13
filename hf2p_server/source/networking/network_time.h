@@ -1,5 +1,5 @@
 #pragma once
-#include "..\cseries\cseries.h"
+#include <cseries\cseries.h>
 
 // belongs in network_time.h
 static bool* network_time_locked = (bool*)base_address(0x1038344); // network_time_globals

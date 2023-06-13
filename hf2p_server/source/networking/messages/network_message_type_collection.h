@@ -1,7 +1,7 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\memory\bitstream.h"
-#include "..\logic\network_join.h"
+#include <cseries\cseries.h>
+#include <memory\bitstream.h>
+#include <networking\logic\network_join.h>
 
 enum e_network_message_type : long
 {

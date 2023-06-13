@@ -1,6 +1,6 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "..\..\memory\data.h"
+#include <cseries\cseries.h>
+#include <memory\data.h>
 
 enum e_simulation_entity_type
 {

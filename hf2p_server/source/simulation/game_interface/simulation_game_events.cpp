@@ -1,7 +1,7 @@
 #include "simulation_game_events.h"
-#include "..\..\game\players.h"
-#include "..\..\memory\tls.h"
-#include "simulation_game_action.h"
+#include <game\players.h>
+#include <memory\tls.h>
+#include <simulation\game_interface\simulation_game_action.h>
 
 bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload)
 {

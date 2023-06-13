@@ -1,6 +1,6 @@
 #include "game_engine_util.h"
-#include "..\memory\tls.h"
-#include "game.h"
+#include <memory\tls.h>
+#include <game\game.h>
 #include "assert.h"
 
 // TODO

@@ -1,5 +1,5 @@
 #include "weapons.h"
-#include "..\memory\tls.h"
+#include <memory\tls.h>
 
 datum_index weapon_get_owner_unit_index(datum_index weapon_index)
 {

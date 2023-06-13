@@ -1,5 +1,5 @@
 #pragma once
-#include "network_session_parameters_base.h"
+#include <networking\session\network_session_parameters_base.h>
 
 struct s_network_session_parameter_matchmaking_messaging
 {

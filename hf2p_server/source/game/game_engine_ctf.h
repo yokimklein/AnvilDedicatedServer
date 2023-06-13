@@ -1,8 +1,8 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "game_engine_variant.h"
-#include "game_engine_ctf_traits.h"
-#include "game_engine_area_set.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_variant.h>
+#include <game\game_engine_ctf_traits.h>
+#include <game\game_engine_area_set.h>
 
 class c_game_engine_ctf_variant : c_game_engine_base_variant
 {

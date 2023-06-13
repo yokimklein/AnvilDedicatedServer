@@ -1,7 +1,7 @@
 #pragma once
-#include "..\cseries\cseries.h"
-#include "..\tag_files\tag_block.h"
-#include "..\tag_files\tag_field.h"
+#include <cseries\cseries.h>
+#include <tag_files\tag_block.h>
+#include <tag_files\tag_field.h>
 
 enum e_physics_model_flags
 {

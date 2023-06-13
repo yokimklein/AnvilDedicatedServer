@@ -1,9 +1,9 @@
 #pragma once
 
-#include "..\cseries\cseries.h"
-#include "game_engine_traits.h"
-#include "..\saved_games\saved_game_files.h"
-#include "..\memory\bitstream.h"
+#include <cseries\cseries.h>
+#include <game\game_engine_traits.h>
+#include <saved_games\saved_game_files.h>
+#include <memory\bitstream.h>
 
 enum e_game_engine_type
 {

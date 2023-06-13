@@ -1,8 +1,8 @@
 #pragma once
-#include "..\..\cseries\cseries.h"
-#include "network_message_type_collection.h"
-#include "..\..\simulation\simulation_view.h"
-#include "..\..\simulation\simulation.h"
+#include <cseries\cseries.h>
+#include <networking\messages\network_message_type_collection.h>
+#include <simulation\simulation_view.h>
+#include <simulation\simulation.h>
 
 struct s_network_message_view_establishment : s_network_message
 {
