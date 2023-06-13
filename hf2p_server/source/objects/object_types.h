@@ -106,7 +106,7 @@ struct s_object_type_definition
 };
 static_assert(sizeof(s_object_type_definition) == 0xF8);
 
-static s_object_type_definition** object_type_definitions = (s_object_type_definition**)(module_base + 0xEB2448);
+static s_object_type_definition** object_type_definitions = (s_object_type_definition**)base_address(0xEB2448);
 
 void object_type_detach_gamestate_entity(datum_index object_index);
 s_object_type_definition* object_type_definition_get(e_object_type object_type);

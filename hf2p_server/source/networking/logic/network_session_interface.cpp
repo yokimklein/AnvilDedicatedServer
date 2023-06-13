@@ -8,34 +8,34 @@
 
 void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
-    ulong(__cdecl* game_language_get_default)() = reinterpret_cast<decltype(game_language_get_default)>(module_base + 0xB0C00);
-    void(__fastcall* network_session_get_connectivity)(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(module_base + 0x2E500);
-    ulong(__cdecl* build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(module_base + 0xDD750);
+    ulong(__cdecl* game_language_get_default)() = reinterpret_cast<decltype(game_language_get_default)>(base_address(0xB0C00));
+    void(__fastcall* network_session_get_connectivity)(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(base_address(0x2E500));
+    ulong(__cdecl* build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(base_address(0xDD750));
 
-    ulong peer_properties_update_timestamp = ((ulong*)(module_base + 0x3EB1498))[session->session_index()];
+    ulong peer_properties_update_timestamp = ((ulong*)base_address(0x3EB1498))[session->session_index()];
     ulong time_since_last_update = network_time_since(peer_properties_update_timestamp);
 
     // wait for network_configuration peer properties update rate
-    if (time_since_last_update < 0 || time_since_last_update >= *(ulong*)(module_base + 0x1038760))
+    if (time_since_last_update < 0 || time_since_last_update >= *(ulong*)base_address(0x1038760))
     {
         // network_life_cycle_get_observer
         c_network_observer* observer = nullptr;
         network_life_cycle_get_observer(&observer);
         s_network_session_peer_properties peer_properties = {};
-        ustrnzcpy(peer_properties.peer_name, k_anvil_machine_name, 16); // (wchar_t*)(module_base + 0x3EAE0C4)
-        ustrnzcpy(peer_properties.peer_session_name, k_anvil_session_name, 32); // (wchar_t*)(module_base + 0x3EAE0E4)
+        ustrnzcpy(peer_properties.peer_name, k_anvil_machine_name, 16); // (wchar_t*)base_address(0x3EAE0C4)
+        ustrnzcpy(peer_properties.peer_session_name, k_anvil_session_name, 32); // (wchar_t*)base_address(0x3EAE0E4)
         peer_properties.language = game_language_get_default();
         network_session_get_connectivity(session, &peer_properties.connectivity);
         observer->quality_statistics_get_ratings(&peer_properties.connectivity_badness_rating, &peer_properties.host_badness_rating, &peer_properties.client_badness_rating);
         peer_properties.peer_mp_map_mask = build_peer_mp_map_mask();
-        peer_properties.peer_map = *((ulong*)(module_base + 0x3EAE12C));
-        peer_properties.game_start_error = *((ulong*)(module_base + 0x3EAE128));
-        peer_properties.peer_map_status = *((e_peer_map_status*)(module_base + 0x3EAE130));
-        peer_properties.peer_map_progress_percentage = *((ulong*)(module_base + 0x3EAE134));
-        peer_properties.peer_game_instance = *((qword*)(module_base + 0x3EB10D8));
-        peer_properties.determinism_version = *((ulong*)(module_base + 0x1039AC8));
-        peer_properties.determinism_compatible_version = *((ulong*)(module_base + 0x1039ACC));
-        peer_properties.flags = *((ulong*)(module_base + 0x3EAE124));
+        peer_properties.peer_map = *((ulong*)base_address(0x3EAE12C));
+        peer_properties.game_start_error = *((ulong*)base_address(0x3EAE128));
+        peer_properties.peer_map_status = *((e_peer_map_status*)base_address(0x3EAE130));
+        peer_properties.peer_map_progress_percentage = *((ulong*)base_address(0x3EAE134));
+        peer_properties.peer_game_instance = *((qword*)base_address(0x3EB10D8));
+        peer_properties.determinism_version = *((ulong*)base_address(0x1039AC8));
+        peer_properties.determinism_compatible_version = *((ulong*)base_address(0x1039ACC));
+        peer_properties.flags = *((ulong*)base_address(0x3EAE124));
 
         s_transport_secure_address secure_address = {};
         s_transport_secure_address* peer_secure_address;
@@ -57,7 +57,7 @@ void network_session_update_peer_properties(c_network_session* session, s_networ
                 peer_properties.peer_map_status,
                 time_since_last_update);
             if (session->peer_request_properties_update(&secure_address, &peer_properties))
-                ((ulong*)(module_base + 0x3EB1498))[session->session_index()] = network_time_get();
+                ((ulong*)base_address(0x3EB1498))[session->session_index()] = network_time_get();
             else
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: unable to send peer-properties update\n");
         }

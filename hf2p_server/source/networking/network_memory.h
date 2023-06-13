@@ -58,4 +58,4 @@ void* network_heap_allocate_block(long block_size);
 void network_heap_free_block(void* block);
 char* network_heap_describe(char* string, long length);
 
-static s_network_shared_memory_globals* network_shared_memory_globals = (s_network_shared_memory_globals*)(module_base + 0x1038284);
+static s_network_shared_memory_globals* network_shared_memory_globals = (s_network_shared_memory_globals*)base_address(0x1038284);

@@ -64,7 +64,7 @@ long c_network_session_membership::get_next_player(long player_index)
 long c_network_session_membership::get_peer_from_secure_address(s_transport_secure_address const* secure_address)
 {
     typedef long(__thiscall* get_peer_from_secure_address_ptr)(c_network_session_membership* session_membership, s_transport_secure_address const* secure_address);
-    auto get_peer_from_secure_address = reinterpret_cast<get_peer_from_secure_address_ptr>(module_base + 0x312B0);
+    auto get_peer_from_secure_address = reinterpret_cast<get_peer_from_secure_address_ptr>(base_address(0x312B0));
     return get_peer_from_secure_address(this, secure_address);
 }
 
@@ -81,7 +81,7 @@ bool c_network_session_membership::is_player_valid(long player_index)
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, ulong joining_network_version_number, s_transport_secure_address const* secure_address, qword join_party_nonce, qword join_nonce)
 {
     typedef long(__thiscall* add_peer_ptr)(c_network_session_membership* session_membership, long peer_index, e_network_session_peer_state peer_state, ulong joining_network_version_number, s_transport_secure_address const* secure_address, qword join_party_nonce, qword join_nonce);
-    auto add_peer_call = reinterpret_cast<add_peer_ptr>(module_base + 0x30DE0);
+    auto add_peer_call = reinterpret_cast<add_peer_ptr>(base_address(0x30DE0));
     return add_peer_call(this, peer_index, peer_state, joining_network_version_number, secure_address, join_party_nonce, join_nonce);
 }
 
@@ -89,10 +89,10 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
 {
     // rewritten because the existing find_or_add_player method has peer index 0 baked into it and will ignore the actual peer index arg
     //typedef long(__thiscall* find_or_add_player_ptr)(c_network_session_membership* session_membership, long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
-    //auto find_or_add_player_call = reinterpret_cast<find_or_add_player_ptr>(module_base + 0x31950);
+    //auto find_or_add_player_call = reinterpret_cast<find_or_add_player_ptr>(base_address(0x31950));
     //return find_or_add_player_call(this, peer_index, player_identifier, join_from_recruiting);
 
-    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(base_address(0xC3C10));
     auto peer = this->get_peer(peer_index);
     long player_index = get_player_index_from_mask(&peer->player_mask, 16);
     if (player_index != -1)
@@ -169,7 +169,7 @@ void c_network_session_membership::update_player_data(long player_index, s_playe
 long c_network_session_membership::get_peer_from_incoming_address(s_transport_address const* incoming_address)
 {
     typedef long(__thiscall* get_peer_from_incoming_address_ptr)(c_network_session_membership* session_membership, s_transport_address const* incoming_address);
-    auto get_peer_from_incoming_address_call = reinterpret_cast<get_peer_from_incoming_address_ptr>(module_base + 0x31230);
+    auto get_peer_from_incoming_address_call = reinterpret_cast<get_peer_from_incoming_address_ptr>(base_address(0x31230));
     return get_peer_from_incoming_address_call(this, incoming_address);
 }
 
@@ -224,13 +224,13 @@ long c_network_session_membership::get_player_count()
 
 void c_network_session_membership::idle()
 {
-    void(__thiscall* idle)(c_network_session_membership* membership) = reinterpret_cast<decltype(idle)>(module_base + 0x328E0);
+    void(__thiscall* idle)(c_network_session_membership* membership) = reinterpret_cast<decltype(idle)>(base_address(0x328E0));
     idle(this);
 }
 
 bool c_network_session_membership::all_peers_established()
 {
-    bool(__thiscall* all_peers_established)(c_network_session_membership* membership) = reinterpret_cast<decltype(all_peers_established)>(module_base + 0x20E50);
+    bool(__thiscall* all_peers_established)(c_network_session_membership* membership) = reinterpret_cast<decltype(all_peers_established)>(base_address(0x20E50));
     return all_peers_established(this);
 }
 
@@ -311,7 +311,7 @@ void c_network_session_membership::remove_peer(long peer_index)
         transport_secure_address_get_string(&raw_peer->secure_address),
         raw_peer->properties.peer_name); // originally calls wchar_string_to_ascii_string, but we might as well just print the original wchar string
 
-    void(__thiscall* remove_peer)(c_network_session_membership* membership, long peer_index) = reinterpret_cast<decltype(remove_peer)>(module_base + 0x30E50);
+    void(__thiscall* remove_peer)(c_network_session_membership* membership, long peer_index) = reinterpret_cast<decltype(remove_peer)>(base_address(0x30E50));
     return remove_peer(this, peer_index);
 
     /* UNFINISHED - i discovered the function still exists midway through rewriting it
@@ -610,7 +610,7 @@ void c_network_session_membership::set_peer_address(long peer_index, s_transport
 
 void c_network_session_membership::set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties)
 {
-    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(base_address(0xC3C10));
 
     auto peer = this->get_peer(peer_index);
     auto id_string = "shadow";
@@ -668,19 +668,19 @@ bool c_network_session_membership::is_player_in_player_add_queue(s_player_identi
 
 long c_network_session_membership::find_player_in_player_add_queue(s_player_identifier const* player_identifier)
 {
-    long(__thiscall* find_player_in_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(find_player_in_player_add_queue)>(module_base + 0x32D90);
+    long(__thiscall* find_player_in_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(find_player_in_player_add_queue)>(base_address(0x32D90));
     return find_player_in_player_add_queue(this, player_identifier);
 }
 
 void c_network_session_membership::remove_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
-    void(__thiscall* remove_player_from_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(remove_player_from_player_add_queue)>(module_base + 0x32C00);
+    void(__thiscall* remove_player_from_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(remove_player_from_player_add_queue)>(base_address(0x32C00));
     return remove_player_from_player_add_queue(this, player_identifier);
 }
 
 void c_network_session_membership::commit_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
-    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(base_address(0xC3C10));
 
     auto queue_entry = &this->m_player_add_queue[this->m_player_add_queue_current_index];
     bool sequence_number_not_zero = false;
@@ -694,7 +694,7 @@ void c_network_session_membership::commit_player_from_player_add_queue(s_player_
 
 void c_network_session_membership::set_player_properties(long player_index, long player_update_number, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
 {
-    void(__thiscall* set_player_properties)(c_network_session_membership* thisptr, long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(set_player_properties)>(module_base + 0x31C10);
+    void(__thiscall* set_player_properties)(c_network_session_membership* thisptr, long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(set_player_properties)>(base_address(0x31C10));
     return set_player_properties(this, player_index, player_update_number, controller_index, player_data_from_client, voice_settings);
 }
 
@@ -722,19 +722,19 @@ void c_network_session_membership::remove_player(long player_index)
 
 void c_network_session_membership::remove_player_internal(long player_index)
 {
-    void(__thiscall* remove_player_internal)(c_network_session_membership* thisptr, long player_index) = reinterpret_cast<decltype(remove_player_internal)>(module_base + 0x31B80);
+    void(__thiscall* remove_player_internal)(c_network_session_membership* thisptr, long player_index) = reinterpret_cast<decltype(remove_player_internal)>(base_address(0x31B80));
     remove_player_internal(this, player_index);
 }
 
 long c_network_session_membership::get_player_from_identifier(s_player_identifier const* player_identifier)
 {
-    long(__thiscall* get_player_from_identifier)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(get_player_from_identifier)>(module_base + 0x318B0); // funny how similar the address is to the call above
+    long(__thiscall* get_player_from_identifier)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier) = reinterpret_cast<decltype(get_player_from_identifier)>(base_address(0x318B0)); // funny how similar the address is to the call above
     return get_player_from_identifier(this, player_identifier);
 }
 
 bool c_network_session_membership::add_player_to_player_add_queue(s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings)
 {
-    bool(__thiscall* add_player_to_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(add_player_to_player_add_queue)>(module_base + 0x32B40);
+    bool(__thiscall* add_player_to_player_add_queue)(c_network_session_membership* thisptr, s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings) = reinterpret_cast<decltype(add_player_to_player_add_queue)>(base_address(0x32B40));
     return add_player_to_player_add_queue(this, player_identifier, peer_index, peer_user_index, controller_index, player_data_from_client, voice_settings);
 }
 
@@ -761,13 +761,13 @@ s_transport_secure_address* c_network_session_membership::get_peer_address(long 
 
 long c_network_session_membership::get_peer_from_observer_channel(long channel_index)
 {
-    long(__thiscall* get_peer_from_observer_channel)(c_network_session_membership* thisptr, long channel_index) = reinterpret_cast<decltype(get_peer_from_observer_channel)>(module_base + 0x31180);
+    long(__thiscall* get_peer_from_observer_channel)(c_network_session_membership* thisptr, long channel_index) = reinterpret_cast<decltype(get_peer_from_observer_channel)>(base_address(0x31180));
     return get_peer_from_observer_channel(this, channel_index);
 }
 
 bool c_network_session_membership::host_exists_at_incoming_address(s_transport_address const* incoming_address)
 {
-    bool(__thiscall* host_exists_at_incoming_address)(c_network_session_membership* thisptr, s_transport_address const* incoming_address) = reinterpret_cast<decltype(host_exists_at_incoming_address)>(module_base + 0x31370);
+    bool(__thiscall* host_exists_at_incoming_address)(c_network_session_membership* thisptr, s_transport_address const* incoming_address) = reinterpret_cast<decltype(host_exists_at_incoming_address)>(base_address(0x31370));
     return host_exists_at_incoming_address(this, incoming_address);
 }
 
@@ -779,7 +779,7 @@ long c_network_session_membership::leader_peer_index()
 bool c_network_session_membership::handle_membership_update(s_network_message_membership_update const* message)
 {
     typedef bool(__thiscall* handle_membership_update_ptr)(c_network_session_membership* thisptr, s_network_message_membership_update const* message);
-    auto handle_membership_update = reinterpret_cast<handle_membership_update_ptr>(module_base + 0x31DD0);
+    auto handle_membership_update = reinterpret_cast<handle_membership_update_ptr>(base_address(0x31DD0));
     return handle_membership_update(this, message);
 }
 

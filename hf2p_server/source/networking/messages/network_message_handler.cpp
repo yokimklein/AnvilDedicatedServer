@@ -24,7 +24,7 @@ void c_network_message_handler::handle_pong(s_transport_address const* outgoing_
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message)
 {
     typedef long(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
-    auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(module_base + 0x25AC0);
+    auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(base_address(0x25AC0));
     handle_connect_refuse(channel, message);
 }
 
@@ -184,7 +184,7 @@ void c_network_message_handler::handle_join_abort(s_transport_address const* out
 void c_network_message_handler::handle_join_refuse(s_transport_address const* outgoing_address, s_network_message_join_refuse const* message)
 {
     typedef void(__thiscall* handle_join_refuse_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_join_refuse const* message);
-    auto handle_join_refuse = reinterpret_cast<handle_join_refuse_ptr>(module_base + 0x25660);
+    auto handle_join_refuse = reinterpret_cast<handle_join_refuse_ptr>(base_address(0x25660));
     handle_join_refuse(this, outgoing_address, message);
 }
 
@@ -197,7 +197,7 @@ void c_network_message_handler::handle_leave_session(s_transport_address const* 
 void c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)
 {
     typedef void(__thiscall* handle_leave_acknowledge_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message);
-    auto handle_leave_acknowledge = reinterpret_cast<handle_leave_acknowledge_ptr>(module_base + 0x256E0);
+    auto handle_leave_acknowledge = reinterpret_cast<handle_leave_acknowledge_ptr>(base_address(0x256E0));
     return handle_leave_acknowledge(this, outgoing_address, message);
 }
 
@@ -445,20 +445,20 @@ void c_network_message_handler::handle_view_establishment(c_network_channel* cha
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
 
     typedef void(__thiscall* handle_view_establishment_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message*/);
-    auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(module_base + 0x257B0);
+    auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(base_address(0x257B0));
     return handle_view_establishment(channel/*this, channel, message*/);
 }
 
 void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message)
 {
     typedef void(__thiscall* handle_player_acknowledge_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_player_acknowledge const* message*/);
-    auto handle_player_acknowledge = reinterpret_cast<handle_player_acknowledge_ptr>(module_base + 0x25810);
+    auto handle_player_acknowledge = reinterpret_cast<handle_player_acknowledge_ptr>(base_address(0x25810));
     return handle_player_acknowledge(channel/*this, channel, message*/);
 }
 
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-    const auto handle_synchronous_update = (void (*)(c_network_channel* channel))(module_base + 0x25860);
+    const auto handle_synchronous_update = (void (*)(c_network_channel* channel))(base_address(0x25860));
     __asm
     {
         mov ecx, channel
@@ -468,37 +468,37 @@ void c_network_message_handler::handle_synchronous_update(c_network_channel* cha
 
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
 {
-    void(__thiscall* handle_synchronous_playback_control)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_playback_control)>(module_base + 0x258E0);
+    void(__thiscall* handle_synchronous_playback_control)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_playback_control)>(base_address(0x258E0));
     handle_synchronous_playback_control(channel);
 }
 
 void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
 {
-    void(__thiscall* handle_synchronous_actions)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_actions)>(module_base + 0x25990);
+    void(__thiscall* handle_synchronous_actions)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_actions)>(base_address(0x25990));
     handle_synchronous_actions(channel);
 }
 
 void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
 {
-    void(__thiscall* handle_synchronous_acknowledge)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_acknowledge)>(module_base + 0x25810);
+    void(__thiscall* handle_synchronous_acknowledge)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_acknowledge)>(base_address(0x25810));
     handle_synchronous_acknowledge(channel);
 }
 
 void c_network_message_handler::handle_synchronous_gamestate(long size, const void* unknown_struct)
 {
-    void(__cdecl* handle_synchronous_gamestate)(long size, const void* unknown_struct) = reinterpret_cast<decltype(handle_synchronous_gamestate)>(module_base + 0x25A20);
+    void(__cdecl* handle_synchronous_gamestate)(long size, const void* unknown_struct) = reinterpret_cast<decltype(handle_synchronous_gamestate)>(base_address(0x25A20));
     handle_synchronous_gamestate(size, unknown_struct);
 }
 
 void c_network_message_handler::handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message)
 {
-    void(__thiscall* handle_game_results)(c_network_channel* channel) = reinterpret_cast<decltype(handle_game_results)>(module_base + 0x25A70);
+    void(__thiscall* handle_game_results)(c_network_channel* channel) = reinterpret_cast<decltype(handle_game_results)>(base_address(0x25A70));
     handle_game_results(channel);
 }
 
 void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
 {
-    void(__thiscall* handle_synchronous_client_ready)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_client_ready)>(module_base + 0x25950);
+    void(__thiscall* handle_synchronous_client_ready)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_client_ready)>(base_address(0x25950));
     handle_synchronous_client_ready(channel);
 }
 

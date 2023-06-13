@@ -231,6 +231,6 @@ void managed_session_add_players_internal(s_online_session_player* players, long
 
 bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id)
 {
-	bool(__fastcall* managed_session_compare_id_call)(long managed_session_index, s_transport_secure_identifier const* secure_id) = reinterpret_cast<decltype(managed_session_compare_id_call)>(module_base + 0x28B40);
+	bool(__fastcall* managed_session_compare_id_call)(long managed_session_index, s_transport_secure_identifier const* secure_id) = reinterpret_cast<decltype(managed_session_compare_id_call)>(base_address(0x28B40));
 	return managed_session_compare_id_call(managed_session_index, secure_id);
 }

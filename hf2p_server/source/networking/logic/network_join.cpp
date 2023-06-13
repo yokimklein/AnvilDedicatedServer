@@ -108,12 +108,12 @@ bool network_join_process_joins_from_queue() // runs every tick the session is o
 {
     bool is_success = false;
     c_network_session* session = nullptr;
-    bool life_cycle_initialised = *(bool*)(module_base + 0x3EADFA8);
+    bool life_cycle_initialised = *(bool*)base_address(0x3EADFA8);
     bool bandwidth_is_stable = false;
-    void* life_cycle_unknown = (void*)(module_base + 0x3EADFD8);
+    void* life_cycle_unknown = (void*)base_address(0x3EADFD8);
 
     if (g_network_join_data->join_queue_mode == _network_join_open_to_join_squad && life_cycle_initialised) // c_network_life_cycle::get_session()
-        session = (c_network_session*)(module_base + 0x3970168/*0x3EADFD0*/); // life_cycle_session
+        session = (c_network_session*)base_address(0x3970168/*0x3EADFD0*/); // life_cycle_session
     if (life_cycle_initialised && life_cycle_unknown)
         bandwidth_is_stable = *(bool*)((long)life_cycle_unknown + 0x23748) == 0; // network_life_cycle_get_squad_session_for_join
 
@@ -152,7 +152,7 @@ bool network_join_process_joins_from_queue() // runs every tick the session is o
 void network_join_flush_join_queue()
 {
     typedef void(__cdecl* network_join_flush_join_queue_ptr)();
-    auto network_join_flush_join_queue_call = reinterpret_cast<network_join_flush_join_queue_ptr>(module_base + 0x2A640);
+    auto network_join_flush_join_queue_call = reinterpret_cast<network_join_flush_join_queue_ptr>(base_address(0x2A640));
 
     network_join_flush_join_queue_call();
 }

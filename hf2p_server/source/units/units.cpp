@@ -33,7 +33,7 @@ void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type)
 {
     // convert fastcall to usercall
-    const auto unit_inventory_set_weapon_index_call = (void*)(module_base + 0x426D10);
+    const auto unit_inventory_set_weapon_index_call = (void*)base_address(0x426D10);
     __asm
     {
         push drop_type

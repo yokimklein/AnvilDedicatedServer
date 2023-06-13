@@ -227,4 +227,4 @@ bool network_join_process_joins_from_queue();
 void network_join_flush_join_queue();
 void network_join_remove_join_from_queue(qword join_nonce);
 
-static s_networking_join_data* g_network_join_data = (s_networking_join_data*)(module_base + 0x1039AFC);
+static s_networking_join_data* g_network_join_data = (s_networking_join_data*)base_address(0x1039AFC);

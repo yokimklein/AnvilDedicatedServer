@@ -118,7 +118,7 @@ bool c_network_channel::get_remote_address(s_transport_address* remote_address)
 
 void c_network_channel::close(e_network_channel_closure_reason reason)
 {
-	void(__thiscall* close)(c_network_channel* channel, e_network_channel_closure_reason reason) = reinterpret_cast<decltype(close)>(module_base + 0xC310);
+	void(__thiscall* close)(c_network_channel* channel, e_network_channel_closure_reason reason) = reinterpret_cast<decltype(close)>(base_address(0xC310));
 	close(this, reason); // this sometimes throws an exception? when 2 clients timeout
 }
 
@@ -144,13 +144,13 @@ long c_network_channel::get_remote_identifier()
 
 void c_network_channel::open(s_transport_address const* remote_address, bool initial_connection, long channel_identifier)
 {
-	void(__thiscall* open)(c_network_channel* thisptr, s_transport_address const* remote_address, bool initial_connection, long channel_identifier) = reinterpret_cast<decltype(open)>(module_base + 0xBE20);
+	void(__thiscall* open)(c_network_channel* thisptr, s_transport_address const* remote_address, bool initial_connection, long channel_identifier) = reinterpret_cast<decltype(open)>(base_address(0xBE20));
 	open(this, remote_address, initial_connection, channel_identifier);
 }
 
 void c_network_channel::send_connection_established(long remote_identifier)
 {
-	void(__thiscall* send_connection_established)(c_network_channel* thisptr, long remote_identifier) = reinterpret_cast<decltype(send_connection_established)>(module_base + 0xBF80);
+	void(__thiscall* send_connection_established)(c_network_channel* thisptr, long remote_identifier) = reinterpret_cast<decltype(send_connection_established)>(base_address(0xBF80));
 	send_connection_established(this, remote_identifier);
 }
 

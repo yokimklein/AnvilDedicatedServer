@@ -32,10 +32,10 @@ struct s_player_podium
 };
 static_assert(sizeof(s_player_podium) == 0x2C);
 
-static long* g_player_podiums_count = (long*)(module_base + 0x4A2973C);
-static s_player_podium* g_player_podiums = (s_player_podium*)(module_base + 0x4A29740);
+static long* g_player_podiums_count = (long*)base_address(0x4A2973C);
+static s_player_podium* g_player_podiums = (s_player_podium*)base_address(0x4A29740);
 
 void hf2p_player_podium_initialize(long podium_biped_index, long player_index);
-const static auto hf2p_set_user_loadout = (void (*)(long player_object_index))(module_base + 0xFB6E0);
-const auto hf2p_set_player_cooldown = (void*)(module_base + 0xC19E0);
-const auto sub_2E7BE0 = (void*)(module_base + 0x2E7BE0);
+const static auto hf2p_set_user_loadout = (void (*)(long player_object_index))base_address(0xFB6E0);
+const auto hf2p_set_player_cooldown = (void*)base_address(0xC19E0);
+const auto sub_2E7BE0 = (void*)base_address(0x2E7BE0);

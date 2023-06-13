@@ -73,5 +73,5 @@ bool transport_secure_address_resolve();
 s_transport_secure_address* get_session_secure_address(s_transport_secure_address* out_address);
 bool transport_secure_key_create(s_transport_session_description* session_description);
 
-static s_transport_security_globals* transport_security_globals = (s_transport_security_globals*)(module_base + 0x4EBE9D0);
-static s_transport_secure_address const* g_session_secure_address = (s_transport_secure_address*)(module_base + 0x49C1060);
+static s_transport_security_globals* transport_security_globals = (s_transport_security_globals*)base_address(0x4EBE9D0);
+static s_transport_secure_address const* g_session_secure_address = (s_transport_secure_address*)base_address(0x49C1060);

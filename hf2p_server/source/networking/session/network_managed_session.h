@@ -139,7 +139,7 @@ struct s_online_session_manager_globals
 };
 static_assert(sizeof(s_online_session_manager_globals) == 0x2E88);
 
-static s_online_session_manager_globals* online_session_manager_globals = reinterpret_cast<s_online_session_manager_globals*>(module_base + 0x3EAB120);
+static s_online_session_manager_globals* online_session_manager_globals = reinterpret_cast<s_online_session_manager_globals*>(base_address(0x3EAB120));
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform);
 const char* managed_session_get_id_string(long managed_session_index);

@@ -94,28 +94,28 @@ bool c_network_session::handle_join_request(s_transport_address const* address, 
 bool c_network_session::handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message)
 {
     typedef bool(__thiscall* handle_peer_connect_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
-    auto handle_peer_connect = reinterpret_cast<handle_peer_connect_ptr>(module_base + 0x4B2E0);
+    auto handle_peer_connect = reinterpret_cast<handle_peer_connect_ptr>(base_address(0x4B2E0));
     return handle_peer_connect(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
 {
     typedef bool(__thiscall* handle_session_disband_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_disband const* message);
-    auto handle_session_disband = reinterpret_cast<handle_session_disband_ptr>(module_base + 0x4B4D0);
+    auto handle_session_disband = reinterpret_cast<handle_session_disband_ptr>(base_address(0x4B4D0));
     return handle_session_disband(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
 {
     typedef bool(__thiscall* handle_session_boot_ptr)(c_network_session* session, s_transport_address const* outgoing_address, s_network_message_session_boot const* message);
-    auto handle_session_boot = reinterpret_cast<handle_session_boot_ptr>(module_base + 0x4B560);
+    auto handle_session_boot = reinterpret_cast<handle_session_boot_ptr>(base_address(0x4B560));
     return handle_session_boot(this, outgoing_address, message);
 }
 
 bool c_network_session::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
 {
     typedef bool(__thiscall* handle_host_decline_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_host_decline const* message);
-    auto handle_host_decline = reinterpret_cast<handle_host_decline_ptr>(module_base + 0x4B5F0);
+    auto handle_host_decline = reinterpret_cast<handle_host_decline_ptr>(base_address(0x4B5F0));
     return handle_host_decline(this, channel, message);
 }
 
@@ -210,7 +210,7 @@ bool c_network_session::handle_time_synchronize(s_transport_address const* outgo
 bool c_network_session::channel_is_authoritative(c_network_channel* channel)
 {
     typedef bool(__thiscall* channel_is_authoritative_ptr)(c_network_session* session, c_network_channel* channel);
-    auto channel_is_authoritative = reinterpret_cast<channel_is_authoritative_ptr>(module_base + 0x227A0);
+    auto channel_is_authoritative = reinterpret_cast<channel_is_authoritative_ptr>(base_address(0x227A0));
     return channel_is_authoritative(this, channel);
 }
 
@@ -222,28 +222,28 @@ bool c_network_session::handle_membership_update(s_network_message_membership_up
 bool c_network_session::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
 {
     typedef bool(__thiscall* handle_player_refuse_ptr)(c_network_session* session, c_network_channel* channel, s_network_message_player_refuse const* message);
-    auto handle_player_refuse = reinterpret_cast<handle_player_refuse_ptr>(module_base + 0x4B7C0);
+    auto handle_player_refuse = reinterpret_cast<handle_player_refuse_ptr>(base_address(0x4B7C0));
     return handle_player_refuse(this, channel, message);
 }
 
 bool c_network_session::handle_parameters_update(s_network_message_parameters_update const* message)
 {
     typedef bool(__thiscall* handle_parameters_update_ptr)(c_network_session* session, s_network_message_parameters_update const* message);
-    auto handle_parameters_update = reinterpret_cast<handle_parameters_update_ptr>(module_base + 0x4B3D0);
+    auto handle_parameters_update = reinterpret_cast<handle_parameters_update_ptr>(base_address(0x4B3D0));
     return handle_parameters_update(this, message);
 }
 
 e_network_join_refuse_reason c_network_session::get_closure_reason()
 {
     typedef e_network_join_refuse_reason(__thiscall* get_closure_reason_ptr)(c_network_session* session);
-    auto get_closure_reason = reinterpret_cast<get_closure_reason_ptr>(module_base + 0x22ED0);
+    auto get_closure_reason = reinterpret_cast<get_closure_reason_ptr>(base_address(0x22ED0));
     return get_closure_reason(this);
 }
 
 void c_network_session::join_accept(s_network_session_join_request const* join_request, s_transport_address const* address)
 {
     typedef long(__fastcall* bit_check_ptr)(ulong* mask, long bit_count);
-    auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
+    auto bit_check = reinterpret_cast<bit_check_ptr>(base_address(0xC39D0));
 
     printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: [%s] processing join request from %s\n",
         this->get_id_string(),
@@ -362,7 +362,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
 e_network_join_refuse_reason c_network_session::can_accept_join_request(s_network_session_join_request const* join_request)
 {
     typedef long(__fastcall* bit_check_ptr)(ulong* mask, long bit_count);
-    auto bit_check = reinterpret_cast<bit_check_ptr>(module_base + 0xC39D0);
+    auto bit_check = reinterpret_cast<bit_check_ptr>(base_address(0xC39D0));
 
     if (!this->is_host())
         return _network_join_refuse_reason_not_joinable;
@@ -456,21 +456,21 @@ bool c_network_session::join_allowed_by_privacy()
 e_network_join_refuse_reason c_network_session::can_accept_player_join_request(s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown)
 {
     typedef e_network_join_refuse_reason(__thiscall* can_accept_player_join_request_ptr)(c_network_session* session, s_player_identifier const* player_identifier, s_transport_secure_address const* joining_peer_address, long peer_index, bool unknown);
-    auto can_accept_player_join_request = reinterpret_cast<can_accept_player_join_request_ptr>(module_base + 0x22F30);
+    auto can_accept_player_join_request = reinterpret_cast<can_accept_player_join_request_ptr>(base_address(0x22F30));
     return can_accept_player_join_request(this, player_identifier, joining_peer_address, peer_index, unknown);
 }
 
 bool c_network_session::session_is_full(long joining_peer_count, long joining_player_count)
 {
     typedef bool(__thiscall* session_is_full_ptr)(c_network_session* session, long joining_peer_count, long joining_player_count);
-    auto session_is_full = reinterpret_cast<session_is_full_ptr>(module_base + 0x22330);
+    auto session_is_full = reinterpret_cast<session_is_full_ptr>(base_address(0x22330));
     return session_is_full(this, joining_peer_count, joining_player_count);
 }
 
 void c_network_session::disconnect()
 {
     typedef void(__thiscall* disconnect_ptr)(c_network_session* session);
-    auto disconnect = reinterpret_cast<disconnect_ptr>(module_base + 0x21CC0);
+    auto disconnect = reinterpret_cast<disconnect_ptr>(base_address(0x21CC0));
     return disconnect(this);
 }
 
@@ -564,7 +564,7 @@ const char* c_network_session::get_id_string()
 bool c_network_session::is_peer_joining_this_session()
 {
     typedef bool(__fastcall* is_peer_joining_this_session_ptr)(c_network_session* session_ptr);
-    auto is_peer_joining_this_session = reinterpret_cast<is_peer_joining_this_session_ptr>(module_base + 0x224F0);
+    auto is_peer_joining_this_session = reinterpret_cast<is_peer_joining_this_session_ptr>(base_address(0x224F0));
     return is_peer_joining_this_session(this);
 }
 
@@ -751,25 +751,25 @@ c_network_session_membership* c_network_session::get_session_membership()
 
 void c_network_session::idle_peer_creating()
 {
-    void(__thiscall* idle_peer_creating)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_creating)>(module_base + 0x3E800);
+    void(__thiscall* idle_peer_creating)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_creating)>(base_address(0x3E800));
     idle_peer_creating(this);
 }
 
 void c_network_session::idle_peer_joining()
 {
-    void(__thiscall* idle_peer_joining)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_joining)>(module_base + 0x3E8B0);
+    void(__thiscall* idle_peer_joining)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_joining)>(base_address(0x3E8B0));
     idle_peer_joining(this);
 }
 
 void c_network_session::idle_peer_join_abort()
 {
-    void(__thiscall* idle_peer_join_abort)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_join_abort)>(module_base + 0x3EA00);
+    void(__thiscall* idle_peer_join_abort)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_join_abort)>(base_address(0x3EA00));
     idle_peer_join_abort(this);
 }
 
 void c_network_session::idle_peer_leaving()
 {
-    void(__thiscall* idle_peer_leaving)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_leaving)>(module_base + 0x3EA60);
+    void(__thiscall* idle_peer_leaving)(c_network_session* session) = reinterpret_cast<decltype(idle_peer_leaving)>(base_address(0x3EA60));
     idle_peer_leaving(this);
 }
 
@@ -967,9 +967,9 @@ void c_network_session::process_pending_joins()
 
     if (!c_network_session::disconnected() && !c_network_session::membership_is_locked())
     {
-        long netconfig_time_unknown = *(long*)(module_base + 0x103862C); // get_network_configuration()->unknown
+        long netconfig_time_unknown = *(long*)base_address(0x103862C); // get_network_configuration()->unknown
         if (this->session_type() == _network_session_type_group)
-            netconfig_time_unknown = *(long*)(module_base + 0x103861C); // get_network_configuration()->unknown
+            netconfig_time_unknown = *(long*)base_address(0x103861C); // get_network_configuration()->unknown
         for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
         {
             qword join_nonce = this->get_session_membership()->get_join_nonce(i);
@@ -1010,7 +1010,7 @@ e_network_observer_owner c_network_session::observer_owner()
 
 long c_network_session::get_maximum_player_count()
 {
-    long(__thiscall* get_maximum_player_count)(c_network_session* session) = reinterpret_cast<decltype(get_maximum_player_count)>(module_base + 0x22E80);
+    long(__thiscall* get_maximum_player_count)(c_network_session* session) = reinterpret_cast<decltype(get_maximum_player_count)>(base_address(0x22E80));
     return get_maximum_player_count(this);
 }
 
@@ -1025,13 +1025,13 @@ void c_network_session::handle_disconnection()
 
 void c_network_session::check_to_send_time_synchronization()
 {
-    void(__thiscall* check_to_send_time_synchronization)(c_network_session* session) = reinterpret_cast<decltype(check_to_send_time_synchronization)>(module_base + 0x22B50);
+    void(__thiscall* check_to_send_time_synchronization)(c_network_session* session) = reinterpret_cast<decltype(check_to_send_time_synchronization)>(base_address(0x22B50));
     check_to_send_time_synchronization(this);
 }
 
 void c_network_session::idle_observer_state()
 {
-    void(__thiscall* idle_observer_state)(c_network_session* session) = reinterpret_cast<decltype(idle_observer_state)>(module_base + 0x3EAC0);
+    void(__thiscall* idle_observer_state)(c_network_session* session) = reinterpret_cast<decltype(idle_observer_state)>(base_address(0x3EAC0));
     idle_observer_state(this);
 }
 
@@ -1295,7 +1295,7 @@ bool c_network_session::host_join_nonce_valid()
 
 void c_network_session::add_pending_join_to_session(qword join_nonce)
 {
-    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(base_address(0xC3C10));
 
     bool player_bools[16] = {};
     qword player_xuids[16] = {};
@@ -1390,7 +1390,7 @@ void c_network_session::time_set(ulong time)
 
 bool c_network_session::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
-    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(module_base + 0xC3C10);
+    long(__fastcall* get_player_index_from_mask)(ulong* player_mask, long number_of_bits) = reinterpret_cast<decltype(get_player_index_from_mask)>(base_address(0xC3C10));
 
     if (this->established() && this->is_host())
     {
@@ -1481,7 +1481,7 @@ bool c_network_session::get_session_id(s_transport_secure_identifier* secure_id)
 
 void c_network_session::peer_request_player_add(const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
 {
-    void(__thiscall* peer_request_player_add)(c_network_session* session, const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings) = reinterpret_cast<decltype(peer_request_player_add)>(module_base + 0x21EF0);
+    void(__thiscall * peer_request_player_add)(c_network_session * session, const s_player_identifier * player_identifier, long user_index, long controller_index, s_player_configuration_from_client * configuration_from_client, long voice_settings) = reinterpret_cast<decltype(peer_request_player_add)>(base_address(0x21EF0));
     peer_request_player_add(this, player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
 }
 

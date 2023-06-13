@@ -59,7 +59,7 @@ void insert_hook(size_t start_address, long length, size_t return_address, void*
     }
 
     // copy the instructions we're replacing into our new code block
-    memcpy(inserted_code, (void*)(module_base + start_address), length);
+    memcpy(inserted_code, (void*)base_address(start_address), length);
     code_offset += length;
 
     // preserve registers across call
@@ -85,19 +85,19 @@ void insert_hook(size_t start_address, long length, size_t return_address, void*
     code_offset += sizeof(restore_registers);
 
     // return
-    size_t return_offset = ((size_t)(module_base + return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
+    size_t return_offset = (base_address(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
     memcpy(&return_code[1], &return_offset, sizeof(return_code));
     memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
     code_offset += sizeof(return_code);
 
     // write jump to inserted function
-    size_t jump_offset = ((size_t)(inserted_code) - (size_t)(module_base + start_address) - sizeof(jump_code));
+    size_t jump_offset = ((size_t)(inserted_code) - base_address(start_address) - sizeof(jump_code));
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_code));
-    memcpy((void*)(module_base + start_address), jump_code, sizeof(jump_code));
+    memcpy((void*)base_address(start_address), jump_code, sizeof(jump_code));
 
     // nop the bytes leftover between the original overwritten instructions and the return point
     // this isn't really necessary but it makes looking at the disassembly less cluttered
-    memset((void*)(module_base + start_address + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+    memset((void*)(base_address(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
 }
 
 // add back missing message handlers
@@ -107,7 +107,7 @@ void __fastcall handle_out_of_band_message_hook(c_network_message_handler* messa
 }
 void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* stub_message)
 {
-    s_network_message const* message = (s_network_message const*)(module_base + 0x4FFB090);
+    s_network_message const* message = (s_network_message const*)base_address(0x4FFB090);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
 }
 
@@ -182,14 +182,14 @@ void __fastcall peer_request_player_add_hook(c_network_session* session, void* u
 // ditto above
 bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
 {
-    bool(__thiscall* network_session_interface_get_local_user_identifier)(s_player_identifier* player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(module_base + 0x3D50);
+    bool(__thiscall* network_session_interface_get_local_user_identifier)(s_player_identifier* player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(base_address(0x3D50));
     return !game_is_dedicated_server() && network_session_interface_get_local_user_identifier(player_identifier);
 }
 
 // reimplement network_session_check_properties by calling it at the end of network_session_interface_update_session
 void __fastcall network_session_interface_update_session_hook(c_network_session* session)
 {
-    void(__thiscall* network_session_interface_update_session)(c_network_session* session) = reinterpret_cast<decltype(network_session_interface_update_session)>(module_base + 0x2F410);
+    void(__thiscall* network_session_interface_update_session)(c_network_session* session) = reinterpret_cast<decltype(network_session_interface_update_session)>(base_address(0x2F410));
     network_session_interface_update_session(session);
 
     if (session->established() && !session->leaving_session())
@@ -2063,7 +2063,7 @@ void __fastcall game_engine_register_object_hook(datum_index object_index)
 long __cdecl exceptions_update_hook()
 {
     FUNCTION_DEF(0x167CF0, long, __cdecl, exceptions_update);
-    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)(module_base + 0x106DEC8);
+    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)base_address(0x106DEC8);
     if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
         return 0;
 

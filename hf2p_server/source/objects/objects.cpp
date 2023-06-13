@@ -94,7 +94,7 @@ void __cdecl object_set_velocities_internal(datum_index object_index, const unio
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate)
 {
 	FUNCTION_DEF(0x127C30, void, __thiscall, c_havok_component__force_activate, void* thisptr, bool unknown);
-	s_data_array* g_havok_components = (s_data_array*)*(long*)(module_base + 0x1046CDC);
+	s_data_array* g_havok_components = (s_data_array*)*(long*)base_address(0x1046CDC);
 
 	s_object_data* object = object_get(object_index);
 	if (TEST_BIT(_object_mask_physics, object_get_type(object_index))

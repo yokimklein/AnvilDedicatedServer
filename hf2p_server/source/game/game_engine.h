@@ -170,4 +170,4 @@ bool game_engine_round_condition_test(e_game_engine_round_condition condition);
 void game_engine_update_time();
 bool game_engine_in_round();
 
-static c_game_engine** game_engines = (c_game_engine**)(module_base + 0xF01EC0);
+static c_game_engine** game_engines = (c_game_engine**)base_address(0xF01EC0);
