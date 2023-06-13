@@ -28,6 +28,7 @@
 #include <game\game.h>
 #include <units\units.h>
 #include <units\bipeds.h>
+#include <game\game_engine_spawning.h>
 
 // This only works with parameterless functions - start_address is a baseless offset
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled 
@@ -132,8 +133,21 @@ void __stdcall send_message_hook(void* stream, e_network_message_type message_ty
 }
 
 // add back missing host code, process_pending_joins & check_to_send_membership_update
+//static bool key_held_delete = false;
 void __fastcall session_idle_hook(c_network_session* session)
 {
+    // TESTING REMOVE THIS
+    //if (anvil_key_pressed(VK_DELETE, &key_held_delete))
+    //{
+    //    printf("Toggling forced respawns...\n");
+    //    c_player_in_game_iterator player_iterator(get_tls()->players);
+    //    player_iterator.begin(get_tls()->players);
+    //    while (player_iterator.next())
+    //    {
+    //        s_player_datum* player = player_iterator.get_datum();
+    //        player->respawn_forced = !player->respawn_forced;
+    //    }
+    //}
     session->idle();
 }
 
@@ -2118,6 +2132,9 @@ void anvil_dedi_apply_hooks()
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
+
+    // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
+    Hook(0xFBBA0, game_engine_should_spawn_player).Apply();
 
     // SIMULATION HOOKS
     // allow view_establishment to progress past connection phase to established in update_establishing_view again

@@ -169,5 +169,7 @@ void game_engine_update_round_conditions();
 bool game_engine_round_condition_test(e_game_engine_round_condition condition);
 void game_engine_update_time();
 bool game_engine_in_round();
+bool game_engine_player_is_playing(datum_index player_index);
+void game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);
 
 static c_game_engine** game_engines = (c_game_engine**)base_address(0xF01EC0);

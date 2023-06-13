@@ -89,3 +89,17 @@ bool game_is_dedicated_server()
 	// dedicated server mode should disable rendering, sound, host player
 	return true;
 }
+
+bool game_is_multiplayer()
+{
+	return game_options_get()->game_mode == _game_mode_multiplayer;
+}
+
+bool game_is_survival()
+{
+	game_globals_storage* game_globals = game_globals_get();
+	if (game_globals && (game_globals->initializing || game_globals->map_active))
+		return game_globals->options.game_mode == _game_mode_campaign && game_globals->options.survival_enabled;
+	else
+		return false;
+}

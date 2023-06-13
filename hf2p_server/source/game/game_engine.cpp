@@ -11,6 +11,7 @@
 #include "assert.h"
 #include <game\game_time.h>
 #include <game\players.h>
+#include <game\game_engine_spawning.h>
 
 void game_engine_attach_to_simulation()
 {
@@ -97,9 +98,9 @@ void game_engine_update_round_conditions()
 		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1));
 		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(3));
 		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(4)); // team voice announcer
-		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(11)); // player control
+		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(k_pre_game_camera_seconds - 4)); // player control (ORIGINALLY 11)
 		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // team intro widget
-		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(18)); // camera position
+		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(k_pre_game_camera_seconds)); // camera position (ORIGINALLY 18)
 		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4));
 		if (game_engine_globals->round_condition_flags != condition)
 		{
@@ -157,4 +158,14 @@ bool game_engine_in_round()
 		return true;
 	else
 		return false;
+}
+
+bool game_engine_player_is_playing(datum_index player_index)
+{
+	return DECLFUNC(base_address(0xC77A0), bool, __fastcall, datum_index)(player_index);
+}
+
+void game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks)
+{
+	DECLFUNC(base_address(0xC7700), void, __fastcall, datum_index, long)(player_index, timer_ticks);
 }

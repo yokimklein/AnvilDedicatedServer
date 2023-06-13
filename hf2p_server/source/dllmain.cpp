@@ -188,8 +188,6 @@ long main_thread()
                 printf("Triggering podium action...\n");
                 s_player_podium* player_podium = &g_player_podiums[0];
                 player_podium->loop_count++;
-                //e_network_game_simulation_protocol protocol = _network_game_simulation_synchronous;
-                //network_session->get_session_parameters()->game_simulation_protocol.set(&protocol);
             }
             Sleep(k_anvil_update_rate_ms);
         }

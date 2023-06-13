@@ -13,3 +13,5 @@ bool __cdecl game_is_authoritative();
 bool game_engine_has_teams();
 bool game_in_progress();
 bool game_is_dedicated_server();
+bool game_is_multiplayer();
+bool game_is_survival();

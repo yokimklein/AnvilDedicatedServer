@@ -163,6 +163,7 @@
     <ClInclude Include="source\game\game_engine_event_definitions.h" />
     <ClInclude Include="source\game\game_engine_scoring.h" />
     <ClInclude Include="source\game\game_engine_simulation.h" />
+    <ClInclude Include="source\game\game_engine_spawning.h" />
     <ClInclude Include="source\game\game_engine_spawn_influencer.h" />
     <ClInclude Include="source\game\game_engine_team.h" />
     <ClInclude Include="source\game\game_engine_teleporters.h" />
@@ -334,6 +335,7 @@
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
     <ClCompile Include="source\game\game_engine_simulation.cpp" />
+    <ClCompile Include="source\game\game_engine_spawning.cpp" />
     <ClCompile Include="source\game\game_engine_team.cpp" />
     <ClCompile Include="source\game\game_engine_traits.cpp" />
     <ClCompile Include="source\game\game_engine_util.cpp" />
