@@ -32,17 +32,16 @@
 
 // This only works with parameterless functions - start_address is a baseless offset
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled 
-void insert_hook(size_t start_address, long length, size_t return_address, void* inserted_function)
+void insert_hook(size_t start_address, size_t return_address, void* inserted_function)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
     byte restore_registers[3] = { 0x5A, 0x59, 0x58 }; // pop edx, pop ecx, pop eax
-    byte preserve_stackpointer[3] = { 0x55, 0x89, 0xE5 }; // push ebp, mov ebp, esp
-    byte restore_stackpointer[3] = { 0x89, 0xEC, 0x5D }; // mov esp, ebp, pop ebp
     byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder nops where the function address will go
     byte return_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
     byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
 
+    long length = return_address - start_address;
     if (length < sizeof(jump_code))
     {
         printf("The hook requires at least %d bytes available to overwrite!\n", sizeof(jump_code));
@@ -50,7 +49,7 @@ void insert_hook(size_t start_address, long length, size_t return_address, void*
     }
 
     // initialise our new code block
-    long inserted_code_size = length + sizeof(preserve_registers) + sizeof(preserve_stackpointer) + sizeof(call_code) + sizeof(restore_stackpointer) + sizeof(restore_registers) + sizeof(return_code);
+    long inserted_code_size = length + sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     
     if (inserted_code == NULL)
@@ -67,19 +66,11 @@ void insert_hook(size_t start_address, long length, size_t return_address, void*
     memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
     code_offset += sizeof(preserve_registers);
 
-    // preserve stack pointer across call so our inserted function can create new variables
-    memcpy(inserted_code + code_offset, preserve_stackpointer, sizeof(preserve_stackpointer));
-    code_offset += sizeof(preserve_stackpointer);
-
     // call inserted function
     size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
     memcpy(&call_code[1], &call_offset, sizeof(call_code));
     memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
     code_offset += sizeof(call_code);
-
-    // restore stack pointer
-    memcpy(inserted_code + code_offset, restore_stackpointer, sizeof(restore_stackpointer));
-    code_offset += sizeof(restore_stackpointer);
 
     // restore registers
     memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
@@ -149,13 +140,6 @@ void __fastcall session_idle_hook(c_network_session* session)
     //    }
     //}
     session->idle();
-}
-
-// I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
-// add back set_peer_address & set_peer_properties to peer_request_properties_update
-void __fastcall network_session_update_peer_properties_hook(c_network_session* session, s_network_session_peer* peer)
-{
-    network_session_update_peer_properties(session, peer);
 }
 
 // add debug print back to before life cycle end is called in c_gui_location_manager::update
@@ -376,9 +360,7 @@ void __cdecl simulation_action_game_statborg_update_with_bitmask(ulong64 raw_bit
 
 void __cdecl simulation_action_game_statborg_update_with_flag(long flag)
 {
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(flag, true);
-    simulation_action_game_statborg_update(&update_flags);
+    simulation_action_game_statborg_update(flag);
 }
 
 void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_index player_index, ulong64 raw_bits)
@@ -725,10 +707,30 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 #pragma runtime_checks("", off)
+__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
+{
+    // I have to move this into eax first otherwise it'll refuse to compile for some reason
+    long absolute_player_index; __asm mov eax, [esp + 0x90] __asm mov absolute_player_index, eax; // originally dword ptr [esp+0x2C]
+    simulation_action_game_statborg_update(absolute_player_index);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook2()
+{
+    long absolute_player_index; __asm mov absolute_player_index, esi;
+    simulation_action_game_statborg_update(absolute_player_index);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
+{
+    long absolute_player_index;
+    __asm mov absolute_player_index, esi;
+    simulation_action_game_statborg_update(absolute_player_index);
+}
+
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
 {
     datum_index object_index;
-    __asm mov object_index, edi
+    __asm mov object_index, edi;
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
 #pragma runtime_checks("", restore)
@@ -2042,9 +2044,8 @@ void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_
 
 void __fastcall game_results_statistic_set_hook(datum_index absolute_player_index, e_game_team team_index, long statistic, long value)
 {
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(team_index + 16, true);
-    simulation_action_game_statborg_update(&update_flags);
+    long update_flag = _simulation_game_statborg_update_team0 + team_index;
+    simulation_action_game_statborg_update(update_flag);
     game_results_statistic_set(absolute_player_index, team_index, statistic, value);
 }
 
@@ -2121,7 +2122,9 @@ void anvil_dedi_apply_hooks()
     Hook(0x252F0, handle_channel_message_hook).Apply();
     Hook(0x2A580, network_join_process_joins_from_queue).Apply();
     Hook(0x21AB0, session_idle_hook).Apply();
-    Hook(0x2F48E, network_session_update_peer_properties_hook, HookFlags::IsCall).Apply();
+    // I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
+    // add back set_peer_address & set_peer_properties to peer_request_properties_update
+    Hook(0x2F650, network_session_update_peer_properties).Apply();
     Hook(0x3EEE1F, network_life_cycle_end_hook, HookFlags::IsCall).Apply();
     // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
     Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
@@ -2149,13 +2152,25 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xCA2F0).WriteJump(stats_finalize_for_game_end_hook, HookFlags::None);
     // c_game_statborg::adjust_player_stat
     Pointer::Base(0x1AF61D).WriteJump(adjust_player_stat_hook, HookFlags::None);
+    insert_hook(0xC8ACE, 0xC8AF3, game_engine_end_round_with_winner_hook1);
+    insert_hook(0xC8C18, 0xC8C3D, game_engine_end_round_with_winner_hook2);
+    insert_hook(0xFAFDB, 0xFAFFC, game_engine_earn_wp_event_hook);
+    // TODO: other inlined instances of c_game_statborg::adjust_player_stat
+    //c_game_statborg::record_kill // this call from ms23 is gone entirely in ms29, not even inlined
+    //game_engine_adjust_player_wp // survival only
+    //metagame_earn_wp_event_maybe // survival only
+    //sub_9DBC70 // infection related, c_infection_engine::update which calls this is empty in ms29
+    //c_infection_engine::player_killed_player // also gone in ms29
+    //c_infection_engine::player_killed_player // also gone in ms29
+    //c_infection_engine::player_killed_player // also gone in ms29
+    //c_infection_engine::player_left
     // c_game_statborg::adjust_team_stat
     Hook(0x1AF710, adjust_team_stat_hook).Apply();
-    // c_game_statborg::adjust_team_stat
     Hook(0xC8A6E, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in game_engine_end_round_with_winner
     Hook(0x1C7FCD, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in c_game_engine::recompute_team_score
     Patch::NopFill(Pointer::Base(0xC8A76), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
     Patch::NopFill(Pointer::Base(0x1C7FD8), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
+    // TODO: c_territories_engine::unknown has several c_game_statborg::adjust_team_stat calls
     // c_game_statborg::player_changed_teams
     Pointer::Base(0xFA956).WriteJump(player_changed_teams_hook, HookFlags::None);
     // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
@@ -2163,6 +2178,8 @@ void anvil_dedi_apply_hooks()
     // c_game_statborg::stats_reset_for_round_switch
     Pointer::Base(0x1AEE9B).WriteJump(stats_reset_for_round_switch_hook1, HookFlags::None);
     Pointer::Base(0x1AEF0C).WriteJump(stats_reset_for_round_switch_hook2, HookFlags::None);
+    // TODO: c_game_statborg::reset_player_stat for infection
+    // TODO: c_game_statborg::reset_team_stat for territories
 
     // GLOBALS UPDATES
     // pre-game camera countdown
@@ -2265,7 +2282,7 @@ void anvil_dedi_apply_hooks()
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
-    insert_hook(0x3FC038, 6, 0x3FC03E, object_set_position_internal_hook1);
+    insert_hook(0x3FC038, 0x3FC03E, object_set_position_internal_hook1);
     Pointer::Base(0x3FC060).WriteJump(object_set_position_internal_hook2, HookFlags::None);
     Pointer::Base(0x404AB4).WriteJump(object_set_position_internal_hook3, HookFlags::None); // inlined call in object_move_respond_to_physics
     Pointer::Base(0x404AD7).WriteJump(object_set_position_internal_hook4, HookFlags::None); // inlined call in object_move_respond_to_physics

@@ -142,6 +142,13 @@ void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_f
 	}
 }
 
+void simulation_action_game_statborg_update(long update_flag)
+{
+	c_flags<long, ulong64, 64> update_flags = {};
+	update_flags.set(update_flag, true);
+	simulation_action_game_statborg_update(&update_flags);
+}
+
 void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags)
 {
 	if (game_is_server() && game_is_distributed() && !game_is_playback())

@@ -6,7 +6,7 @@
 #include <networking\logic\network_life_cycle.h>
 #include <anvil\server_tools.h>
 
-void network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
+void __fastcall network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
     ulong(__cdecl* game_language_get_default)() = reinterpret_cast<decltype(game_language_get_default)>(base_address(0xB0C00));
     void(__fastcall* network_session_get_connectivity)(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(base_address(0x2E500));

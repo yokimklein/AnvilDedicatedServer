@@ -122,6 +122,37 @@ enum e_simulation_infection_engine_globals_update_flag : long
 	k_simulation_infection_engine_globals_flag_count
 };
 
+enum e_simulation_game_statborg_update_flag : long
+{
+	_simulation_game_statborg_update_player0,
+	_simulation_game_statborg_update_player1,
+	_simulation_game_statborg_update_player2,
+	_simulation_game_statborg_update_player3,
+	_simulation_game_statborg_update_player4,
+	_simulation_game_statborg_update_player5,
+	_simulation_game_statborg_update_player6,
+	_simulation_game_statborg_update_player7,
+	_simulation_game_statborg_update_player8,
+	_simulation_game_statborg_update_player9,
+	_simulation_game_statborg_update_player10,
+	_simulation_game_statborg_update_player11,
+	_simulation_game_statborg_update_player12,
+	_simulation_game_statborg_update_player13,
+	_simulation_game_statborg_update_player14,
+	_simulation_game_statborg_update_player15,
+	_simulation_game_statborg_update_team0,
+	_simulation_game_statborg_update_team1,
+	_simulation_game_statborg_update_team2,
+	_simulation_game_statborg_update_team3,
+	_simulation_game_statborg_update_team4,
+	_simulation_game_statborg_update_team5,
+	_simulation_game_statborg_update_team6,
+	_simulation_game_statborg_update_team7,
+	_simulation_game_statborg_update_finalize_for_game_end, // updates bool __unknown420
+
+	k_simulation_game_statborg_update_flag_count
+};
+
 void simulation_action_game_engine_globals_create();
 void simulation_action_game_statborg_create();
 void simulation_action_game_ai_create();
@@ -130,6 +161,7 @@ void simulation_action_game_map_variant_create_for_chunk(long chunk_index);
 void simulation_action_game_engine_player_create(short player_absolute_index);
 void simulation_action_breakable_surfaces_create();
 void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags);
+void simulation_action_game_statborg_update(long update_flag);
 void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags);
 void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags);
 void simulation_action_game_engine_globals_update(long update_flag);

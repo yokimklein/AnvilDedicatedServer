@@ -27,10 +27,7 @@ void c_game_statborg::clear_player_stats(datum_index player_index)
 	short absolute_player_index = (word)player_index;
 	assert(absolute_player_index >= 0 && absolute_player_index < k_maximum_multiplayer_players);
 	csmemset(&this->player[absolute_player_index], 0, sizeof(this->player[absolute_player_index]));
-
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(absolute_player_index, true);
-	simulation_action_game_statborg_update(&update_flags);
+	simulation_action_game_statborg_update(absolute_player_index);
 }
 
 void c_game_statborg::adjust_team_stat(e_game_team team_index, long statistic, short unknown, long value)
@@ -48,10 +45,8 @@ void c_game_statborg::adjust_team_stat(e_game_team team_index, long statistic, s
 		new_team_statistic = 30000;
 	}
 	this->team[team_index].statistics[statistic] = new_team_statistic;
-
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(team_index + 16, true);
-	simulation_action_game_statborg_update(&update_flags);
+	long update_flag = _simulation_game_statborg_update_team0 + team_index;
+	simulation_action_game_statborg_update(update_flag);
 	if (value != -1)
 		game_results_statistic_set(-1, team_index, value, this->team[team_index].statistics[statistic]);
 }
