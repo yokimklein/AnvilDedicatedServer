@@ -387,18 +387,6 @@ void __cdecl simulation_action_game_engine_globals_update_with_bitmask(ulong64 r
     simulation_action_game_engine_globals_update(&update_flags);
 }
 
-void __cdecl simulation_action_game_statborg_update_with_bitmask(ulong64 raw_bits)
-{
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set_raw_bits(raw_bits);
-    simulation_action_game_statborg_update(&update_flags);
-}
-
-void __cdecl simulation_action_game_statborg_update_with_flag(long flag)
-{
-    simulation_action_game_statborg_update(flag);
-}
-
 void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_index player_index, ulong64 raw_bits)
 {
     c_flags<long, ulong64, 64> update_flags = {};
@@ -1948,13 +1936,6 @@ void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_
 void __fastcall stats_reset_for_round_switch_hook(c_game_statborg* thisptr)
 {
     thisptr->stats_reset_for_round_switch();
-}
-
-void __fastcall game_results_statistic_set_hook(datum_index absolute_player_index, e_game_team team_index, long statistic, long value)
-{
-    long update_flag = _simulation_statborg_update_team0 + team_index;
-    simulation_action_game_statborg_update(update_flag);
-    game_results_statistic_set(absolute_player_index, team_index, statistic, value);
 }
 
 void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long countdown_ticks)
