@@ -170,6 +170,13 @@ void simulation_action_game_engine_player_update(short player_index, c_flags<lon
 	}
 }
 
+void simulation_action_game_engine_player_update(datum_index player_index, long update_flag)
+{
+	c_flags<long, ulong64, 64> update_flags = {};
+	update_flags.set(update_flag, true);
+	simulation_action_game_engine_player_update((word)player_index, &update_flags);
+}
+
 void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags)
 {
 	if (game_is_server() && game_is_distributed() && !game_is_playback())
@@ -207,6 +214,6 @@ void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
 		datum_index owner_unit_index = weapon_get_owner_unit_index(weapon_index);
 		datum_index owner_unit_inventory_index = weapon_get_owner_unit_inventory_index(weapon_index);
 		if (owner_unit_index != -1 && owner_unit_inventory_index < 4)
-			simulation_action_object_update(owner_unit_index, (e_simulation_biped_update_flag)(owner_unit_inventory_index + _simulation_biped_update_weapon1_state));
+			simulation_action_object_update(owner_unit_index, (e_simulation_unit_update_flag)(owner_unit_inventory_index + _simulation_unit_update_weapon1_state));
 	}
 }

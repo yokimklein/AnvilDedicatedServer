@@ -122,35 +122,61 @@ enum e_simulation_infection_engine_globals_update_flag : long
 	k_simulation_infection_engine_globals_flag_count
 };
 
-enum e_simulation_game_statborg_update_flag : long
+enum e_simulation_statborg_update_flag : long
 {
-	_simulation_game_statborg_update_player0,
-	_simulation_game_statborg_update_player1,
-	_simulation_game_statborg_update_player2,
-	_simulation_game_statborg_update_player3,
-	_simulation_game_statborg_update_player4,
-	_simulation_game_statborg_update_player5,
-	_simulation_game_statborg_update_player6,
-	_simulation_game_statborg_update_player7,
-	_simulation_game_statborg_update_player8,
-	_simulation_game_statborg_update_player9,
-	_simulation_game_statborg_update_player10,
-	_simulation_game_statborg_update_player11,
-	_simulation_game_statborg_update_player12,
-	_simulation_game_statborg_update_player13,
-	_simulation_game_statborg_update_player14,
-	_simulation_game_statborg_update_player15,
-	_simulation_game_statborg_update_team0,
-	_simulation_game_statborg_update_team1,
-	_simulation_game_statborg_update_team2,
-	_simulation_game_statborg_update_team3,
-	_simulation_game_statborg_update_team4,
-	_simulation_game_statborg_update_team5,
-	_simulation_game_statborg_update_team6,
-	_simulation_game_statborg_update_team7,
-	_simulation_game_statborg_update_finalize_for_game_end, // updates bool __unknown420
+	_simulation_statborg_update_player0,
+	_simulation_statborg_update_player1,
+	_simulation_statborg_update_player2,
+	_simulation_statborg_update_player3,
+	_simulation_statborg_update_player4,
+	_simulation_statborg_update_player5,
+	_simulation_statborg_update_player6,
+	_simulation_statborg_update_player7,
+	_simulation_statborg_update_player8,
+	_simulation_statborg_update_player9,
+	_simulation_statborg_update_player10,
+	_simulation_statborg_update_player11,
+	_simulation_statborg_update_player12,
+	_simulation_statborg_update_player13,
+	_simulation_statborg_update_player14,
+	_simulation_statborg_update_player15,
+	_simulation_statborg_update_team0,
+	_simulation_statborg_update_team1,
+	_simulation_statborg_update_team2,
+	_simulation_statborg_update_team3,
+	_simulation_statborg_update_team4,
+	_simulation_statborg_update_team5,
+	_simulation_statborg_update_team6,
+	_simulation_statborg_update_team7,
+	_simulation_statborg_update_finalize_for_game_end, // updates bool __unknown420
 
-	k_simulation_game_statborg_update_flag_count
+	k_simulation_statborg_update_flag_count
+};
+
+enum e_simulation_player_update_flag : long
+{
+	_simulation_player_update_spawn_timer,
+	_simulation_player_update_early_respawn,
+	_simulation_player_update_health_traits,
+	_simulation_player_update_weapon_traits,
+	_simulation_player_update_movement_traits,
+	_simulation_player_update_appearance_traits,
+	_simulation_player_update_sensor_traits,
+	_simulation_player_update_player_waypoint_unknown, // TODO: likely a gametype option, research this further
+	_simulation_player_update_unknown_player_flags1,
+	_simulation_player_update_unknown_player_data,
+	_simulation_player_update_lives,
+	_simulation_player_update_grief, // is this to do with player booting?
+	_simulation_player_update_unknown_player_flags2,
+	_simulation_player_update_unknown_player_flags3,
+	_simulation_player_update_unknown_player_flags4,
+	_simulation_player_update_spectating_player,
+	_simulation_player_update_control,
+	_simulation_player_update_character_type,
+	_simulation_player_update_equipment_charges, // called at the same time as _simulation_unit_update_equipment_charges, sets some tick fields in the player datum
+	_simulation_player_update_revenge,
+
+	k_simulation_player_update_flag_count
 };
 
 void simulation_action_game_engine_globals_create();
@@ -163,6 +189,7 @@ void simulation_action_breakable_surfaces_create();
 void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags);
 void simulation_action_game_statborg_update(long update_flag);
 void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags);
+void simulation_action_game_engine_player_update(datum_index player_index, long update_flag);
 void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags);
 void simulation_action_game_engine_globals_update(long update_flag);
 void __cdecl simulation_action_weapon_state_update(datum_index weapon_index);

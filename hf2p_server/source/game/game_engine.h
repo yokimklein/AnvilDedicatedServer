@@ -145,7 +145,8 @@ struct s_game_engine_globals
 	c_game_statborg statborg;
 	long __unknown102D4;
 	c_static_array<s_player_waypoint_data, 16> player_waypoints;
-	byte __data10498[0x104];
+	c_static_array<char[16], 16> player_data10498;
+	long __unknown10598;
 	c_multiplayer_candy_monitor_manager candy_monitor_manager;
 	dword __unknown13D9C;
 	dword desired_state;

@@ -331,7 +331,7 @@ void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, re
 {
     s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
     simulation_action_object_create(player_data->unit_index);
-    simulation_action_object_update(player_data->unit_index, _simulation_biped_update_control);
+    simulation_action_object_update(player_data->unit_index, _simulation_unit_update_control);
 
     // this part was removed from HO
     //if ( game_is_multiplayer() )
@@ -383,10 +383,7 @@ void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_p
         player_data->revenge_shield_boost_multiplier = 0;
         player_data->character_type_index = character_active_index;
         sub_E05E0(player_xuid);
-
-        c_flags<long, ulong64, 64> update_flags = {};
-        update_flags.set(17, true);
-        simulation_action_game_engine_player_update((word)player_index, &update_flags);
+        simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
     }
 }
 
@@ -590,7 +587,7 @@ __declspec(naked) void player_spawn_hook()
         test byte ptr[ebx + 4], 8 // if ((player_data->flags & 8) != 0)
         jz end_label
         push 0
-        push 262144 // flag 22 (1 << 22)
+        push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
         push esi // player_index
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
@@ -652,7 +649,7 @@ __declspec(naked) void player_spawn_hook2()
 
         // call our inserted function
         push 0
-        push 1 // flag 1
+        push 1 // flag _simulation_player_update_spawn_timer (1 << 0)
         push[ebp - 24] // player_index3
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
@@ -673,7 +670,7 @@ __declspec(naked) void player_spawn_hook3()
 
         // call our inserted function
         push 0
-        push 2 // flag 2
+        push 2 // flag _simulation_player_update_early_respawn (1 << 1)
         push [ebp - 24] // player_index3
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
@@ -711,7 +708,7 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
 #pragma runtime_checks("", off)
 __declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
 {
-    simulation_action_game_statborg_update(_simulation_game_statborg_update_finalize_for_game_end);
+    simulation_action_game_statborg_update(_simulation_statborg_update_finalize_for_game_end);
 }
 
 __declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook()
@@ -743,13 +740,13 @@ __declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook3()
 {
     long team_index; __asm mov team_index, ebx;
-    simulation_action_game_statborg_update(_simulation_game_statborg_update_team0 + team_index);
+    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
 }
 
 __declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook()
 {
     long team_index; __asm mov team_index, edi;
-    simulation_action_game_statborg_update(_simulation_game_statborg_update_team0 + team_index);
+    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
 }
 
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
@@ -907,9 +904,9 @@ __declspec(naked) void object_set_velocities_internal_hook()
 void __cdecl object_set_at_rest_simulation_update(datum_index object_index)
 {
     if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
-        simulation_action_object_update(object_index, _simulation_item_update_unknown14);
+        simulation_action_object_update(object_index, _simulation_item_update_set_at_rest);
     else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
-        simulation_action_object_update(object_index, _simulation_projectile_update_unknown);
+        simulation_action_object_update(object_index, _simulation_projectile_update_set_at_rest);
 }
 
 // c_simulation_generic_entity_definition::object_required_to_join_game - UNTESTED!! TODO: figure out how to call this!
@@ -1418,7 +1415,7 @@ __declspec(naked) void c_map_variant__unknown4_hook2()
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
 {
-    simulation_action_object_update(unit_index, _simulation_biped_update_control);
+    simulation_action_object_update(unit_index, _simulation_unit_update_control);
     unit_set_actively_controlled(unit_index, unknown);
 }
 
@@ -1492,7 +1489,7 @@ __declspec(naked) void grenade_throw_move_to_hand_hook()
         push edx
 
         push 0
-        push 67108864 // _simulation_biped_update_grenade_counts (1 << 26)
+        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
         push [ebp - 0x08] // unit_index
         call simulation_action_object_update_with_bitmask
 
@@ -1543,7 +1540,7 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
         push ecx
 
         push 0
-        push 805306368 // _simulation_biped_update_equipment & _simulation_biped_update_equipment_charges ((1 << 28) | (1 << 29))
+        push 805306368 // _simulation_unit_update_equipment & _simulation_unit_update_equipment_charges ((1 << 28) | (1 << 29))
         push [esp + 0x2C - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
@@ -1827,7 +1824,7 @@ __declspec(naked) void unit_update_energy_hook()
         mov [esi + 0x31C], eax
 
         push 0
-        push 1073741824 // _simulation_biped_update_consumable_energy (1 << 30)
+        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
 
@@ -1868,7 +1865,7 @@ __declspec(naked) void equipment_handle_energy_cost_hook1()
         call sub_2E7BE0
 
         push 0
-        push 1073741824 // _simulation_biped_update_consumable_energy (1 << 30)
+        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
         push [esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
@@ -1887,12 +1884,12 @@ __declspec(naked) void equipment_handle_energy_cost_hook2()
         call hf2p_set_player_cooldown
 
         push 0
-        push 536870912 // _simulation_biped_update_equipment_charges (1 << 29)
+        push 536870912 // _simulation_unit_update_equipment_charges (1 << 29)
         push [esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
         push 0
-        push 262144 // flag 18 (1 << 18)
+        push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
         push [ebx + 0x198] // unit->player_index
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
@@ -1932,7 +1929,7 @@ __declspec(naked) void unit_set_hologram_hook()
         // biped update
         biped_update:
         push 0
-        push 134217728 // _simulation_biped_update_active_camo (1 << 27)
+        push 134217728 // _simulation_unit_update_active_camo (1 << 27)
         push ebx // unit_index
         call simulation_action_object_update_with_bitmask
 
@@ -2011,16 +2008,16 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
         //update_flags.set(inventory_index + 22, true);
         //simulation_action_object_update(unit_index, &update_flags);
 
-        // flags1 = (1 << (inventory_index + _simulation_biped_update_weapon1_type))
+        // flags1 = (1 << (inventory_index + _simulation_unit_update_weapon1_type))
         mov ecx, [ebp - 0x02] // inventory_index - TODO: is this a datum_index in the original code? make sure those top 16 bits won't interfere with this
-        add ecx, 18 // inventory_index + _simulation_biped_update_weapon1_type
+        add ecx, 18 // inventory_index + _simulation_unit_update_weapon1_type
         mov edx, 1
         shl edx, cl
         mov eax, edx
 
-        // flags2 = (1 << (inventory_index + _simulation_biped_update_weapon1_state))
+        // flags2 = (1 << (inventory_index + _simulation_unit_update_weapon1_state))
         mov ecx, [ebp - 0x02] // inventory_index
-        add ecx, 22 // inventory_index + _simulation_biped_update_weapon1_state
+        add ecx, 22 // inventory_index + _simulation_unit_update_weapon1_state
         mov edx, 1
         shl edx, cl
 
@@ -2069,7 +2066,7 @@ void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_
 
 void __fastcall game_results_statistic_set_hook(datum_index absolute_player_index, e_game_team team_index, long statistic, long value)
 {
-    long update_flag = _simulation_game_statborg_update_team0 + team_index;
+    long update_flag = _simulation_statborg_update_team0 + team_index;
     simulation_action_game_statborg_update(update_flag);
     game_results_statistic_set(absolute_player_index, team_index, statistic, value);
 }
@@ -2078,9 +2075,7 @@ void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long 
 {
     FUNCTION_DEF(0xC7700, void, __fastcall, game_engine_player_set_spawn_timer, long player_index, long countdown_ticks);
     game_engine_player_set_spawn_timer(player_index, countdown_ticks);
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set(0, true);
-    simulation_action_game_engine_player_update((word)player_index, &update_flags);
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }
 
 void __fastcall hf2p_player_podium_initialize_hook(long podium_biped_index, long player_index)

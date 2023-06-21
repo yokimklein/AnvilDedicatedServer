@@ -12,7 +12,7 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
         word cycled_identifier = (unit->current_weapon_set.set_identifier + 1) & 0xF;
         unit->current_weapon_set.set_identifier = cycled_identifier;
         unit->desired_weapon_set.set_identifier = cycled_identifier;
-        simulation_action_object_update(unit_index, _simulation_biped_update_desired_weapon_set);
+        simulation_action_object_update(unit_index, _simulation_unit_update_desired_weapon_set);
     }
 }
 
@@ -51,8 +51,8 @@ void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
     unit_control_call(unit_index, unit_control_data);
 
     c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
-    update_flags.set_flag(unit_index, _simulation_biped_update_desired_aiming_vector);
-    update_flags.set_flag(unit_index, _simulation_biped_update_desired_weapon_set);
+    update_flags.set_flag(unit_index, _simulation_unit_update_desired_aiming_vector);
+    update_flags.set_flag(unit_index, _simulation_unit_update_desired_weapon_set);
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
@@ -63,5 +63,5 @@ void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* a
 
     unit->aiming_vector = *aiming_vector;
     unit->looking_vector = *looking_vector;
-    simulation_action_object_update(unit_index, _simulation_biped_update_desired_aiming_vector);
+    simulation_action_object_update(unit_index, _simulation_unit_update_desired_aiming_vector);
 }

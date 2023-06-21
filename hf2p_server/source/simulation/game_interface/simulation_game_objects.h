@@ -10,7 +10,7 @@ enum e_simulation_object_update_flag : long
 	_simulation_object_update_scale,
 	_simulation_object_update_translational_velocity,
 	_simulation_object_update_angular_velocity,
-	_simulation_object_update_body_vitality,
+	_simulation_object_update_body_vitality, // vitality & stun ticks
 	_simulation_object_update_shield_vitality,
 	_simulation_object_update_region_state,
 	_simulation_object_update_constraint_state,
@@ -22,53 +22,58 @@ enum e_simulation_object_update_flag : long
 	k_simulation_object_update_flag_count
 };
 
-enum e_simulation_biped_update_flag : long
+enum e_simulation_unit_update_flag : long
 {
-	_simulation_biped_update_control = k_simulation_object_update_flag_count,
-	_simulation_biped_update_parent_vehicle,
-	_simulation_biped_update_desired_aiming_vector,
-	_simulation_biped_update_desired_weapon_set,
-	_simulation_biped_update_weapon1_type,
-	_simulation_biped_update_weapon2_type,
-	_simulation_biped_update_weapon3_type,
-	_simulation_biped_update_weapon4_type,
-	_simulation_biped_update_weapon1_state,
-	_simulation_biped_update_weapon2_state,
-	_simulation_biped_update_weapon3_state,
-	_simulation_biped_update_weapon4_state,
-	_simulation_biped_update_grenade_counts,
-	_simulation_biped_update_active_camo,
-	_simulation_biped_update_equipment,
-	_simulation_biped_update_equipment_charges,
-	_simulation_biped_update_consumable_energy,
-	_simulation_biped_update_control_context,
-	_simulation_biped_update_assassination_data,
-	_simulation_biped_update_hud_info,
-	_simulation_biped_update_map_editor_flags,
+	_simulation_unit_update_control = k_simulation_object_update_flag_count,
+	_simulation_unit_update_parent_vehicle,
+	_simulation_unit_update_desired_aiming_vector,
+	_simulation_unit_update_desired_weapon_set,
+	_simulation_unit_update_weapon1_type,
+	_simulation_unit_update_weapon2_type,
+	_simulation_unit_update_weapon3_type,
+	_simulation_unit_update_weapon4_type,
+	_simulation_unit_update_weapon1_state,
+	_simulation_unit_update_weapon2_state,
+	_simulation_unit_update_weapon3_state,
+	_simulation_unit_update_weapon4_state,
+	_simulation_unit_update_grenade_counts,
+	_simulation_unit_update_active_camo,
+	_simulation_unit_update_equipment,
+	_simulation_unit_update_equipment_charges,
+	_simulation_unit_update_consumable_energy,
+	_simulation_unit_update_control_context,
+	_simulation_unit_update_assassination_data,
+	// removed from HO
+	//_simulation_unit_update_hud_info,
+	//_simulation_unit_update_map_editor_flags,
 
-	k_simulation_biped_update_flag_count
+	k_simulation_unit_update_flag_count
 };
 
 enum e_simulation_item_update_flag : long
 {
-	_simulation_item_update_unknown14 = k_simulation_object_update_flag_count,
-	_simulation_item_update_unknown15,
-	_simulation_item_update_unknown16, // activation time?
+	_simulation_item_update_set_at_rest = k_simulation_object_update_flag_count,
+	// equipment only
+	_simulation_item_update_equipment_begin_animation_state,
+	_simulation_item_update_equipment_creation_time,
+	_simulation_item_update_equipment_owner,
 
 	k_simulation_item_update_flag_count
 };
 
 enum e_simulation_projectile_update_flag : long
 {
-	_simulation_projectile_update_unknown = k_simulation_object_update_flag_count,
-	// TODO: presumably since ms23 a new flag was added for syncing projectile latching?
+	_simulation_projectile_update_set_at_rest = k_simulation_object_update_flag_count,
+	// surprisingly nothing was added for projectile latching
 
 	k_simulation_projectile_update_flag_count
 };
 
 enum e_simulation_weapon_update_flag : long
 {
-	_simulation_weapon_update_ammo = 20, // likely inherits from k_simulation_item_update_flag_count
+	_simulation_weapon_update_weapon_flags = k_simulation_item_update_flag_count,
+	_simulation_weapon_update_multiplayer_weapon_registration,
+	_simulation_weapon_update_ammo,
 
 	k_simulation_weapon_update_flag_count
 };
@@ -82,14 +87,19 @@ enum e_simulation_generic_update_flag : long
 
 enum e_simulation_device_update_flag : long
 {
+	_simulation_device_update_position = k_simulation_object_update_flag_count,
+	_simulation_device_update_15, // TODO
+	_simulation_device_update_power,
+	_simulation_device_update_17, // power group related
+
 	k_simulation_device_update_flag_count
 };
 
 enum e_simulation_vehicle_update_flag : long
 {
-	_simulation_vehicle_update_unknown14 = k_simulation_object_update_flag_count,
-	_simulation_vehicle_update_unknown15,
-	_simulation_vehicle_update_unknown16,
+	_simulation_vehicle_update_auto_turret = k_simulation_object_update_flag_count, // auto turret initialisation?
+	_simulation_vehicle_update_auto_turret_tracking, // auto turret tracking?
+	_simulation_vehicle_update_seat_power,
 	_simulation_vehicle_update_active_camo,
 
 	k_simulation_vehicle_update_flag_count

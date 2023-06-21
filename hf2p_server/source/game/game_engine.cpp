@@ -55,9 +55,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 			c_game_engine_respawn_options* respawn_options = active_variant->get_respawn_options();
 			byte lives_per_round = respawn_options->get_lives_per_round();
 			player_data->lives = lives_per_round;
-			c_flags<long, ulong64, 64> update_flags = {};
-			update_flags.set(10, true);
-			simulation_action_game_engine_player_update((word)player_index, &update_flags);
+			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives);
 		}
 
 		s_game_engine_globals* engine_globals = get_tls()->game_engine_globals;

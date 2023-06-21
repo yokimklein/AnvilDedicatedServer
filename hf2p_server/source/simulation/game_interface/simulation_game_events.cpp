@@ -20,8 +20,6 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 		return false;
 
 	player_data->spectating_player_index = player_index_from_absolute_player_index(spectating_player_absolute_index);
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set_raw_bits(0x8000i64);
-	simulation_action_game_engine_player_update(player_absolute_index, &update_flags);
+	simulation_action_game_engine_player_update(player_absolute_index, _simulation_player_update_spectating_player);
 	return true;
 }

@@ -115,7 +115,7 @@ void __fastcall object_set_at_rest(datum_index object_index, bool force_activate
 	// update here
 simulation_update:
 	if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
-		simulation_action_object_update(object_index, _simulation_item_update_unknown14);
+		simulation_action_object_update(object_index, _simulation_item_update_set_at_rest);
 	else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
-		simulation_action_object_update(object_index, _simulation_projectile_update_unknown);
+		simulation_action_object_update(object_index, _simulation_projectile_update_set_at_rest);
 }

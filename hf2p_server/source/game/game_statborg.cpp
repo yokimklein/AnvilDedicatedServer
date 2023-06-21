@@ -45,7 +45,7 @@ void c_game_statborg::adjust_team_stat(e_game_team team_index, long statistic, s
 		new_team_statistic = 30000;
 	}
 	this->team[team_index].statistics[statistic] = new_team_statistic;
-	long update_flag = _simulation_game_statborg_update_team0 + team_index;
+	long update_flag = _simulation_statborg_update_team0 + team_index;
 	simulation_action_game_statborg_update(update_flag);
 	if (value != -1)
 		game_results_statistic_set(-1, team_index, value, this->team[team_index].statistics[statistic]);
