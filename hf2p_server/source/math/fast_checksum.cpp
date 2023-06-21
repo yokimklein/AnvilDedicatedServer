@@ -1,5 +1,5 @@
 #include "fast_checksum.h"
-#include "lookup3.c"
+#include <lookup3.c>
 
 /*
 -------------------------------------------------------------------------------

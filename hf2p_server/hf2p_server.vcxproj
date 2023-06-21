@@ -81,7 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
@@ -90,6 +90,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -107,7 +108,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
@@ -116,6 +117,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -135,7 +137,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -145,6 +147,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -281,8 +284,8 @@
     <ClInclude Include="source\networking\network_globals.h" />
     <ClInclude Include="source\networking\network_utilities.h" />
     <ClInclude Include="source\networking\transport\transport_endpoint_winsock.h" />
-    <ClInclude Include="source\anvil\patch\Patch.hpp" />
-    <ClInclude Include="source\anvil\patch\Pointer.hpp" />
+    <ClInclude Include="third_party\patch\Patch.hpp" />
+    <ClInclude Include="third_party\patch\Pointer.hpp" />
     <ClInclude Include="source\simulation\simulation.h" />
     <ClInclude Include="source\networking\messages\network_message_queue.h" />
     <ClInclude Include="source\networking\delivery\network_connection.h" />
@@ -330,6 +333,7 @@
     <ClInclude Include="source\interface\user_interface_session.h" />
     <ClInclude Include="source\units\bipeds.h" />
     <ClInclude Include="source\units\units.h" />
+    <ClInclude Include="third_party\nmd\nmd_assembly.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\game\game.cpp" />
@@ -378,14 +382,13 @@
     <ClCompile Include="source\simulation\simulation_world.cpp" />
     <ClCompile Include="source\simulation\simulation_view.cpp" />
     <ClCompile Include="source\math\fast_checksum.cpp" />
-    <ClCompile Include="source\math\lookup3.c" />
     <ClCompile Include="source\networking\logic\network_session_interface.cpp" />
     <ClCompile Include="source\networking\session\network_managed_session.cpp" />
     <ClCompile Include="source\networking\logic\network_join.cpp" />
     <ClCompile Include="source\networking\network_utilities.cpp" />
     <ClCompile Include="source\networking\transport\transport_shim.cpp" />
-    <ClCompile Include="source\anvil\patch\Patch.cpp" />
-    <ClCompile Include="source\anvil\patch\Pointer.cpp" />
+    <ClCompile Include="third_party\patch\Patch.cpp" />
+    <ClCompile Include="third_party\patch\Pointer.cpp" />
     <ClCompile Include="source\simulation\simulation.cpp" />
     <ClCompile Include="source\networking\messages\network_message_queue.cpp" />
     <ClCompile Include="source\game\players.cpp" />
@@ -412,6 +415,7 @@
     <ClCompile Include="source\text\unicode.cpp" />
     <ClCompile Include="source\units\bipeds.cpp" />
     <ClCompile Include="source\units\units.cpp" />
+    <ClCompile Include="third_party\lookup3\lookup3.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

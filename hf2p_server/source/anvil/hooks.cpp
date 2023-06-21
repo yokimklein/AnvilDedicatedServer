@@ -2,8 +2,7 @@
 // I will eventually make it look better - Yokim
 
 #include "hooks.h"
-#include <anvil\patch\Patch.hpp> // TODO: replace & remove ED's patch system
-
+#include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
 #include <networking\messages\network_message_handler.h>
@@ -29,10 +28,58 @@
 #include <units\units.h>
 #include <units\bipeds.h>
 #include <game\game_engine_spawning.h>
+#define NMD_ASSEMBLY_IMPLEMENTATION
+#include <nmd_assembly.h>
+
+// helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
+void insert_hook_copy_instructions(void* destination, void* source, size_t length)
+{
+    byte* code_buffer = new byte[length];
+    // copy the instructions we're replacing into a buffer
+    memcpy(code_buffer, source, length);
+
+    size_t i = 0;
+    do
+    {
+        size_t instruction_length = nmd_x86_ldisasm((void*)((size_t)source + i), length, NMD_X86_MODE_32);
+        // ensure instruction length fits within the length of the buffer provided
+        assert(i + instruction_length <= length);
+        // assert unimplemented jump instructions - TODO: implement the rest of these
+        assert(!(code_buffer[i] >= 0x70 && code_buffer[i] <= 0x73 || code_buffer[i] >= 0x76 && code_buffer[i] <= 0x7B || code_buffer[i] == 0x7D || code_buffer[i] == 0x7F || code_buffer[i] >= 0xE0 && code_buffer[i] <= 0xE3 || code_buffer[i] == 0xEA));
+        
+        // if jump or call
+        if (code_buffer[i] == 0xE8 || code_buffer[i] == 0xE9)
+        {
+            // ensure instruction length is valid
+            assert(instruction_length == 5);
+            long offset = *(long*)&code_buffer[i + 1];
+            void* destination_address = (void*)(((size_t)source + i) + offset + 5);
+            long new_offset = (size_t)destination_address - ((size_t)destination + i) - 5;
+            memcpy(&code_buffer[i + 1], &new_offset, sizeof(new_offset));
+        }
+        // if short jump - jz, jnz, jl, jle, jmp short
+        else if (code_buffer[i] == 0x74 || code_buffer[i] == 0x75 || code_buffer[i] == 0x7C || code_buffer[i] == 0x7E || code_buffer[i] == 0xEB)
+        {
+            // ensure instruction length is valid
+            assert(instruction_length == 2);
+            // verify offset fits in buffer
+            byte offset = code_buffer[i + 1];
+            assert(offset + 2 + i < length); // if this assert fails you've likely ended your replaced instructions with a short jump
+        }
+
+        i += instruction_length;
+    }
+    while (i < length);
+
+    memcpy(destination, code_buffer, length);
+    delete[] code_buffer;
+}
 
 // This only works with parameterless functions - start_address is a baseless offset
-// Inserted function must have runtime checks, safebuffers & JustMyCode disabled 
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function)
+// Inserted function must have runtime checks, safebuffers & JustMyCode disabled
+// Make sure the destination of any short jumps included in your replaced instructions is also included
+// NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
+void insert_hook(size_t start_address, size_t return_address, void* inserted_function, bool execute_replaced_first = true)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
@@ -58,9 +105,12 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
         return;
     }
 
-    // copy the instructions we're replacing into our new code block
-    memcpy(inserted_code, (void*)base_address(start_address), length);
-    code_offset += length;
+    if (execute_replaced_first)
+    {
+        // copy & format the instructions we're replacing into our new code block
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
+        code_offset += length;
+    }
 
     // preserve registers across call
     memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
@@ -75,6 +125,13 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     // restore registers
     memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
     code_offset += sizeof(restore_registers);
+
+    if (!execute_replaced_first)
+    {
+        // copy & format the instructions we're replacing into our new code block
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
+        code_offset += length;
+    }
 
     // return
     size_t return_offset = (base_address(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
@@ -270,11 +327,6 @@ long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* fil
     return result;
 }
 
-void __fastcall game_engine_player_added_hook(datum_index absolute_player_index)
-{
-    game_engine_player_added(absolute_player_index);
-}
-
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {
     s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
@@ -401,56 +453,6 @@ __declspec(naked) void game_engine_update_time_hook()
         mov eax, module_base
         add eax, 0xC98D1
         jmp eax
-    }
-}
-
-// TODO: figure out what this actually does
-// c_game_statborg::stats_finalize_for_game_end
-__declspec(naked) void stats_finalize_for_game_end_hook()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov byte ptr [eax + 1056], 1
-
-        // call our inserted function
-        push 0
-        push 16777216 // set flag 24
-        call simulation_action_game_statborg_update_with_bitmask
-        add esp, 8
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0xCA2F7
-        jmp eax
-    }
-}
-
-__declspec(naked) void adjust_player_stat_hook()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov edx, [ebp + 20]
-        mov [edi + 4], ax
-
-        // save registers across the function call
-        push eax
-        push edx
-
-        // call our inserted function
-        push esi // push absolute_player_index
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-
-        // restore registers
-        pop edx
-        pop eax
-
-        // return back to the original code
-        mov ebx, module_base
-        add ebx, 0x1AF624
-        jmp ebx
     }
 }
 
@@ -707,6 +709,17 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 #pragma runtime_checks("", off)
+__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
+{
+    simulation_action_game_statborg_update(_simulation_game_statborg_update_finalize_for_game_end);
+}
+
+__declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook()
+{
+    long absolute_player_index; __asm mov absolute_player_index, esi;
+    simulation_action_game_statborg_update(absolute_player_index);
+}
+
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
 {
     // I have to move this into eax first otherwise it'll refuse to compile for some reason
@@ -725,6 +738,18 @@ __declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
     long absolute_player_index;
     __asm mov absolute_player_index, esi;
     simulation_action_game_statborg_update(absolute_player_index);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook3()
+{
+    long team_index; __asm mov team_index, ebx;
+    simulation_action_game_statborg_update(_simulation_game_statborg_update_team0 + team_index);
+}
+
+__declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook()
+{
+    long team_index; __asm mov team_index, edi;
+    simulation_action_game_statborg_update(_simulation_game_statborg_update_team0 + team_index);
 }
 
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
@@ -2147,14 +2172,14 @@ void anvil_dedi_apply_hooks()
 
     // STATBORG UPDATES
     // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
-    Hook(0xFA2D0, game_engine_player_added_hook).Apply();
+    Hook(0xFA2D0, game_engine_player_added).Apply();
     // c_game_statborg::stats_finalize_for_game_end
-    Pointer::Base(0xCA2F0).WriteJump(stats_finalize_for_game_end_hook, HookFlags::None);
+    insert_hook(0xCA2F0, 0xCA2F7, game_engine_update_after_game_hook);
     // c_game_statborg::adjust_player_stat
-    Pointer::Base(0x1AF61D).WriteJump(adjust_player_stat_hook, HookFlags::None);
+    insert_hook(0x1AF61D, 0x1AF624, c_game_statborg__adjust_player_stat_hook);
     insert_hook(0xC8ACE, 0xC8AF3, game_engine_end_round_with_winner_hook1);
     insert_hook(0xC8C18, 0xC8C3D, game_engine_end_round_with_winner_hook2);
-    insert_hook(0xFAFDB, 0xFAFFC, game_engine_earn_wp_event_hook);
+    insert_hook(0xFAFDB, 0xFB000, game_engine_earn_wp_event_hook);
     // TODO: other inlined instances of c_game_statborg::adjust_player_stat
     //c_game_statborg::record_kill // this call from ms23 is gone entirely in ms29, not even inlined
     //game_engine_adjust_player_wp // survival only
@@ -2166,10 +2191,8 @@ void anvil_dedi_apply_hooks()
     //c_infection_engine::player_left
     // c_game_statborg::adjust_team_stat
     Hook(0x1AF710, adjust_team_stat_hook).Apply();
-    Hook(0xC8A6E, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in game_engine_end_round_with_winner
-    Hook(0x1C7FCD, game_results_statistic_set_hook, HookFlags::IsCall).Apply(); // inlined in c_game_engine::recompute_team_score
-    Patch::NopFill(Pointer::Base(0xC8A76), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
-    Patch::NopFill(Pointer::Base(0x1C7FD8), 3); // nop stack callup our game_results_statistic_set wrapper is already handling
+    insert_hook(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3);
+    insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, false);
     // TODO: c_territories_engine::unknown has several c_game_statborg::adjust_team_stat calls
     // c_game_statborg::player_changed_teams
     Pointer::Base(0xFA956).WriteJump(player_changed_teams_hook, HookFlags::None);

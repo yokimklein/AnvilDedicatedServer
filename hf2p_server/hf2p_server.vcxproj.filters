@@ -117,10 +117,10 @@
     <ClInclude Include="source\simulation\simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\patch\Patch.hpp">
+    <ClInclude Include="third_party\patch\Patch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\patch\Pointer.hpp">
+    <ClInclude Include="third_party\patch\Pointer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\networking\network_utilities.h">
@@ -540,6 +540,9 @@
     <ClInclude Include="source\game\game_engine_spawning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="third_party\nmd\nmd_assembly.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -602,10 +605,10 @@
     <ClCompile Include="source\simulation\simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\patch\Patch.cpp">
+    <ClCompile Include="third_party\patch\Patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\patch\Pointer.cpp">
+    <ClCompile Include="third_party\patch\Pointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\network_utilities.cpp">
@@ -627,9 +630,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\math\fast_checksum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\math\lookup3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\simulation_view.cpp">
@@ -780,6 +780,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_spawning.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\lookup3\lookup3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

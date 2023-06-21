@@ -25,7 +25,7 @@ void game_engine_attach_to_simulation()
 	simulation_action_breakable_surfaces_create();
 }
 
-void game_engine_player_added(datum_index player_index)
+void __fastcall game_engine_player_added(datum_index player_index)
 {
 	if (current_game_engine())
 	{

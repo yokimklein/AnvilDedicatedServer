@@ -163,7 +163,7 @@ struct s_game_engine_globals
 static_assert(sizeof(s_game_engine_globals) == 0x15858);
 
 void game_engine_attach_to_simulation();
-void game_engine_player_added(datum_index absolute_player_index);
+void __fastcall game_engine_player_added(datum_index absolute_player_index);
 long game_engine_round_time_get();
 void game_engine_update_round_conditions();
 bool game_engine_round_condition_test(e_game_engine_round_condition condition);
