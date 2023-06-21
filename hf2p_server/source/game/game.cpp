@@ -103,3 +103,10 @@ bool game_is_survival()
 	else
 		return false;
 }
+
+bool game_is_finished()
+{
+	game_globals_storage* game_globals = game_globals_get();
+	assert(game_globals && game_globals->map_active);
+	return game_globals->game_finished;
+}

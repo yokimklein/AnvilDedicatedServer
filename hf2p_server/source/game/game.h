@@ -15,3 +15,4 @@ bool game_in_progress();
 bool game_is_dedicated_server();
 bool game_is_multiplayer();
 bool game_is_survival();
+bool game_is_finished();

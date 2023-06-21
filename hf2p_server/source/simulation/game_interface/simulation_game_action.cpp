@@ -144,6 +144,7 @@ void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_f
 
 void simulation_action_game_statborg_update(long update_flag)
 {
+	assert(update_flag >= 0 && update_flag < k_simulation_statborg_update_flag_count);
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_statborg_update(&update_flags);
@@ -172,6 +173,8 @@ void simulation_action_game_engine_player_update(short player_index, c_flags<lon
 
 void simulation_action_game_engine_player_update(datum_index player_index, long update_flag)
 {
+	assert(update_flag >= 0 && update_flag < k_simulation_player_update_flag_count);
+	assert((word)player_index >= 0 && (word)player_index <= 16);
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_engine_player_update((word)player_index, &update_flags);
@@ -200,6 +203,7 @@ void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* up
 
 void simulation_action_game_engine_globals_update(long update_flag)
 {
+	assert(update_flag >= 0 && update_flag < 30); // roughly accurate, vip has the most flags w/ 30 total
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_engine_globals_update(&update_flags);

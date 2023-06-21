@@ -50,15 +50,52 @@ enum e_statborg_entry
 
 struct s_game_statborg_player
 {
-	c_static_array<word, k_statborg_indices_count> statistics;
+	word in_round_score;
+	word in_game_total_score;
+	word kills;
+	word deaths;
+	word suicides;
+	word betrayals;
+	word assists;
+	word rounds_won;
+	union
+	{
+		struct
+		{
+			word infection_time_as_human;
+			word infection_infections;
+			word infection_zombie_kills;
+		};
+		struct
+		{
+			word territories_owned;
+			word territories_captures;
+			word territories_ousts;
+		};
+	};
+	word total_wp;
+	word kills_in_a_row;
+	word multiple_kills;
+	word total_kill_damage_dealt;
+	word unknown15;
+	word team_kills_in_a_row;
+	word unknown17;
+	word sniper_kills_in_a_row;
+	word shotgun_kills_in_a_row;
+	word sword_kills_in_a_row;
+	word vehicle_kills_in_a_row;
+	word team_kills_team;
+	bool finalised;
+	word kill_damage_type;
 	bool __unknown32;
+	byte __unknown33;
 };
 static_assert(sizeof(s_game_statborg_player) == 0x34);
 
 struct s_game_statborg_team
 {
 	c_static_array<word, 12> statistics;
-	bool __unknown18;
+	bool finalised;
 };
 static_assert(sizeof(s_game_statborg_team) == 0x1A);
 
@@ -68,6 +105,7 @@ public:
 	void player_added(datum_index player_index);
 	void clear_player_stats(datum_index player_index);
 	void adjust_team_stat(e_game_team team_index, long statistic, short unknown, long value);
+	void stats_reset_for_round_switch();
 
 	word __unknown0;
 	word __unknown2;
@@ -76,7 +114,7 @@ public:
 	bool stats_paused;
 	dword __unknown418;
 	dword __unknown41C;
-	bool __unknown420;
+	bool m_finalized;
 };
 static_assert(sizeof(c_game_statborg) == 0x424);
 

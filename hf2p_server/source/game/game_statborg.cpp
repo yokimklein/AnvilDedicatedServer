@@ -50,3 +50,53 @@ void c_game_statborg::adjust_team_stat(e_game_team team_index, long statistic, s
 	if (value != -1)
 		game_results_statistic_set(-1, team_index, value, this->team[team_index].statistics[statistic]);
 }
+
+void c_game_statborg::stats_reset_for_round_switch()
+{
+	for (long i = 0; i < k_maximum_multiplayer_players; i++)
+	{
+		s_game_statborg_player* player_stats = &player[i];
+		player_stats->kills_in_a_row = 0;
+		player_stats->multiple_kills = 0;
+		player_stats->total_kill_damage_dealt = 0;
+		player_stats->unknown15 = 0;
+		player_stats->team_kills_in_a_row = 0;
+		player_stats->unknown17 = 0;
+		player_stats->sniper_kills_in_a_row = 0;
+		player_stats->shotgun_kills_in_a_row = 0;
+		player_stats->sword_kills_in_a_row = 0;
+		player_stats->vehicle_kills_in_a_row = 0;
+		player_stats->kill_damage_type = 0;
+		player_stats->__unknown32 = false;
+		player_stats->__unknown33 = 0;
+		player_stats->team_kills_team = -1;
+
+		word in_round_score = player_stats->in_round_score;
+		if (in_round_score != 0 && !player_stats->finalised)
+		{
+			player_stats->in_game_total_score += in_round_score;
+			game_results_statistic_set(i, _game_team_none, _statborg_entry_rounds_won, player_stats->in_game_total_score);
+			if (game_is_finished())
+				player_stats->finalised = true;
+			else
+				player_stats->in_round_score = 0;
+			simulation_action_game_statborg_update(_simulation_statborg_update_player0 + i);
+		}
+	}
+	for (long i = 0; i < k_maximum_teams; i++)
+	{
+		s_game_statborg_team* team_stats = &team[i];
+		word in_round_score = team_stats->statistics[0];
+		if (in_round_score != 0 && team_stats->finalised)
+		{
+			team_stats->statistics[1] += in_round_score;
+			game_results_statistic_set(-1, (e_game_team)i, _statborg_entry_rounds_won, team_stats->statistics[1]);
+			if (game_is_finished())
+				team_stats->finalised = true;
+			else
+				team_stats->statistics[0] = 0;
+			simulation_action_game_statborg_update(_simulation_statborg_update_team0 + i);
+		}
+	}
+	game_engine_scoring_notify_statborg_reset();
+}

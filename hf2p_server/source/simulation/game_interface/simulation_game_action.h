@@ -148,7 +148,7 @@ enum e_simulation_statborg_update_flag : long
 	_simulation_statborg_update_team5,
 	_simulation_statborg_update_team6,
 	_simulation_statborg_update_team7,
-	_simulation_statborg_update_finalize_for_game_end, // updates bool __unknown420
+	_simulation_statborg_update_finalize_for_game_end,
 
 	k_simulation_statborg_update_flag_count
 };

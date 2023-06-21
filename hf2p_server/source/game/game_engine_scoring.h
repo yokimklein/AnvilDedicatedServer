@@ -17,3 +17,5 @@ struct s_game_engine_score_list
 	short team_count;
 };
 static_assert(sizeof(s_game_engine_score_list) == 0x7C);
+
+void game_engine_scoring_notify_statborg_reset();

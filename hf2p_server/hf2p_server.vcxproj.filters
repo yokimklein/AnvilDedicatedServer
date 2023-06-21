@@ -785,5 +785,8 @@
     <ClCompile Include="third_party\lookup3\lookup3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\game_engine_scoring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -181,21 +181,8 @@ void __stdcall send_message_hook(void* stream, e_network_message_type message_ty
 }
 
 // add back missing host code, process_pending_joins & check_to_send_membership_update
-//static bool key_held_delete = false;
 void __fastcall session_idle_hook(c_network_session* session)
 {
-    // TESTING REMOVE THIS
-    //if (anvil_key_pressed(VK_DELETE, &key_held_delete))
-    //{
-    //    printf("Toggling forced respawns...\n");
-    //    c_player_in_game_iterator player_iterator(get_tls()->players);
-    //    player_iterator.begin(get_tls()->players);
-    //    while (player_iterator.next())
-    //    {
-    //        s_player_datum* player = player_iterator.get_datum();
-    //        player->respawn_forced = !player->respawn_forced;
-    //    }
-    //}
     session->idle();
 }
 
@@ -453,126 +440,6 @@ __declspec(naked) void game_engine_update_time_hook()
     }
 }
 
-__declspec(naked) void player_changed_teams_hook()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov ecx, [esi + 36]
-        inc dword ptr[eax]
-        cmp byte ptr[ecx + 20], 4
-
-        // save registers across the function call
-        push eax
-        push edx
-
-        // call our inserted function
-        movzx eax, bx // long absolute_player_index = (word)player_index;
-        push eax // push absolute_player_index
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-
-        // restore registers
-        pop edx
-        pop eax
-
-        // return back to the original code
-        mov ecx, module_base
-        add ecx, 0xFA95F
-        jmp ecx
-    }
-}
-
-// TODO: test this, also where is this used?
-// breakpoint ED's and see if it ever works?
-__declspec(naked) void player_indices_swapped_hook()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        lea esi, [ebp + 52]
-        add edi, eax
-        rep movsd
-
-        // call our inserted function
-        push edi // absolute_index_a
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-        push esi // absolute_index_b
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-
-        // return back to the original code
-        mov edx, module_base
-        add edx, 0xFA7B8
-        jmp edx
-    }
-}
-
-__declspec(naked) void stats_reset_for_round_switch_hook1()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        cmp byte ptr [ecx + 0x1A0E4], 0
-        jz short else_label
-        mov byte ptr [eax + 0x12], 1
-        jmp short end_label
-        else_label:
-        xor ecx, ecx
-        mov [eax - 0x1C], cx
-        end_label:
-
-        // save registers across the function call
-        push eax
-        push ecx
-        push edx
-
-        // call our inserted function
-        push esi // player_absolute_index
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-
-        // restore registers
-        pop edx
-        pop ecx
-        pop eax
-
-        // return back to the original code
-        mov ebx, module_base
-        add ebx, 0x1AEEB9
-        jmp ebx
-    }
-}
-
-__declspec(naked) void stats_reset_for_round_switch_hook2()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        cmp byte ptr[eax + 106724], 0
-        jz short else_label
-        mov byte ptr [esi], 1
-        jmp short end_label
-        else_label:
-        xor eax, eax
-        mov [esi - 24], ax
-        end_label:
-
-        // call our inserted function
-        mov eax, edi // team_index + 16
-        add eax, 16
-        push eax
-        call simulation_action_game_statborg_update_with_flag
-        add esp, 4
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0x1AEF20
-        jmp eax
-    }
-}
-
 __declspec(naked) void player_spawn_hook()
 {
     __asm
@@ -747,6 +614,20 @@ __declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook
 {
     long team_index; __asm mov team_index, edi;
     simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
+}
+
+__declspec(safebuffers) void __fastcall player_changed_teams_hook()
+{
+    short player_index; __asm mov player_index, bx;
+    simulation_action_game_statborg_update(_simulation_statborg_update_player0 + player_index);
+}
+
+__declspec(safebuffers) void __fastcall player_indices_swapped_hook()
+{
+    long absolute_index_a; __asm mov absolute_index_a, edi;
+    long absolute_index_b; __asm mov absolute_index_b, esi;
+    simulation_action_game_statborg_update(absolute_index_a);
+    simulation_action_game_statborg_update(absolute_index_b);
 }
 
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
@@ -2064,6 +1945,11 @@ void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_
     thisptr->adjust_team_stat(team_index, statistic, unknown, value);
 }
 
+void __fastcall stats_reset_for_round_switch_hook(c_game_statborg* thisptr)
+{
+    thisptr->stats_reset_for_round_switch();
+}
+
 void __fastcall game_results_statistic_set_hook(datum_index absolute_player_index, e_game_team team_index, long statistic, long value)
 {
     long update_flag = _simulation_statborg_update_team0 + team_index;
@@ -2190,12 +2076,11 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, false);
     // TODO: c_territories_engine::unknown has several c_game_statborg::adjust_team_stat calls
     // c_game_statborg::player_changed_teams
-    Pointer::Base(0xFA956).WriteJump(player_changed_teams_hook, HookFlags::None);
+    insert_hook(0xFA956, 0xFA95F, player_changed_teams_hook);
     // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
-    Pointer::Base(0xFA7B1).WriteJump(player_indices_swapped_hook, HookFlags::None);
+    insert_hook(0xFA7B1, 0xFA7B8, player_indices_swapped_hook); // TODO: TEST - WHERE IS THIS USED?
     // c_game_statborg::stats_reset_for_round_switch
-    Pointer::Base(0x1AEE9B).WriteJump(stats_reset_for_round_switch_hook1, HookFlags::None);
-    Pointer::Base(0x1AEF0C).WriteJump(stats_reset_for_round_switch_hook2, HookFlags::None);
+    Hook(0x1AEE00, stats_reset_for_round_switch_hook).Apply();
     // TODO: c_game_statborg::reset_player_stat for infection
     // TODO: c_game_statborg::reset_team_stat for territories
 
@@ -2385,6 +2270,7 @@ void anvil_dedi_apply_hooks()
     Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
     // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
+    // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
 
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam

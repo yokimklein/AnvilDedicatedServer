@@ -338,6 +338,7 @@
   <ItemGroup>
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
+    <ClCompile Include="source\game\game_engine_scoring.cpp" />
     <ClCompile Include="source\game\game_engine_simulation.cpp" />
     <ClCompile Include="source\game\game_engine_spawning.cpp" />
     <ClCompile Include="source\game\game_engine_team.cpp" />
