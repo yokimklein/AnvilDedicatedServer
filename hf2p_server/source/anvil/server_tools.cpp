@@ -140,6 +140,8 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _deployable_cover;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
+        configuration->s3d_player_customization.override_api_data = true;
+        configuration->s3d_player_container.override_api_data = true;
         player_data_updated = true;
 
         // dedi host loadout
@@ -163,6 +165,12 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                 if (ustrncmp(peer->properties.peer_name, player_list[i], 16) == 0)
                 {
                     configuration->player_xuid.data = i + 1;
+                    // set dev service tag
+                    if (i == 0 || i == 1 || i == 2)
+                    {
+                        wchar_t service_tag[5] = L"DEV";
+                        memcpy(&configuration->player_appearance.service_tag, service_tag, 10);
+                    }
                     player_data_updated = true;
                     break;
                 }
