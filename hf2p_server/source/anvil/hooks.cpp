@@ -586,7 +586,7 @@ __declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
 {
     // I have to move this into eax first otherwise it'll refuse to compile for some reason
-    long absolute_player_index; __asm mov eax, [esp + 0x90] __asm mov absolute_player_index, eax; // originally dword ptr [esp+0x2C]
+    long absolute_player_index; __asm mov eax, [esp + 0x90] __asm mov absolute_player_index, eax; // originally dword ptr [esp + 0x50 - 0x24], sp was 0x50
     simulation_action_game_statborg_update(absolute_player_index);
 }
 
@@ -644,6 +644,12 @@ __declspec(safebuffers) void __fastcall weapon_age_hook()
     simulation_action_weapon_state_update(weapon_index);
 }
 
+__declspec(safebuffers) void __fastcall weapon_barrel_fire_hook()
+{
+    datum_index weapon_index;
+    __asm mov eax, [esp + 0xB8] __asm mov weapon_index, eax;
+    simulation_action_weapon_state_update(weapon_index);
+}
 #pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
@@ -2238,7 +2244,7 @@ void anvil_dedi_apply_hooks()
     // weapon_age
     insert_hook(0x433CE6, 0x433CF0, weapon_age_hook, _hook_replace);
     // weapon_barrel_fire
-    
+    insert_hook(0x43577A, 0x43577F, weapon_barrel_fire_hook);
     // weapon_magazine_execute_reload
 
     // weapon_magazine_update
