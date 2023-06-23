@@ -672,6 +672,14 @@ __declspec(safebuffers) void __fastcall weapon_report_kill_hook()
     __asm mov eax, [ebp + 0x24] __asm mov weapon_index, eax;
     simulation_action_weapon_state_update(weapon_index);
 }
+
+// TODO: untested, ensure ebp offset is correct
+__declspec(safebuffers) void __fastcall weapon_set_current_amount_hook()
+{
+    datum_index weapon_index;
+    __asm mov eax, [ebp + 0x1C] __asm mov weapon_index, eax;
+    simulation_action_weapon_state_update(weapon_index);
+}
 #pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
@@ -2273,8 +2281,8 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x42DBB4, 0x42DBB9, weapon_magazine_update_hook);
     // weapon_report_kill (syncs weapon ages with each kill flag, used by the energy sword)
     insert_hook(0x4339C5, 0x4339CA, weapon_report_kill_hook);
-    // weapon_set_current_amount
-
+    // weapon_set_current_amount (used by scripts & actors only, TODO: untested)
+    insert_hook(0x43374B, 0x433750, weapon_set_current_amount_hook);
     // weapon_set_total_rounds
 
     // weapon_take_inventory_rounds 2x
