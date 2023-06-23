@@ -650,6 +650,13 @@ __declspec(safebuffers) void __fastcall weapon_barrel_fire_hook()
     __asm mov eax, [esp + 0xB8] __asm mov weapon_index, eax;
     simulation_action_weapon_state_update(weapon_index);
 }
+
+__declspec(safebuffers) void __fastcall weapon_magazine_execute_reload_hook()
+{
+    datum_index weapon_index;
+    __asm mov eax, [ebp + 0x20] __asm mov weapon_index, eax;
+    simulation_action_weapon_state_update(weapon_index);
+}
 #pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
@@ -2246,7 +2253,7 @@ void anvil_dedi_apply_hooks()
     // weapon_barrel_fire
     insert_hook(0x43577A, 0x43577F, weapon_barrel_fire_hook);
     // weapon_magazine_execute_reload
-
+    insert_hook(0x434ECE, 0x434ED6, weapon_magazine_execute_reload_hook);
     // weapon_magazine_update
 
     // weapon_report_kill
