@@ -1987,6 +1987,7 @@ void anvil_dedi_apply_patches()
 
 // TODO: verify all hooks are working as intended
 // check for register corruption - especially where i've added new variables
+// TODO: insert_hook should sanitise against register corruption - replace all old hooks with new system
 void anvil_dedi_apply_hooks()
 {
     // hook exceptions_update to catch esoteric crashes
@@ -2252,7 +2253,6 @@ void anvil_dedi_apply_hooks()
     // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
     // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
     // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
-
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
     // prevent the game from adding a player to the dedicated host

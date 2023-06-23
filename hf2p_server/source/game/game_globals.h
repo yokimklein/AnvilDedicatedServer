@@ -70,4 +70,14 @@ struct game_globals_storage
 };
 static_assert(sizeof(game_globals_storage) == 0x1A708);
 
+struct s_globals_definition
+{
+	byte data[0x1B0];
+	s_tag_reference multiplayer_globals;
+	byte data2[0x45C];
+};
+static_assert(sizeof(s_globals_definition) == 0x61C);
+
 game_globals_storage* game_globals_get();
+
+extern s_globals_definition*& g_globals_definition;

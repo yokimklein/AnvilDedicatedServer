@@ -54,6 +54,7 @@ public:
 
 	c_game_engine_miscellaneous_options* get_miscellaneous_options();
 	c_game_engine_respawn_options* get_respawn_options();
+	c_game_engine_social_options* get_social_options();
 
 	dword m_checksum;
 	string m_name;

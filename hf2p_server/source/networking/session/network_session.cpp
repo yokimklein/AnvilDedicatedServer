@@ -1489,3 +1489,13 @@ long c_network_session::get_session_membership_update_number()
 {
     return this->m_session_membership.m_baseline.update_number;
 }
+
+c_network_session_membership* c_network_session::get_session_membership_for_update()
+{
+    assert(this->established());
+    assert(this->is_host());
+    assert(m_session_membership.has_membership());
+    assert(m_session_membership.is_peer_valid(m_session_membership.local_peer_index()));
+    assert(m_session_membership.is_peer_valid(m_session_membership.host_peer_index()));
+    return &m_session_membership;
+}

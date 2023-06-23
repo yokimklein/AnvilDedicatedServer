@@ -621,23 +621,6 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
         printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties\n");
         memcpy(&peer->properties, peer_properties, sizeof(s_network_session_peer_properties));
         // observer quality_statistics_notify_established_connectivity removed as estimated bandwidth fields were removed from s_network_session_peer_properties
-
-        // TODO - TEMPORARY ANVIL CODE (NON-ORIGINAL)
-        // set the player name based on their peer name
-        // we'll eventually reimplement network_session_check_properties to handle names, teams and player loadouts
-        auto baseline = this->get_current_membership();
-        auto peer_name = peer_properties->peer_name;
-        long player_index = get_player_index_from_mask(&peer->player_mask, 16);
-        if (player_index != -1)
-        {
-            auto player = &baseline->players[player_index];
-            if (peer_name != L"" && (ustrncmp(player->configuration.host.player_name, peer_name, 16) != 0))
-            {
-                ustrnzcpy(player->configuration.host.player_name, peer_name, 16);
-                ustrnzcpy(player->configuration.client.name, peer_name, 16);
-            }
-        }
-
         this->increment_update();
     }
     else
@@ -801,4 +784,9 @@ bool c_network_session_membership::get_peer_needs_reestablishment(long peer_inde
 bool c_network_session_membership::has_membership()
 {
     return this->update_number() != -1;
+}
+
+void c_network_session_membership::player_data_updated()
+{
+    this->increment_update();
 }

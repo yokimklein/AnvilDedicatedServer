@@ -179,6 +179,7 @@
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\weapons.h" />
+    <ClInclude Include="source\main\main.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
@@ -353,6 +354,7 @@
     <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\hf2p\hf2p.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
+    <ClCompile Include="source\main\main.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\network_memory.cpp" />

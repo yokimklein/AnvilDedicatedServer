@@ -16,3 +16,8 @@ void game_engine_assemble_player_traits(datum_index absolute_player_index)
 	FUNCTION_DEF(0x11D7E0, void, __fastcall, game_engine_assemble_player_traits_call, datum_index absolute_player_index);
 	game_engine_assemble_player_traits_call(absolute_player_index);
 }
+
+bool c_game_engine_social_options::get_observers_enabled()
+{
+	return m_flags.test(_game_engine_social_options_observers_enabled);
+}

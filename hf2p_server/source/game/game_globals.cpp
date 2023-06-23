@@ -7,3 +7,5 @@ game_globals_storage* game_globals_get()
 
 	return (tls && tls->game_globals) ? tls->game_globals : nullptr;
 }
+
+REFERENCE_DECLARE(base_address(0x103E788), s_globals_definition*, g_globals_definition);

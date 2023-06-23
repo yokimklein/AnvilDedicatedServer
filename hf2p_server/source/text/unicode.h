@@ -4,9 +4,8 @@
 
 // Taken from https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/text/unicode.hpp
 
-//extern int ustrcmp(wchar_t const*, wchar_t const*);
-//extern unsigned int ustrlen(wchar_t const *);
-
+extern int ustrcmp(wchar_t const*, wchar_t const*);
+extern unsigned int ustrlen(wchar_t const *);
 extern unsigned int ustrnlen(wchar_t const*, long);
 
 //extern wchar_t const * ustrchr(wchar_t const *,wchar_t);
@@ -16,7 +15,7 @@ extern unsigned int ustrnlen(wchar_t const*, long);
 extern wchar_t* ustrnzcat(wchar_t*, wchar_t const*, long);
 
 extern int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count);
-extern int ustrncpy(wchar_t* dest, long size, wchar_t const* src, long count);
+extern int ustrncpy(wchar_t* dest, wchar_t const* src, long count);
 extern wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count);
 
 //extern wchar_t const * ustrpbrk(wchar_t const *,wchar_t const *);

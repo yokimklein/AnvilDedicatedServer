@@ -5,6 +5,11 @@
 #include <iostream>
 #include <networking\logic\network_life_cycle.h>
 #include <anvil\server_tools.h>
+#include <tag_files\tag_files.h>
+#include <game\game_globals.h>
+#include <game\multiplayer_definitions.h>
+#include <main\main.h>
+#include <game\game_engine_team.h>
 
 void __fastcall network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
@@ -69,11 +74,13 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
 // make sure to sanitise vote inputs, if players set to an invalid index/enum, update their player data to set it back to 0 and remove their vote
 void network_session_check_properties(c_network_session* session)
 {
-    /* TODO - once mulg definition is implemented & tag interface
+    assert(session != nullptr);
+    assert(session->is_host());
+
     bool mulg_is_valid = false;
     if (g_globals_definition)
     {
-        tag_index mulg_index = g_globals_definition->multiplayer_globals.tag_index;
+        long mulg_index = g_globals_definition->multiplayer_globals.index;
         if (mulg_index != -1)
         {
             s_multiplayer_globals_definition* multiplayer_globals = (s_multiplayer_globals_definition*)tag_get('mulg', mulg_index);
@@ -81,18 +88,125 @@ void network_session_check_properties(c_network_session* session)
                 mulg_is_valid = multiplayer_globals->universal.count > 0;
         }
     }
-    */
-    /*
-    bool mulg_is_valid = true;
 
-    if (!session->membership_is_locked() && mulg_is_valid)
+    if (!session->membership_is_locked() && !main_is_in_main_loop_pregame() && mulg_is_valid)
     {
+        long maximum_team_count = 8;
+        bool sve_teams = false;
+        bool variant_has_teams = false;
+        bool observer_allowed = true;
+        bool update_required = false;
+
         c_network_session_parameters* parameters = session->get_session_parameters();
-        long session_index = session->session_index();
         c_game_variant* game_variant = nullptr;
         if (parameters->game_variant.get_allowed())
             game_variant = parameters->game_variant.get();
         long update_number = session->get_session_membership_update_number();
+        long session_index = session->session_index();
+        
+        static long session_update_numbers[3] = {};
+        static bool session_variant_has_teams[3] = {};
+        static bool session_variant_uses_sve_teams[3] = {};
+        static bool session_observer_allowed[3] = {};
+        static long session_maximum_team_count[3] = {};
+        if (session_update_numbers[session_index] != update_number)
+        {
+            c_network_session_membership* membership = session->get_session_membership_for_update();
+            assert(membership != NULL);
+            update_required = true;
+            bool player_data_updated = false;
+
+            // TODO: NAME VERIFICATION? we might not need it so long as the API sanitises everything
+
+            // assign player loadouts
+            for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
+            {
+                s_network_session_player* player = membership->get_player(player_index);
+                player_data_updated = anvil_assign_player_loadout(session, player_index, &player->configuration.host);
+            }
+
+            if (player_data_updated)
+                membership->player_data_updated();
+            session_update_numbers[session_index] = session->get_session_membership_update_number();
+        }
+
+        if (session->session_type() == _network_session_type_group)
+        {
+            if (game_variant != nullptr)
+            {
+                variant_has_teams = game_engine_variant_has_teams(game_variant);
+                sve_teams = game_variant->m_storage.m_base_variant.m_social_options.m_flags.test(_game_engine_social_options_spartans_vs_elites_enabled);
+                observer_allowed = game_engine_variant_is_observer_allowed(game_variant); // always returns false
+                if (session->get_session_parameters()->map.get_allowed())
+                {
+                    auto map = session->get_session_parameters()->map.get();
+                    assert(map != nullptr);
+                    maximum_team_count = game_engine_variant_get_maximum_team_count(game_variant, map->map_id);
+                }
+            }
+            if ((maximum_team_count || !variant_has_teams) && (update_required ||
+                session_variant_has_teams[session_index] != variant_has_teams ||
+                session_variant_uses_sve_teams[session_index] != sve_teams ||
+                session_observer_allowed[session_index] != observer_allowed ||
+                session_maximum_team_count[session_index] != maximum_team_count))
+            {
+                network_session_update_team_indices(session, variant_has_teams, session_variant_has_teams[session_index], observer_allowed, sve_teams, maximum_team_count);
+                session_variant_has_teams[session_index] = variant_has_teams;
+                session_variant_uses_sve_teams[session_index] = sve_teams;
+                session_observer_allowed[session_index] = observer_allowed;
+                session_maximum_team_count[session_index] = maximum_team_count;
+            }
+        }
     }
-    */
+}
+
+void network_session_update_team_indices(c_network_session* session, bool variant_has_teams, bool previous_update_variant_had_teams, bool observer_allowed, bool sve_teams, long maximum_team_count)
+{
+    c_network_session_membership* membership = session->get_session_membership_for_update();
+    bool teams_updated = false;
+    if (variant_has_teams)
+    {
+        // In ms23 there's a dedicated server check here which would override team sorting
+        // in the client build we have, the function used to override is likely stubbed as it only returns 0
+        // I'm guessing saber had some sort of rank or skill based team sorting system? we're probably not gonna go for that right now
+
+        // spartans vs elites team sorting
+        if (sve_teams)
+        {
+            for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
+            {
+                s_network_session_player* player = membership->get_player(player_index);
+                player->configuration.host.user_selected_team_index = player->configuration.host.player_appearance.player_model_choice != 0;
+            }
+        }
+        else
+        {
+            // TODO: team sorting
+        }
+        // assign user selected team to team_index
+        for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
+        {
+            s_network_session_player* player = membership->get_player(player_index);
+            if (player->configuration.host.team_index != player->configuration.host.user_selected_team_index)
+            {
+                player->configuration.host.team_index = player->configuration.host.user_selected_team_index;
+                teams_updated = true;
+            }
+        }
+    }
+    else
+    {
+        // FFA team sorting
+        for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
+        {
+            s_network_session_player* player = membership->get_player(player_index);
+            if (player_index != player->configuration.host.team_index.get())
+            {
+                teams_updated = true;
+                player->configuration.host.team_index = player_index;
+            }
+        }
+    }
+    if (teams_updated)
+        membership->player_data_updated();
 }

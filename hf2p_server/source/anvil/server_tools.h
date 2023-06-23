@@ -13,6 +13,7 @@ bool anvil_session_set_map(e_map_id map_id);
 bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant engine_variant);
 void anvil_session_set_test_player_data(c_network_session_membership* membership);
 void anvil_launch_scenario(const char* scenario_path);
+bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration);
 
 bool anvil_key_pressed(long vkey, bool* key_held);
 long anvil_get_update_rate_ms();

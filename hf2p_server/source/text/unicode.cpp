@@ -5,13 +5,22 @@
 #include <stdio.h>
 #include <string.h>
 
-//int ustrcmp(wchar_t const*, wchar_t const*)
-//unsigned int ustrlen(wchar_t const *)
+int ustrcmp(wchar_t const* string1, wchar_t const* string2)
+{
+    assert(string1 != NULL);
+    assert(string2 != NULL);
+    return wcscmp(string1, string2);
+}
+
+unsigned int ustrlen(wchar_t const* string)
+{
+    assert(string != NULL);
+    return wcslen(string);
+}
 
 unsigned int ustrnlen(wchar_t const* string, long count)
 {
     assert(string != NULL);
-
     return wcsnlen(string, count);
 }
 
@@ -33,7 +42,7 @@ int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count)
     return wcsncmp(string1, string2, count);
 }
 
-int ustrncpy(wchar_t* dest, long size, wchar_t const* src, long count)
+int ustrncpy(wchar_t* dest, wchar_t const* src, long count)
 {
     assert(dest != NULL);
     assert(src != NULL);
@@ -57,7 +66,7 @@ wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count)
     assert(src != NULL);
     assert(count > 0);
 
-    ustrncpy(dest, count, src, count - 1);
+    ustrncpy(dest, src, count - 1);
     dest[count - 1] = 0;
     return dest;
 }

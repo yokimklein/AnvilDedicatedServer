@@ -6,6 +6,7 @@
 #include <text\unicode.h>
 #include <hf2p\hq.h>
 #include <memory\tls.h>
+#include <game\game.h>
 
 bool anvil_create_session()
 {
@@ -36,9 +37,10 @@ bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant eng
     build_default_game_variant(&game_variant, engine_variant);
     game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_round_time_limit = 1;
-    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_early_victory_win_count = 1;
-    //game_variant.m_storage.m_slayer_variant.m_score_to_win = 1;
+    game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_early_victory_win_count = 1;
+    game_variant.m_storage.m_slayer_variant.m_score_to_win = 10;
     //game_variant.m_storage.m_slayer_variant.m_suicide_points = 1;
+    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_flags.set(_game_engine_miscellaneous_option_teams_enabled, true);
 
     //game_variant.m_storage.m_base_variant.m_respawn_options.m_flags.set(_game_engine_respawn_options_auto_respawn_disabled, false);
     //wchar_t variant_name[16] = L"RESPAWN TEST";
@@ -75,9 +77,9 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         host_configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle;
         host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _deployable_cover;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _hologram;
-        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _auto_turret;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _deployable_cover;
+        host_configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         host_configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_plant_plasma_on_death] = 1;
         //host_configuration->s3d_player_appearance.modifiers[0].modifier_values[_safety_booster] = 1;
@@ -96,7 +98,6 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
             host_configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
             host_configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
             host_configuration->s3d_player_customization.colors[_secondary] = 0x003750;
-            host_configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = (ulong)5.0f;
             memcpy(&host_configuration->player_name, host_name, 32);
             host_configuration->user_selected_team_index = _game_team_red;
             host_configuration->team_index = _game_team_red;
@@ -107,6 +108,68 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
     }
     // push update
     membership->increment_update();
+}
+
+// TODO: PULL THIS DATA FROM THE API RATHER THAN HARDCODING IT
+bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration)
+{
+    assert(configuration != nullptr);
+    assert(session != nullptr);
+    bool player_data_updated = false;
+    
+    auto membership = session->get_session_membership();
+    auto player = membership->get_player(player_index);
+    auto peer = membership->get_peer(player->peer_index);
+    // if the player's xuid is unassigned 
+    // temp peer name check, we're currently relying on this to assign the right user id so we need to wait until the first peer properties update comes in and sets this
+    if (configuration->player_xuid.data == 0 && ustrlen(peer->properties.peer_name) > 0)
+    {        
+        // assign player name based on peer name - TODO: THIS IS TEMPORARY, WE NEED A MORE RIGOROUS WAY OF VERIFYING USER CREDENTIALS
+        memcpy(&configuration->player_name, peer->properties.peer_name, 32);
+
+        // assign temporary hardcoded loadout data
+        configuration->s3d_player_customization.colors[_primary] = 0xFF230A; // orange red
+        configuration->s3d_player_customization.colors[_secondary] = 0xFFFFFF; // white
+        configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
+        configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
+        configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
+        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
+        configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle;
+        configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _deployable_cover;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
+        player_data_updated = true;
+
+        // dedi host loadout
+        if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
+        {
+            configuration->player_xuid.data = -1; // SYSTEM/invalid player id
+            player->controller_index = 0;
+            configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
+            configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
+            configuration->s3d_player_customization.colors[_secondary] = 0x003750;
+            player_data_updated = true;
+        }
+        // standard player xuids here
+        else
+        {
+            // make sure these appear in API user id order
+            wchar_t player_list[16][16] = { L"JocKe", L"zzVertigo", L"Twister", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
+            for (size_t i = 0; i < 16; i++)
+            {
+                // if a match is found
+                if (ustrncmp(peer->properties.peer_name, player_list[i], 16) == 0)
+                {
+                    configuration->player_xuid.data = i + 1;
+                    player_data_updated = true;
+                    break;
+                }
+            }
+        }
+    }
+    return player_data_updated;
 }
 
 bool anvil_key_pressed(long vkey, bool* key_held)

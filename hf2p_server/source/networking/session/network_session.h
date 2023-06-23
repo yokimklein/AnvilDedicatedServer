@@ -123,6 +123,7 @@ public:
 	bool get_session_id(s_transport_secure_identifier* secure_id);
 	void peer_request_player_add(const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings);
 	long get_session_membership_update_number();
+	c_network_session_membership* get_session_membership_for_update();
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

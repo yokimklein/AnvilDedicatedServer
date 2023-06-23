@@ -123,8 +123,11 @@ public:
 };
 static_assert(sizeof(c_game_engine_respawn_options) == 0x28);
 
-struct c_game_engine_social_options
+class c_game_engine_social_options
 {
+public:
+	bool get_observers_enabled();
+
 	c_flags<e_game_engine_social_options_flags, word_flags, k_game_engine_social_options_flags> m_flags;
 
 	// default: 0
