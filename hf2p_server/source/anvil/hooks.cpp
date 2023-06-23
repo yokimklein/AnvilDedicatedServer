@@ -571,6 +571,7 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
 // NEW HOOKS START HERE
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
+// TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
 __declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
 {
@@ -662,6 +663,13 @@ __declspec(safebuffers) void __fastcall weapon_magazine_update_hook()
 {
     datum_index weapon_index;
     __asm mov weapon_index, ebx;
+    simulation_action_weapon_state_update(weapon_index);
+}
+
+__declspec(safebuffers) void __fastcall weapon_report_kill_hook()
+{
+    datum_index weapon_index;
+    __asm mov eax, [ebp + 0x24] __asm mov weapon_index, eax;
     simulation_action_weapon_state_update(weapon_index);
 }
 #pragma runtime_checks("", restore)
@@ -2261,10 +2269,10 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x43577A, 0x43577F, weapon_barrel_fire_hook);
     // weapon_magazine_execute_reload
     insert_hook(0x434ECE, 0x434ED6, weapon_magazine_execute_reload_hook);
-    // weapon_magazine_update
+    // weapon_magazine_update (syncs Weapon > Magazines > RoundsRecharged)
     insert_hook(0x42DBB4, 0x42DBB9, weapon_magazine_update_hook);
-    // weapon_report_kill
-
+    // weapon_report_kill (syncs weapon ages with each kill flag, used by the energy sword)
+    insert_hook(0x4339C5, 0x4339CA, weapon_report_kill_hook);
     // weapon_set_current_amount
 
     // weapon_set_total_rounds
