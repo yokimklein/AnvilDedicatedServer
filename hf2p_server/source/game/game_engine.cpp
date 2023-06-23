@@ -25,6 +25,19 @@ void game_engine_attach_to_simulation()
 	simulation_action_breakable_surfaces_create();
 }
 
+void game_engine_detach_from_simulation_gracefully()
+{
+	auto game_engine = current_game_engine();
+	game_engine->game_ending();
+	simulation_action_game_engine_globals_delete();
+	simulation_action_game_statborg_delete();
+	simulation_action_game_ai_delete();
+	if (game_engine_is_sandbox())
+		simulation_action_game_map_variant_delete();
+	for (short i = 0; i < k_maximum_multiplayer_players; i++)
+		simulation_action_game_engine_player_delete(i);
+}
+
 void __fastcall game_engine_player_added(datum_index player_index)
 {
 	if (current_game_engine())

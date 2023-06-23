@@ -28,8 +28,16 @@
 #include <units\units.h>
 #include <units\bipeds.h>
 #include <game\game_engine_spawning.h>
+#include <game\game_engine.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
+
+enum e_hook_type
+{
+    _hook_replace,
+    _hook_execute_replaced_first,
+    _hook_execute_replaced_last
+};
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length)
@@ -79,7 +87,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled
 // Make sure the destination of any short jumps included in your replaced instructions is also included
 // NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function, bool execute_replaced_first = true)
+void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
@@ -96,7 +104,9 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
 
     // initialise our new code block
-    long inserted_code_size = length + sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
+    long inserted_code_size = + sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
+    if (hook_type != _hook_replace)
+        inserted_code_size += length;
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     
     if (inserted_code == NULL)
@@ -105,7 +115,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
         return;
     }
 
-    if (execute_replaced_first)
+    if (hook_type == _hook_execute_replaced_first)
     {
         // copy & format the instructions we're replacing into our new code block
         insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
@@ -126,7 +136,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
     code_offset += sizeof(restore_registers);
 
-    if (!execute_replaced_first)
+    if (hook_type == _hook_execute_replaced_last)
     {
         // copy & format the instructions we're replacing into our new code block
         insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
@@ -2032,6 +2042,8 @@ void anvil_dedi_apply_hooks()
     Hook(0x370E0, update_establishing_view_hook).Apply();
     // add game_engine_attach_to_simulation back to game_engine_game_starting
     Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
+    // add game_engine_detach_from_simulation_gracefully back to game_engine_game_ending
+    insert_hook(0xC7320, 0xC7353, game_engine_detach_from_simulation_gracefully, _hook_replace);
 
     // STATBORG UPDATES
     // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
@@ -2055,7 +2067,7 @@ void anvil_dedi_apply_hooks()
     // c_game_statborg::adjust_team_stat
     Hook(0x1AF710, adjust_team_stat_hook).Apply();
     insert_hook(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3);
-    insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, false);
+    insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, _hook_execute_replaced_last);
     // TODO: c_territories_engine::unknown has several c_game_statborg::adjust_team_stat calls
     // c_game_statborg::player_changed_teams
     insert_hook(0xFA956, 0xFA95F, player_changed_teams_hook);

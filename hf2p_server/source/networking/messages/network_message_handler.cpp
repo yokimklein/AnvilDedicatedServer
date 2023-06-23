@@ -188,10 +188,10 @@ void c_network_message_handler::handle_join_refuse(s_transport_address const* ou
     handle_join_refuse(this, outgoing_address, message);
 }
 
-// TODO
 void c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
 {
-    
+    // TODO: implement this
+    // this is what clients SHOULD be using when they disconnect, but right now they just send an observer released connect closed packet
 }
 
 void c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)
