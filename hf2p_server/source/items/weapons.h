@@ -114,3 +114,4 @@ struct s_weapon_data : s_item_data
 static_assert(sizeof(s_weapon_data) == 0x2E0);
 
 datum_index weapon_get_owner_unit_index(datum_index weapon_index);
+void weapon_delay_predicted_state(datum_index weapon_index);

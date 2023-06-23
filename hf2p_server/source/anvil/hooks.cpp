@@ -29,6 +29,7 @@
 #include <units\bipeds.h>
 #include <game\game_engine_spawning.h>
 #include <game\game_engine.h>
+#include <items\weapons.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
 
@@ -634,6 +635,15 @@ __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
     __asm mov object_index, edi;
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
+
+__declspec(safebuffers) void __fastcall weapon_age_hook()
+{
+    datum_index weapon_index;
+    __asm mov weapon_index, edi;
+    weapon_delay_predicted_state(weapon_index);
+    simulation_action_weapon_state_update(weapon_index);
+}
+
 #pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
@@ -2225,6 +2235,24 @@ void anvil_dedi_apply_hooks()
     Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // unit_custom_animation_play_animation_submit // plays on podium
 
     // WEAPON STATE UPDATES
+    // weapon_age
+    insert_hook(0x433CE6, 0x433CF0, weapon_age_hook, _hook_replace);
+    // weapon_barrel_fire
+    
+    // weapon_magazine_execute_reload
+
+    // weapon_magazine_update
+
+    // weapon_report_kill
+
+    // weapon_set_current_amount
+
+    // weapon_set_total_rounds
+
+    // weapon_take_inventory_rounds 2x
+
+    // weapon_trigger_update
+
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
     // weapon set index updates

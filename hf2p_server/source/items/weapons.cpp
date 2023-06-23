@@ -10,3 +10,8 @@ datum_index weapon_get_owner_unit_index(datum_index weapon_index)
     else
         return -1;
 }
+
+void weapon_delay_predicted_state(datum_index weapon_index)
+{
+    DECLFUNC(base_address(0x432310), void, __fastcall, datum_index)(weapon_index);
+}
