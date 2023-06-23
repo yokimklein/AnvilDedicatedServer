@@ -701,6 +701,13 @@ __declspec(safebuffers) void __fastcall weapon_take_inventory_rounds_hook2()
     __asm mov unit_weapon_object_index, esi;
     simulation_action_weapon_state_update(unit_weapon_object_index);
 }
+
+__declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
+{
+    datum_index weapon_index;
+    __asm mov weapon_index, ebx
+    simulation_action_weapon_state_update(weapon_index);
+}
 #pragma runtime_checks("", restore)
 
 __declspec(naked) void object_set_position_internal_hook2()
@@ -2310,6 +2317,7 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x432147, 0x43214E, weapon_take_inventory_rounds_hook1);
     insert_hook(0x4321E1, 0x4321E8, weapon_take_inventory_rounds_hook2);
     // weapon_trigger_update
+    insert_hook(0x42E055, 0x42E05A, weapon_trigger_update_hook);
 
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
