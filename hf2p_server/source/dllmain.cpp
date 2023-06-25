@@ -47,7 +47,7 @@ long main_thread()
     anvil_dedi_apply_hooks();
 
     // SESSION MAP & VARIANT
-    auto map_id = _s3d_reactor;
+    auto map_id = _s3d_edge;
     auto engine_variant = _engine_variant_slayer;
 
     // g_is_loading is false when the game first launches, we need to wait for it else we'll immediately think the game has finished loading
@@ -178,17 +178,11 @@ long main_thread()
             }
 
             // always available in established session
-            if (anvil_key_pressed(VK_INSERT, &key_held_insert))
-            {
-                printf("Setting test player data...\n");
-                anvil_session_set_test_player_data(network_session->get_session_membership());
-            }
-            else if (anvil_key_pressed(VK_DELETE, &key_held_delete))
-            {
-                printf("Triggering podium action...\n");
-                s_player_podium* player_podium = &g_player_podiums[0];
-                player_podium->loop_count++;
-            }
+            //if (anvil_key_pressed(VK_INSERT, &key_held_insert))
+            //{
+            //    printf("Setting test player data...\n");
+            //    anvil_session_set_test_player_data(network_session->get_session_membership());
+            //}
             Sleep(k_anvil_update_rate_ms);
         }
         printf("Session disconnected!\n");

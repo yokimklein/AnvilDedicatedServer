@@ -71,3 +71,8 @@ void __fastcall player_increment_control_context(datum_index player_index)
 	}
 	player_data->control_context_identifier = (player_data->control_context_identifier + 1) & 0xF;
 }
+
+bool player_is_local(datum_index player_index)
+{
+	return DECLFUNC(base_address(0xC1480), bool, __fastcall, long)(player_index);
+}

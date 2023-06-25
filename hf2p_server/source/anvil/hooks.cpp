@@ -630,6 +630,11 @@ __declspec(safebuffers) void __fastcall player_indices_swapped_hook()
     simulation_action_game_statborg_update(absolute_index_b);
 }
 
+__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook2()
+{
+    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_game_finished);
+}
+
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
 {
     datum_index object_index;
@@ -707,6 +712,13 @@ __declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
     datum_index weapon_index;
     __asm mov weapon_index, ebx
     simulation_action_weapon_state_update(weapon_index);
+}
+
+__declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
+{
+    long player_index;
+    __asm mov player_index, esi
+    hf2p_trigger_player_podium_taunt(player_index);
 }
 #pragma runtime_checks("", restore)
 
@@ -2157,6 +2169,8 @@ void anvil_dedi_apply_hooks()
     Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
     // round timer - why isn't this also causing x minutes remaining events to generate?
     Pointer::Base(0xC98CB).WriteJump(game_engine_update_time_hook, HookFlags::None);
+    // sync game end & podium
+    insert_hook(0xCA265, 0xCA26C, game_engine_update_after_game_hook2);
 
     // OBJECT CREATION
     // create & update player biped on spawn (player_spawn)
@@ -2382,6 +2396,8 @@ void anvil_dedi_apply_hooks()
     //Hook(0x2059B0, ui_get_player_model_id_evaluate_hook).Apply();
     // podium animation testing
     Hook(0x2E8750, hf2p_player_podium_initialize_hook).Apply();
+    // podium taunt triggering & syncing
+    insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook);
     // disable build watermark text
     Hook(0x1B0AB0, draw_watermark_hook).Apply();
 }
