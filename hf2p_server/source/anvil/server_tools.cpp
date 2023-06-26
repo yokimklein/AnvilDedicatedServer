@@ -139,6 +139,12 @@ void anvil_session_update()
             printf("Ending game...\n");
             parameters->session_mode.set(_network_session_mode_end_game);
         }
+        else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
+        {
+            printf("Setting test map...\n");
+            anvil_session_set_gamemode(network_session, _engine_variant_slayer);
+            anvil_session_set_map(_s3d_turf);
+        }
 
         // update dedicated server state
         auto dedicated_server_session_state = parameters->dedicated_server_session_state.get();

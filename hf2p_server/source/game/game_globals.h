@@ -79,5 +79,6 @@ struct s_globals_definition
 static_assert(sizeof(s_globals_definition) == 0x61C);
 
 game_globals_storage* game_globals_get();
+float game_difficulty_get_team_value(long value_type, long team);
 
 extern s_globals_definition*& g_globals_definition;

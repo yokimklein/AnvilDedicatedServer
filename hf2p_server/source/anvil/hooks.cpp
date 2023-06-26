@@ -37,7 +37,8 @@ enum e_hook_type
 {
     _hook_replace,
     _hook_execute_replaced_first,
-    _hook_execute_replaced_last
+    _hook_execute_replaced_last,
+    _hook_replace_no_nop
 };
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
@@ -98,6 +99,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // Make sure the destination of any short jumps included in your replaced instructions is also included
 // NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
 // NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
+// NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
 void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false)
 {
     long code_offset = 0;
@@ -116,7 +118,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
 
     // initialise our new code block
     long inserted_code_size = + sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
-    if (hook_type != _hook_replace)
+    if (hook_type != _hook_replace && hook_type != _hook_replace_no_nop)
         inserted_code_size += length;
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     
@@ -165,9 +167,12 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_code));
     memcpy((void*)base_address(start_address), jump_code, sizeof(jump_code));
 
-    // nop the bytes leftover between the original overwritten instructions and the return point
-    // this isn't really necessary but it makes looking at the disassembly less cluttered
-    memset((void*)(base_address(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+    if (hook_type != _hook_replace_no_nop)
+    {
+        // nop the bytes leftover between the original overwritten instructions and the return point
+        // this isn't really necessary but it makes looking at the disassembly less cluttered
+        memset((void*)(base_address(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+    }
 }
 
 // add back missing message handlers
@@ -666,6 +671,115 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook1()
 {
     datum_index object_index;
     __asm mov eax, [ebp + 0xF4] __asm mov object_index, eax;
+    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
+}
+
+__declspec(safebuffers) void __fastcall object_damage_update_hook2()
+{
+    datum_index object_index;
+    short body_stun_ticks;
+    s_unit_data* unit;
+    bool unknown_bool;
+    float unknown_ticks;
+    float new_body_vitality;
+    float unknown_vitality;
+    __asm
+    {
+        mov eax, [ebp + 0xF4]
+        mov object_index, eax
+        mov body_stun_ticks, cx
+        mov unit, edi
+        mov al, [ebp + 0x113] // original was [ebp - 0x01]
+        mov unknown_bool, al
+        movss unknown_ticks, xmm0
+        movss new_body_vitality, xmm3
+        movss xmm1, [ebp + 0x108] // original was [ebp - 0x0C]
+        movss unknown_vitality, xmm1
+    }
+
+    if (body_stun_ticks)
+    {
+        if (!game_is_predicted())
+        {
+            unit->body_stun_ticks = body_stun_ticks - 1;
+        }
+        else
+        {
+            unknown_bool = true;
+            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
+        }
+    }
+    else
+    {
+        long object_type = 1 << unit->object_identifier.type.get();
+        float vitality_delta = get_tls()->game_time_globals->seconds_per_tick * unknown_ticks;
+        if (TEST_BIT(_object_mask_unit, object_type))
+        {
+            float vitality_multiplier = game_difficulty_get_team_value(3, unit->team);
+            new_body_vitality = unknown_vitality;
+            vitality_delta = vitality_delta * vitality_multiplier;
+        }
+        unit->damage_flags |= 0x200; // enable _model_shield_depletion_is_permanent_bit?
+        float vitality_result = unit->body_vitality + vitality_delta;
+        unit->body_vitality = vitality_result;
+        if (vitality_result > new_body_vitality)
+        {
+            unit->body_vitality = new_body_vitality;
+            unit->damage_flags &= ~0x200; // disable _model_shield_depletion_is_permanent_bit?
+            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
+        }
+        else
+        {
+            unknown_bool = true;
+            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
+        }
+    }
+
+    // set unknown_bool value back to its original address
+    __asm mov al, unknown_bool;
+    __asm mov [ebp + 0x113], al;
+}
+
+__declspec(safebuffers) void __fastcall object_damage_update_hook3()
+{
+    datum_index object_index;
+    s_unit_data* unit;
+    bool unknown_bool;
+    short shield_stun_ticks;
+    __asm
+    {
+        mov shield_stun_ticks, ax
+        mov eax, [ebp + 0xF4]
+        mov object_index, eax
+        mov unit, edi
+        mov al, [ebp + 0x113] // original was [ebp - 0x01]
+        mov unknown_bool, al
+    }
+
+    if (!game_is_predicted() && shield_stun_ticks != 0x7FFF)
+    {
+        shield_stun_ticks--;
+        unit->shield_stun_ticks = shield_stun_ticks;
+        unknown_bool = true;
+    }
+    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
+
+    // set unknown_bool value back to its original address
+    __asm mov al, unknown_bool;
+    __asm mov[ebp + 0x113], al;
+}
+
+__declspec(safebuffers) void __fastcall object_damage_shield_hook1()
+{
+    s_player_datum* player_data;
+    __asm mov player_data, esi;
+    simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
+}
+
+__declspec(safebuffers) void __fastcall object_damage_shield_hook2()
+{
+    datum_index object_index;
+    __asm mov object_index, esi;
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
@@ -2372,8 +2486,12 @@ void anvil_dedi_apply_hooks()
 
     // OBJECT DAMAGE UPDATES
     // object_damage_update
-    insert_hook(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace); // same update, compiled logic requires hooks in 2 separate places
-    insert_hook(0x40D537, 0x40D542, object_damage_update_hook1); // same update, compiled logic requires hooks in 2 separate places
+    insert_hook(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace_no_nop); // same update as below, compiled logic requires hooks in 2 separate places
+    insert_hook(0x40D526, 0x40D542, object_damage_update_hook3, _hook_replace, true); // same update as above, compiled logic requires hooks in 2 separate places
+    insert_hook(0x40D5CB, 0x40D660, object_damage_update_hook2, _hook_replace, true);
+    // object_damage_shield
+    insert_hook(0x41268C, 0x412694, object_damage_shield_hook1); // shield vamparism trait
+    insert_hook(0x41287B, 0x412881, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be in esi
 
     // WEAPON STATE UPDATES
     // weapon_age

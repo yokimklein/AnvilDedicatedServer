@@ -207,6 +207,7 @@ struct s_object_data
 };
 static_assert(sizeof(s_object_data) == 0x17C);
 static_assert(0x13C == OFFSETOF(s_object_data, sync_action_name));
+static_assert(0x11C == OFFSETOF(s_object_data, shield_stun_ticks));
 
 struct s_object_header : s_datum_header
 {
