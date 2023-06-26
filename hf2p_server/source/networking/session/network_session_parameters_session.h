@@ -68,5 +68,8 @@ static_assert(sizeof(s_network_session_parameter_lobby_vote_set) == 0x8);
 
 struct c_network_session_parameter_lobby_vote_set : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_parameter_lobby_vote_set>
 {
+public:
+	bool set(s_network_session_parameter_lobby_vote_set* vote_set);
+	void get(s_network_session_parameter_lobby_vote_set* output);
 };
 static_assert(sizeof(c_network_session_parameter_lobby_vote_set) == 0x40);

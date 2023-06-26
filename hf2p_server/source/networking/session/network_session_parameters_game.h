@@ -125,6 +125,7 @@ class c_network_session_parameter_game_start_status : public c_network_session_p
 {
 public:
 	s_network_session_parameter_game_start_status* get();
+	bool set(s_network_session_parameter_game_start_status* start_status);
 };
 static_assert(sizeof(c_network_session_parameter_game_start_status) == 0x48);
 

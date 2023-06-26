@@ -12,6 +12,9 @@
 #include <game\game_time.h>
 #include <game\players.h>
 #include <game\game_engine_spawning.h>
+#include <networking\session\network_session_state.h>
+#include <networking\network_utilities.h>
+#include <networking\session\network_session.h>
 
 void game_engine_attach_to_simulation()
 {
@@ -36,6 +39,14 @@ void game_engine_detach_from_simulation_gracefully()
 		simulation_action_game_map_variant_delete();
 	for (short i = 0; i < k_maximum_multiplayer_players; i++)
 		simulation_action_game_engine_player_delete(i);
+
+	// reset the dedicated server state on game end - TODO: find a better place/way to do this
+	if (game_is_dedicated_server())
+	{
+		c_network_session* network_session = network_get_session_manager()->session[0];
+		e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
+		network_session->get_session_parameters()->dedicated_server_session_state.set(&session_state);
+	}
 }
 
 void __fastcall game_engine_player_added(datum_index player_index)

@@ -1058,37 +1058,37 @@ void c_network_session::check_to_send_membership_update()
                     {
                         // create new shared membership containing only the host and target peer
                         // HO uniquely doesn't sync other peer information with peers, likely as host migration was removed
-                        s_network_session_shared_membership shared_membership = {};
-                        memmove(&shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
-                        shared_membership.leader_peer_index = shared_membership.host_peer_index;
-                        shared_membership.peer_count = 2;
-                        shared_membership.peer_valid_mask = 0;
+                        s_network_session_shared_membership* shared_membership = new s_network_session_shared_membership();
+                        memmove(shared_membership, this->get_session_membership()->get_current_membership(), sizeof(s_network_session_shared_membership));
+                        shared_membership->leader_peer_index = shared_membership->host_peer_index;
+                        shared_membership->peer_count = 2;
+                        shared_membership->peer_valid_mask = 0;
                         
                         // invalidate non host && target peers
-                        long host_peer_bit = (1 << shared_membership.host_peer_index);
+                        long host_peer_bit = (1 << shared_membership->host_peer_index);
                         long peer_bit = (1 << peer_index);
-                        shared_membership.peer_valid_mask = host_peer_bit | peer_bit;
+                        shared_membership->peer_valid_mask = host_peer_bit | peer_bit;
 
                         // remove all invalid peers
                         for (long shared_peer_index = 0; shared_peer_index < k_network_maximum_machines_per_session; shared_peer_index++)
                         {
-                            if ((shared_membership.peer_valid_mask & (1 << shared_peer_index)) == 0)
-                                memset(&shared_membership.peers[shared_peer_index], 0, sizeof(s_network_session_peer));
+                            if ((shared_membership->peer_valid_mask & (1 << shared_peer_index)) == 0)
+                                memset(&shared_membership->peers[shared_peer_index], 0, sizeof(s_network_session_peer));
                         }
 
                         // transfer ownership of all players not belonging to the target peer to the host peer
                         for (long shared_player_index = 0; shared_player_index < k_network_maximum_players_per_session; shared_player_index++)
                         {
                             // if the current player is valid && doesn't belong to the target peer
-                            if (((shared_membership.player_valid_flags & (1 << shared_player_index)) != 0) && (shared_membership.players[shared_player_index].peer_index != peer_index))
+                            if (((shared_membership->player_valid_flags & (1 << shared_player_index)) != 0) && (shared_membership->players[shared_player_index].peer_index != peer_index))
                             {
                                 // add the current player to the host peer's player mask && set the current player's peer index to host's
-                                shared_membership.peers[shared_membership.host_peer_index].player_mask |= (1 << shared_player_index);
-                                shared_membership.players[shared_player_index].peer_index = shared_membership.host_peer_index;
+                                shared_membership->peers[shared_membership->host_peer_index].player_mask |= (1 << shared_player_index);
+                                shared_membership->players[shared_player_index].peer_index = shared_membership->host_peer_index;
                             }
                         }
                         
-                        s_network_message_membership_update membership_update_message = {};
+                        s_network_message_membership_update* membership_update_message = new s_network_message_membership_update();
                         bool send_complete_update = false;
                         auto transmitted_membership = this->get_session_membership()->get_transmitted_membership(peer_index);
                         if (peer_update_number == -1 || peer_update_number != transmitted_membership->update_number)
@@ -1096,7 +1096,7 @@ void c_network_session::check_to_send_membership_update()
                             send_complete_update = true;
                             transmitted_membership = nullptr;
                         }
-                        this->get_session_membership()->build_membership_update(peer_index, &shared_membership, transmitted_membership, &membership_update_message);
+                        this->get_session_membership()->build_membership_update(peer_index, shared_membership, transmitted_membership, membership_update_message);
                         if (send_complete_update)
                         {
                             printf("MP/NET/SESSION,CTRL: c_network_session::check_to_send_membership_update: [%s] sending complete update #-1->[#%d] to peer [#%d]\n",
@@ -1125,11 +1125,13 @@ void c_network_session::check_to_send_membership_update()
                                 if (observer_index != -1)
                                 {
                                     // send_message_to_peer
-                                    observer->observer_channel_send_message(this->observer_owner(), observer_index, false, _network_message_type_membership_update, sizeof(s_network_message_membership_update), &membership_update_message);
+                                    observer->observer_channel_send_message(this->observer_owner(), observer_index, false, _network_message_type_membership_update, sizeof(s_network_message_membership_update), membership_update_message);
                                 }
                             }
                         }
-                        this->get_session_membership()->copy_current_to_transmitted(peer_index, &shared_membership);
+                        this->get_session_membership()->copy_current_to_transmitted(peer_index, shared_membership);
+                        delete membership_update_message;
+                        delete shared_membership;
                     }
                 }
             }

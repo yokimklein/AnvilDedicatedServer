@@ -479,7 +479,7 @@ struct c_game_results_replicator
 	long m_incremental_update_number;
 	dword __unknownC;
 	s_game_results_incremental m_incremental;
-	dword __time1B460;
+	dword m_last_update_time; // updates every 10000ms
 	byte __data1B464[4];
 };
 static_assert(sizeof(c_game_results_replicator) == 0x10968);

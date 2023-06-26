@@ -1,5 +1,6 @@
 #include "network_session_parameters_game.h"
 #include <iostream>
+#include <anvil\server_tools.h>
 
 char const* k_game_start_status_strings[k_session_game_start_status_count] = {
     "none",
@@ -53,6 +54,30 @@ s_network_session_parameter_game_start_status* c_network_session_parameter_game_
     printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::get: [%s] failed to get, unavailable\n",
         this->get_session_description());
     return nullptr;
+}
+
+bool c_network_session_parameter_game_start_status::set(s_network_session_parameter_game_start_status* start_status)
+{
+    if (this->set_allowed())
+    {
+        if (start_status->game_start_status != m_data.game_start_status ||
+            start_status->game_start_error != m_data.game_start_error ||
+            start_status->player_error_mask != m_data.player_error_mask ||
+            start_status->map_load_progress != m_data.map_load_progress ||
+            !this->get_allowed())
+        {
+            this->m_data = *start_status;
+            this->set_update_required();
+        }
+        anvil_log_game_start_status(start_status);
+        return true;
+    }
+    else
+    {
+        printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::set: [%s] type %d [%s] failed to get [%s]\n",
+            this->get_session_description(), m_type, m_name, this->get_set_denied_reason());
+        return false;
+    }
 }
 
 bool c_network_session_parameter_countdown_timer::set(e_countdown_type countdown_type, long countdown_timer)

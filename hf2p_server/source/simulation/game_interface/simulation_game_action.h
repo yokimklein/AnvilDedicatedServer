@@ -163,12 +163,12 @@ enum e_simulation_player_update_flag : long
 	_simulation_player_update_appearance_traits,
 	_simulation_player_update_sensor_traits,
 	_simulation_player_update_player_waypoint_unknown, // TODO: likely a gametype option, research this further
-	_simulation_player_update_unknown_player_flags1,
+	_simulation_player_update_unknown_player_flags1, // blocking teleporter?
 	_simulation_player_update_unknown_player_data,
 	_simulation_player_update_lives,
 	_simulation_player_update_grief, // is this to do with player booting?
 	_simulation_player_update_unknown_player_flags2,
-	_simulation_player_update_unknown_player_flags3,
+	_simulation_player_update_unknown_player_flags3, // player quit?
 	_simulation_player_update_unknown_player_flags4,
 	_simulation_player_update_spectating_player,
 	_simulation_player_update_control,

@@ -41,7 +41,7 @@ enum e_hook_type
 };
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
-void insert_hook_copy_instructions(void* destination, void* source, size_t length)
+void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)
 {
     byte* code_buffer = new byte[length];
     // copy the instructions we're replacing into a buffer
@@ -73,7 +73,16 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             assert(instruction_length == 2);
             // verify offset fits in buffer
             byte offset = code_buffer[i + 1];
-            assert(offset + 2 + i < length); // if this assert fails you've likely ended your replaced instructions with a short jump
+            bool near_jump_is_in_bounds = offset + 2 + i < length; // if this assert fails you've likely ended your replaced instructions with a short jump
+            if (!near_jump_is_in_bounds && redirect_oob_jumps)
+            {
+                offset = (length - (i + 2)); // redirect near jump to NOP at the end of the buffer
+                code_buffer[i + 1] = offset;
+            }
+            else
+            {
+                assert(near_jump_is_in_bounds);
+            }
         }
 
         i += instruction_length;
@@ -88,7 +97,8 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled
 // Make sure the destination of any short jumps included in your replaced instructions is also included
 // NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first)
+// NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
+void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
@@ -119,7 +129,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_first)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
@@ -140,7 +150,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_last)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length);
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
@@ -573,6 +583,16 @@ _declspec(naked) void hf2p_loadout_update_active_character_call_hook()
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
+__declspec(safebuffers) void __fastcall c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook()
+{
+    c_network_session_parameter_game_start_status* parameter;
+    s_network_session_parameter_game_start_status* start_status;
+    __asm mov parameter, ecx;
+    __asm lea eax, [esp + 0x78]; // [esp+0x398-0x388] sp is 0x39C
+    __asm mov start_status, eax;
+    parameter->set(start_status);
+}
+
 __declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
 {
     simulation_action_game_statborg_update(_simulation_statborg_update_finalize_for_game_end);
@@ -640,6 +660,13 @@ __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
     datum_index object_index;
     __asm mov object_index, edi;
     simulation_action_object_update(object_index, _simulation_object_update_position);
+}
+
+__declspec(safebuffers) void __fastcall object_damage_update_hook1()
+{
+    datum_index object_index;
+    __asm mov eax, [ebp + 0xF4] __asm mov object_index, eax;
+    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
 __declspec(safebuffers) void __fastcall weapon_age_hook()
@@ -2068,6 +2095,11 @@ long __cdecl exceptions_update_hook()
     return exceptions_update();
 }
 
+bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_network_session_parameter_game_start_status* thisptr, void* unused, s_network_session_parameter_game_start_status* start_status)
+{
+    return thisptr->set(start_status);
+}
+
 void anvil_dedi_apply_patches()
 {
     // enable tag edits
@@ -2099,6 +2131,32 @@ void anvil_dedi_apply_hooks()
     Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
     Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
     Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
+
+    // DEDICATED SERVER HOOKS
+    // add anvil_session_update() to the end of network_update
+    insert_hook(0x246C1, 0x246D4, anvil_session_update);
+    // hook c_network_session_parameter_game_start_status::set calls to log when the session start status & start error are updated
+    Hook(0x3BA00, c_network_session_parameter_game_start_status__set_hook).Apply();
+    insert_hook(0x4DF34, 0x4DF99, c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook, _hook_replace);
+    // hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
+    Hook(0x3BC0, transport_secure_key_create_hook).Apply();
+    // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
+    Patch::NopFill(Pointer::Base(0x3D17), 0x25);
+    Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
+    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
+    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
+    // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
+    // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
+    // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
+    // prevent the game from adding a player to the dedicated host
+    //Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
+    //Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
+    // set peer & session name
+    Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    Hook(0x3AC243, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
+    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
+    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
 
     // SESSION HOOKS
     // add back missing host code by replacing existing stripped down functions
@@ -2312,6 +2370,11 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x4BFF76).WriteJump(object_set_at_rest_hook12, HookFlags::None); // UNTESTED!! // vehicle_program_update
     Hook(0x4C7A66, object_set_at_rest_hook13, HookFlags::IsCall).Apply(); // unit_custom_animation_play_animation_submit // plays on podium
 
+    // OBJECT DAMAGE UPDATES
+    // object_damage_update
+    insert_hook(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace); // same update, compiled logic requires hooks in 2 separate places
+    insert_hook(0x40D537, 0x40D542, object_damage_update_hook1); // same update, compiled logic requires hooks in 2 separate places
+
     // WEAPON STATE UPDATES
     // weapon_age
     insert_hook(0x433CE6, 0x433CF0, weapon_age_hook, _hook_replace);
@@ -2363,30 +2426,11 @@ void anvil_dedi_apply_hooks()
     //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
     //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
     //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
-
-    // DEDICATED SERVER HOOKS
-    // hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
-    Hook(0x3BC0, transport_secure_key_create_hook).Apply();
-    // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
-    Patch::NopFill(Pointer::Base(0x3D17), 0x25);
-    Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
-    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
-    // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
-    // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
-    // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
-    // prevent the game from adding a player to the dedicated host
-    //Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
-    //Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
-    // set peer & session name
-    Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    Hook(0x3AC243, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
-    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
     
     // MISC HOOKS
     // output the message type for debugging
+    Hook(0x16AF8, send_message_hook, HookFlags::IsCall).Apply();
+    Hook(0x16C26, send_message_hook, HookFlags::IsCall).Apply();
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
     // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
     //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
