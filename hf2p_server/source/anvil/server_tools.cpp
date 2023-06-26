@@ -186,9 +186,19 @@ void anvil_session_update()
                     }
                     long winning_index = (option_votes[0] > option_votes[1] ? 0 : 1);
                     printf("option %d wins the vote!\n", winning_index);
+
                     // TODO: retrieve voting options from title instances - pull map id and use with anvil_session_set_map
-                    anvil_session_set_gamemode(network_session, _engine_variant_slayer);
-                    anvil_session_set_map(_s3d_edge);
+                    if (winning_index == 0)
+                    {
+                        anvil_session_set_gamemode(network_session, _engine_variant_slayer);
+                        anvil_session_set_map(_s3d_edge);
+                    }
+                    else if (winning_index == 1)
+                    {
+                        anvil_session_set_gamemode(network_session, _engine_variant_slayer);
+                        anvil_session_set_map(_s3d_turf);
+                    }
+
                     e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
                     parameters->dedicated_server_session_state.set(&session_state);
                 }
