@@ -40,7 +40,7 @@ void game_engine_detach_from_simulation_gracefully()
 	for (short i = 0; i < k_maximum_multiplayer_players; i++)
 		simulation_action_game_engine_player_delete(i);
 
-	// reset the dedicated server state on game end - TODO: find a better place/way to do this
+	// reset the dedicated server state on game end - TODO: find a better place/way to do this, this can cause crashes if all players disconnect before the game loads
 	if (game_is_dedicated_server())
 	{
 		c_network_session* network_session = network_get_session_manager()->session[0];

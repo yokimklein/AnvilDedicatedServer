@@ -790,6 +790,13 @@ __declspec(safebuffers) void __fastcall object_damage_body_hook1()
     simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
 }
 
+__declspec(safebuffers) void __fastcall object_deplete_body_internal_hook1()
+{
+    datum_index object_index;
+    __asm mov object_index, edi;
+    simulation_action_object_update(object_index, _simulation_object_update_dead);
+}
+
 __declspec(safebuffers) void __fastcall weapon_age_hook()
 {
     datum_index weapon_index;
@@ -2506,6 +2513,8 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x41287B, 0x412881, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be in esi
     // object_damage_body
     insert_hook(0x411E2B, 0x411E37, object_damage_body_hook1, _hook_execute_replaced_first, true);
+    // object_deplete_body_internal
+    insert_hook(0x40D9D5, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last);
 
     // WEAPON STATE UPDATES
     // weapon_age
