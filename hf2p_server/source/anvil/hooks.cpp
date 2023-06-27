@@ -2225,6 +2225,11 @@ void anvil_dedi_apply_patches()
     // enable netdebug
     //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
     //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
+    
+    // test to replace tutorial map id with diamondback id in damage function
+    //Patch(0x40F290, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
+    //Patch(0x40F2E3, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
+    //Patch(0x411E02, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
 }
 
 // TODO: verify all hooks are working as intended

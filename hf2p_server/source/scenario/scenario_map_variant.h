@@ -62,6 +62,7 @@ enum e_map_id : long
 //              _midship = 720, // Heretic
 //              _sandbox = 730, // Sandbox
 //             _fortress = 740, // Citadel
+//         _s3d_tutorial = 877, // Tutorial
 
 /*
 // unknown map ids
@@ -78,7 +79,6 @@ s3d_drydock // Dry Dock
 s3d_burial_mounds
 s3d_chillout // Abeyance
 s3d_beaver_creek
-s3d_tutorial // Tutorial
 */
 };
 
