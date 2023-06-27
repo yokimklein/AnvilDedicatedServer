@@ -112,10 +112,10 @@ void anvil_session_update()
         {
             printf("Starting vote...\n");
             s_network_session_parameter_lobby_vote_set lobby_vote_set = {};
-            lobby_vote_set.vote_options[0].gamemode = 0;
-            lobby_vote_set.vote_options[0].map = 0;
-            lobby_vote_set.vote_options[1].gamemode = 0;
-            lobby_vote_set.vote_options[1].map = 1;
+            lobby_vote_set.vote_options[0].gamemode = 1; // slayer small
+            lobby_vote_set.vote_options[0].map = 9; // edge
+            lobby_vote_set.vote_options[1].gamemode = 1; // slayer small
+            lobby_vote_set.vote_options[1].map = 1; // icebox
             parameters->lobby_vote_set.set(&lobby_vote_set);
             e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
             parameters->dedicated_server_session_state.set(&session_state);
@@ -317,7 +317,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _deployable_cover;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _jammer;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
         //configuration->s3d_player_customization.override_api_data = true;
         //configuration->s3d_player_container.override_api_data = true;
         player_data_updated = true;
