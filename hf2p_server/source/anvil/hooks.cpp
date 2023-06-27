@@ -55,7 +55,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
         // ensure instruction length fits within the length of the buffer provided
         assert(i + instruction_length <= length);
         // assert unimplemented jump instructions - TODO: implement the rest of these
-        assert(!(code_buffer[i] >= 0x70 && code_buffer[i] <= 0x73 || code_buffer[i] >= 0x76 && code_buffer[i] <= 0x7B || code_buffer[i] == 0x7D || code_buffer[i] == 0x7F || code_buffer[i] >= 0xE0 && code_buffer[i] <= 0xE3 || code_buffer[i] == 0xEA));
+        assert(!(code_buffer[i] >= 0x70 && code_buffer[i] <= 0x73 || code_buffer[i] >= 0x77 && code_buffer[i] <= 0x7B || code_buffer[i] == 0x7D || code_buffer[i] == 0x7F || code_buffer[i] >= 0xE0 && code_buffer[i] <= 0xE3 || code_buffer[i] == 0xEA));
         
         // if jump or call
         if (code_buffer[i] == 0xE8 || code_buffer[i] == 0xE9)
@@ -67,8 +67,8 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             long new_offset = (size_t)destination_address - ((size_t)destination + i) - 5;
             memcpy(&code_buffer[i + 1], &new_offset, sizeof(new_offset));
         }
-        // if short jump - jz, jnz, jl, jle, jmp short
-        else if (code_buffer[i] == 0x74 || code_buffer[i] == 0x75 || code_buffer[i] == 0x7C || code_buffer[i] == 0x7E || code_buffer[i] == 0xEB)
+        // if short jump - jz, jnz, jbe, jl, jle, jmp short
+        else if (code_buffer[i] == 0x74 || code_buffer[i] == 0x75 || code_buffer[i] == 0x76 || code_buffer[i] == 0x7C || code_buffer[i] == 0x7E || code_buffer[i] == 0xEB)
         {
             // ensure instruction length is valid
             assert(instruction_length == 2);
@@ -781,6 +781,13 @@ __declspec(safebuffers) void __fastcall object_damage_shield_hook2()
     datum_index object_index;
     __asm mov object_index, esi;
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
+}
+
+__declspec(safebuffers) void __fastcall object_damage_body_hook1()
+{
+    datum_index object_index;
+    __asm mov object_index, edx;
+    simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
 }
 
 __declspec(safebuffers) void __fastcall weapon_age_hook()
@@ -2497,6 +2504,8 @@ void anvil_dedi_apply_hooks()
     // object_damage_shield
     insert_hook(0x41268C, 0x412694, object_damage_shield_hook1); // shield vamparism trait
     insert_hook(0x41287B, 0x412881, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be in esi
+    // object_damage_body
+    insert_hook(0x411E2B, 0x411E37, object_damage_body_hook1, _hook_execute_replaced_first, true);
 
     // WEAPON STATE UPDATES
     // weapon_age
