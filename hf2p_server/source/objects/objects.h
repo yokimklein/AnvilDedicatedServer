@@ -228,6 +228,7 @@ void object_attach_gamestate_entity(datum_index object_index, datum_index gamest
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
 void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update);
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate);
+const char* object_describe(datum_index object_index);
 //const static auto c_havok_component__pre_simulation_update = (void (*)(void* thisptr))base_address(0x123B00);
 const static auto object_set_requires_motion = (void (*)(datum_index object_index))base_address(0x403E50);
 const static auto object_needs_rigid_body_update = (bool (*)(datum_index object_index))base_address(0x3FE620);

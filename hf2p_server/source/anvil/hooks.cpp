@@ -797,6 +797,36 @@ __declspec(safebuffers) void __fastcall object_deplete_body_internal_hook1()
     simulation_action_object_update(object_index, _simulation_object_update_dead);
 }
 
+__declspec(safebuffers) void __fastcall damage_response_fire_hook()
+{
+    s_object_data* object;
+    datum_index object_index;
+    long damage_section_index;
+    long response_index;
+    __asm
+    {
+        mov eax, [esp + 0x7C + 0x20] // sp 0x98, [esp+0x94-0x74]
+        mov object, eax
+
+        mov eax, [esp + 0x7C + 0x10] // sp 0x98, [esp+0x94-0x84]
+        mov object_index, eax
+
+        mov eax, [ebp + 0xB0 + 0x10]
+        mov damage_section_index, eax
+
+        mov eax, [ebp + 0xB0 + 0x14]
+        mov response_index, eax
+    }
+    if (!game_is_predicted() && object->gamestate_index != -1)
+    {
+        simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
+        c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+        update_flags.set_flag(object_index, _simulation_object_update_region_state);
+        update_flags.set_flag(object_index, _simulation_object_update_constraint_state);
+        simulation_action_object_update_internal(object_index, update_flags);
+    }
+}
+
 __declspec(safebuffers) void __fastcall weapon_age_hook()
 {
     datum_index weapon_index;
@@ -2515,6 +2545,8 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x411E2B, 0x411E37, object_damage_body_hook1, _hook_execute_replaced_first, true);
     // object_deplete_body_internal
     insert_hook(0x40D9D5, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last);
+    // damage_response_fire
+    insert_hook(0x413D43, 0x413D50, damage_response_fire_hook);
 
     // WEAPON STATE UPDATES
     // weapon_age

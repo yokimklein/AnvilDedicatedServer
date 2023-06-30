@@ -325,7 +325,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         // dedi host loadout
         if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
         {
-            configuration->player_xuid.data = -1; // SYSTEM/invalid player id
+            configuration->player_xuid.data = -1; // -1 SYSTEM/invalid player id
             player->controller_index = 0;
             configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
             configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;

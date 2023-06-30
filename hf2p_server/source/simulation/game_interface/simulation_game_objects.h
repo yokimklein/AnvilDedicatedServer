@@ -105,11 +105,6 @@ enum e_simulation_vehicle_update_flag : long
 	k_simulation_vehicle_update_flag_count
 };
 
-void __cdecl simulation_action_object_create(datum_index object_index);
-void simulation_action_object_create_build_entity_types(datum_index object_index, datum_index last_object_index, long maximum_entity_count, long* out_entity_count, e_simulation_entity_type* entity_types, long* object_indices);
-void simulation_action_object_delete(datum_index object_index);
-
-
 class c_simulation_object_update_flags
 {
 public:
@@ -136,3 +131,9 @@ void __fastcall simulation_action_object_update(datum_index object_index, t_upda
 	update_flags.set_flag(object_index, update_type);
 	simulation_action_object_update_internal(object_index, update_flags);
 }
+
+void __cdecl simulation_action_object_create(datum_index object_index);
+void simulation_action_object_create_build_entity_types(datum_index object_index, datum_index last_object_index, long maximum_entity_count, long* out_entity_count, e_simulation_entity_type* entity_types, long* object_indices);
+void simulation_action_object_delete(datum_index object_index);
+long simulation_object_get_authoritative_entity(datum_index object_index);
+long simulation_object_get_entity_internal(datum_index object_index, bool safe);

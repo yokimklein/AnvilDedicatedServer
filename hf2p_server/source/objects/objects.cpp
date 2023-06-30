@@ -119,3 +119,9 @@ simulation_update:
 	else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
 		simulation_action_object_update(object_index, _simulation_projectile_update_set_at_rest);
 }
+
+const char* object_describe(datum_index object_index)
+{
+	// TODO:
+	return "UNKNOWN";
+}

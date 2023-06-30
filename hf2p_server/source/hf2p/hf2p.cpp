@@ -31,11 +31,12 @@ void hf2p_trigger_player_podium_taunt(long player_podium_index)
 		hf2p_player_podium_increment_loop_count(player_podium->player_index);
 		if (game_is_multiplayer() && !game_is_playback())
 		{
-			long payload_data = (word)player_podium->player_index;
+			s_simulation_player_taunt_request_data payload_data = {};
+			payload_data.player_index = (word)player_podium->player_index;
 			if (game_is_predicted())
-				simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, -1, 4, &payload_data);
+				simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
 			else if (game_is_server())
-				simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, nullptr, -1, 4, &payload_data);
+				simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
 		}
 	}
 }

@@ -123,3 +123,42 @@ void simulation_action_object_update_internal(datum_index object_index, c_simula
 		}
 	}
 }
+
+long simulation_object_get_authoritative_entity(datum_index object_index)
+{
+	return simulation_object_get_entity_internal(object_index, false);
+}
+
+long simulation_object_get_entity_internal(datum_index object_index, bool safe)
+{
+	long authoritative_entity_index = -1;
+	if (!game_is_playback())
+	{
+		if (object_index != -1)
+		{
+			c_simulation_world* world = simulation_get_world();
+			c_simulation_entity_database* entity_database = world->get_entity_database();
+			s_object_data* object = object_get(object_index);
+			if (object->gamestate_index != -1)
+			{
+				long simulation_entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
+				if (simulation_entity_index == -1)
+				{
+					printf("networking:simulation:objects: failed to get entity index for gamestate 0x%8X (object %s) during simulation_object_get_authoritative_entity_internal()\n",
+						object->gamestate_index,
+						object_describe(object_index));
+				}
+				else
+				{
+					if (entity_database->entity_is_local(simulation_entity_index))
+						return simulation_entity_index;
+				}
+			}
+		}
+	}
+	else
+	{
+		printf("MP/NET/SIMULATION,OBJECTS: simulation_object_get_entity_internal: attempting to call simulation_object_get_authoritative_entity() during saved film\n");
+	}
+	return authoritative_entity_index;
+}
