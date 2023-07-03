@@ -827,6 +827,60 @@ __declspec(safebuffers) void __fastcall damage_response_fire_hook()
     }
 }
 
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook()
+{
+    datum_index object_index;
+    s_damage_owner* damage_owner;
+    bool skip_update;
+    __asm
+    {
+        mov object_index, ecx
+        mov damage_owner, edx
+        mov al, byte ptr [ebp + 0x1C] // [ebp+0x08] - sp was 0x04
+        mov skip_update, al
+    }
+    object_set_damage_owner(object_index, damage_owner, skip_update);
+}
+
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook2()
+{
+    datum_index object_index;
+    __asm mov eax, dword ptr [edi + 0x30]
+    __asm mov object_index, eax;
+    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+}
+
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook3()
+{
+    datum_index object_index;
+    __asm mov eax, [ebp + 0xE64] // [ebp-0x18] - sp was 0xE64
+    __asm mov object_index, eax
+    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+}
+
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook4()
+{
+    datum_index object_index;
+    __asm mov eax, [ebp + 0x17C] // [ebp-0x10] - sp was 0x17C
+    __asm mov object_index, eax
+    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+}
+
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook5()
+{
+    datum_index object_index;
+    __asm mov object_index, ebx
+    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+}
+
+__declspec(safebuffers) void __fastcall object_set_damage_owner_hook6()
+{
+    datum_index object_index;
+    __asm mov eax, [ebp + 0xA8] // [ebp+0x08] - sp was 0x90
+    __asm mov object_index, eax
+    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+}
+
 __declspec(safebuffers) void __fastcall weapon_age_hook()
 {
     datum_index weapon_index;
@@ -2547,6 +2601,13 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x40D9D5, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last);
     // damage_response_fire
     insert_hook(0x413D43, 0x413D50, damage_response_fire_hook);
+    // object_set_damage_owner
+    insert_hook(0x404323, 0x404393, object_set_damage_owner_hook, _hook_replace);
+    insert_hook(0x113B0F, 0x113B15, object_set_damage_owner_hook2); // inlined in event_generate_accelerations
+    insert_hook(0x20CF07, 0x20CF0D, object_set_damage_owner_hook3); // inlined in havok_collision_damage_update
+    insert_hook(0x40F00C, 0x40F012, object_set_damage_owner_hook4); // inlined in object_cause_damage
+    insert_hook(0x4572A5, 0x4572AB, object_set_damage_owner_hook5); // inlined in motor_animation_exit_seat_immediate_internal
+    insert_hook(0x4BEA5D, 0x4BEA63, object_set_damage_owner_hook6); // inlined in vehicle_flip_submit
 
     // WEAPON STATE UPDATES
     // weapon_age

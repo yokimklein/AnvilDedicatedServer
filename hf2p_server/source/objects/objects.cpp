@@ -3,6 +3,8 @@
 #include "assert.h"
 #include <stdio.h>
 #include <simulation\game_interface\simulation_game_objects.h>
+#include <tag_files\tag_files.h>
+#include <objects\object_definitions.h>
 
 s_object_data* object_get(datum_index object_index)
 {
@@ -124,4 +126,16 @@ const char* object_describe(datum_index object_index)
 {
 	// TODO:
 	return "UNKNOWN";
+}
+
+void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
+{
+	s_object_data* object = object_get(object_index);
+	s_object_definition* object_definition = (s_object_definition*)tag_get('obje', object->definition_index);
+	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
+	{
+		object->damage_owner = *damage_owner;
+		if (!skip_update)
+			simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+	}
 }

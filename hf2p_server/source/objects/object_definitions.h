@@ -11,7 +11,7 @@ enum e_object_definition_flags
 {
 	_object_does_not_cast_shadow_bit,
 	_object_search_cardinal_direction_lightmaps_bit,
-	_object_definition_unused2_bit,
+	_object_preserves_initial_damage_owner_bit,
 	_object_not_a_pathfinding_obstacle_bit,
 	_object_extension_of_parent_bit,
 	_object_does_not_cause_collision_damage_bit,
@@ -23,6 +23,8 @@ enum e_object_definition_flags
 	_object_dead_bipeds_cannot_localize_bit,
 	_object_attach_to_clusters_by_dynamic_sphere_bit,
 	_object_effects_do_not_spawn_objects_in_multiplayer_bit,
+	_object_does_not_collide_with_camera_bit,
+	_object_damage_not_blocked_by_obstructions,
 
 	k_number_of_object_definition_flags
 };

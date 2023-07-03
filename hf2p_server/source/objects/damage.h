@@ -1,5 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
+#include <memory\data.h>
 
 enum e_damage_reporting_type
 {
@@ -81,8 +82,8 @@ static_assert(sizeof(s_damage_reporting_info) == 0x4);
 
 struct s_damage_owner
 {
-	long player_index;
-	long object_index;
+	datum_index player_index;
+	datum_index object_index;
 	byte team;
 };
 static_assert(sizeof(s_damage_owner) == 0xC);
