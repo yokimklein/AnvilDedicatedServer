@@ -35,7 +35,7 @@ void hf2p_trigger_player_podium_taunt(long player_podium_index)
 			payload_data.player_index = (word)player_podium->player_index;
 			if (game_is_predicted())
 				simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
-			else if (game_is_server())
+			else if (game_is_server()) // TODO: i'm pretty sure this call goes in apply_event_update
 				simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
 		}
 	}

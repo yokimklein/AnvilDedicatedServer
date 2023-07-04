@@ -169,7 +169,7 @@ enum e_simulation_player_update_flag : long
 	_simulation_player_update_grief, // is this to do with player booting?
 	_simulation_player_update_unknown_player_flags2,
 	_simulation_player_update_unknown_player_flags3, // player quit?
-	_simulation_player_update_unknown_player_flags4,
+	_simulation_player_update_unknown_player_flags4, // update called in game_engine_update_player_sitting_out
 	_simulation_player_update_spectating_player,
 	_simulation_player_update_control,
 	_simulation_player_update_character_type,

@@ -107,6 +107,14 @@ struct s_object_header_block_reference
 };
 static_assert(sizeof(s_object_header_block_reference) == 0x4);
 
+struct s_object_damage_section
+{
+	long unknown1;
+	long unknown2;
+	long unknown3;
+};
+static_assert(sizeof(s_object_damage_section) == 0xC);
+
 struct s_object_data
 {
 	long definition_index;

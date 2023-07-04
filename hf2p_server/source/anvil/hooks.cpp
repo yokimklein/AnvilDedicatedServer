@@ -660,6 +660,13 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_hook2()
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_game_finished);
 }
 
+__declspec(safebuffers) void __fastcall event_generate_part_hook()
+{
+    datum_index object_index;
+    __asm mov object_index, esi;
+    simulation_action_object_create(object_index);
+}
+
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
 {
     datum_index object_index;
@@ -951,6 +958,58 @@ __declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
     datum_index weapon_index;
     __asm mov weapon_index, ebx
     simulation_action_weapon_state_update(weapon_index);
+}
+
+__declspec(safebuffers) void __fastcall damage_section_deplete_hook()
+{
+    // we're inserting just before a call's stack cleanup has run, so be mindful that this hook's esp is offset by 0x14
+    datum_index object_index;
+    long damage_section_index;
+    long response_index;
+    __asm
+    {
+        mov eax, [ebp + 0x4C] // sp was 0x48, [ebp-0x0C]
+        mov object_index, eax
+        mov eax, [ebp + 0x68] // sp was 0x48, [ebp+0x10]
+        mov damage_section_index, eax
+        mov eax, [ebp + 0x50] // sp was 0x48, [ebp-0x08]
+        mov response_index, eax
+    }
+    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
+}
+
+__declspec(safebuffers) void __fastcall damage_section_respond_to_damage_hook()
+{
+    datum_index object_index;
+    long damage_section_index;
+    long response_index;
+    __asm
+    {
+        // TODO: THIS FUNCTION IS UNTESTED, CHECK IF THESE VARIABLES ARE CORRECT!!
+        mov object_index, edx
+        mov eax, [ebp + 0x78] // sp is 0x58, [ebp+0x10]
+        mov damage_section_index, eax
+        mov eax, [ebp + 0x50] // [ebp-0x18]
+        mov response_index, eax
+    }
+    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
+}
+
+__declspec(safebuffers) void __fastcall object_damage_new_hook()
+{
+    // we're inserting just before a call's stack cleanup has run, so be mindful that this hook's esp is offset by 0x14
+    datum_index object_index;
+    long damage_section_index;
+    long response_index;
+    __asm
+    {
+        // TODO: THIS FUNCTION IS UNTESTED, CHECK IF THESE VARIABLES ARE CORRECT!!
+        mov object_index, edi
+        mov eax, [esp + 0x00 + 0x00] // [esp + 0x94 - 0x6C] - TODO CORRECT THIS OFFSET
+        mov damage_section_index, eax
+        mov response_index, ebx
+    }
+    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
 __declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
@@ -1372,22 +1431,6 @@ void __fastcall object_set_at_rest_hook(datum_index object_index)
 {
     object_wake(object_index);
     object_set_at_rest_simulation_update(object_index);
-}
-
-__declspec(naked) void event_generate_part_hook()
-{
-    __asm
-    {
-        // call our inserted function
-        push esi // object_index
-        call simulation_action_object_create
-        add esp, 4
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0x114BF5
-        jmp eax
-    }
 }
 
 datum_index __fastcall weapon_barrel_create_projectiles_hook1(void* thisptr)
@@ -2394,7 +2437,6 @@ void anvil_dedi_apply_hooks()
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
-
     // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
     Hook(0xFBBA0, game_engine_should_spawn_player).Apply();
 
@@ -2455,8 +2497,9 @@ void anvil_dedi_apply_hooks()
     Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
     Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
     // effect object spawning
-    Pointer::Base(0x114A58).WriteJump(event_generate_part_hook, HookFlags::None);
-    Pointer::Base(0x114A6C).WriteJump(event_generate_part_hook, HookFlags::None);
+    // replace if statement jnz with jnz near jump to return destination so we can redirect it
+    Patch(0x114A58, { 0x75, 0x12, 0x90, 0x90, 0x90, 0x90 }).Apply();
+    insert_hook(0x114A58, 0x114A6C, event_generate_part_hook, _hook_execute_replaced_first, true);
     // weapon_barrel_create_projectiles
     Hook(0x4391D4, weapon_barrel_create_projectiles_hook1, HookFlags::IsCall).Apply(); // crate projectiles // hooks nearby object_new
     Pointer::Base(0x4394A2).WriteJump(weapon_barrel_create_projectiles_hook2, HookFlags::None); // standard projectiles
@@ -2600,7 +2643,7 @@ void anvil_dedi_apply_hooks()
     // object_deplete_body_internal
     insert_hook(0x40D9D5, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last);
     // damage_response_fire
-    insert_hook(0x413D43, 0x413D50, damage_response_fire_hook);
+    insert_hook(0x413D43, 0x413D50, damage_response_fire_hook); // includes simulation_action_damage_section_response
     // object_set_damage_owner
     insert_hook(0x404323, 0x404393, object_set_damage_owner_hook, _hook_replace);
     insert_hook(0x113B0F, 0x113B15, object_set_damage_owner_hook2); // inlined in event_generate_accelerations
@@ -2629,7 +2672,6 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x4321E1, 0x4321E8, weapon_take_inventory_rounds_hook2);
     // weapon_trigger_update
     insert_hook(0x42E055, 0x42E05A, weapon_trigger_update_hook);
-
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
     // weapon set index updates
@@ -2645,22 +2687,28 @@ void anvil_dedi_apply_hooks()
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn
     Pointer::Base(0xBB093).WriteJump(player_spawn_hook, HookFlags::None);
+    // add more player updates back to player_spawn - syncs player data info? TODO: investigate
+    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
+    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
     // game_engine_player_set_spawn_timer
     Hook(0xFA07F, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
     Hook(0xFBC5B, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
     Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    // add more player updates back to player_spawn - syncs player data info? TODO: investigate
-    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
-    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
     // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
     Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?
     // add player update back to hf2p function - TODO fix crashing
     //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
     //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
     //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
-    
+
+    // SIMULATION EVENTS
+    // simulation_action_damage_section_response
+    insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook);
+    insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook);
+    insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook);
+
     // MISC HOOKS
     // output the message type for debugging
     Hook(0x16AF8, send_message_hook, HookFlags::IsCall).Apply();
