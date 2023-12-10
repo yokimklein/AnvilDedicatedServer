@@ -121,8 +121,9 @@ enum e_armor_colors // ew american spelling
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].GameVariantWeapons
-enum e_weapon_type : byte
+enum e_weapon_type : char
 {
+	_none = -1,
 	_battle_rifle,
 	_assault_rifle,
 	_plasma_pistol, // weapon tag missing in ms29
@@ -140,7 +141,7 @@ enum e_weapon_type : byte
 	_unarmed, // 'useless' energy sword variant
 	_beam_rifle,
 	_spartan_laser,
-	_none, // no weapon reference
+	_unknown, // no weapon reference
 	_gravity_hammer,
 	_excavator, // weapon tag missing in ms29
 	_flamethrower, // weapon tag missing in ms29
@@ -212,99 +213,116 @@ enum e_support_package : byte
 
 enum e_modifiers : long
 {
-	_safety_booster,
-	_explosives_damage,
-	_explosives_aoe_size_boost,
-	_grenade_scavenger,
-	_stamina_restore_near_death,
-	_cooldown_reset,
-	_reflex_boost,
-	_zoom_radar,
-	_cooldown_boost,
-	_enable_nemesis_mechanics,
-	_silent_sprint,
-	_vehicle_shield_regen_speed,
-	_vehicle_shield_regen_delay,
-	_scavenger_aura,
-	_armor_to_vehicle,
-	_armor_to_player_in_vehicle,
-	_armor_to_player_in_vehicle_transferred,
-	_sprint_speed,
-	_sprint_stamina,
-	_reload_speed,
-	_weapon_switch_speed,
+	_safety_booster, // bool (Forcefully ejects the player they're in on destruction)
+	_explosives_damage, // unknown
+	_explosives_aoe_size_boost, // real 0.0-max (Additional AOE for all grenades. Not sure what this is measured in)
+
+	// The number of nades scavenged per type is the number of empty grenade slots IF the empty slot count is <= your current grenade count, otherwise it is your grenade count
+	// This is clamped by the modifier value so that it cannot exceed it
+	// This is done per type, with frag grenades prioritised first, then plasma, spike & flame
+	// Empty grenade slots are calculated using the globals tag's Grenades > MaximumCount field, not the modifier maximum
+	// You cannot recover grenades from your previous life's body, though theoretically you can from your bodies preceeding your previous life
+	// Once a body has been scavenged from, it cannot be scavenged from again by any player
+	_grenade_scavenger, // int 0-4, default 1 (Total number of grenades to try scavenge off a body)
+
+	_stamina_restore_near_death, // real 0.0-max, default 0.0 (Seconds restored to sprint meter when near death?)
+	_cooldown_reset, // bool (Allows players to spawn without the 10 second equipment cooldown)
+	_reflex_boost, // real -0.99900001-max, default 0.0 (Sprint exit speed)
+	_zoom_radar, // bool (Keeps radar on the hud whilst scoped with any weapon)
+	_cooldown_boost, // real 0.0-max, default 0.0 (Cooldown multiplier + 1.0)
+	_enable_nemesis_mechanics, // bool (Enable Nemesis/Avenger mechanics)
+	_silent_sprint, // bool (Disables sprint sounds)
+	// If multiple passengers use this, only the highest modifier value is used
+	// If you are using shield_regen_rate, only the highest value of the two will be used
+	_vehicle_shield_regen_speed, // real 0.0-max, default 0.0 (Shield regen speed/rate for all friendly passengers in your vehicle)
+	// If multiple passengers use this, only the smallest modifier value is used
+	// If you are using shield_regen_delay, only the smallest value of the two will be used
+	_vehicle_shield_regen_delay, // real -max-0.0, default 0.0 (Negative number of seconds + 1.0 removed from the shield regen delay for all friendly passengers in your vehicle)
+	// Seems to apply to your entire team, only the highest value on your team is used
+	_scavenger_aura, // real 0.0-max (Weapon ammo scavenging. I'm not actually sure what this does, the code suggests it modifies the ammo counts, not the pickup radius?)
+	_armor_to_vehicle, // int 0-0, default 0 (Code suggests this is unimplemented? Though you could use a negative value here and it would work? Armor tends to be health)
+	_armor_to_player_in_vehicle, // real 0.0-max ()
+	_armor_to_player_in_vehicle_transferred, // real 0.0-max ()
+	_sprint_speed, // real max-max (Additional speed multiplier added onto Globals > PlayerControl > SprintFullSpeedMultiplier)
+	_sprint_stamina, // real 0.0-max, default 0.0 (Seconds added on top of Globals > PlayerControl > StaminaDepleteRestoreTime)
+	_reload_speed, // real -0.99900001-max, default 0.0 (Reload speed multiplier for all weapons + 1.0)
+	_weapon_switch_speed, // real -0.99900001-max, default 0.0 (Weapon switch speed multiplier for all weapons + 1.0)
 	_ammo_max,
-	_melee_damage,
-	_melee_resist,
-	_revenge_shield_boost,
-	_respawn_modifier,
-	_grenades_max,
-	_motion_sensor_range,
-	_shield_regen_rate,
-	_shield_regen_delay,
-	_teflon_armor,
-	_explosion_resist,
-	_vehicle_ram_damage,
-	_turret_damage,
-	_machine_gun_rof_acceleration_time,
-	_grenade_warning,
-	_consumable_duration,
-	_energy_increase_max,
-	_energy_increase_count_on_spawn,
-	_energy_regeneration_rate,
-	_assault_rifle_rounds_per_second,
-	_assault_rifle_damage,
+	_melee_damage, // real 0.0-max ()
+	_melee_resist, // real 0.0-max ()
+	// This value is multiplied by 1 to a max of 3 every time the player dies
+	// There's nothing in the code to suggest this occurs when they die without scoring as the modifier description says
+	_revenge_shield_boost, // real 0.0-max, default 0.0 (The amount your shields are multiplied by on spawn + 1.0, a value of 1.0 would multiply your shields by 2x)
+	_respawn_modifier, // int 0-max (Number of seconds removed from your respawn timer)
+	_grenades_max, // int 0-100 (Number of additional grenades to spawn with on top of the 2 of the type assigned to your loadout)
+	_motion_sensor_range, // real 0.0-max (Number of additional meters of range on top of the gamemode default)
+	// If you are in a vehicle and a passenger is using vehicle_shield_regen_speed, only the highest value of the two will be used
+	_shield_regen_rate, // real 0.0-max, default 0.0 (Shield regen speed/rate)
+	// If you are in a vehicle and a passenger is using vehicle_shield_regen_delay, only the smallest value of the two will be used
+	_shield_regen_delay, // real -max-0.0, default 0.0 (Negative number of seconds + 1.0 removed from the shield regen delay)
+	_teflon_armor, // real max-max, default 0.0 (Float chance vs RNG that sticky projectiles don't stick. I'm not sure what the chance is)
+	_explosion_resist, // real 0.0-max (1.0 - explosion resistance)
+	_vehicle_ram_damage, // real 0.0-max ()
+	_turret_damage, // real 0.0-max ()
+	_machine_gun_rof_acceleration_time, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_grenade_warning, // bool (Enables a hud widget which displays the direction of incoming grenades)
+	_consumable_duration, // real 0.001-max (Hologram & equipment duration multiplier + 1.0)
+	_energy_increase_max, // int 0-2, default 0 (Number of additional energy bars the player has from the default 3 to a max of 5)
+	_energy_increase_count_on_spawn, // int -1-4, default 0 (Number of additional charged energy bars the player spawns with from the default 1)
+	_energy_regeneration_rate, // real 0.0-max (Energy regeneration rate + 1.0 in seconds?)
+	_assault_rifle_rounds_per_second, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_assault_rifle_damage, // real 0.0-max ()
 	_assault_rifle_ammo_capacity,
-	_assault_rifle_reload_speed,
-	_battle_rifle_rounds_per_second,
-	_battle_rifle_fire_recovery_time,
-	_battle_rifle_damage,
+	_assault_rifle_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_battle_rifle_rounds_per_second, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_battle_rifle_fire_recovery_time, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_battle_rifle_damage, // real 0.0-max ()
 	_battle_rifle_ammo_capacity,
-	_battle_rifle_reload_speed,
+	_battle_rifle_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
 	_shotgun_spread,
-	_shotgun_damage,
+	_shotgun_damage, // real 0.0-max ()
 	_shotgun_ammo_capacity,
-	_shotgun_reload_speed,
-	_sniper_rifle_zoom_protection,
-	_sniper_rifle_damage,
+	_shotgun_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_sniper_rifle_zoom_protection, // bool (Stops sniper weapon types from unzooming when the player is hit?)
+	_sniper_rifle_damage, // real 0.0-max ()
 	_sniper_rifle_ammo_capacity,
-	_sniper_rifle_reload_speed,
-	_dmr_zoom_protection,
-	_dmr_damage,
+	_sniper_rifle_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_dmr_zoom_protection, // bool (Stops dmr weapon types from unzooming when the player is hit?)
+	_dmr_damage, // real 0.0-max ()
 	_dmr_ammo_capacity,
-	_dmr_reload_speed,
-	_magnum_rounds_per_second,
+	_dmr_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_magnum_rounds_per_second, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
 	_magnum_penetration,
-	_magnum_accuracy,
-	_magnum_damage,
+	_magnum_accuracy, // real -0.99900001-0.9, default 0.0 (1.0 - Modifier is multiplier)
+	_magnum_damage, // real 0.0-max ()
 	_magnum_ammo_capacity,
-	_magnum_reload_speed,
-	_plasma_pistol_charge_up_time,
-	_plasma_pistol_damage,
+	_magnum_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_plasma_pistol_charge_up_time, // real -0.99900001-max, default 0.0 (1.0 - Modifier is multiplier)
+	_plasma_pistol_damage, // real 0.0-max ()
 	_plasma_pistol_ammo_capacity,
-	_plasma_pistol_heat_per_round,
-	_frag_grenade_aoe_size,
-	_frag_grenade_damage,
+	_plasma_pistol_heat_per_round, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_frag_grenade_aoe_size, // real 0.0-max (Additional AOE for frag grenades. Not sure what this is measured in)
+	_frag_grenade_damage, // real 0.0-max ()
 	_frag_grenade_ammo_capacity,
-	_plasma_grenade_aoe_size,
-	_plasma_grenade_damage,
+	_plasma_grenade_aoe_size, // real 0.0-max (Additional AOE for plasma grenades. Not sure what this is measured in)
+	_plasma_grenade_damage, // real 0.0-max ()
 	_plasma_grenade_ammo_capacity,
-	_mauler_damage,
-	_spiker_damage,
-	_brute_shot_damage,
-	_plasma_rifle_heat_per_round,
-	_detonate_on_player_cdt,
-	_detonate_on_vehicle_cdt,
-	_enemies_always_on_radar,
-	_plant_plasma_on_death,
-	_shield_regen_rate_near_killed_enemies,
-	_shield_recharge_on_melee_kill,
-	_frag_grenades_max,
-	_plasma_grenades_max,
-	_claymore_grenade_aoe_size,
-	_smg_damage,
-	_smg_reload_speed,
-	_vehicle_autoflip,
+	_mauler_damage, // real 0.0-max ()
+	_spiker_damage, // real 0.0-max ()
+	_brute_shot_damage, // real 0.0-max ()
+	_plasma_rifle_heat_per_round, // real -0.99900001-max, default 0.0 (Multiplier + 1.0)
+	_detonate_on_player_cdt, // bool (Grenades explode instantly on contact with enemy players) CDT = ??Tether, enables tether flag for grenade projectile types
+	_detonate_on_vehicle_cdt, // bool (Grenades explode instantly on contact with vehicles)
+	_enemies_always_on_radar, // bool (Always shows enemies on radar even if they are moving slow or standing still)
+	_plant_plasma_on_death, // bool (Attaches a silent, long fuse plasma grenade to the player's hand on death)
+	_shield_regen_rate_near_killed_enemies, // real 0.0-max, default 0.0 (Shield regen rate/speed added onto your standard rate when near 1 or more enemy bodies)
+	_shield_recharge_on_melee_kill, // bool (Recharge shields on melee kill)
+	_frag_grenades_max, // int 0-max (Number of additional frag grenades to spawn with, regardless of loadout grenades)
+	_plasma_grenades_max, // int 0-max (Number of additional plasma grenades to spawn with, regardless of loadout grenades)
+	_claymore_grenade_aoe_size, // real 0.0-max (Additional AOE for spike grenades. Not sure what this is measured in)
+	_smg_damage, // real 0.0-max ()
+	_smg_reload_speed, // real -0.99900001-max, default 0.0 (Additional multiplier added to _reload_speed)
+	_vehicle_autoflip, // bool (If the player is sat in a vehicle and it flips over, it will flip itself instead of ejecting the players)
 	_headshot_heal,
 	_weapon_accuracy,
 
@@ -406,7 +424,10 @@ static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 
 struct s_s3d_player_modifiers
 {
-	ulong modifier_values[k_modifiers_count];
+	// bools are represented as values 0.0 (false) and !0.0 (true)
+	// integers are cast from float type to int
+	// floats are stored as is
+	real modifier_values[k_modifiers_count];
 };
 static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
 

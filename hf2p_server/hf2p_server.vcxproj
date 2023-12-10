@@ -83,7 +83,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <SupportJustMyCode>false</SupportJustMyCode>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,7 +111,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <SupportJustMyCode>false</SupportJustMyCode>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,6 +141,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -179,6 +183,7 @@
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\weapons.h" />
+    <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
@@ -354,6 +359,7 @@
     <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\hf2p\hf2p.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
+    <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
@@ -390,6 +396,7 @@
     <ClCompile Include="source\networking\logic\network_join.cpp" />
     <ClCompile Include="source\networking\network_utilities.cpp" />
     <ClCompile Include="source\networking\transport\transport_shim.cpp" />
+    <ClCompile Include="source\tag_files\files.cpp" />
     <ClCompile Include="third_party\patch\Patch.cpp" />
     <ClCompile Include="third_party\patch\Pointer.cpp" />
     <ClCompile Include="source\simulation\simulation.cpp" />

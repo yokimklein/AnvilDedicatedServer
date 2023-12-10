@@ -546,6 +546,9 @@
     <ClInclude Include="source\main\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\main\levels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -792,6 +795,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\main\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\files.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\main\levels.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

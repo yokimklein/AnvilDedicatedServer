@@ -118,8 +118,8 @@ bool c_network_channel::get_remote_address(s_transport_address* remote_address)
 
 void c_network_channel::close(e_network_channel_closure_reason reason)
 {
-	void(__thiscall* close)(c_network_channel* channel, e_network_channel_closure_reason reason) = reinterpret_cast<decltype(close)>(base_address(0xC310));
-	close(this, reason); // this sometimes throws an exception? when 2 clients timeout
+	// this sometimes throws an exception? when 2 clients timeout
+	return DECLFUNC(base_address(0xC310), void, __thiscall, c_network_channel*, e_network_channel_closure_reason)(this, reason);
 }
 
 bool c_network_channel::closed()

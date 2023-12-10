@@ -11,6 +11,7 @@
 #include <networking\session\network_managed_session.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks.h>
+#include <main\levels.h>
 
 void enable_memory_write(dword base)
 {
@@ -113,9 +114,9 @@ void anvil_session_update()
             printf("Starting vote...\n");
             s_network_session_parameter_lobby_vote_set lobby_vote_set = {};
             lobby_vote_set.vote_options[0].gamemode = 1; // slayer small
-            lobby_vote_set.vote_options[0].map = 9; // edge
+            lobby_vote_set.vote_options[0].map = 3; // guardian
             lobby_vote_set.vote_options[1].gamemode = 1; // slayer small
-            lobby_vote_set.vote_options[1].map = 1; // icebox
+            lobby_vote_set.vote_options[1].map = 3; // guardian
             parameters->lobby_vote_set.set(&lobby_vote_set);
             e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
             parameters->dedicated_server_session_state.set(&session_state);
@@ -141,9 +142,16 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
-            printf("Setting test map...\n");
-            anvil_session_set_gamemode(network_session, _engine_variant_slayer);
-            anvil_session_set_map(_s3d_turf);
+            //printf("Setting test mode...\n");
+            //anvil_session_set_gamemode(network_session, _engine_variant_slayer);
+            //anvil_session_set_map(_guardian);
+            //printf("Setting test player data...\n");
+            //anvil_session_set_test_player_data(membership);
+            
+            printf("TEST: loading campaign file...\n");
+            s_file_reference file_reference;
+            file_reference_create_from_path(&file_reference, L"maps\\halo3.campaign", false);
+            levels_add_campaign(&file_reference);
         }
 
         // update dedicated server state
@@ -192,17 +200,21 @@ void anvil_session_update()
                     }
                     long winning_index = (option_votes[0] > option_votes[1] ? 0 : 1);
                     printf("option %d wins the vote!\n", winning_index);
+                    s_network_session_parameter_lobby_vote_set lobby_vote_set;
+                    parameters->lobby_vote_set.get(&lobby_vote_set);
+                    lobby_vote_set.winning_vote_index = winning_index; // TODO: verify this actually does what I believe it to do
+                    parameters->lobby_vote_set.set(&lobby_vote_set);
 
                     // TODO: retrieve voting options from title instances - pull map id and use with anvil_session_set_map
                     if (winning_index == 0)
                     {
                         anvil_session_set_gamemode(network_session, _engine_variant_slayer);
-                        anvil_session_set_map(_s3d_edge);
+                        anvil_session_set_map(_guardian);
                     }
                     else if (winning_index == 1)
                     {
                         anvil_session_set_gamemode(network_session, _engine_variant_slayer);
-                        anvil_session_set_map(_s3d_turf);
+                        anvil_session_set_map(_guardian);
                     }
 
                     e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
@@ -246,7 +258,10 @@ bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant eng
     game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_number_of_rounds = 1;
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_round_time_limit = 1;
     game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_early_victory_win_count = 1;
-    game_variant.m_storage.m_slayer_variant.m_score_to_win = 10;
+    //game_variant.m_storage.m_base_variant.m_map_override_options.m_red_powerup_traits.m_shield_traits.m_shield_multiplier = _shield_multiplier_setting_2x;
+    //game_variant.m_storage.m_base_variant.m_map_override_options.m_weapon_set = 12;
+    //game_variant.m_storage.m_base_variant.m_map_override_options.m_player_traits.m_weapon_traits.m_initial_primary_weapon = 12;
+    game_variant.m_storage.m_slayer_variant.m_score_to_win = 25;
     //game_variant.m_storage.m_slayer_variant.m_suicide_points = 1;
     //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_flags.set(_game_engine_miscellaneous_option_teams_enabled, true);
 
@@ -278,11 +293,14 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         //host_configuration->s3d_player_customization.override_api_data = true;
         //host_configuration->s3d_player_container.override_api_data = true;
 
-        // host player data
-        if (current_player->peer_index == membership->host_peer_index())
+        // yokim player data
+        if (current_player->configuration.host.player_xuid.data == 2)
         {
-            
+            //host_configuration->player_appearance.player_model_choice = 1;
         }
+
+        //host_configuration->s3d_player_container.loadouts[0].primary_weapon = _none;
+        //host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _none;
     }
     // push update
     membership->increment_update();
@@ -312,14 +330,12 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
         configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
-        configuration->s3d_player_container.loadouts[0].primary_weapon = _assault_rifle;
+        configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
         configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _deployable_cover;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _reactive_armor;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-        //configuration->s3d_player_customization.override_api_data = true;
-        //configuration->s3d_player_container.override_api_data = true;
         player_data_updated = true;
 
         // dedi host loadout
@@ -327,16 +343,25 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         {
             configuration->player_xuid.data = -1; // -1 SYSTEM/invalid player id
             player->controller_index = 0;
-            configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scanner;
             configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
-            configuration->s3d_player_customization.colors[_secondary] = 0x003750;
+            configuration->s3d_player_customization.colors[_secondary] = 0x05286E;
+            configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
+            configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
+            configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
+            configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
+            //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_player_cdt] = 1.0f;
+            //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_vehicle_cdt] = 1.0f;
+            configuration->s3d_player_customization.override_api_data = true;
+            configuration->s3d_player_container.override_api_data = true;
+            wchar_t service_tag[5] = L"HOST";
+            memcpy(&configuration->player_appearance.service_tag, service_tag, 10);
             player_data_updated = true;
         }
         // standard player xuids here
         else
         {
             // make sure these appear in API user id order
-            wchar_t player_list[16][16] = { L"zzVertigo", L"Yokim", L"Twister", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
+            wchar_t player_list[16][16] = { L"zzVertigo", L"Yokim", L"Twister", L"Berth", L"", L"ilikemyname", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
             for (size_t i = 0; i < 16; i++)
             {
                 // if a match is found
@@ -349,6 +374,58 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                         wchar_t service_tag[5] = L"DEV";
                         memcpy(&configuration->player_appearance.service_tag, service_tag, 10);
                     }
+                    else if (i == 3)
+                    {
+                        wchar_t service_tag[5] = L"BFB";
+                        memcpy(&configuration->player_appearance.service_tag, service_tag, 10);
+                    }
+
+                    if (i == 0) // zz
+                    {
+                        configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
+                        configuration->s3d_player_customization.colors[_secondary] = 0x00AAF0;
+                        configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
+                        configuration->s3d_player_customization.colors[_lights] = 0x00B4FF;
+                        configuration->s3d_player_customization.colors[_holo] = 0x00B4FF;
+                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_ninja_rare;
+                    }
+                    else if (i == 1) // yokim
+                    {
+                        configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
+                        configuration->s3d_player_customization.colors[_secondary] = 0x05286E;
+                        configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
+                        configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
+                        configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
+                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
+                    }
+                    else if (i == 2) // twist
+                    {
+                        configuration->s3d_player_customization.colors[_primary] = 0xFF230A;
+                        configuration->s3d_player_customization.colors[_secondary] = 0xFFFFFF;
+                        configuration->s3d_player_customization.colors[_visor] = 0xF5EB05;
+                        configuration->s3d_player_customization.colors[_lights] = 0xF5EB05;
+                        configuration->s3d_player_customization.colors[_holo] = 0xF5EB05;
+                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_renegade_rare;
+                    }
+                    else if (i == 3)
+                    {
+                        configuration->s3d_player_customization.colors[_primary] = 0xFFFFFFF;
+                        configuration->s3d_player_customization.colors[_secondary] = 0x0F0F0F;
+                        configuration->s3d_player_customization.colors[_visor] = 0x00B4FF;
+                        configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
+                        configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
+                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
+                    }
+                    else if (i == 5)
+                    {
+                        configuration->s3d_player_customization.colors[_primary] = 0xFFFFFF;
+                        configuration->s3d_player_customization.colors[_secondary] = 0x0F0F0F;
+                        configuration->s3d_player_customization.colors[_visor] = 0xFF640A;
+                        configuration->s3d_player_customization.colors[_lights] = 0xFFFFFFF;
+                        configuration->s3d_player_customization.colors[_holo] = 0xFFFFFFF;
+                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
+                    }
+
                     player_data_updated = true;
                     break;
                 }

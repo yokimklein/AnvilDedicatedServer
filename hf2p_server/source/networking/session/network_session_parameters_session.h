@@ -61,7 +61,7 @@ struct s_network_session_parameter_lobby_vote_set
 	};
 
 	c_static_array<s_lobby_vote, 2> vote_options;
-	byte __unknown6; // winning vote? countdown time?
+	byte winning_vote_index; // countdown time?
 	byte __unknown7; // padding?
 };
 static_assert(sizeof(s_network_session_parameter_lobby_vote_set) == 0x8);

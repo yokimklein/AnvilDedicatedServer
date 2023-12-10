@@ -2714,8 +2714,6 @@ void anvil_dedi_apply_hooks()
     Hook(0x16AF8, send_message_hook, HookFlags::IsCall).Apply();
     Hook(0x16C26, send_message_hook, HookFlags::IsCall).Apply();
     Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
-    // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
-    //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();
     // temporary test to force elite ui model on mainmenu
@@ -2725,5 +2723,7 @@ void anvil_dedi_apply_hooks()
     // podium taunt triggering & syncing
     insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook);
     // disable build watermark text
-    Hook(0x1B0AB0, draw_watermark_hook).Apply();
+    //Hook(0x1B0AB0, draw_watermark_hook).Apply();
+    // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
+    //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
 }

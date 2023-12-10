@@ -20,39 +20,39 @@ enum e_object_header_flags
 enum e_object_data_flags
 {
 	_object_hidden_bit,
-	_object_unknown1_bit, // mp/cluster related?
-	_object_unknown2_bit,
-	_object_unknown3_bit, // when set, the object can't be a simulation multiplayer item
+	_object_always_active_bit,
+	_object_being_created_bit,
+	_object_unknown3_bit, // _object_is_submerged_bit, // when set, the object can't be a simulation multiplayer item
 	_object_has_attached_lights_bit,
 	_object_has_attached_looping_sounds_bit,
 	_object_has_unattached_lights_bit,
 	_object_in_limbo_bit,
 	_object_connected_to_map_bit,
-	_object_unknown9_bit, // related to 8,9,10 - markers, nodes, attachments?
-	_object_unknown10_bit, // related to 8,9,10 - markers, nodes, attachments?
-	_object_unknown11_bit, // object creation, allocation?
-	_object_unknown12_bit,
-	_object_unknown13_bit,
-	_object_unknown14_bit,
-	_object_unknown15_bit,
-	_object_unknown16_bit,
-	_object_unknown17_bit, // clusters, if not predicted? used in object_new
-	_object_unknown18_bit,
-	_object_unknown19_bit,
-	_object_unknown20_bit,
-	_object_unknown21_bit,
-	_object_unknown22_bit,
-	_object_unknown23_bit,
-	_object_unknown24_bit,
+	_object_uses_collidable_list_bit,
+	_object_mirrored_bit,
+	_object_render_model_has_instances_bit,
+	_object_static_lighting_recompute_bit,
+	_object_static_lighting_raycast_sideways_bit,
+	_object_render_time_node_matrices_complete_bit,
+	_object_clip_plane_bit,
+	_object_shadowless_bit,
+	_object_deleted_when_deactivated_bit,
+	_object_outside_of_map_bit,
+	_object_cinematic_lod_bit,
+	_object_cinematic_collision_bit,
+	_object_cinematic_visibility_bit,
+	_object_static_pathfinding_bit,
+	_object_dynamic_pathfinding_disabled_bit,
+	_object_uses_cinematic_lighting_bit,
 	_object_has_override_bit,
-	_object_unknown26_bit,
-	_object_unknown27_bit,
-	_object_unknown28_bit,
-	_object_unknown29_bit,
-	_object_unknown30_bit,
-	_object_unknown31_bit,
+	_object_created_with_parent_bit,
+	_object_reconnect_to_map_bit,
+	_object_ever_referenced_by_hs_bit,
+	_object_orientations_frozen_bit,
+	_object_render_only_orientations_needed_bit,
+	_object_is_prt_and_lightmapped_bit,
 
-	k_number_of_object_flags
+	k_object_data_flags
 };
 
 enum e_object_recycling_flags
@@ -118,7 +118,7 @@ static_assert(sizeof(s_object_damage_section) == 0xC);
 struct s_object_data
 {
 	long definition_index;
-	c_flags<e_object_data_flags, long, k_number_of_object_flags> flags;
+	c_flags<e_object_data_flags, long, k_object_data_flags> flags;
 	ulong extra_object_state;
 	datum_index next_object_index;
 	datum_index first_child_object_index;

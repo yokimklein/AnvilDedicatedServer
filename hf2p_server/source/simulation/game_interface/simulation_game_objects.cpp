@@ -73,7 +73,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 			for (datum_index i = object->first_child_object_index; i != -1; i = current_object->next_object_index)
 			{
 				current_object = object_get(i);
-				if (current_object->flags.test(_object_unknown26_bit))
+				if (current_object->flags.test(_object_created_with_parent_bit))
 					simulation_action_object_create_build_entity_types(i, object_index, maximum_entity_count, out_entity_count, entity_types, entity_object_indices);
 			}
 		}

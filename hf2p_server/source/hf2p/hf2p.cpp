@@ -45,3 +45,32 @@ void hf2p_player_podium_increment_loop_count(long player_index)
 {
 	DECLFUNC(base_address(0x2E8430), void, __thiscall, long)(player_index);
 }
+
+// TODO: replace login function in essential_components_initialize
+// TODO: dedi check in unknown func called by user_interface_update
+// TODO: replace client tick in hf2p_tick
+// TODO: disable sound and rendering in game_globals_initialize
+
+void hf2p_init_dedicated_server()
+{
+	// some global = 0 here
+	//hf2p_init_game_statistics();
+	//hf2p_init_user_data();
+	//hf2p_init_clan_data(); // ClanDataStorage
+	//hf2p_init_user_base_data();
+	//hf2p_init_clan_service(); // ClanGetMembership
+	//hf2p_init_session_control_service();
+	//hf2p_init_user_base_data();
+}
+
+void hf2p_tick_dedicated_server()
+{
+	//hf2p_heartbeat_service_tick();
+	// nullsub call here - I have no idea what this was/did
+	//hf2p_session_control_service_tick();
+}
+
+void hf2p_shutdown()
+{
+
+}
