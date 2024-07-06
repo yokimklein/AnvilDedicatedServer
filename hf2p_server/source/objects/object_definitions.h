@@ -277,8 +277,8 @@ static_assert(sizeof(s_object_change_color_function_definition) == 0x28);
 
 struct s_object_change_color_definition
 {
-	c_tag_block<s_object_change_color_permutation_definition> initial_permutations;
-	c_tag_block<s_object_change_color_function_definition> functions;
+	c_typed_tag_block<s_object_change_color_permutation_definition> initial_permutations;
+	c_typed_tag_block<s_object_change_color_function_definition> functions;
 };
 static_assert(sizeof(s_object_change_color_definition) == 0x18);
 
@@ -305,7 +305,7 @@ static_assert(sizeof(s_object_model_data_definition) == 0x14);
 
 struct s_object_definition
 {
-	c_enum<e_object_type, short, k_object_types_count> type;
+	c_enum<e_object_type, short, k_object_type_count> type;
 	c_flags<e_object_definition_flags, short, k_number_of_object_definition_flags> object_flags;
 	real bounding_radius;
 	real_point3d bounding_offset;
@@ -320,21 +320,21 @@ struct s_object_definition
 	s_tag_reference model;
 	s_tag_reference crate_object;
 	s_tag_reference collision_damage;
-	c_tag_block<s_object_early_mover_obb_definition> early_mover_obb;
+	c_typed_tag_block<s_object_early_mover_obb_definition> early_mover_obb;
 	s_tag_reference creation_effect;
 	s_tag_reference material_effects;
 	s_tag_reference armor_sounds;
 	s_tag_reference melee_impact;
-	c_tag_block<s_object_ai_properties_definition> ai_properties;
-	c_tag_block<s_object_function_definition> functions;
+	c_typed_tag_block<s_object_ai_properties_definition> ai_properties;
+	c_typed_tag_block<s_object_function_definition> functions;
 	short hud_text_message_index;
 	short : 16;
-	c_tag_block<s_object_attachment_definition> attachments;
-	c_tag_block<s_object_widget_definition> widgets;
-	c_tag_block<s_object_change_color_definition> change_colors;
-	c_tag_block<s_object_node_map_definition> node_maps;
-	c_tag_block<s_multiplayer_object_definition> multiplayer_object;
-	c_tag_block<s_object_reviving_equipment_definition> reviving_equipment;
-	c_tag_block<s_object_model_data_definition> model_data;
+	c_typed_tag_block<s_object_attachment_definition> attachments;
+	c_typed_tag_block<s_object_widget_definition> widgets;
+	c_typed_tag_block<s_object_change_color_definition> change_colors;
+	c_typed_tag_block<s_object_node_map_definition> node_maps;
+	c_typed_tag_block<s_multiplayer_object_definition> multiplayer_object;
+	c_typed_tag_block<s_object_reviving_equipment_definition> reviving_equipment;
+	c_typed_tag_block<s_object_model_data_definition> model_data;
 };
 static_assert(sizeof(s_object_definition) == 0x120);

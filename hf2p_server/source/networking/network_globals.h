@@ -1,13 +1,23 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <networking\session\network_session_manager.h>
 
 constexpr long k_network_maximum_sessions = 3;
 // reach replaced this with get_network_protocol_version()
 constexpr long k_network_protocol_version = 9; // H3 is 7, ODST is 8
 
-// TODO: confirm if this actually is the session manager and not just a single session
-static c_network_session_manager* g_network_session_manager = (c_network_session_manager*)base_address(0x3970158); // also 0x1039AD4? which is apparently invalid
+struct s_network_globals
+{
+	bool initialized;
+	bool entered;
 
-static short* g_game_port = (short*)base_address(0xE9B7A0);
-static bool* network_globals = (bool*)base_address(0x3E81A44);
+	// halo 3: thread_id = system_get_current_thread_id()
+	// halo reach: thread_index = get_current_thread_index()
+	// halo online: unused
+	unsigned long thread_id;
+};
+
+class c_network_session_manager;
+
+extern s_network_globals& network_globals;
+extern short& g_game_port;
+extern c_network_session_manager*& g_network_session_manager;

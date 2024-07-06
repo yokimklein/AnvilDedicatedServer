@@ -17,21 +17,7 @@
 #include <game\game_engine_assault.h>
 #include <game\game_engine_infection.h>
 #include <game\game_engine_simulation.h>
-
-enum e_engine_variant : long
-{
-	_engine_variant_base,
-	_engine_variant_ctf,
-	_engine_variant_slayer,
-	_engine_variant_oddball,
-	_engine_variant_king,
-	_engine_variant_sandbox,
-	_engine_variant_vip,
-	_engine_variant_juggernaut,
-	_engine_variant_territories,
-	_engine_variant_assault,
-	_engine_variant_infection,
-};
+#include <game\game_engine_variant.h>
 
 enum e_game_engine_round_condition
 {
@@ -77,6 +63,16 @@ enum e_game_engine_end_condition
 	k_game_engine_end_condition_count
 };
 
+enum e_game_engine_state
+{
+	_game_engine_state_game_over = 0,
+	_game_engine_state_round_progress,
+	_game_engine_state_round_over,
+	_game_engine_state_waiting_for_next_round,
+
+	k_game_engine_state_count
+};
+
 //.data:0189ECF0 ; char const* k_game_engine_end_conditions[k_game_engine_end_condition_count]
 
 struct s_player_waypoint_data
@@ -111,7 +107,7 @@ struct s_game_engine_globals
 	c_static_array<datum_index, 16> player_simulation_gamestate_indices;
 	byte __data74[0x4];
 	c_map_variant map_variant;
-	short current_state;
+	c_enum<e_game_engine_state, short, k_game_engine_state_count> current_state;
 	short round_index;
 	dword round_timer;
 	c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> round_condition_flags;
@@ -149,7 +145,7 @@ struct s_game_engine_globals
 	long __unknown10598;
 	c_multiplayer_candy_monitor_manager candy_monitor_manager;
 	dword __unknown13D9C;
-	dword desired_state;
+	c_enum<e_game_engine_state, long, k_game_engine_state_count> desired_state;
 	bool game_finished;
 	dword __unknown13DA8;
 	dword __unknown13DAC;
@@ -171,7 +167,7 @@ void game_engine_update_round_conditions();
 bool game_engine_round_condition_test(e_game_engine_round_condition condition);
 void game_engine_update_time();
 bool game_engine_in_round();
-bool game_engine_player_is_playing(datum_index player_index);
-void game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);
+bool __fastcall game_engine_player_is_playing(datum_index player_index);
+void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);
 
-static c_game_engine** game_engines = (c_game_engine**)base_address(0xF01EC0);
+extern c_game_engine* (&game_engines)[k_game_engine_type_count];

@@ -66,16 +66,21 @@ enum e_session_game_start_error
 
 enum e_network_game_start_mode
 {
+	_network_game_start_mode_campaign,
+	_network_game_start_mode_custom_game,
+	_network_game_start_mode_matchmaking,
+	_network_game_start_mode_film,
 
+	k_number_of_network_game_start_modes
 };
 
-enum e_countdown_type
+enum e_network_game_countdown_delayed_reason
 {
-	_countdown_type_none,
-	_countdown_type_voting,
-	_countdown_type_game_start,
+	_network_game_countdown_delayed_reason_none, // none may actually be -1, new HO reason taking place of 0?
+	_network_game_countdown_delayed_reason_voting,
+	_network_game_countdown_delayed_reason_start, // user_interface? TODO: find out what this actually is, none does not work to start after voting
 
-	k_countdown_type_count
+	k_network_game_countdown_delayed_reason_count
 };
 
 struct s_network_session_privacy_mode
@@ -131,7 +136,7 @@ static_assert(sizeof(c_network_session_parameter_game_start_status) == 0x48);
 
 struct s_network_session_parameter_countdown_timer
 {
-	c_enum<e_countdown_type, long, k_countdown_type_count> countdown_type;
+	c_enum<e_network_game_countdown_delayed_reason, long, k_network_game_countdown_delayed_reason_count> delayed_reason;
 	long countdown_timer;
 };
 static_assert(sizeof(s_network_session_parameter_countdown_timer) == 0x8);
@@ -139,9 +144,9 @@ static_assert(sizeof(s_network_session_parameter_countdown_timer) == 0x8);
 class c_network_session_parameter_countdown_timer : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_parameter_countdown_timer>
 {
 public:
-	bool set(e_countdown_type countdown_type, long countdown_timer);
+	bool set(e_network_game_countdown_delayed_reason delayed_reason, long countdown_timer);
 	long get_countdown_timer();
-	e_countdown_type get_countdown_type();
+	e_network_game_countdown_delayed_reason get_delayed_reason();
 };
 static_assert(sizeof(c_network_session_parameter_countdown_timer) == 0x40);
 

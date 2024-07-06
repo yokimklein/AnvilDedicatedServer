@@ -1,4 +1,4 @@
-#include "game_variant.h"
+#include "game_options.h"
 
 c_game_engine_base_variant* c_game_variant::get_active_variant()
 {

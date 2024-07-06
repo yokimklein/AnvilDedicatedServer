@@ -3,6 +3,7 @@
 #include <networking\messages\network_message_type_collection.h>
 #include <networking\delivery\network_channel.h>
 #include <networking\network_statistics.h>
+#include <networking\logic\network_bandwidth.h>
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
 
@@ -23,7 +24,9 @@ struct s_observer_configuration
 	c_network_window_statistics window_statistics; // either full statistics or just the first field? may also be m_interval_duration_msec from c_network_time_statistics which would be above
 	byte unknown_data2[0x38];
 	long packet_timeout; // offset 0x270
+	byte unknown_data3[0x1A4];
 };
+static_assert(sizeof(s_observer_configuration) == 0x418);
 
 struct s_network_message_connect_request;
 struct s_transport_address;
@@ -81,7 +84,7 @@ class c_network_observer
 		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
 
 		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
-		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, int observer_channel_index);
+		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, long observer_channel_index);
 		const char* get_name(long observer_index);
 		bool observer_channel_dead(e_network_observer_owner owner_type, long observer_index);
 		s_channel_observer* get_observer(e_network_observer_owner owner_type, long observer_index);
@@ -92,6 +95,7 @@ class c_network_observer
 		void quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating);
 		long observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel); // owner type might be a byte?
 		s_channel_observer* find_observer_by_channel(c_network_channel* channel);
+		bool is_bandwidth_stable();
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;
@@ -100,15 +104,25 @@ class c_network_observer
 		s_observer_configuration* m_configuration;
 		c_network_session* m_session;
 		s_channel_observer_owner m_owners[k_network_observer_owner_count];
-		s_channel_observer m_channel_observers[k_network_maximum_observers]; // offset 0x38
-		bool m_quality_statistics_are_set;
-		int __unknown23CEC;
-		byte m_quality_statistics[0xC0]; // s_network_quality_statistics
-		byte __data23DB0[0x9];
-		bool m_online_network_environment;
-		byte __data[0x166];
+		s_channel_observer m_channel_observers[k_network_maximum_observers];
+
+		// TODO: verify offsets here are correct
+		byte __data[0x08];
+		c_network_time_statistics time_statistics;
+		byte __data2[0x158];
+
+		//bool m_quality_statistics_are_set;
+		//int __unknown23CEC;
+		//s_network_quality_statistics m_quality_statistics;
+		//byte __data23DB0[8];
+		//bool m_prioritize_upload_bandwidth;
+		//bool m_online_network_environment;
+
+		//byte __data[0x238];
 };
 static_assert(sizeof(c_network_observer) == 0x238C0);
+static_assert(0x38 == OFFSETOF(c_network_observer, m_channel_observers));
+// -0x178 from end is network stable
 /*
 
 class c_network_observer : c_network_channel
@@ -166,8 +180,8 @@ class c_network_observer : c_network_channel
 	// 51538 - c_network_time_statistics*
 	// 51592
 	// 51593
-	// 51594 - float
-	// 51595 - float
+	// 51594 - real
+	// 51595 - real
 	// 51598 - network_time_get()
 	// 51599 - network_time_get()
 	// 51602.5? - bool

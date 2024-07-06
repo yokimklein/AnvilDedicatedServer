@@ -4,21 +4,40 @@
 
 // e_multiplayer_team
 // k_multiplayer_team_none = -1
-// k_multiplayer_max_team_game_and_ffa_game_team_count = 16
 
 enum e_game_team
 {
 	_game_team_none = -1,
-	_game_team_red,
-	_game_team_blue,
-	_game_team_green,
-	_game_team_orange,
-	_game_team_purple,
-	_game_team_gold,
-	_game_team_brown,
-	_game_team_pink,
 
-	k_maximum_teams
+	_multiplayer_team_red = 0,
+	_multiplayer_team_blue,
+	_multiplayer_team_green,
+	_multiplayer_team_orange,
+	_multiplayer_team_purple,
+	_multiplayer_team_gold,
+	_multiplayer_team_brown,
+	_multiplayer_team_pink,
+
+	k_multiplayer_max_team_game_and_ffa_game_team_count, // 16 in reach
+
+	_campaign_team_default = 0,
+	_campaign_team_player,
+	_campaign_team_human,
+	_campaign_team_covenant,
+	_campaign_team_flood,
+	_campaign_team_sentinel,
+	_campaign_team_heretic,
+	_campaign_team_prophet,
+	_campaign_team_guilty,
+	_campaign_team_unused9,
+	_campaign_team_unused10,
+	_campaign_team_unused11,
+	_campaign_team_unused12,
+	_campaign_team_unused13,
+	_campaign_team_unused14,
+	_campaign_team_unused15,
+
+	k_maximum_campaign_team_count
 	//_game_team_observer = 16, // also 8? -1 seems to behave as a spectator mode?
 };
 
@@ -41,10 +60,18 @@ struct s_machine_identifier
 
 struct s_player_identifier
 {
-	qword data;
-	//dword ip_addr;
-	//word port;
-	//word_flags flags;
+	bool operator==(s_player_identifier other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_player_identifier other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
+	union
+	{
+		struct
+		{
+			dword user_id; // used to be ip_addr
+			dword unknown;
+		};
+		qword data;
+	};
 };
 static_assert(sizeof(s_player_identifier) == 0x8);
 
@@ -66,7 +93,7 @@ struct s_player_configuration_from_client
 	};
 
 	wchar_t name[16];
-	c_enum<e_game_team, byte, k_maximum_teams> user_selected_team_index;
+	c_enum<e_game_team, byte, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
 	c_enum<e_player_vote_selection, byte, k_player_vote_selection_count> vote_selection_index;
 	char active_armor_loadout;
 	char active_weapon_loadout; // this might now be unused or something under a different name?
@@ -93,9 +120,9 @@ struct s_player_configuration_from_host
 	};
 
 	s_player_identifier player_xuid;
-	wchar_t player_name[16];
-	c_enum<e_game_team, long, k_maximum_teams> team_index;
-	c_enum<e_game_team, long, k_maximum_teams> user_selected_team_index;
+	c_static_wchar_string<16> player_name;
+	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team_index;
+	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
 	s_player_appearance player_appearance;
 	s_s3d_player_container s3d_player_container;
 	s_s3d_player_customization s3d_player_customization;
@@ -105,6 +132,8 @@ static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
 struct s_player_configuration
 {
 	s_player_configuration() : client(), host() {};
+	bool operator==(s_player_configuration other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_player_configuration other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
 
 	s_player_configuration_from_client client;
 	s_player_configuration_from_host host;

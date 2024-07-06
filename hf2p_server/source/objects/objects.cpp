@@ -3,15 +3,17 @@
 #include "assert.h"
 #include <stdio.h>
 #include <simulation\game_interface\simulation_game_objects.h>
-#include <tag_files\tag_files.h>
+#include <cache\cache_files.h>
 #include <objects\object_definitions.h>
+#include <physics\havok_component.h>
 
 s_object_data* object_get(datum_index object_index)
 {
 	// TOOD asserts for object_get_and_verify_type
 	if (object_index == NONE)
 		return nullptr;
-	s_object_header* object_header = (s_object_header*)datum_get(get_tls()->object_headers, object_index);
+	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
 	if (!object_header)
 		return nullptr;
 
@@ -20,10 +22,8 @@ s_object_data* object_get(datum_index object_index)
 
 e_object_type object_get_type(datum_index object_index)
 {
-	s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
-	e_object_type object_type = (object_header_data)[(word)object_index].type;
-
-	return object_type;
+	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+	return object_headers[DATUM_INDEX_TO_ABSOLUTE_INDEX(object_index)].type;
 }
 
 bool object_is_multiplayer_cinematic_object(datum_index object_index)
@@ -95,24 +95,21 @@ void __cdecl object_set_velocities_internal(datum_index object_index, const unio
 
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate)
 {
-	FUNCTION_DEF(0x127C30, void, __thiscall, c_havok_component__force_activate, void* thisptr, bool unknown);
-	s_data_array* g_havok_components = (s_data_array*)*(long*)base_address(0x1046CDC);
-
 	s_object_data* object = object_get(object_index);
-	if (TEST_BIT(_object_mask_physics, object_get_type(object_index))
-		&& (object->physics_flags.get_unsafe() & 0x80) != 0
-		&& (object->havok_component_index != -1))
+	if (TEST_BIT(_object_mask_physics, object_get_type(object_index)) && object->physics_flags.test(_object_connected_to_physics_bit) && object->havok_component_index != -1)
 	{
 		if (force_activate)
 			goto simulation_update;
-		c_havok_component__force_activate(&g_havok_components->data[128 * (word)object->havok_component_index], false);
+
+		c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->havok_component_index);
+		havok_component->force_activate(false);
 	}
 	else if (force_activate)
 	{
-		object->physics_flags |= 0x200u;
+		object->physics_flags.set(_object_physics_unknown_9_bit, true);
 		return;
 	}
-	object->physics_flags &= ~0x200u;
+	object->physics_flags.set(_object_physics_unknown_9_bit, false);
 	object_wake(object_index);
 	// update here
 simulation_update:
@@ -139,3 +136,42 @@ void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner
 			simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 	}
 }
+
+void __fastcall object_wake(datum_index object_index)
+{
+	INVOKE(0x3FBE70, object_wake, object_index);
+}
+
+void __fastcall object_set_requires_motion(datum_index object_index)
+{
+	INVOKE(0x403E50, object_set_requires_motion, object_index);
+}
+
+bool __fastcall object_needs_rigid_body_update(datum_index object_index)
+{
+	return INVOKE(0x3FE620, object_needs_rigid_body_update, object_index);
+}
+
+void __fastcall attachments_update(datum_index object_index)
+{
+	INVOKE(0x409070, attachments_update, object_index);
+}
+
+void __fastcall object_compute_node_matrices(datum_index object_index)
+{
+	INVOKE(0x4056A0, object_compute_node_matrices, object_index);
+}
+
+datum_index __fastcall object_new(s_object_placement_data* placement_data)
+{
+	return INVOKE(0x3FCEE0, object_new, placement_data);
+}
+
+// Had to disable RTC here otherwise it'll throw an exception before add esp 4 corrects the stack
+#pragma runtime_checks("", off)
+void __fastcall object_set_garbage(long object_index, bool unknown_bool, long collection_ticks)
+{
+	INVOKE(0x403C50, object_set_garbage, object_index, unknown_bool, collection_ticks);
+	__asm add esp, 4; // Fix usercall & cleanup stack
+}
+#pragma runtime_checks("", restore)

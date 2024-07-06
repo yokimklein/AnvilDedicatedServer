@@ -84,7 +84,11 @@ wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count)
 
 //void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len)
 
-//int ustrnicmp(wchar_t const *,wchar_t const *,long)
+int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count)
+{
+    return _wcsnicmp(string1, string2, count);
+}
+
 //int uisalpha(wchar_t)
 //int uisupper(wchar_t)
 //int uislower(wchar_t)

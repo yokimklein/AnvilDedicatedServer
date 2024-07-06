@@ -20,22 +20,25 @@ const char* player_identifier_get_string(s_player_identifier const* identifier)
 	return identifier_str;
 }
 
-long player_mapping_get_input_user(word player_index)
+long player_mapping_get_input_user(datum_index player_index)
 {
+	TLS_DATA_GET_VALUE_REFERENCE(player_mapping_globals);
 	if (player_index == -1)
 		return -1;
 	else
-		return get_tls()->player_mapping_globals->player_input_user_mapping[player_index];
+		return player_mapping_globals->player_input_user_mapping[player_index];
 }
 
 void player_set_facing(datum_index player_index, real_vector3d* forward)
 {
-	s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
 	if (game_is_authoritative())
 	{
 		if (player_data->unit_index != -1)
 		{
-			s_object_header* unit_object_header = (s_object_header*)datum_get(get_tls()->object_headers, player_data->unit_index);
+			TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+			s_object_header* unit_object_header = (s_object_header*)datum_get(*object_headers, player_data->unit_index);
 			s_unit_data* unit_data = (s_unit_data*)unit_object_header->data;
 			unit_data->facing_vector = *forward;
 			unit_data->aiming_vector = *forward;
@@ -48,31 +51,38 @@ void player_set_facing(datum_index player_index, real_vector3d* forward)
 		player_control_set_facing(input_user_index, forward);
 }
 
-void player_control_set_facing(long input_user_index, real_vector3d* forward)
+void __fastcall player_control_set_facing(long input_user_index, real_vector3d* forward)
 {
-	FUNCTION_DEF(0x106780, void, __fastcall, player_control_set_facing_call, long input_user_index, real_vector3d* forward);
-	player_control_set_facing_call(input_user_index, forward);
+	INVOKE(0x106780, player_control_set_facing, input_user_index, forward);
 }
 
 long player_index_from_absolute_player_index(short absolute_player_index)
 {
-	return datum_absolute_index_to_index(get_tls()->players, absolute_player_index);
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	return datum_absolute_index_to_index(*players, absolute_player_index);
 }
 
 void __fastcall player_increment_control_context(datum_index player_index)
 {
-	s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
 	datum_index unit_index = player_data->unit_index;
 	if (unit_index != -1)
 	{
-		s_unit_data* unit = (s_unit_data*)datum_get(get_tls()->object_headers, unit_index);
+		TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+		s_unit_data* unit = (s_unit_data*)datum_get(*object_headers, unit_index);
 		unit->control_context_identifier = player_data->control_context_identifier;
 		simulation_action_object_update(unit_index, _simulation_unit_update_control_context);
 	}
 	player_data->control_context_identifier = (player_data->control_context_identifier + 1) & 0xF;
 }
 
-bool player_is_local(datum_index player_index)
+bool __fastcall player_is_local(datum_index player_index)
 {
-	return DECLFUNC(base_address(0xC1480), bool, __fastcall, long)(player_index);
+	return INVOKE(0xC1480, player_is_local, player_index);
+}
+
+void __fastcall player_clear_assassination_state(datum_index player_index)
+{
+	INVOKE(0xBA0F0, player_clear_assassination_state, player_index);
 }

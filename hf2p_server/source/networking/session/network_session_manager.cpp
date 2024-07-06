@@ -2,7 +2,5 @@
 
 c_network_session* c_network_session_manager::get_session(s_transport_secure_identifier const* secure_identifier)
 {
-	typedef c_network_session*(__thiscall* get_session_ptr)(c_network_session_manager* thisptr, s_transport_secure_identifier const* secure_identifier);
-	auto get_session = reinterpret_cast<get_session_ptr>(base_address(0x27C80));
-	return get_session(this, secure_identifier);
+	return DECLFUNC(0x27C80, c_network_session*, __thiscall, c_network_session_manager*, s_transport_secure_identifier const*)(this, secure_identifier);
 }

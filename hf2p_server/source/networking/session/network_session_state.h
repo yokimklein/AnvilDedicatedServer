@@ -1,6 +1,7 @@
 #pragma once
+#include <networking\logic\network_join.h>
 
-enum e_network_session_state : long
+enum e_network_session_state
 {
 	_network_session_state_none,
 	_network_session_state_peer_creating,
@@ -10,7 +11,7 @@ enum e_network_session_state : long
 	_network_session_state_peer_leaving,
 	_network_session_state_host_established,
 	_network_session_state_host_disband,
-	// removed in ms29
+	// removed since h3/ms23
 	//_network_session_state_host_handoff,
 	//_network_session_state_host_reestablish,
 	//_network_session_state_election,
@@ -26,41 +27,56 @@ enum e_dedicated_server_session_state
 	_dedicated_server_session_state_voting,
 	_dedicated_server_session_state_game_start_countdown,
 	_dedicated_server_session_state_in_game,
-	_dedicated_server_session_state_unknown,
 
-	k_dedicated_server_session_state_count
+	k_dedicated_server_session_state_count // between 0-10? How did I come to believe this?
 };
 
-enum e_network_rough_quality
+struct s_network_session_state_peer_creating
 {
-
+	c_enum<e_transport_platform, long, k_transport_platform_count> platform;
+	bool __unknown4;
+	qword join_nonce;
+	s_network_session_join_request join_request;
 };
+static_assert(sizeof(s_network_session_state_peer_creating) == 0x248);
 
-enum e_network_session_class
+struct s_network_session_state_peer_joining
 {
-	_network_session_class_offline,
-	_network_session_class_online,
-	_network_session_class_xbox_live,
-
-	k_network_session_class_count
+	long observer_channel;
+	s_transport_secure_address join_address;
+	s_transport_address join_usable_address;
+	bool use_peer_joining_join_nonce;
+	qword join_nonce;
+	s_network_session_join_request join_request;
+	dword join_secure_connection_timestamp;
+	dword __unknown34C;
+	dword __unknown350;
+	byte __data[0xC];
 };
+static_assert(sizeof(s_network_session_state_peer_joining) == 0x288);
 
-enum e_network_session_mode
+struct s_network_session_state_peer_join_abort
 {
-	_network_session_mode_none,
-	_network_session_mode_idle,
-	_network_session_mode_setup,
-	_network_session_mode_in_game,
-	_network_session_mode_end_game,
-	_network_session_mode_post_game,
-	// matchmaking enums likely don't exist in ms29
-	//_network_session_mode_matchmaking_start,
-	//_network_session_mode_matchmaking_searching,
-	//_network_session_mode_matchmaking_gathering,
-	//_network_session_mode_matchmaking_slave,
-	//_network_session_mode_matchmaking_disbanding,
-	//_network_session_mode_matchmaking_arbitrating,
-	//_network_session_mode_matchmaking_choosing_game,
-
-	k_network_session_mode_count
+	s_transport_secure_address join_address;
+	s_transport_address join_usable_address;
+	s_transport_secure_address secure_address;
+	qword join_nonce;
+	dword join_secure_connection_timestamp;
+	dword join_abort_secure_connection_timestamp;
+	byte __data[0x8];
 };
+static_assert(sizeof(s_network_session_state_peer_join_abort) == 0x50);
+
+struct s_network_session_state_peer_established
+{
+	dword __unknown0;
+	dword peer_established_secure_connection_timestamp;
+};
+static_assert(sizeof(s_network_session_state_peer_established) == 0x8);
+
+struct s_network_session_state_peer_leaving
+{
+	byte __data[0x8];
+	dword __unknown8;
+};
+static_assert(sizeof(s_network_session_state_peer_leaving) == 0xC);

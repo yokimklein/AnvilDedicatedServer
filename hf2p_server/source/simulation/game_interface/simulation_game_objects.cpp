@@ -34,9 +34,10 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 					}
 					else
 					{
+						TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 						c_simulation_entity_database* entity_database = simulation_get_world()->get_entity_database();
 						s_object_data* object = object_get(entity_object_index);
-						s_object_header* object_header = (s_object_header*)datum_get(get_tls()->object_headers, entity_object_index);
+						s_object_header* object_header = (s_object_header*)datum_get(*object_headers, entity_object_index);
 						s_simulation_entity* entity = entity_database->entity_get(entity_index);
 						assert(!object_header->flags.test(_object_header_being_deleted_bit));
 						assert(entity->gamestate_index != NONE);
@@ -58,8 +59,9 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 
 void simulation_action_object_create_build_entity_types(datum_index object_index, datum_index last_object_index, long maximum_entity_count, long* out_entity_count, e_simulation_entity_type* entity_types, long* entity_object_indices)
 {
+	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 	s_object_data* object = object_get(object_index);
-	s_object_header* object_header = (s_object_header*)datum_get(get_tls()->object_headers, object_index);
+	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
 	datum_index object_ultimate_parent = object_get_ultimate_parent(object_index);
 	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->gamestate_index == -1 && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
 	{

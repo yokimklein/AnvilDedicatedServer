@@ -5,7 +5,7 @@
 typedef float real;
 static_assert(sizeof(real) == 0x4);
 
-typedef float real_fraction;
+typedef real real_fraction;
 static_assert(sizeof(real_fraction) == 0x4);
 
 union real_bounds
@@ -150,7 +150,7 @@ union real_ahsv_color
 };
 static_assert(sizeof(real_ahsv_color) == 0x10);
 
-typedef float angle;
+typedef real angle;
 static_assert(sizeof(angle) == 0x4);
 
 union angle_bounds

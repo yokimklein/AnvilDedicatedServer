@@ -3,10 +3,11 @@
 #include <simulation\simulation_gamestate_entities.h>
 #include <simulation\game_interface\simulation_game_entities.h>
 #include <simulation\simulation_world.h>
+#include <simulation\game_interface\simulation_game_objects.h>
+#include <game\game_engine_simulation.h>
+#include <items\weapons.h>
 #include "assert.h"
 #include <stdio.h>
-#include <simulation\game_interface\simulation_game_objects.h>
-#include <items\weapons.h>
 
 void simulation_action_game_engine_globals_create()
 {
@@ -320,8 +321,6 @@ void simulation_action_game_engine_globals_update(long update_flag)
 
 void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
 {
-	FUNCTION_DEF(0x433D90, long, __fastcall, weapon_get_owner_unit_inventory_index, datum_index weapon_index);
-
 	if (game_is_distributed() && game_is_server() && !game_is_playback())
 	{
 		datum_index owner_unit_index = weapon_get_owner_unit_index(weapon_index);

@@ -29,10 +29,10 @@ bool c_simulation_world::exists()
 
 c_simulation_world* simulation_get_world()
 {
-    assert(simulation_globals->initialized);
-    assert(simulation_globals->world);
-    assert(simulation_globals->world->exists());
-    return simulation_globals->world;
+    assert(simulation_globals.initialized);
+    assert(simulation_globals.world);
+    assert(simulation_globals.world->exists());
+    return simulation_globals.world;
 }
 
 bool c_simulation_world::is_distributed()

@@ -5,9 +5,11 @@
 #include <assert.h>
 #include <networking\network_time.h>
 
+REFERENCE_DECLARE(0x3EAB120, s_online_session_manager_globals, online_session_manager_globals);
+
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
-	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 
 	if (managed_session_index == -1 || !managed_session->flags.test(_online_managed_session_created_bit))
 		return false;
@@ -27,7 +29,7 @@ const char* managed_session_get_id_string(long managed_session_index)
 	if (managed_session_index == -1)
 		return "00:00:00:00:00:00:00:00";
 	else
-		return transport_secure_identifier_get_string(&online_session_manager_globals->managed_sessions[managed_session_index].actual_online_session_state.description.session_id);
+		return transport_secure_identifier_get_string(&online_session_manager_globals.managed_sessions[managed_session_index].actual_online_session_state.description.session_id);
 }
 
 // this exists in ms29, I rewrote it thinking there was an issue with it but there wasn't, oh well lol
@@ -37,7 +39,7 @@ bool managed_session_get_id(long managed_session_index, s_transport_secure_ident
 		memset(secure_id, 0, sizeof(s_transport_secure_identifier));
 	if (managed_session_index == -1)
 		return false;
-	c_managed_session* managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	if (!managed_session->flags.test(_online_managed_session_created_bit))
 		return false;
 	if (secure_id != nullptr)
@@ -47,7 +49,7 @@ bool managed_session_get_id(long managed_session_index, s_transport_secure_ident
 
 void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	if (managed_session->desired_online_session_state.private_slot_count != private_slot_count
 		|| managed_session->desired_online_session_state.public_slot_count != public_slot_count
 		|| ((managed_session->desired_online_session_state.public_slots_flags & 0x200) != 0))
@@ -71,7 +73,7 @@ void managed_session_modify_slot_counts(long managed_session_index, long private
 
 short* managed_session_get_status(short* managed_session_status, long managed_session_index)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	short status = 0; // TODO: e_managed_session_status_flags
 	if (managed_session->flags.test(_online_managed_session_created_bit))
 		status = 2;
@@ -113,14 +115,14 @@ bool managed_session_is_master_session(long managed_session_index)
 		return false;
 	else
 	{
-		auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+		c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 		return managed_session->flags.test(_online_managed_session_master_session_bit);
 	}
 }
 
 void managed_session_reset_session(long managed_session_index, bool recreating_session)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_reset_session: [%s]:%08X reset session\n",
 		transport_session_description_get_string(&managed_session->desired_online_session_state.description),
 		managed_session_index);
@@ -145,7 +147,7 @@ void managed_session_reset_session(long managed_session_index, bool recreating_s
 
 void managed_session_remove_players(long managed_session_index, qword* xuids, long xuid_count)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
 	managed_session->pending_operation_flags.set(_online_managed_session_players_remove_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
@@ -177,15 +179,15 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 
 void managed_session_reset_players_add_status(long managed_session_index)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	managed_session->flags.set(_online_managed_session_unknown_flag11_bit, false);
 	managed_session->flags.set(_online_managed_session_unknown_flag8_bit, false);
 }
 
-void managed_session_add_players(long managed_session_index, qword* player_xuids, bool* player_bools, long xuid_count)
+void managed_session_add_players(long managed_session_index, qword* player_xuids, bool* players_left, long xuid_count)
 {
-	auto managed_session = &online_session_manager_globals->managed_sessions[managed_session_index];
-	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, player_bools, xuid_count); // non-original function name
+	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
+	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, players_left, xuid_count); // non-original function name
 	managed_session->flags.set(_online_managed_session_players_add_pending_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_players_add_bit, true);
@@ -193,7 +195,7 @@ void managed_session_add_players(long managed_session_index, qword* player_xuids
 	managed_session->creation_time = 0;
 }
 
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* player_bools, long xuid_count)
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* players_left, long xuid_count)
 {
 	assert(players);
 	assert(player_count > 0);
@@ -222,15 +224,19 @@ void managed_session_add_players_internal(s_online_session_player* players, long
 				assert(empty_index != NONE);
 				players[empty_index].xuid = xuids[i];
 				players[empty_index].flags |= 1u;
-				if (player_bools[i])
+				if (players_left[i])
 					players[empty_index].flags |= 2u;
 			}
 		}
 	}
 }
 
-bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id)
+bool __fastcall managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id)
 {
-	bool(__fastcall* managed_session_compare_id_call)(long managed_session_index, s_transport_secure_identifier const* secure_id) = reinterpret_cast<decltype(managed_session_compare_id_call)>(base_address(0x28B40));
-	return managed_session_compare_id_call(managed_session_index, secure_id);
+	return INVOKE(0x28B40, managed_session_compare_id, managed_session_index, secure_id);
+}
+
+void __fastcall managed_session_delete_session_internal(long managed_session_index, c_managed_session* managed_session)
+{
+	INVOKE(0x28C30, managed_session_delete_session_internal, managed_session_index, managed_session);
 }

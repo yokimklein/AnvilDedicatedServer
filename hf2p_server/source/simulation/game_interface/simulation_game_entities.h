@@ -28,6 +28,7 @@ enum e_simulation_entity_type
 	_simulation_entity_type_weapon,
 	_simulation_entity_type_device,
 
+	k_simulation_entity_type_count,
 	k_simulation_entity_type_maximum_count = 32
 };
 

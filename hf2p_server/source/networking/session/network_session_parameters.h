@@ -13,6 +13,12 @@
 #include <shell\shell.h>
 #include <simulation\simulation.h>
 #include <networking\session\network_session_state.h>
+#include <cseries\language.h>
+
+enum e_network_rough_quality
+{
+
+};
 
 #pragma pack(push, 4)
 class c_network_session;

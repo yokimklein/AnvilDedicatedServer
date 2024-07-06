@@ -17,4 +17,4 @@ struct s_player_mapping
 	byte player_output_user_mapping[16];
 };
 
-long player_mapping_get_next_output_user(short absolute_player_index, long user_index); // e_output_user_index
+long __fastcall player_mapping_get_next_output_user(short absolute_player_index, long user_index); // e_output_user_index

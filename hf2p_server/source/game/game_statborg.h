@@ -110,7 +110,7 @@ public:
 	word __unknown0;
 	word __unknown2;
 	c_static_array<s_game_statborg_player, k_maximum_multiplayer_players> player;
-	c_static_array<s_game_statborg_team, k_maximum_teams> team;
+	c_static_array<s_game_statborg_team, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
 	bool stats_paused;
 	dword __unknown418;
 	dword __unknown41C;

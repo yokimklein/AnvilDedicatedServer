@@ -1,5 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
+#include <text\unicode.h>
 
 constexpr long k_player_configuration_maximum_loadouts = 3; // 5 in earlier builds
 
@@ -403,7 +404,7 @@ struct s_player_appearance
 	byte player_model_choice; // 0 - male spartan, 1 - elite
 	byte pad1[2];
 	s_emblem_info emblem_info;
-	wchar_t service_tag[5];
+	c_static_wchar_string<5> service_tag;
 	byte pad2[2];
 };
 static_assert(sizeof(s_player_appearance) == 0x660);
@@ -425,7 +426,7 @@ static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 struct s_s3d_player_modifiers
 {
 	// bools are represented as values 0.0 (false) and !0.0 (true)
-	// integers are cast from float type to int
+	// integers are cast from real type to int
 	// floats are stored as is
 	real modifier_values[k_modifiers_count];
 };

@@ -3,7 +3,6 @@
 #include <cseries\cseries.h>
 #include <game\game_engine_default.h>
 #include <game\game_engine_sandbox_traits.h>
-#include <game\game_engine_variant.h>
 #include <saved_games\scenario_map_variant.h>
 
 class c_game_engine_sandbox_variant : c_game_engine_base_variant

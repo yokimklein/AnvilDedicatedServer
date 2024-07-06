@@ -3,7 +3,6 @@
 #include <cseries\cseries.h>
 #include <game\game_engine_default.h>
 #include <game\game_engine_juggernaut_traits.h>
-#include <game\game_engine_variant.h>
 
 class c_game_engine_juggernaut_variant : c_game_engine_base_variant
 {

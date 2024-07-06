@@ -275,7 +275,7 @@ struct s_model_variant_permutation
 	c_flags<e_model_permutation_flags, byte, k_number_of_model_permutation_flags> flags;
 	short : 16;
 	real probability;
-	c_tag_block<s_model_permutation_state> states;
+	c_typed_tag_block<s_model_permutation_state> states;
 	char runtime_permutation_indices[k_maximum_number_of_model_region_permutations];
 };
 static_assert(sizeof(s_model_variant_permutation) == 0x24);
@@ -286,7 +286,7 @@ struct s_model_variant_region
 	char runtime_region_index;
 	char runtime_flags;
 	short parent_variant;
-	c_tag_block<s_model_variant_permutation> permutations;
+	c_typed_tag_block<s_model_variant_permutation> permutations;
 	c_enum<e_model_region_sort_order, long, k_number_of_model_region_sort_orders> sort_order;
 };
 static_assert(sizeof(s_model_variant_region) == 0x18);
@@ -310,8 +310,8 @@ struct s_model_variant
 	char : 8;
 	char : 8;
 	char runtime_region_indices[k_maximum_number_of_model_regions];
-	c_tag_block<s_model_variant_region> regions;
-	c_tag_block<s_model_variant_object> objects;
+	c_typed_tag_block<s_model_variant_region> regions;
+	c_typed_tag_block<s_model_variant_object> objects;
 	long instance_group_index;
 	long : 32;
 	long : 32;
@@ -340,7 +340,7 @@ struct s_model_instance_group
 {
 	string_id name;
 	c_enum<e_model_instance_group_choice, long, k_number_of_model_instance_group_choices> choice;
-	c_tag_block<s_model_instance_member> member_list;
+	c_typed_tag_block<s_model_instance_member> member_list;
 	real total_probability;
 };
 static_assert(sizeof(s_model_instance_group) == 0x18);
@@ -372,7 +372,7 @@ struct s_model_region
 	string_id name;
 	char collision_region_index;
 	char physics_region_index;
-	c_tag_block<s_model_permutation> permutations;
+	c_typed_tag_block<s_model_permutation> permutations;
 };
 static_assert(sizeof(s_model_region) == 0x14);
 
@@ -384,8 +384,8 @@ struct s_model_target
 	real cone_angle;
 	short damage_section;
 	short variant;
-	float targeting_relevance;
-	float aoe_exclusion_radius;
+	real targeting_relevance;
+	real aoe_exclusion_radius;
 	// lock-on fields
 	c_flags<e_target_lock_on_flags, byte, k_number_of_target_lock_on_flags> flags;
 	byte : 8;
@@ -465,16 +465,16 @@ struct s_model_definition
 	s_tag_reference physics_model;
 	real reduce_to_lod_distances[k_number_of_model_lods];
 	s_tag_reference lod_model;
-	c_tag_block<s_model_variant> variants;
-	c_tag_block<s_model_region_sort> region_sort;
-	c_tag_block<s_model_instance_group> instance_groups;
-	c_tag_block<s_model_material> materials;
-	c_tag_block<s_global_damage_info_block> damage_info;
-	c_tag_block<s_model_target> targets;
-	c_tag_block<s_model_region> runtime_regions;
-	c_tag_block<s_runtime_node> runtime_nodes;
+	c_typed_tag_block<s_model_variant> variants;
+	c_typed_tag_block<s_model_region_sort> region_sort;
+	c_typed_tag_block<s_model_instance_group> instance_groups;
+	c_typed_tag_block<s_model_material> materials;
+	c_typed_tag_block<s_global_damage_info_block> damage_info;
+	c_typed_tag_block<s_model_target> targets;
+	c_typed_tag_block<s_model_region> runtime_regions;
+	c_typed_tag_block<s_runtime_node> runtime_nodes;
 	ulong runtime_nodes_checksum;
-	c_tag_block<s_model_object_data_block> mode_object_data;
+	c_typed_tag_block<s_model_object_data_block> mode_object_data;
 	s_tag_reference primary_dialog;
 	s_tag_reference secondary_dialog;
 	ulong flags;
@@ -483,12 +483,12 @@ struct s_model_definition
 	ulong render_section_flags[8]; // bit vector
 	ulong runtime_flags;
 	ulong unknown; // added in 11.1.498295 cert_ms29
-	c_tag_block<s_scenario_load_parameter> scenario_load_parameters;
+	c_typed_tag_block<s_scenario_load_parameter> scenario_load_parameters;
 	char shadow_detail;
 	char shadow_bounces;
-	c_tag_block<s_shadow_cast_override> shadow_cast_overrides;
-	c_tag_block<s_shadow_receive_override> shadow_receive_overrides;
-	c_tag_block<s_occlusion_sphere> occlusion_spheres;
+	c_typed_tag_block<s_shadow_cast_override> shadow_cast_overrides;
+	c_typed_tag_block<s_shadow_receive_override> shadow_receive_overrides;
+	c_typed_tag_block<s_occlusion_sphere> occlusion_spheres;
 	s_tag_reference override_3p_shield_impact;
 	s_tag_reference override_fp_shield_impact;
 	s_tag_reference overshield_3p_shield_impact;

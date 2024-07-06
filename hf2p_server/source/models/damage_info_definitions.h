@@ -227,9 +227,9 @@ struct s_damage_section
     // * ignores shields: damage to this section bypasses shields
     c_flags<e_damage_section_flags, long, k_number_of_damage_section_flags> flags;
     real vitality_percentage;
-    c_tag_block<s_instant_response> instant_responses;
-    c_tag_block<void> unused0;
-    c_tag_block<void> unused1;
+    c_typed_tag_block<s_instant_response> instant_responses;
+    c_typed_tag_block<s_tag_block_stub> unused0;
+    c_typed_tag_block<s_tag_block_stub> unused1;
     real stun_time;
     real recharge_time;
     real runtime_recharge_velocity;
@@ -274,7 +274,7 @@ struct s_damage_seat
     real damage_transfer_fall_off_radius;
     real maximum_transfer_damage_scale;
     real minimum_transfer_damage_scale;
-    c_tag_block<s_region_specific_damage_block> region_specific_damage;
+    c_typed_tag_block<s_region_specific_damage_block> region_specific_damage;
 };
 static_assert(sizeof(s_damage_seat) == 0x20);
 
@@ -306,13 +306,13 @@ struct s_global_damage_info_block
     long : 32;
     s_global_damage_info_body body;
     s_global_damage_info_shield shield;
-    c_tag_block<s_damage_section> damage_sections;
-    c_tag_block<s_damage_node> nodes;
+    c_typed_tag_block<s_damage_section> damage_sections;
+    c_typed_tag_block<s_damage_node> nodes;
     short runtime_shield_material_type;
     short runtime_indirect_material_type;
     real runtime_shield_recharge_velocity;
     real runtime_health_recharge_velocity;
-    c_tag_block<s_damage_seat> damage_seats;
-    c_tag_block<s_damage_constraint> damage_constraints;
+    c_typed_tag_block<s_damage_seat> damage_seats;
+    c_typed_tag_block<s_damage_constraint> damage_constraints;
 };
 static_assert(sizeof(s_global_damage_info_block) == 0x100);

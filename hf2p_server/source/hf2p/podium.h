@@ -1,5 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
+#include <game\game_engine_simulation.h>
 
 enum e_podium_action
 {
@@ -24,21 +25,17 @@ struct s_player_podium
 	long player_model_index;
 	bool female;
 	long loop_count;
-	long object_index;
-	long object_index2;
-	long object_index3;
+	long player_unit_indices[3];
 	long stance_index;
 	long move_index;
 };
 static_assert(sizeof(s_player_podium) == 0x2C);
 
-static long* g_player_podiums_count = (long*)base_address(0x4A2973C);
-static s_player_podium* g_player_podiums = (s_player_podium*)base_address(0x4A29740);
+extern long& g_player_podium_count;
+extern s_player_podium(&g_player_podiums)[k_maximum_multiplayer_players];
 
 void hf2p_player_podium_initialize(long podium_biped_index, long player_index);
 void hf2p_trigger_player_podium_taunt(long player_podium_index);
-void hf2p_player_podium_increment_loop_count(long player_index);
-void hf2p_init_dedicated_server();
-const static auto hf2p_set_user_loadout = (void (*)(long player_object_index))base_address(0xFB6E0);
-const auto hf2p_set_player_cooldown = (void*)base_address(0xC19E0);
-const auto sub_2E7BE0 = (void*)base_address(0x2E7BE0);
+void __fastcall hf2p_player_podium_increment_loop_count(long player_index);
+
+//void hf2p_init_dedicated_server();

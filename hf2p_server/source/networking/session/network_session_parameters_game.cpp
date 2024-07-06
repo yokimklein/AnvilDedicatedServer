@@ -80,13 +80,13 @@ bool c_network_session_parameter_game_start_status::set(s_network_session_parame
     }
 }
 
-bool c_network_session_parameter_countdown_timer::set(e_countdown_type countdown_type, long countdown_timer)
+bool c_network_session_parameter_countdown_timer::set(e_network_game_countdown_delayed_reason delayed_reason, long countdown_timer)
 {
     if (this->set_allowed())
     {
-        this->m_data.countdown_type = countdown_type;
+        this->m_data.delayed_reason = delayed_reason;
         this->m_data.countdown_timer = countdown_timer;
-        this->set_update_required();
+        this->set_update_required(); // TODO: set_internal method call, this gets compiled out to a redundant duplicate call
         if (!this->get_allowed())
             this->set_update_required();
         return true;
@@ -100,16 +100,16 @@ bool c_network_session_parameter_countdown_timer::set(e_countdown_type countdown
 
 long c_network_session_parameter_countdown_timer::get_countdown_timer()
 {
-    if (this->get_allowed())
+    if (this->get_allowed() && this->m_data.delayed_reason != _network_game_countdown_delayed_reason_none)
         return this->m_data.countdown_timer;
     else
-        return -1;
+        return 0;
 }
 
-e_countdown_type c_network_session_parameter_countdown_timer::get_countdown_type()
+e_network_game_countdown_delayed_reason c_network_session_parameter_countdown_timer::get_delayed_reason()
 {
     if (this->get_allowed())
-        return this->m_data.countdown_type;
+        return this->m_data.delayed_reason;
     else
-        return _countdown_type_none;
+        return _network_game_countdown_delayed_reason_none;
 }

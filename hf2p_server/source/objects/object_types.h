@@ -21,7 +21,7 @@ enum e_object_type
 	_object_type_giant,
 	_object_type_effect_scenery,
 
-	k_object_types_count
+	k_object_type_count
 };
 
 enum e_object_mask
@@ -52,7 +52,7 @@ struct s_object_placement_data;
 struct s_scenario_object;
 class c_mover_definition_data;
 
-struct s_object_type_definition
+struct object_type_definition
 {
 	const char* name;
 	tag group_tag;
@@ -63,7 +63,7 @@ struct s_object_type_definition
 	long maximum_placement_count;
 	long mixing_board_index;
 	c_mover_definition_data* mover_definition;
-	void(*initialize)(s_object_type_definition*, long);
+	void(*initialize)(object_type_definition*, long);
 	void(*dispose)(void);
 	void(*initialize_for_new_map)(void);
 	void(*dispose_from_old_map)(void);
@@ -79,7 +79,7 @@ struct s_object_type_definition
 	long(*export_function_values_B)(long);
 	void(*move)(long);
 	bool(*compute_activation)(long, long, long);
-	bool(*compute_function_value)(long, string_id, long, float*, bool*, long);
+	bool(*compute_function_value)(long, string_id, long, real*, bool*, long);
 	void(*attach_simulation_gamestate_index)(long);
 	void(*detach_simulation_gamestate_index)(long);
 	void(*attach_to_marker)(long, long, long);
@@ -100,13 +100,13 @@ struct s_object_type_definition
 	void(*notify_impulse_sound)(long, long, long);
 	void(*render_debug)(long);
 	void(*unknown)(long);
-	s_object_type_definition* child_types[k_object_types_count];
-	s_object_type_definition* next_type;
+	object_type_definition* child_types[k_object_type_count];
+	object_type_definition* next_type;
 	ulong deleted_object_handler_mask;
 };
-static_assert(sizeof(s_object_type_definition) == 0xF8);
+static_assert(sizeof(object_type_definition) == 0xF8);
 
-static s_object_type_definition** object_type_definitions = (s_object_type_definition**)base_address(0xEB2448);
+extern object_type_definition* (&object_type_definitions)[k_object_type_count];
 
 void object_type_detach_gamestate_entity(datum_index object_index);
-s_object_type_definition* object_type_definition_get(e_object_type object_type);
+object_type_definition* object_type_definition_get(e_object_type object_type);

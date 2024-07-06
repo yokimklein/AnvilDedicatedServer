@@ -9,10 +9,18 @@
 c_game_statborg* game_engine_get_statborg()
 {
 	if (current_game_engine())
-		return &get_tls()->game_engine_globals->statborg;
+	{
+		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+		return &game_engine_globals->statborg;
+	}
+
 	// TODO finish for survival
-	// if (campaign_survival_enabled)
-	//	return &get_tls()->survival_mode_globals->statborg;
+	//if (campaign_survival_enabled)
+	//{
+	//	TLS_DATA_GET_VALUE_REFERENCE(survival_mode_globals);
+	//	return &survival_mode_globals->statborg;
+	//}
+
 	return nullptr;
 }
 
@@ -83,7 +91,7 @@ void c_game_statborg::stats_reset_for_round_switch()
 			simulation_action_game_statborg_update(_simulation_statborg_update_player0 + i);
 		}
 	}
-	for (long i = 0; i < k_maximum_teams; i++)
+	for (long i = 0; i < k_multiplayer_max_team_game_and_ffa_game_team_count; i++)
 	{
 		s_game_statborg_team* team_stats = &team[i];
 		word in_round_score = team_stats->statistics[0];

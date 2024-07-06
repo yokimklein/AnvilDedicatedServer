@@ -10,7 +10,9 @@ enum e_object_header_flags
 	_object_header_active_bit = 0,
 	_object_header_awake_bit = 1,
 	_object_header_requires_motion_bit = 2,
-	_object_header_being_deleted_bit = 4, // is networked bit?
+	_object_header_post_update_bit = 3,
+	_object_header_being_deleted_bit = 4,
+	_object_header_do_not_update_bit = 5,
 	_object_header_connected_to_map_bit = 6,
 	_object_header_child_bit = 7,
 
@@ -83,6 +85,7 @@ enum e_object_physics_flags
 	_object_is_early_mover_bit = 0,
 	_object_is_early_mover_child_bit = 4,
 	_object_connected_to_physics_bit = 7,
+	_object_physics_unknown_9_bit = 9,
 	_object_has_proxy_bit = 14,
 
 	k_number_of_object_physics_flags
@@ -95,7 +98,7 @@ public:
 
 	datum_index unique_id;
 	short origin_bsp_index;
-	c_enum<e_object_type, byte, k_object_types_count> type;
+	c_enum<e_object_type, byte, k_object_type_count> type;
 	byte source;
 };
 static_assert(sizeof(c_object_identifier) == 0x8);
@@ -129,18 +132,18 @@ struct s_object_data
 	short map_variant_index;
 	s_scenario_location location;
 	real_point3d bounding_sphere_center;
-	float bounding_sphere_radius;
+	real bounding_sphere_radius;
 	real_point3d collision_sphere_center;
-	float collision_sphere_radius;
+	real collision_sphere_radius;
 	real_point3d attached_bounds_sphere_center;
-	float attached_bounds_sphere_radius;
+	real attached_bounds_sphere_radius;
 	long first_cluster_reference_index;
 	real_point3d relative_position;
 	real_vector3d forward;
 	real_vector3d up;
 	real_vector3d transitional_velocity;
 	real_vector3d angular_velocity;
-	float scale;
+	real scale;
 	c_object_identifier object_identifier;
 	short name_index;
 	char bsp_placement_policy;
@@ -173,17 +176,17 @@ struct s_object_data
 	long first_widget_index;
 	short destroyed_constraints;
 	short loosened_constraints;
-	float maximum_body_vitality;
-	float maximum_shield_vitality;
-	float shield_charge_delay;
-	float body_vitality;
-	float shield_vitality;
-	float current_body_damage;
-	float current_shield_damage;
-	float recent_body_damage;
-	float recent_shield_damage;
-	float shield_impact_current_body_damage;
-	float shield_impact_current_shield_damage;
+	real maximum_body_vitality;
+	real maximum_shield_vitality;
+	real shield_charge_delay;
+	real body_vitality;
+	real shield_vitality;
+	real current_body_damage;
+	real current_shield_damage;
+	real recent_body_damage;
+	real recent_shield_damage;
+	real shield_impact_current_body_damage;
+	real shield_impact_current_shield_damage;
 	short shield_stun_ticks;
 	short body_stun_ticks;
 	ulong damage_flags;
@@ -220,7 +223,7 @@ static_assert(0x11C == OFFSETOF(s_object_data, shield_stun_ticks));
 struct s_object_header : s_datum_header
 {
 	c_flags<e_object_header_flags, byte, k_number_of_object_header_flags> flags;
-	c_enum<e_object_type, byte, k_object_types_count> type;
+	c_enum<e_object_type, byte, k_object_type_count> type;
 	short cluster_reference;
 	word data_size;
 	long pool_handle;
@@ -238,9 +241,10 @@ void __cdecl object_set_velocities_internal(datum_index object_index, const unio
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate);
 const char* object_describe(datum_index object_index);
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update);
-//const static auto c_havok_component__pre_simulation_update = (void (*)(void* thisptr))base_address(0x123B00);
-const static auto object_set_requires_motion = (void (*)(datum_index object_index))base_address(0x403E50);
-const static auto object_needs_rigid_body_update = (bool (*)(datum_index object_index))base_address(0x3FE620);
-const static auto attachments_update = (void (*)(datum_index object_index))base_address(0x409070);
-
-FUNCTION_DEF(0x3FBE70, void, __fastcall, object_wake, datum_index object_index);
+void __fastcall object_wake(datum_index object_index);
+void __fastcall object_set_requires_motion(datum_index object_index);
+bool __fastcall object_needs_rigid_body_update(datum_index object_index);
+void __fastcall attachments_update(datum_index object_index);
+void __fastcall object_compute_node_matrices(datum_index object_index);
+datum_index __fastcall object_new(s_object_placement_data* placement_data);
+void __fastcall object_set_garbage(long object_index, bool unknown_bool, long collection_ticks);

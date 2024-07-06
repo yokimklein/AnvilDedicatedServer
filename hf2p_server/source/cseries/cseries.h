@@ -7,27 +7,46 @@
 
 #include <stdarg.h> 
 #include <windows.h>
+#include <assert.h>
+
+extern const size_t module_base;
+#define BASE_ADDRESS(ADDR) (module_base + ADDR)
+// module_base isn't instatiated in time for reference macros to use it, so we're calling GetModuleHandle directly for now
+#define BASE_ADDRESS_REFERENCE(ADDR)((size_t)GetModuleHandle(NULL) + ADDR)
 
 #define _STRCONCAT(x, y) x ## y
 #define STRCONCAT(x, y) _STRCONCAT(x, y)
 
-#define DECLFUNC(ADDR, R, CC, ...) reinterpret_cast<R(CC*)(__VA_ARGS__)>(ADDR)
-#define INVOKE(ADDR, TYPE, ...) reinterpret_cast<decltype(TYPE)*>(ADDR)(__VA_ARGS__)
+#define DECLFUNC(ADDR, R, CC, ...) reinterpret_cast<R(CC*)(__VA_ARGS__)>(BASE_ADDRESS(ADDR))
+#define INVOKE(ADDR, TYPE, ...) reinterpret_cast<decltype(TYPE)*>(BASE_ADDRESS(ADDR))(__VA_ARGS__)
 
 #define OFFSETOF(s,m) __builtin_offsetof(s,m)
 #define NUMBEROF(_array) (sizeof(_array) / sizeof(_array[0]))
 #define IN_RANGE_INCLUSIVE(value, begin, end) (((value) >= (begin)) && ((value) <= (end)))
 #define VALID_INDEX(index, count) ((index) >= 0 && (index) < count)
+#define VALID_COUNT(index, count) ((index) >= 0 && (index) <= (count))
 
-#define REFERENCE_DECLARE(address, type, name) type& name = *reinterpret_cast<type*>(address)
-#define REFERENCE_DECLARE_ARRAY(address, type, name, count) type(&name)[count] = *reinterpret_cast<type(*)[count]>(address)
-#define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *reinterpret_cast<c_static_array<type, count>*>(address)
+// referenced
+#define BIT_VECTOR_SIZE_IN_LONGS(BIT_COUNT) (((BIT_COUNT) + (LONG_BITS - 1)) >> 5)
+#define BIT_VECTOR_SIZE_IN_BYTES(BIT_COUNT) (4 * BIT_VECTOR_SIZE_IN_LONGS(BIT_COUNT))
+#define BIT_VECTOR_TEST_FLAG(BIT_VECTOR, BIT) ((BIT_VECTOR[BIT >> 5] & (1 << (BIT & (LONG_BITS - 1)))) != 0)
+
+// not referenced
+#define BIT_VECTOR_OR_FLAG(BIT_VECTOR, BIT) (BIT_VECTOR[BIT >> 5] |= (1 << (BIT & (LONG_BITS - 1))))
+#define BIT_VECTOR_AND_FLAG(BIT_VECTOR, BIT) (BIT_VECTOR[BIT >> 5] &= ~(1 << (BIT & (LONG_BITS - 1))))
+
+#define REFERENCE_DECLARE(address, type, name) type& name = *reinterpret_cast<type*>(BASE_ADDRESS_REFERENCE(address))
+#define REFERENCE_DECLARE_ARRAY(address, type, name, count) type(&name)[count] = *reinterpret_cast<type(*)[count]>(BASE_ADDRESS_REFERENCE(address))
+#define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *reinterpret_cast<c_static_array<type, count>*>(BASE_ADDRESS_REFERENCE(address))
+
+#define FLOOR(a, b) ((a) <= (b) ? (b) : (a))
+#define MIN(x, low) ((x) < (low) ? (x) : (low))
+#define MAX(x, high) ((x) > (high) ? (x) : (high))
+#define PIN(value, min_value, max_value) ((value) < (min_value) ? (min_value) : ((value) > (max_value) ? (max_value) : (value)))
+#define PIN_LOWER(x, low, high) ((x) >= (high) - (low) ? (x) - (high) : (low))
+#define PIN_UPPER(x, low, high) ((x) <= (high) - (low) ? (x) + (low) : (high))
 
 #define try_bool(X) if (!X) return false
-
-#define FUNCTION_DEF(ADDR, RET, CC, NAME, ...) static const auto NAME = (RET(CC*)(__VA_ARGS__))(module_base + ADDR) // TODO: REPLACE THIS WITH DECLFUNC
-static const size_t module_base = (size_t)GetModuleHandle(NULL);
-inline static const size_t base_address(size_t address) { return (size_t)((size_t)module_base + address); };
 
 // 4-character tag group identifier
 typedef unsigned long tag;
@@ -111,7 +130,7 @@ typedef dword dword_flags;
 static_assert(sizeof(dword_flags) == 0x4);
 
 // 32-bit floating-point number ranging from 1.175494351e-38F to 3.402823466e+38F
-typedef float real;
+typedef real real;
 static_assert(sizeof(real) == 0x4);
 
 typedef char utf8;
@@ -255,10 +274,165 @@ protected:
 	t_storage_type m_storage;
 };
 
-template<size_t k_bit_count>
-struct c_static_flags
+template<long k_maximum_count>
+struct c_static_flags_no_init
 {
-	dword m_storage[(k_bit_count / 8) / sizeof(dword)];
+	static long const MAX_COUNT = k_maximum_count;
+
+	void and_(c_static_flags_no_init<k_maximum_count> const* vector_a)
+	{
+		assert(vector_a);
+
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			m_storage[i] &= vector_a[i];
+	}
+
+	void and_not_range(c_static_flags_no_init<k_maximum_count> const* vector_a, c_static_flags_no_init<k_maximum_count> const* vector_b, long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		dword const* vector_a_bits = vector_a->get_bits_direct();
+		dword const* vector_b_bits = vector_b->get_bits_direct();
+
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			m_storage[i] = vector_a_bits[i] & ~vector_b_bits[i];
+	}
+
+	void and_range(c_static_flags_no_init<k_maximum_count> const* vector_a, c_static_flags_no_init<k_maximum_count> const* vector_b, long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		dword const* vector_a_bits = vector_a->get_bits_direct();
+		dword const* vector_b_bits = vector_b->get_bits_direct();
+
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			m_storage[i] = vector_a_bits[i] & vector_b_bits[i];
+	}
+
+	void clear()
+	{
+		csmemset(m_storage, 0, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+	}
+
+	void clear_range(long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		csmemset(m_storage, 0, BIT_VECTOR_SIZE_IN_BYTES(count));
+	}
+
+	void copy(c_static_flags_no_init<k_maximum_count> const* vector_a)
+	{
+		csmemcpy(m_storage, vector_a, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+	}
+
+	long count_bits_set() const
+	{
+		return bit_vector_count_bits(m_storage, k_maximum_count);
+	}
+
+	void fill(long count, byte fill_value)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		csmemset(m_storage, fill_value, BIT_VECTOR_SIZE_IN_BYTES(count));
+	}
+
+	dword const* get_bits_direct() const
+	{
+		return m_storage;
+	}
+
+	dword* get_writeable_bits_direct()
+	{
+		return m_storage;
+	}
+
+	long highest_bit_set_in_range(long count) const
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		return bit_vector_highest_bit_set(m_storage, count);
+	}
+
+	void invert_bits()
+	{
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			m_storage[i] = ~m_storage[i];
+
+		// no clue
+		//m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1] = (byte)m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1];
+	}
+
+	bool is_clear() const
+	{
+		byte result = 1;
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			result &= m_storage[i] == 0;
+
+		return result;
+	}
+
+	void keep_range(long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		for (long i = BIT_VECTOR_SIZE_IN_LONGS(count); i < BIT_VECTOR_SIZE_IN_LONGS(count); ++i)
+			m_storage[i] = 0;
+
+		m_storage[BIT_VECTOR_SIZE_IN_LONGS(count) - 1] &= ((count & (LONG_BITS - 1)) != 0) ? 0xFFFFFFFF >> (LONG_BITS - (count & (LONG_BITS - 1))) : 0xFFFFFFFF;
+	}
+
+	void or_bits(dword const* bits, long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
+			m_storage[i] |= bits[i];
+	}
+
+	void set(long index, bool enable)
+	{
+		assert(VALID_INDEX(index, k_maximum_count));
+
+		if (enable)
+			BIT_VECTOR_OR_FLAG(m_storage, index);
+		else
+			BIT_VECTOR_AND_FLAG(m_storage, index);
+	}
+
+	void set_all()
+	{
+		csmemset(m_storage, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+	}
+
+	void set_bits_direct_destructive(long count, dword const* bits)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		csmemcpy(m_storage, bits, BIT_VECTOR_SIZE_IN_BYTES(count));
+	}
+
+	void set_range(long count)
+	{
+		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+
+		csmemset(m_storage, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(count));
+	}
+
+	bool test(long index) const
+	{
+		assert(VALID_INDEX(index, k_maximum_count));
+
+		return BIT_VECTOR_TEST_FLAG(m_storage, index);
+	}
+
+	dword m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)];
+};
+
+template<long k_maximum_count>
+struct c_static_flags : public c_static_flags_no_init<k_maximum_count>
+{
 };
 
 template<typename t_type, typename t_storage_type, size_t k_count>
@@ -334,9 +508,8 @@ static_assert(sizeof(s_cluster_reference) == 0x2);
 struct s_location
 {
 	s_cluster_reference cluster_reference;
-	word leaf_index;
 };
-static_assert(sizeof(s_location) == 0x4);
+static_assert(sizeof(s_location) == sizeof(s_cluster_reference));
 
 template<long k_maximum_count>
 struct c_static_string
@@ -391,8 +564,8 @@ public:
 	{
 		dword current_length = length();
 
-		//assert(format);
-		//assert(current_length >= 0 && current_length < k_maximum_count);
+		assert(format);
+		assert(current_length >= 0 && current_length < k_maximum_count);
 
 		cvsnzprintf(m_string + current_length, k_maximum_count - current_length, format, list);
 
@@ -551,3 +724,6 @@ extern real_rgb_color const* const& global_real_rgb_aqua;
 extern real_rgb_color const* const& global_real_rgb_darkgreen;
 extern real_rgb_color const* const& global_real_rgb_salmon;
 extern real_rgb_color const* const& global_real_rgb_violet;
+
+long bit_count(long val);
+long __fastcall index_from_mask(dword* mask, long bit_count); // first index?

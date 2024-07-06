@@ -23,9 +23,7 @@ void c_network_message_handler::handle_pong(s_transport_address const* outgoing_
 
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message)
 {
-    typedef long(__fastcall* handle_connect_refuse_ptr)(c_network_channel* channel, s_network_message_connect_refuse const* message);
-    auto handle_connect_refuse = reinterpret_cast<handle_connect_refuse_ptr>(base_address(0x25AC0));
-    handle_connect_refuse(channel, message);
+    DECLFUNC(0x25AC0, void, __fastcall, c_network_channel*, s_network_message_connect_refuse const*)(channel, message);
 }
 
 void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message)
@@ -105,7 +103,7 @@ void c_network_message_handler::handle_join_request(s_transport_address const* o
         c_network_session* session = this->m_session_manager->get_session(&message->session_id);
         if (session != nullptr)
         {
-            if (session->m_local_state == _network_session_state_host_established || session->m_local_state == _network_session_state_host_disband)
+            if (session->is_host())
             {
                 session->handle_join_request(outgoing_address, message);
                 return;
@@ -130,7 +128,7 @@ void c_network_message_handler::handle_peer_connect(s_transport_address const* o
 {
     if (message->protocol_version == k_network_protocol_version)
     {
-        auto* session = this->m_session_manager->get_session(&message->session_id);
+        c_network_session* session = this->m_session_manager->get_session(&message->session_id);
         if (session)
         {
             session->handle_peer_connect(outgoing_address, message);
@@ -151,7 +149,7 @@ void c_network_message_handler::handle_peer_connect(s_transport_address const* o
 
 void c_network_message_handler::handle_join_abort(s_transport_address const* outgoing_address, s_network_message_join_abort const* message)
 {
-    auto session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->established() && session->is_host())
     {
         e_network_join_refuse_reason refuse_reason = _network_join_refuse_reason_none;
@@ -168,11 +166,11 @@ void c_network_message_handler::handle_join_abort(s_transport_address const* out
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: received abort, sending join-refusal (%s) to '%s'\n",
             network_message_join_refuse_get_reason_string(refuse_reason),
             transport_address_get_string(outgoing_address));
-        auto message_gateway = this->get_message_gateway();
+
         s_network_message_join_refuse refuse_message = {};
         refuse_message.session_id = message->session_id;
         refuse_message.reason = refuse_reason;
-        message_gateway->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &refuse_message);
+        this->get_message_gateway()->send_message_directed(outgoing_address, _network_message_type_join_refuse, sizeof(s_network_message_join_refuse), &refuse_message);
     }
     else
     {
@@ -183,9 +181,7 @@ void c_network_message_handler::handle_join_abort(s_transport_address const* out
 
 void c_network_message_handler::handle_join_refuse(s_transport_address const* outgoing_address, s_network_message_join_refuse const* message)
 {
-    typedef void(__thiscall* handle_join_refuse_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_join_refuse const* message);
-    auto handle_join_refuse = reinterpret_cast<handle_join_refuse_ptr>(base_address(0x25660));
-    handle_join_refuse(this, outgoing_address, message);
+    DECLFUNC(0x25660, void, __thiscall, c_network_message_handler*, s_transport_address const*, s_network_message_join_refuse const*)(this, outgoing_address, message);
 }
 
 void c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
@@ -196,14 +192,12 @@ void c_network_message_handler::handle_leave_session(s_transport_address const* 
 
 void c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)
 {
-    typedef void(__thiscall* handle_leave_acknowledge_ptr)(c_network_message_handler* message_handler, s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message);
-    auto handle_leave_acknowledge = reinterpret_cast<handle_leave_acknowledge_ptr>(base_address(0x256E0));
-    return handle_leave_acknowledge(this, outgoing_address, message);
+    DECLFUNC(0x256E0, void, __thiscall, c_network_message_handler*, s_transport_address const*, s_network_message_leave_acknowledge const*)(this, outgoing_address, message);
 }
 
 void c_network_message_handler::handle_session_disband(s_transport_address const* outgoing_address, s_network_message_session_disband const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
     {
         if (!session->handle_session_disband(outgoing_address, message))
@@ -223,7 +217,7 @@ void c_network_message_handler::handle_session_disband(s_transport_address const
 
 void c_network_message_handler::handle_session_boot(s_transport_address const* outgoing_address, s_network_message_session_boot const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
     {
         if (!session->handle_session_boot(outgoing_address, message))
@@ -243,7 +237,7 @@ void c_network_message_handler::handle_session_boot(s_transport_address const* o
 
 void c_network_message_handler::handle_host_decline(c_network_channel* channel, s_network_message_host_decline const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
     {
         if (!session->handle_host_decline(channel, message))
@@ -262,7 +256,7 @@ void c_network_message_handler::handle_host_decline(c_network_channel* channel, 
 
 void c_network_message_handler::handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (!session || !session->handle_peer_establish(channel, message))
     {
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_establish: channel '%s' failed to handle peer-establish (%s)\n",
@@ -277,7 +271,7 @@ void c_network_message_handler::handle_peer_establish(c_network_channel* channel
 
 void c_network_message_handler::handle_time_synchronize(s_transport_address const* outgoing_address, s_network_message_time_synchronize const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session)
     {
         if (!session->handle_time_synchronize(outgoing_address, message))
@@ -299,7 +293,7 @@ void c_network_message_handler::handle_time_synchronize(s_transport_address cons
 
 void c_network_message_handler::handle_membership_update(c_network_channel* channel, s_network_message_membership_update const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
     {
         if (!session->handle_membership_update(message))
@@ -319,7 +313,7 @@ void c_network_message_handler::handle_membership_update(c_network_channel* chan
 
 void c_network_message_handler::handle_peer_properties(c_network_channel* channel, s_network_message_peer_properties const* message)
 {
-    auto session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->is_host())
     {
         if (!session->handle_peer_properties(channel, message))
@@ -357,7 +351,7 @@ void c_network_message_handler::handle_player_add(c_network_channel* channel, s_
 
 void c_network_message_handler::handle_player_refuse(c_network_channel* channel, s_network_message_player_refuse const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
     {
         if (!session->handle_player_refuse(channel, message))
@@ -383,7 +377,7 @@ void c_network_message_handler::handle_player_remove(c_network_channel* channel,
 
 void c_network_message_handler::handle_player_properties(c_network_channel* channel, s_network_message_player_properties const* message)
 {
-    auto session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->is_host())
     {
         if (!session->handle_player_properties(channel, message))
@@ -403,7 +397,7 @@ void c_network_message_handler::handle_player_properties(c_network_channel* chan
 
 void c_network_message_handler::handle_parameters_update(c_network_channel* channel, s_network_message_parameters_update const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->channel_is_authoritative(channel))
     {
         if (!session->handle_parameters_update(message))
@@ -422,7 +416,7 @@ void c_network_message_handler::handle_parameters_update(c_network_channel* chan
 
 void c_network_message_handler::handle_parameters_request(c_network_channel* channel, s_network_message_parameters_request const* message)
 {
-    auto* session = this->m_session_manager->get_session(&message->session_id);
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
     if (session && session->is_host())
     {
         if (!session->handle_parameters_request(channel, message))
@@ -444,62 +438,52 @@ void c_network_message_handler::handle_view_establishment(c_network_channel* cha
     // non original but useful log
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
 
-    typedef void(__thiscall* handle_view_establishment_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_view_establishment const* message*/);
-    auto handle_view_establishment = reinterpret_cast<handle_view_establishment_ptr>(base_address(0x257B0));
-    return handle_view_establishment(channel/*this, channel, message*/);
+    DECLFUNC(0x257B0, void, __thiscall, c_network_channel*)(channel/*this, channel, message*/);
 }
 
 void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message)
 {
-    typedef void(__thiscall* handle_player_acknowledge_ptr)(c_network_channel* channel/*c_network_message_handler* message_handler, c_network_channel* channel, s_network_message_player_acknowledge const* message*/);
-    auto handle_player_acknowledge = reinterpret_cast<handle_player_acknowledge_ptr>(base_address(0x25810));
-    return handle_player_acknowledge(channel/*this, channel, message*/);
+    DECLFUNC(0x25810, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-    const auto handle_synchronous_update = (void (*)(c_network_channel* channel))(base_address(0x25860));
+    static void* handle_synchronous_update_call = (void*)BASE_ADDRESS(0x25860);
     __asm
     {
         mov ecx, channel
-        call handle_synchronous_update
+        call handle_synchronous_update_call
     }
 }
 
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
 {
-    void(__thiscall* handle_synchronous_playback_control)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_playback_control)>(base_address(0x258E0));
-    handle_synchronous_playback_control(channel);
+    DECLFUNC(0x258E0, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
 {
-    void(__thiscall* handle_synchronous_actions)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_actions)>(base_address(0x25990));
-    handle_synchronous_actions(channel);
+    DECLFUNC(0x25990, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
 {
-    void(__thiscall* handle_synchronous_acknowledge)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_acknowledge)>(base_address(0x25810));
-    handle_synchronous_acknowledge(channel);
+    DECLFUNC(0x25810, void, __thiscall, c_network_channel*)(channel);
 }
 
-void c_network_message_handler::handle_synchronous_gamestate(long size, const void* unknown_struct)
+void c_network_message_handler::handle_synchronous_gamestate(long size, void const* message)
 {
-    void(__cdecl* handle_synchronous_gamestate)(long size, const void* unknown_struct) = reinterpret_cast<decltype(handle_synchronous_gamestate)>(base_address(0x25A20));
-    handle_synchronous_gamestate(size, unknown_struct);
+    DECLFUNC(0x25A20, void, __cdecl, long, void const*)(size, message);
 }
 
 void c_network_message_handler::handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message)
 {
-    void(__thiscall* handle_game_results)(c_network_channel* channel) = reinterpret_cast<decltype(handle_game_results)>(base_address(0x25A70));
-    handle_game_results(channel);
+    DECLFUNC(0x25A70, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel, s_network_message_synchronous_client_ready const* message)
 {
-    void(__thiscall* handle_synchronous_client_ready)(c_network_channel* channel) = reinterpret_cast<decltype(handle_synchronous_client_ready)>(base_address(0x25950));
-    handle_synchronous_client_ready(channel);
+    DECLFUNC(0x25950, void, __thiscall, c_network_channel*)(channel);
 }
 
 void log_received_over_closed_channel(c_network_channel* channel, e_network_message_type message_type)

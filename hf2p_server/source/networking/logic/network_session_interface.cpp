@@ -5,42 +5,44 @@
 #include <iostream>
 #include <networking\logic\network_life_cycle.h>
 #include <anvil\server_tools.h>
-#include <tag_files\tag_files.h>
+#include <cache\cache_files.h>
 #include <game\game_globals.h>
 #include <game\multiplayer_definitions.h>
 #include <main\main.h>
 #include <game\game_engine_team.h>
+#include <cseries\language.h>
+#include <main\levels.h>
+#include <networking\network_configuration.h>
+#include <game\game.h>
+#include <networking\network_globals.h>
+
+REFERENCE_DECLARE(0x3EAE0C0, s_network_session_interface_globals, session_interface_globals);
 
 void __fastcall network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
-    ulong(__cdecl* game_language_get_default)() = reinterpret_cast<decltype(game_language_get_default)>(base_address(0xB0C00));
-    void(__fastcall* network_session_get_connectivity)(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity) = reinterpret_cast<decltype(network_session_get_connectivity)>(base_address(0x2E500));
-    ulong(__cdecl* build_peer_mp_map_mask)() = reinterpret_cast<decltype(build_peer_mp_map_mask)>(base_address(0xDD750));
-
-    ulong peer_properties_update_timestamp = ((ulong*)base_address(0x3EB1498))[session->session_index()];
-    ulong time_since_last_update = network_time_since(peer_properties_update_timestamp);
+    ulong session_update_time = session_interface_globals.session_update_times[session->session_index()];
+    ulong time_since_last_update = network_time_since(session_update_time);
 
     // wait for network_configuration peer properties update rate
-    if (time_since_last_update < 0 || time_since_last_update >= *(ulong*)base_address(0x1038760))
+    if (time_since_last_update < 0 || time_since_last_update >= g_network_configuration.peer_properties_update_timeout)
     {
-        // network_life_cycle_get_observer
         c_network_observer* observer = nullptr;
         network_life_cycle_get_observer(&observer);
+
         s_network_session_peer_properties peer_properties = {};
-        ustrnzcpy(peer_properties.peer_name, k_anvil_machine_name, 16); // (wchar_t*)base_address(0x3EAE0C4)
-        ustrnzcpy(peer_properties.peer_session_name, k_anvil_session_name, 32); // (wchar_t*)base_address(0x3EAE0E4)
-        peer_properties.language = game_language_get_default();
-        network_session_get_connectivity(session, &peer_properties.connectivity);
+        peer_properties.peer_name = session_interface_globals.machine_name;
+        peer_properties.peer_session_name = session_interface_globals.session_name;
+        peer_properties.language = get_current_language();
+        network_session_calculate_peer_connectivity(session, &peer_properties.connectivity);
         observer->quality_statistics_get_ratings(&peer_properties.connectivity_badness_rating, &peer_properties.host_badness_rating, &peer_properties.client_badness_rating);
-        peer_properties.peer_mp_map_mask = build_peer_mp_map_mask();
-        peer_properties.peer_map = *((ulong*)base_address(0x3EAE12C));
-        peer_properties.game_start_error = *((ulong*)base_address(0x3EAE128));
-        peer_properties.peer_map_status = *((e_peer_map_status*)base_address(0x3EAE130));
-        peer_properties.peer_map_progress_percentage = *((ulong*)base_address(0x3EAE134));
-        peer_properties.peer_game_instance = *((qword*)base_address(0x3EB10D8));
-        peer_properties.determinism_version = *((ulong*)base_address(0x1039AC8));
-        peer_properties.determinism_compatible_version = *((ulong*)base_address(0x1039ACC));
-        peer_properties.flags = *((ulong*)base_address(0x3EAE124));
+        peer_properties.peer_mp_map_mask = levels_get_available_map_mask();
+        peer_properties.peer_map = session_interface_globals.map_id;
+        peer_properties.game_start_error = session_interface_globals.game_start_error;
+        peer_properties.peer_map_status = session_interface_globals.current_map;
+        peer_properties.peer_map_progress_percentage = session_interface_globals.current_map_progress_percentage;
+        peer_properties.peer_game_instance = session_interface_globals.game_instance;
+        game_get_determinism_versions(&peer_properties.determinism_version, &peer_properties.determinism_compatible_version);
+        peer_properties.flags = session_interface_globals.peer_status_flags;
 
         s_transport_secure_address secure_address = {};
         s_transport_secure_address* peer_secure_address;
@@ -57,12 +59,12 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
             || (csmemcmp(&peer->properties, &peer_properties, sizeof(s_network_session_peer_properties))) != 0) // equal
         {
             printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: requesting peer-properties update (machine:%ls session-name:%ls map:%d), after %dms\n",
-                peer_properties.peer_name,
-                peer_properties.peer_session_name,
-                peer_properties.peer_map_status,
+                peer_properties.peer_name.get_string(),
+                peer_properties.peer_session_name.get_string(),
+                peer_properties.peer_map_status.get(),
                 time_since_last_update);
             if (session->peer_request_properties_update(&secure_address, &peer_properties))
-                ((ulong*)base_address(0x3EB1498))[session->session_index()] = network_time_get();
+                session_interface_globals.session_update_times[session->session_index()] = network_time_get();
             else
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: unable to send peer-properties update\n");
         }
@@ -78,14 +80,14 @@ void network_session_check_properties(c_network_session* session)
     assert(session->is_host());
 
     bool mulg_is_valid = false;
-    if (g_globals_definition)
+    if (global_game_globals)
     {
-        long mulg_index = g_globals_definition->multiplayer_globals.index;
+        long mulg_index = global_game_globals->multiplayer_globals.index;
         if (mulg_index != -1)
         {
             s_multiplayer_globals_definition* multiplayer_globals = (s_multiplayer_globals_definition*)tag_get('mulg', mulg_index);
             if (multiplayer_globals)
-                mulg_is_valid = multiplayer_globals->universal.count > 0;
+                mulg_is_valid = multiplayer_globals->universal.count() > 0;
         }
     }
 
@@ -104,12 +106,7 @@ void network_session_check_properties(c_network_session* session)
         long update_number = session->get_session_membership_update_number();
         long session_index = session->session_index();
         
-        static long session_update_numbers[3] = {};
-        static bool session_variant_has_teams[3] = {};
-        static bool session_variant_uses_sve_teams[3] = {};
-        static bool session_observer_allowed[3] = {};
-        static long session_maximum_team_count[3] = {};
-        if (session_update_numbers[session_index] != update_number)
+        if (session_interface_globals.session_connection_update_numbers[session_index] != update_number)
         {
             c_network_session_membership* membership = session->get_session_membership_for_update();
             assert(membership != NULL);
@@ -127,34 +124,34 @@ void network_session_check_properties(c_network_session* session)
 
             if (player_data_updated)
                 membership->player_data_updated();
-            session_update_numbers[session_index] = session->get_session_membership_update_number();
+            session_interface_globals.session_connection_update_numbers[session_index] = session->get_session_membership_update_number();
         }
 
-        if (session->session_type() == _network_session_type_group)
+        if (session->session_type() == _network_session_type_squad)
         {
             if (game_variant != nullptr)
             {
                 variant_has_teams = game_engine_variant_has_teams(game_variant);
                 sve_teams = game_variant->m_storage.m_base_variant.m_social_options.m_flags.test(_game_engine_social_options_spartans_vs_elites_enabled);
-                observer_allowed = game_engine_variant_is_observer_allowed(game_variant); // always returns false
+                observer_allowed = game_engine_variant_is_observer_allowed(game_variant);
                 if (session->get_session_parameters()->map.get_allowed())
                 {
-                    auto map = session->get_session_parameters()->map.get();
+                    s_network_session_parameter_map* map = session->get_session_parameters()->map.get();
                     assert(map != nullptr);
                     maximum_team_count = game_engine_variant_get_maximum_team_count(game_variant, map->map_id);
                 }
             }
             if ((maximum_team_count || !variant_has_teams) && (update_required ||
-                session_variant_has_teams[session_index] != variant_has_teams ||
-                session_variant_uses_sve_teams[session_index] != sve_teams ||
-                session_observer_allowed[session_index] != observer_allowed ||
-                session_maximum_team_count[session_index] != maximum_team_count))
+                session_interface_globals.session_variant_has_teams[session_index] != variant_has_teams ||
+                session_interface_globals.session_variant_has_sve_teams[session_index] != sve_teams ||
+                session_interface_globals.session_variant_observers_allowed[session_index] != observer_allowed ||
+                session_interface_globals.session_variant_maximum_team_count[session_index] != maximum_team_count))
             {
-                network_session_update_team_indices(session, variant_has_teams, session_variant_has_teams[session_index], observer_allowed, sve_teams, maximum_team_count);
-                session_variant_has_teams[session_index] = variant_has_teams;
-                session_variant_uses_sve_teams[session_index] = sve_teams;
-                session_observer_allowed[session_index] = observer_allowed;
-                session_maximum_team_count[session_index] = maximum_team_count;
+                network_session_update_team_indices(session, variant_has_teams, session_interface_globals.session_variant_has_teams[session_index], observer_allowed, sve_teams, maximum_team_count);
+                session_interface_globals.session_variant_has_teams[session_index] = variant_has_teams;
+                session_interface_globals.session_variant_has_sve_teams[session_index] = sve_teams;
+                session_interface_globals.session_variant_observers_allowed[session_index] = observer_allowed;
+                session_interface_globals.session_variant_maximum_team_count[session_index] = maximum_team_count;
             }
         }
     }
@@ -209,4 +206,39 @@ void network_session_update_team_indices(c_network_session* session, bool varian
     }
     if (teams_updated)
         membership->player_data_updated();
+}
+
+void __fastcall network_session_interface_update_session(c_network_session* session)
+{
+    INVOKE(0x2F410, network_session_interface_update_session, session);
+}
+
+bool __fastcall network_session_interface_get_local_user_identifier(s_player_identifier* player_identifier)
+{
+    return INVOKE(0x3D50, network_session_interface_get_local_user_identifier, player_identifier);
+}
+
+void __fastcall network_session_calculate_peer_connectivity(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity)
+{
+    INVOKE(0x2E500, network_session_calculate_peer_connectivity, session, peer_connectivity);
+}
+
+void network_session_interface_set_local_name(wchar_t const* machine_name, wchar_t const* session_name)
+{
+    session_interface_globals.machine_name.set(machine_name);
+    session_interface_globals.session_name.set(session_name);
+}
+
+bool network_session_interface_get_squad_session(c_network_session** out_session)
+{
+    if (network_life_cycle_in_squad_session(out_session))
+    {
+        return true;
+    }
+    return false;
+}
+
+void __cdecl network_session_interface_update()
+{
+    INVOKE(0x2DC50, network_session_interface_update);
 }

@@ -12,8 +12,8 @@ void network_get_build_identifiers(long* executable_type, long* executable_versi
 ulong network_get_time() // non-original name
 {
 	ulong time;
-	if (network_time_locked)
-		time = *g_network_locked_time;
+	if (network_time_globals.locked)
+		time = network_time_globals.time;
 	else
 		time = timeGetTime();
 	return time;
@@ -26,5 +26,5 @@ c_network_session_manager* network_get_session_manager()
 
 bool network_initialized()
 {
-	return *network_globals;
+	return network_globals.initialized;
 }

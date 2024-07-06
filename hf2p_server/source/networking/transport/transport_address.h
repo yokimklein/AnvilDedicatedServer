@@ -2,13 +2,13 @@
 #include <cseries\cseries.h>
 
 // wherever this is used seems to come from a precompiler macro specifying the build platform
-enum e_transport_platform : long
+enum e_transport_platform
 {
 	// assumed names
-	_transport_platform_xnet = 0,
-	_transport_platform_pc = 1,
+	_transport_platform_xnet,
+	_transport_platform_pc,
 
-	k_transport_platform_count = 2
+	k_transport_platform_count
 };
 
 struct s_transport_address // just transport_address in original source
@@ -28,5 +28,5 @@ struct s_transport_secure_address;
 
 char const* transport_address_get_string(s_transport_address const* address);
 char* transport_address_to_string(s_transport_address const* address, s_transport_secure_address const* secure_address, char* string, short maximum_string_length, bool append_port_info, bool append_security_info);
-bool transport_address_equivalent(s_transport_address const* address1, s_transport_address const* address2);
+bool __fastcall transport_address_equivalent(s_transport_address const* address1, s_transport_address const* address2);
 bool transport_address_valid(s_transport_address const* address);

@@ -4,12 +4,12 @@
 #include <networking\transport\transport_address.h>
 #include <game\players.h>
 #include <simulation\simulation.h>
-#include <networking\session\network_session_state.h>
+#include <networking\session\network_session_parameters_session.h>
 
 struct s_network_session_join_request;
 
 // POTENTIALLY INACCURATE! may produce invalid error logs - TODO: finish verifying enum entries
-enum e_network_join_refuse_reason : long // based off mcc h3 - ms29's differs from mcc's slightly (check against mcc odst?)
+enum e_network_join_refuse_reason // based off mcc h3 - ms29's differs from mcc's slightly (check against mcc odst?)
 {
 	_network_join_refuse_reason_none, // verified in ms23
 	_network_join_refuse_reason_tried_to_join_self,
@@ -52,13 +52,8 @@ enum e_network_join_queue_mode
 {
     _network_join_closed_to_all_joins = 0,
     _network_join_open_to_join_squad,
-
-    // _network_join_not_used_00 in ms29
-    _network_join_queue_joins_to_group,
-
-    // _network_join_not_used_01 in ms29
-    _network_join_process_queued_group_joins,
-
+    _network_join_not_used_00, // Used to be _network_join_queue_joins_to_group in older builds
+    _network_join_not_used_01, // Used to be _network_join_process_queued_group_joins in older builds
     _network_join_queue_closed_while_in_match,
 
     k_network_join_queue_mode_count
@@ -73,57 +68,6 @@ enum e_join_local_state
     _join_local_state_processing_join_to_us,
 
     k_join_local_state_count
-};
-
-enum e_join_remote_state : long
-{
-    _join_remote_state_none = 0,
-    _join_remote_state_party_start_join,
-    _join_remote_state_party_join_host,
-    _join_remote_state_party_join_clients,
-    _join_remote_state_party_leave_old_squad,
-    _join_remote_state_party_join_complete,
-
-    // _join_remote_state_not_used in ms29
-    _join_remote_state_leave_group,
-
-    k_join_remote_state_count
-};
-
-enum e_join_type : long
-{
-    _join_type_squad = 0,
-    _join_type_group,
-
-    k_join_type_count
-};
-
-enum e_life_cycle_join_result : long
-{
-    _life_cycle_join_result_none = 0,
-    _life_cycle_join_result_join_in_progress,
-    _life_cycle_join_result_join_failed_generic_error,
-    _life_cycle_join_result_join_failed_to_find_session,
-    _life_cycle_join_result_join_failed_not_enough_space,
-    _life_cycle_join_result_join_failed_game_not_open,
-    _life_cycle_join_result_join_failed_target_is_matchmaking,
-    _life_cycle_join_result_join_failed_host_timed_out,
-    _life_cycle_join_result_join_failed_peer_version_too_low,
-    _life_cycle_join_result_join_failed_host_version_too_low,
-    _life_cycle_join_result_join_failed_unable_to_connect_open_nat,
-    _life_cycle_join_result_join_failed_unable_to_connect_moderate_nat,
-    _life_cycle_join_result_join_failed_unable_to_connect_closed_nat,
-    _life_cycle_join_result_join_failed_unable_to_connect_party_open_nat,
-    _life_cycle_join_result_join_failed_unable_to_connect_party_moderate_nat,
-    _life_cycle_join_result_join_failed_unable_to_connect_party_strict_nat,
-    _life_cycle_join_result_join_failed_party_member_not_online_enabled,
-    _life_cycle_join_result_join_failed_film_in_progress,
-    _life_cycle_join_result_join_failed_campaign_in_progress,
-    _life_cycle_join_result_join_failed_user_content_not_permitted,
-    _life_cycle_join_result_join_failed_survival_in_progress,
-    _life_cycle_join_result_join_failed_invalid_executable_type,
-
-    k_life_cycle_join_result_count
 };
 
 #pragma pack(push, 4)
@@ -191,21 +135,6 @@ struct s_join_queue_entry
 };
 static_assert(sizeof(s_join_queue_entry) == 0x260);
 
-struct s_network_session_remote_session_join_data
-{
-    c_enum<e_join_remote_state, long, k_join_remote_state_count> join_state;
-    c_enum<e_join_type, long, k_join_type_count> join_to;
-    qword join_nonce;
-    c_enum<e_transport_platform, long, k_transport_platform_count> platform;
-    s_transport_secure_identifier session_id;
-    s_transport_secure_key session_key;
-    s_transport_secure_address host_secure_address;
-    c_enum<e_network_session_class, long, k_network_session_class_count> session_class;
-    c_enum<e_life_cycle_join_result, long, k_life_cycle_join_result_count> join_result;
-    bool join_to_public_slots;
-};
-static_assert(sizeof(s_network_session_remote_session_join_data) == 0x50);
-
 struct s_networking_join_data
 {
     ulong local_join_state; // 0x1039AFC
@@ -214,7 +143,7 @@ struct s_networking_join_data
     ulong unknown1; // maybe bool created_session_for_remote_join
     ulong unknown2;
     s_network_session_remote_session_join_data join_data;
-    e_network_join_queue_mode join_queue_mode; // 0x1039B60
+    c_enum<e_network_join_queue_mode, long, k_network_join_queue_mode_count> join_queue_mode; // 0x1039B60
     long join_queue_entry_count; // 0x1039B64
     s_join_queue_entry join_queue[32]; // 32 - queue for channels?
 };
@@ -224,7 +153,7 @@ static_assert(sizeof(s_networking_join_data) == 0x4C6C); // ?
 class c_network_session;
 void network_join_add_join_to_queue(c_network_session* session, s_transport_address const* address, s_network_session_join_request const* join_request);
 bool network_join_process_joins_from_queue();
-void network_join_flush_join_queue();
+void __cdecl network_join_flush_join_queue();
 void network_join_remove_join_from_queue(qword join_nonce);
 
-static s_networking_join_data* g_network_join_data = (s_networking_join_data*)base_address(0x1039AFC);
+extern s_networking_join_data& g_network_join_data;

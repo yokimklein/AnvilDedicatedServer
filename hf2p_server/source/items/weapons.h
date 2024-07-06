@@ -20,11 +20,11 @@ struct s_weapon_barrel
 	ushort firing_time;
 	long : 32;
 	long : 32;
-	float firing_rate;
+	real firing_rate;
 	long : 32;
-	float firing_effect;
-	float error;
-	float recoil;
+	real firing_effect;
+	real error;
+	real recoil;
 	long : 32;
 	long : 32;
 	long : 32;
@@ -93,12 +93,12 @@ struct s_weapon_data : s_item_data
 	short multiplayer_weapon_identifier;
 	short simulation_weapon_identifier;
 	short : 16;
-	float heat;
-	float age;
-	float overcharged;
-	float illumination_scale;
-	float current_power;
-	float desired_power;
+	real heat;
+	real age;
+	real overcharged;
+	real illumination_scale;
+	real current_power;
+	real desired_power;
 	c_target_tracking_system target_tracking;
 	short recoil_angular_velocity;
 	short recoil_recovery_time;
@@ -114,4 +114,5 @@ struct s_weapon_data : s_item_data
 static_assert(sizeof(s_weapon_data) == 0x2E0);
 
 datum_index weapon_get_owner_unit_index(datum_index weapon_index);
-void weapon_delay_predicted_state(datum_index weapon_index);
+void __fastcall weapon_delay_predicted_state(datum_index weapon_index);
+long __fastcall weapon_get_owner_unit_inventory_index(datum_index weapon_index);

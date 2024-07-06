@@ -15,14 +15,14 @@ s_file_reference* file_reference_agnostic_create(s_file_reference* reference, sh
     return reference;
 }
 
-void file_reference_add_directory(s_file_reference* reference, wchar_t const* path)
+void __fastcall file_reference_add_directory(s_file_reference* reference, wchar_t const* path)
 {
-    DECLFUNC(base_address(0xA5690), void, __fastcall, s_file_reference*, wchar_t const*)(reference, path);
+    INVOKE(0xA5690, file_reference_add_directory, reference, path);
 }
 
-void file_reference_set_name(s_file_reference* reference, wchar_t const* name)
+void __fastcall file_reference_set_name(s_file_reference* reference, wchar_t const* name)
 {
-    DECLFUNC(base_address(0xA5710), void, __fastcall, s_file_reference*, wchar_t const*)(reference, name);
+    INVOKE(0xA5710, file_reference_set_name, reference, name);
 }
 
 s_file_reference* file_reference_create_from_path(s_file_reference* reference, wchar_t const* path, bool is_directory)

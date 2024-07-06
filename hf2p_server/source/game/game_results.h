@@ -497,5 +497,5 @@ struct s_integer_statistic_definition
 };
 static_assert(sizeof(s_integer_statistic_definition) == 0x10);
 
-void game_results_notify_player_indices_changed();
+void __cdecl game_results_notify_player_indices_changed();
 void game_results_statistic_set(datum_index absolute_player_index, e_game_team team_index, long statistic, long value);

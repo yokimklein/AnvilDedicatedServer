@@ -1,17 +1,23 @@
 #pragma once
-#include <game\game_engine.h>
-#include <networking\session\network_session.h>
-#include <game\game_time.h>
 
-const static wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
-const static wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED";
+extern const wchar_t k_anvil_machine_name[16];
+extern const wchar_t k_anvil_session_name[32];
 
-void enable_memory_write(dword base);
+enum e_map_id;
+enum e_game_engine_type;
+class c_network_session;
+class c_network_session_membership;
+struct s_player_configuration_from_host;
+struct s_network_session_parameter_game_start_status;
+struct s_transport_secure_address;
+struct s_transport_secure_identifier;
+
+void enable_memory_write(void* base);
 void anvil_initialize();
 bool anvil_create_session();
 void anvil_session_update();
 bool anvil_session_set_map(e_map_id map_id);
-bool anvil_session_set_gamemode(c_network_session* session, e_engine_variant engine_variant);
+bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_variant);
 void anvil_session_set_test_player_data(c_network_session_membership* membership);
 void anvil_launch_scenario(const char* scenario_path);
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration);

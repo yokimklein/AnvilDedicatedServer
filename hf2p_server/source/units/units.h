@@ -6,6 +6,7 @@
 #include <game\aim_assist.h>
 #include <objects\objects.h>
 #include <objects\target_tracking.h>
+#include <game\player_configuration.h>
 
 enum e_weapon_set
 {
@@ -73,7 +74,7 @@ static_assert(sizeof(s_unit_predicted_weapon_state) == 0x8);
 struct s_unit_attacker
 {
 	long game_time;
-	float score;
+	real score;
 	long team_index;
 	long player_index;
 };
@@ -93,7 +94,7 @@ struct s_unit_data : s_motor_data
 	long actor_index; // 0x188
 	long simulation_actor_index; // 0x18C
 	c_flags<e_unit_flags, ulong, k_unit_flags_count> unit_flags;
-	long team;
+	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
 	long player_index; // 0x198
 	long last_weak_player_index;
 	long game_time_at_last_unit_effect;
@@ -269,9 +270,10 @@ static_assert(0x448 == OFFSETOF(s_unit_data, hologram_definition_index));
 static_assert(0x44C == OFFSETOF(s_unit_data, hologram_shimmer_value));
 static_assert(0x450 == OFFSETOF(s_unit_data, hologram_destination));
 
-FUNCTION_DEF(0x423010, void, __fastcall, unit_set_actively_controlled, datum_index unit_index, bool unknown);
+void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled);
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data);
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector);
+void __fastcall unit_add_initial_loadout(datum_index unit_index); // saber/hf2p function

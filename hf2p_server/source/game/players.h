@@ -85,13 +85,13 @@ struct s_player_datum : s_datum_header
 		long Duration;
 		long DamageAccelerationScale;
 		long field_C;
-		float field_10;
-		float field_14;
+		real field_10;
+		real field_14;
 	} tank_mode_state;
 	struct {
 		long last_used_game_time;
-		float duration;
-		float damage_acceleration_scale;
+		real duration;
+		real damage_acceleration_scale;
 		long field_C;
 	} reactive_armor_state;
 	long stamina_restore_near_death_timer;
@@ -111,7 +111,7 @@ struct s_player_datum : s_datum_header
 	long powerup_pickup_times[3];
 	long spectating_player_index;
 	bool sandbox_rotating;
-	float sandbox_extend_distance;
+	real sandbox_extend_distance;
 	real_vector3d sandbox_rotation_throttle;
 	ushort time_in_hill;
 	ushort time_outside_Hill;
@@ -175,11 +175,10 @@ public:
 
 bool player_identifier_is_valid(s_player_identifier const* identifier);
 const char* player_identifier_get_string(s_player_identifier const* identifier);
-long player_mapping_get_input_user(word player_index);
+long player_mapping_get_input_user(datum_index player_index);
 void player_set_facing(datum_index player_index, real_vector3d* forward);
-void player_control_set_facing(long input_user_index, real_vector3d* forward);
+void __fastcall player_control_set_facing(long input_user_index, real_vector3d* forward);
 long player_index_from_absolute_player_index(short absolute_player_index);
 void __fastcall player_increment_control_context(datum_index player_index);
-bool player_is_local(datum_index player_index);
-
-FUNCTION_DEF(0xBA0F0, void, __fastcall, player_clear_assassination_state, datum_index player_index);
+bool __fastcall player_is_local(datum_index player_index);
+void __fastcall player_clear_assassination_state(datum_index player_index);

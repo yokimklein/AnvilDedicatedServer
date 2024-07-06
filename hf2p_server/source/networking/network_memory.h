@@ -11,6 +11,7 @@
 #include <simulation\simulation_world.h>
 #include <simulation\simulation_watcher.h>
 #include <simulation\simulation_type_collection.h>
+#include <networking\network_globals.h>
 
 class c_simulation_distributed_world;
 struct s_data_array;
@@ -46,7 +47,7 @@ struct s_network_base_memory_globals
 	c_network_observer observer;
 	c_network_session_manager session_manager;
 	dword : 32;
-	c_network_session sessions[3];
+	c_network_session sessions[k_network_maximum_sessions];
 	c_network_session_parameter_type_collection sesssion_parameter_types;
 	c_simulation_world simulation_world;
 	c_simulation_watcher simulation_watcher;
@@ -54,8 +55,8 @@ struct s_network_base_memory_globals
 };
 static_assert(sizeof(s_network_base_memory_globals) == 0x540A60); // TODO: confirm size
 
+extern s_network_shared_memory_globals& network_shared_memory_globals;
+
 void* network_heap_allocate_block(long block_size);
 void network_heap_free_block(void* block);
 char* network_heap_describe(char* string, long length);
-
-static s_network_shared_memory_globals* network_shared_memory_globals = (s_network_shared_memory_globals*)base_address(0x1038284);

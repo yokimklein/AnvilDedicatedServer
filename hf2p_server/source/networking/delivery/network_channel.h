@@ -95,8 +95,14 @@ struct s_client_iterator
 
 class c_network_channel_owner
 {
-	
+public:
+	virtual bool __thiscall desire_channel_heartbeat(long channel_index);
+	virtual bool __thiscall channel_is_load_bearing(long channel_index);
+	virtual bool __thiscall attempt_channel_reconnection(long channel_index, bool unknown);
+	virtual void __thiscall notify_channel_connection(long channel_index, long unused, bool notify_host);
+	virtual void __thiscall notify_channel_died(long channel_index);
 };
+static_assert(sizeof(c_network_channel_owner) == 0x4);
 
 struct s_network_channel_client_info
 {
@@ -132,8 +138,8 @@ class c_network_channel
 {
 public:
 	bool connected();
-	char* get_name();
-	char* get_short_name();
+	const char* get_name();
+	const char* get_short_name();
 	e_network_channel_state get_state();
 	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
@@ -185,3 +191,5 @@ public:
 	byte __alignA71[3];
 };
 static_assert(sizeof(c_network_channel) == 0xA74);
+static_assert(0xA08 == OFFSETOF(c_network_channel, m_local_identifier));
+static_assert(0xA0C == OFFSETOF(c_network_channel, m_remote_identifier));

@@ -19,7 +19,8 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 	if (spectating_player_absolute_index == player_absolute_index)
 		return false;
 
-	s_player_datum* player_data = (s_player_datum*)datum_try_and_get_absolute(get_tls()->players, player_absolute_index);
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	s_player_datum* player_data = (s_player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
 	if (!player_data || player_data->unit_index != -1)
 		return false;
 
@@ -30,7 +31,7 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, long* object_references, long ignore_player_index, long payload_size, void const* payload_data)
 {
-	const auto simulation_event_generate_for_remote_peers_call = (void (*)())base_address(0x7E490);
+	static void* simulation_event_generate_for_remote_peers_call = (void*)BASE_ADDRESS(0x7E490);
 	__asm
 	{
 		push payload_data

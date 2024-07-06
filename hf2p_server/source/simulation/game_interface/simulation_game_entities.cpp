@@ -6,7 +6,7 @@
 #include <simulation\simulation_gamestate_entities.h>
 #include <simulation\simulation_type_collection.h>
 #include <game\game_engine_simulation.h>
-#include <tag_files\tag_files.h>
+#include <cache\cache_files.h>
 #include <game\game_engine_util.h>
 #include <models\model_definitions.h>
 #include <models\damage_info_definitions.h>
@@ -82,18 +82,18 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 		{
 			if (game_engine_is_sandbox())
 			{
-				if (object_tag->multiplayer_object.count > 0)
+				if (object_tag->multiplayer_object.count() > 0)
 					return _simulation_entity_type_generic;
 			}
 			else if (object_tag->model.index != -1)
 			{
 				s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
-				if (model_tag->damage_info.count > 0)
+				if (model_tag->damage_info.count() > 0)
 				{
-					s_global_damage_info_block* damage_info = model_tag->damage_info.address;
-					if (damage_info->damage_sections.count > 0)
+					s_global_damage_info_block* damage_info = model_tag->damage_info.begin();
+					if (damage_info->damage_sections.count() > 0)
 						return _simulation_entity_type_generic;
-					if (damage_info->damage_constraints.count > 0)
+					if (damage_info->damage_constraints.count() > 0)
 						return _simulation_entity_type_generic;
 				}
 			}

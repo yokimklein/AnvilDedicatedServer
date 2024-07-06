@@ -13,8 +13,7 @@ void c_replication_entity_manager_view::create_entity(long entity_index)
 
 void c_replication_entity_manager_view::set_state(long entity_index, e_replication_entity_view_state view_state)
 {
-	FUNCTION_DEF(0x20CA0, void, __thiscall, replication_entity_manager_view_set_state, c_replication_entity_manager_view * thisptr, long entity_index, e_replication_entity_view_state view_state);
-	replication_entity_manager_view_set_state(this, entity_index, view_state);
+	DECLFUNC(0x20CA0, void, __thiscall, c_replication_entity_manager_view*, long, e_replication_entity_view_state)(this, entity_index, view_state);
 }
 
 void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_index)
@@ -59,12 +58,10 @@ void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_ind
 
 void c_replication_entity_manager_view::clear_entity_mask(long absolute_index)
 {
-	FUNCTION_DEF(0x1F7A0, void, __thiscall, clear_entity_mask, c_replication_entity_manager_view* thisptr, long absolute_index);
-	clear_entity_mask(this, absolute_index);
+	DECLFUNC(0x1F7A0, void, __thiscall, c_replication_entity_manager_view*, long)(this, absolute_index);
 }
 
 void c_replication_entity_manager_view::set_entity_mask(long absolute_index)
 {
-	FUNCTION_DEF(0x1F760, void, __thiscall, set_entity_mask, c_replication_entity_manager_view* thisptr, long absolute_index);
-	set_entity_mask(this, absolute_index);
+	DECLFUNC(0x1F760, void, __thiscall, c_replication_entity_manager_view*, long)(this, absolute_index);
 }

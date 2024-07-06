@@ -7,21 +7,19 @@
 
 c_map_variant::c_map_variant()
 {
-	FUNCTION_DEF(0xAB2F0, void, __thiscall, c_map_variant_ctor, c_map_variant* thisptr);
-	c_map_variant_ctor(this);
+	DECLFUNC(0xAB2F0, void, __thiscall, c_map_variant*)(this);
 }
 
 void c_map_variant::create_default(e_map_id map_id)
 {
-	FUNCTION_DEF(0xAB380, e_map_id, __thiscall, create_default, c_map_variant* thisptr, e_map_id map_id);
-	create_default(this, map_id);
+	DECLFUNC(0xAB380, void, __thiscall, c_map_variant*, e_map_id)(this, map_id);
 }
 
 c_map_variant* game_engine_get_runtime_map_variant()
 {
 	assert(game_engine_running());
-	auto tls = get_tls();
-	return &tls->game_engine_globals->map_variant;
+	TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+	return &game_engine_globals->map_variant;
 }
 
 datum_index c_map_variant::get_chunk_gamestate_index(long chunk_index)

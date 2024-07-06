@@ -1,25 +1,30 @@
-#include "hf2p.h"
+#include "podium.h"
 #include <memory\tls.h>
 #include <game\game.h>
 #include <simulation\game_interface\simulation_game_events.h>
 #include <anvil\server_tools.h>
 
+REFERENCE_DECLARE(0x4A2973C, long, g_player_podium_count);
+REFERENCE_DECLARE_ARRAY(0x4A29740, s_player_podium, g_player_podiums, k_maximum_multiplayer_players);
+
 void hf2p_player_podium_initialize(long podium_biped_index, long player_index)
 {
-	s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
-	s_player_podium* player_podium = &g_player_podiums[*g_player_podiums_count];
-	*g_player_podiums_count = *g_player_podiums_count + 1;
-	player_podium->current_action = _podium_action_base;
-	player_podium->ticks = get_tls()->game_time_globals->elapsed_ticks;
-	player_podium->player_index = player_index;
-	player_podium->player_model_index = player_data->configuration.host.player_appearance.player_model_choice;
-	player_podium->female = player_data->configuration.host.player_appearance.flags & 1;
-	player_podium->loop_count = 0;
-	player_podium->object_index = -1;
-	player_podium->object_index2 = -1;
-	player_podium->object_index3 = -1;
-	player_podium->stance_index = 0;
-	player_podium->move_index = 0;
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+
+	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+	s_player_podium& player_podium = g_player_podiums[g_player_podium_count++];
+	player_podium.current_action = _podium_action_base;
+	player_podium.ticks = game_time_globals->elapsed_ticks;
+	player_podium.player_index = player_index;
+	player_podium.player_model_index = player_data->configuration.host.player_appearance.player_model_choice;
+	player_podium.female = TEST_BIT(player_data->configuration.host.player_appearance.flags, 0);
+	player_podium.loop_count = 0;
+	player_podium.player_unit_indices[0] = NONE;
+	player_podium.player_unit_indices[1] = NONE;
+	player_podium.player_unit_indices[2] = NONE;
+	player_podium.stance_index = 0;
+	player_podium.move_index = 0;
 }
 
 void hf2p_trigger_player_podium_taunt(long player_podium_index)
@@ -41,11 +46,12 @@ void hf2p_trigger_player_podium_taunt(long player_podium_index)
 	}
 }
 
-void hf2p_player_podium_increment_loop_count(long player_index)
+void __fastcall hf2p_player_podium_increment_loop_count(long player_index)
 {
-	DECLFUNC(base_address(0x2E8430), void, __thiscall, long)(player_index);
+	INVOKE(0x2E8430, hf2p_player_podium_increment_loop_count, player_index);
 }
 
+/*
 // TODO: replace login function in essential_components_initialize
 // TODO: dedi check in unknown func called by user_interface_update
 // TODO: replace client tick in hf2p_tick
@@ -74,3 +80,4 @@ void hf2p_shutdown()
 {
 
 }
+*/

@@ -9,7 +9,7 @@ class c_network_message_gateway;
 class c_network_link
 {
 public:
-	c_network_channel* get_associated_channel(s_transport_address const* address);
+	c_network_channel* __fastcall get_associated_channel(s_transport_address const* address);
 
 	struct s_link_packet
 	{

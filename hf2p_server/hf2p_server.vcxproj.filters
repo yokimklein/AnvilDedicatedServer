@@ -234,9 +234,6 @@
     <ClInclude Include="source\saved_games\saved_game_files.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\game_variant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\game_engine_assault.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -330,7 +327,7 @@
     <ClInclude Include="source\anvil\build_version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\hooks.h">
+    <ClInclude Include="source\anvil\hooks\hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\interface\user_interface_session.h">
@@ -483,9 +480,6 @@
     <ClInclude Include="source\scenario\scenario_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\tag_files\tag_files.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\tag_files\tag_block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -522,7 +516,7 @@
     <ClInclude Include="source\objects\target_tracking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\hf2p\hf2p.h">
+    <ClInclude Include="source\hf2p\podium.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\items\items.h">
@@ -547,6 +541,90 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\main\levels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\game_allegiance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\scenario\scenario.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_state_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_none.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_pre_game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_start_game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_in_game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_leaving.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_joining.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\logic\network_bandwidth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\language.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\network_configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\physics\havok_component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\materials.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\cache_files.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\objects\object_scripting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\objects\scenery.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\cseries_windows_debug_pc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\simulation_queue_entities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\hooks_ds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\hooks_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_creation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\objects\crates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -635,9 +713,6 @@
     <ClCompile Include="source\memory\tls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\math\fast_checksum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\simulation\simulation_view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -659,7 +734,7 @@
     <ClCompile Include="source\anvil\build_version.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\hooks.cpp">
+    <ClCompile Include="source\anvil\hooks\hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\scenario\scenario_map_variant.cpp">
@@ -737,7 +812,7 @@
     <ClCompile Include="source\game\game_engine_team.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\game_variant.cpp">
+    <ClCompile Include="source\game\game_options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_variant.cpp">
@@ -773,7 +848,7 @@
     <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\hf2p\hf2p.cpp">
+    <ClCompile Include="source\hf2p\podium.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp">
@@ -801,6 +876,78 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\main\levels.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\game_allegiance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\scenario\scenario.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hf2p\hq.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\language.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\network_configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\network_globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hf2p\hf2p_session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\physics\havok_component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cache\cache_files.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\objects\object_scripting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\objects\scenery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\game_engine_candy_monitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\cseries_windows_debug_pc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\interface\user_interface_session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\simulation\simulation_queue_entities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\hooks_ds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\hooks_session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\transport\transport_endpoint_winsock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_statborg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_creation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\objects\crates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

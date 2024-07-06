@@ -6,7 +6,7 @@
 template <typename t_type>
 class c_generic_network_session_parameter_data
 {
-public: // TEMP CHANGE, TODO SET BACK TO PROTECTED
+protected:
 	t_type m_data;
 	t_type m_change_request_data;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
+#include <memory\data.h>
 
 struct c_candy_spawner
 {
@@ -29,3 +30,5 @@ struct c_multiplayer_candy_monitor_manager
 	c_candy_monitor m_monitors[512];
 };
 static_assert(sizeof(c_multiplayer_candy_monitor_manager) == 0x3800);
+
+void __fastcall game_engine_register_object(datum_index object_index);

@@ -103,8 +103,8 @@ static_assert(sizeof(s_online_context) == 0x8);
 
 struct c_managed_session
 {
-	e_network_session_class session_class;
-	e_transport_platform platform;
+	c_enum<e_network_session_class, long, k_network_session_class_count> session_class;
+	c_enum<e_transport_platform, long, k_transport_platform_count> platform;
 	c_flags<e_online_managed_session_flags, ulong, k_online_managed_session_flags> flags;
 	c_flags<e_online_managed_session_operation_flags, ushort, k_online_managed_session_operation_flags> current_operation_flags;
 	c_flags<e_online_managed_session_operation_flags, ushort, k_online_managed_session_operation_flags> pending_operation_flags;
@@ -139,7 +139,7 @@ struct s_online_session_manager_globals
 };
 static_assert(sizeof(s_online_session_manager_globals) == 0x2E88);
 
-static s_online_session_manager_globals* online_session_manager_globals = reinterpret_cast<s_online_session_manager_globals*>(base_address(0x3EAB120));
+extern s_online_session_manager_globals& online_session_manager_globals;
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform);
 const char* managed_session_get_id_string(long managed_session_index);
@@ -151,6 +151,7 @@ void managed_session_reset_session(long managed_session_index, bool recreating_s
 void managed_session_remove_players(long managed_session_index, qword* xuids, long xuid_count);
 void remove_from_player_list(s_online_session_player* players, long player_count, qword* xuids, long xuid_count);
 void managed_session_reset_players_add_status(long managed_session_index);
-void managed_session_add_players(long managed_session_index, qword* xuids, bool* player_bools, long player_count);
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* player_bools, long xuid_count);
-bool managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id);
+void managed_session_add_players(long managed_session_index, qword* xuids, bool* players_left, long player_count);
+void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* players_left, long xuid_count);
+bool __fastcall managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id);
+void __fastcall managed_session_delete_session_internal(long managed_session_index, c_managed_session* managed_session);

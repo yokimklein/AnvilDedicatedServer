@@ -6563,7 +6563,7 @@ NMD_ASSEMBLY_API bool nmd_x86_decode(const void* const buffer, size_t buffer_siz
 						_NMD_SET_REG_OPERAND(instruction->operands[2], true, NMD_X86_OPERAND_ACTION_READWRITE, _NMD_GET_GPR(NMD_X86_REG_SP));
 						_NMD_SET_MEM_OPERAND(instruction->operands[3], true, NMD_X86_OPERAND_ACTION_WRITE, NMD_X86_REG_SS, _NMD_GET_GPR(NMD_X86_REG_SP), NMD_X86_REG_NONE, 0, 0);
 					}
-                    else if (_NMD_R(op) < 4 && _NMD_C(op) < 6) /* add,adc,and,xor,or,sbb,sub,cmp Eb,Gb / Ev,Gv / Gb,Eb / Gv,Ev / AL,lb / rAX,lz */
+                    else if (_NMD_R(op) < 4 && (_NMD_C(op) <= 13 && _NMD_C(op) != 6 && _NMD_C(op) != 7)) /* add,adc,and,xor,or,sbb,sub,cmp Eb,Gb / Ev,Gv / Gb,Eb / Gv,Ev / AL,lb / rAX,lz */
 					{
                         /*
                         if (op % 8 == 0)

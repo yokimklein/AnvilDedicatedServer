@@ -1,6 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <game\game_engine_variant.h>
+#include <game\game_engine_default.h>
 #include <game\game_engine_ctf_traits.h>
 #include <game\game_engine_area_set.h>
 

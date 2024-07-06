@@ -6,7 +6,7 @@ class c_tracked_target
 	c_aim_target_object aim_target;
 	short : 16;
 	short : 16;
-	float looking_theta;
+	real looking_theta;
 	short : 16;
 	short : 16;
 	bool locked;

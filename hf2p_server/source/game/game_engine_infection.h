@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cseries\cseries.h>
-#include <game\game_engine_variant.h>
 #include <game\game_engine_infection_traits.h>
 
 class c_game_engine_infection_variant : c_game_engine_base_variant

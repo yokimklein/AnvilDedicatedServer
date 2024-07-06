@@ -16,14 +16,12 @@ long c_network_session_parameter_session_size::get_max_player_count()
 
 bool c_network_session_parameter_session_size::set_max_player_count(long player_count)
 {
-	FUNCTION_DEF(0x2D670, bool, __thiscall, set_max_player_count, c_network_session_parameter_session_size* thisptr, long player_count);
-	return set_max_player_count(this, player_count);
+	return DECLFUNC(0x2D670, bool, __thiscall, c_network_session_parameter_session_size*, long)(this, player_count);
 }
 
 bool c_network_session_parameter_session_mode::set(e_network_session_mode session_mode)
 {
-	FUNCTION_DEF(0x2D820, bool, __thiscall, set, c_network_session_parameter_session_mode* thisptr, e_network_session_mode session_mode);
-	return set(this, session_mode);
+	return DECLFUNC(0x2D820, bool, __thiscall, c_network_session_parameter_session_mode*, e_network_session_mode)(this, session_mode);
 }
 
 bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter_lobby_vote_set* vote_set)

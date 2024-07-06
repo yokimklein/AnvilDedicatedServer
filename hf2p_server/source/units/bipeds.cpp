@@ -2,9 +2,13 @@
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_objects.h>
 
+bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vector3d* melee_aiming_vector)
+{
+	return INVOKE(0x4409F0, biped_calculate_melee_aiming, biped_index, melee_aiming_vector);
+}
+
 bool __fastcall biped_update_melee_turning(datum_index biped_index)
 {
-	s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
 	s_biped_data* biped = (s_biped_data*)object_get(biped_index);
 
 	if (!biped_calculate_melee_aiming(biped_index, &biped->melee_aiming_vector))

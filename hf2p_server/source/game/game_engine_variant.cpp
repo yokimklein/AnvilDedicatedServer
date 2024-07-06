@@ -14,3 +14,8 @@ c_game_engine_social_options* c_game_engine_base_variant::get_social_options()
 {
 	return &this->m_social_options;
 }
+
+c_game_variant* __fastcall build_default_game_variant(c_game_variant* game_variant, e_game_engine_type engine_variant)
+{
+	return INVOKE(0xE9BE0, build_default_game_variant, game_variant, engine_variant);
+}

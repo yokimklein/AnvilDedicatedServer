@@ -3,11 +3,15 @@
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_objects.h>
 
+void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
+{
+    INVOKE(0x423010, unit_set_actively_controlled, unit_index, actively_controlled);
+}
+
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index)
 {
     if (!game_is_predicted())
     {
-        s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
         s_unit_data* unit = (s_unit_data*)object_get(unit_index);
         word cycled_identifier = (unit->current_weapon_set.set_identifier + 1) & 0xF;
         unit->current_weapon_set.set_identifier = cycled_identifier;
@@ -18,7 +22,6 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
 
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 {
-    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
     s_unit_data* unit = (s_unit_data*)object_get(unit_index);
     long counter = 0;
     do
@@ -33,7 +36,7 @@ void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type)
 {
     // convert fastcall to usercall
-    const auto unit_inventory_set_weapon_index_call = (void*)base_address(0x426D10);
+    static void* unit_inventory_set_weapon_index_call = (void*)BASE_ADDRESS(0x426D10);
     __asm
     {
         push drop_type
@@ -47,8 +50,7 @@ void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_in
 
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
 {
-    FUNCTION_DEF(0x41BA10, void, __fastcall, unit_control_call, datum_index unit_index, void* unit_control_data);
-    unit_control_call(unit_index, unit_control_data);
+    INVOKE(0x41BA10, unit_control, unit_index, unit_control_data);
 
     c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
     update_flags.set_flag(unit_index, _simulation_unit_update_desired_aiming_vector);
@@ -58,10 +60,14 @@ void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
 
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector)
 {
-    s_object_header* object_header_data = (s_object_header*)(get_tls()->object_headers->data);
     s_unit_data* unit = (s_unit_data*)object_get(unit_index);
 
     unit->aiming_vector = *aiming_vector;
     unit->looking_vector = *looking_vector;
     simulation_action_object_update(unit_index, _simulation_unit_update_desired_aiming_vector);
+}
+
+void __fastcall unit_add_initial_loadout(datum_index unit_index)
+{
+    INVOKE(0xFB6E0, unit_add_initial_loadout, unit_index);
 }

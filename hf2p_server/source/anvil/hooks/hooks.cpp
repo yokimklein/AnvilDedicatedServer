@@ -2,6 +2,12 @@
 // I will eventually make it look better - Yokim
 
 #include "hooks.h"
+#include <anvil\hooks\hooks_ds.h>
+#include <anvil\hooks\hooks_session.h>
+#include <anvil\hooks\simulation\hooks_simulation.h>
+#include <anvil\hooks\simulation\hooks_statborg.h>
+#include <anvil\hooks\simulation\hooks_simulation_globals.h>
+#include <anvil\hooks\simulation\hooks_object_creation.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
@@ -21,7 +27,7 @@
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <anvil\build_version.h>
 #include <game\game_results.h>
-#include <hf2p\hf2p.h>
+#include <hf2p\podium.h>
 #include <objects\objects.h>
 #include <simulation\game_interface\simulation_game_events.h>
 #include <game\game.h>
@@ -30,62 +36,88 @@
 #include <game\game_engine_spawning.h>
 #include <game\game_engine.h>
 #include <items\weapons.h>
+#include <main\main.h>
+#include <objects\object_scripting.h>
+#include <objects\scenery.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
-
-enum e_hook_type
-{
-    _hook_replace,
-    _hook_execute_replaced_first,
-    _hook_execute_replaced_last,
-    _hook_replace_no_nop
-};
+#include <cseries\cseries_windows_debug_pc.h>
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)
 {
+    // copy the instructions we're replacing into a new buffer
     byte* code_buffer = new byte[length];
-    // copy the instructions we're replacing into a buffer
     memcpy(code_buffer, source, length);
 
     size_t i = 0;
     do
     {
         size_t instruction_length = nmd_x86_ldisasm((void*)((size_t)source + i), length, NMD_X86_MODE_32);
+        // ensure nmd_x86_ldisasm ran successfully
+        assert(instruction_length != 0);
         // ensure instruction length fits within the length of the buffer provided
         assert(i + instruction_length <= length);
-        // assert unimplemented jump instructions - TODO: implement the rest of these
-        assert(!(code_buffer[i] >= 0x70 && code_buffer[i] <= 0x73 || code_buffer[i] >= 0x77 && code_buffer[i] <= 0x7B || code_buffer[i] == 0x7D || code_buffer[i] == 0x7F || code_buffer[i] >= 0xE0 && code_buffer[i] <= 0xE3 || code_buffer[i] == 0xEA));
-        
-        // if jump or call
-        if (code_buffer[i] == 0xE8 || code_buffer[i] == 0xE9)
-        {
-            // ensure instruction length is valid
-            assert(instruction_length == 5);
-            long offset = *(long*)&code_buffer[i + 1];
-            void* destination_address = (void*)(((size_t)source + i) + offset + 5);
-            long new_offset = (size_t)destination_address - ((size_t)destination + i) - 5;
-            memcpy(&code_buffer[i + 1], &new_offset, sizeof(new_offset));
-        }
-        // if short jump - jz, jnz, jbe, jl, jle, jmp short
-        else if (code_buffer[i] == 0x74 || code_buffer[i] == 0x75 || code_buffer[i] == 0x76 || code_buffer[i] == 0x7C || code_buffer[i] == 0x7E || code_buffer[i] == 0xEB)
-        {
-            // ensure instruction length is valid
-            assert(instruction_length == 2);
-            // verify offset fits in buffer
-            byte offset = code_buffer[i + 1];
-            bool near_jump_is_in_bounds = offset + 2 + i < length; // if this assert fails you've likely ended your replaced instructions with a short jump
-            if (!near_jump_is_in_bounds && redirect_oob_jumps)
-            {
-                offset = (length - (i + 2)); // redirect near jump to NOP at the end of the buffer
-                code_buffer[i + 1] = offset;
-            }
-            else
-            {
-                assert(near_jump_is_in_bounds);
-            }
-        }
+        // ensure operand exists after opcode
+        assert(i + 1 <= length);
 
+        // switch opcode
+        ulong offset;
+        byte short_offset;
+        bool near_jump_is_in_bounds;
+        switch (code_buffer[i])
+        {
+            // fix jump & call offsets
+            case 0xE8: // jump
+            case 0xE9: // call
+                // ensure instruction length is valid for a jump/call
+                assert(instruction_length == 5);
+                offset = *(ulong*)&code_buffer[i + 1]; // near offset
+                offset = (ulong)(((size_t)source + i) + offset + 5); // destination address
+                offset = offset - ((size_t)destination + i) - 5; // new offset
+                memcpy(&code_buffer[i + 1], &offset, sizeof(offset));
+                break;
+            // fix short jump offsets
+            case 0x74: // jz
+            case 0x75: // jnz
+            case 0x76: // jbe
+            case 0x7C: // jl
+            case 0x7E: // jle
+            case 0xEB: // jmp short
+                // ensure instruction length is valid for a short jump
+                assert(instruction_length == 2);
+                // verify offset fits in buffer
+                short_offset = code_buffer[i + 1];
+                near_jump_is_in_bounds = (short_offset + 2 + i) < length; // if this assert fails you've likely ended your replaced instructions with a short jump
+                if (!near_jump_is_in_bounds && redirect_oob_jumps)
+                {
+                    offset = (length - (i + 2)); // redirect near jump to NOP at the end of the buffer
+                    assert(offset <= 255); // Ensure we don't go beyond the short jump offset range
+                    short_offset = static_cast<byte>(offset);
+                    code_buffer[i + 1] = short_offset;
+                }
+                else
+                {
+                    // Not in bounds and set to not redirect!!
+                    assert(near_jump_is_in_bounds);
+                }
+                break;
+            // TODO: unimplemented/untested short jump instructions
+            case 0x70: // jo
+            case 0x71: // jno
+            case 0x72: // jb
+            case 0x73: // jnb
+            case 0x77: // ja
+            case 0x78: // js
+            case 0x79: // jns
+            case 0x7A: // jp
+            case 0x7B: // jnp
+            case 0x7D: // jge
+            case 0x7F: // jg
+            case 0xE3: // jcxz
+                assert(false);
+                break;
+        }
         i += instruction_length;
     }
     while (i < length);
@@ -100,7 +132,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
 // NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
 // NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false)
+void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
@@ -117,11 +149,11 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
 
     // initialise our new code block
-    long inserted_code_size = + sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
+    long inserted_code_size = +sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
     if (hook_type != _hook_replace && hook_type != _hook_replace_no_nop)
         inserted_code_size += length;
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-    
+
     if (inserted_code == NULL)
     {
         printf("Failed to allocate memory for hook!\n");
@@ -131,7 +163,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_first)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length, redirect_oob_jumps);
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
@@ -152,71 +184,219 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_last)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)base_address(start_address), length, redirect_oob_jumps);
+        insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
     // return
-    size_t return_offset = (base_address(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
+    size_t return_offset = (BASE_ADDRESS(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
     memcpy(&return_code[1], &return_offset, sizeof(return_code));
     memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
     code_offset += sizeof(return_code);
 
     // write jump to inserted function
-    size_t jump_offset = ((size_t)(inserted_code) - base_address(start_address) - sizeof(jump_code));
+    size_t jump_offset = ((size_t)(inserted_code)-BASE_ADDRESS(start_address) - sizeof(jump_code));
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_code));
-    memcpy((void*)base_address(start_address), jump_code, sizeof(jump_code));
+    memcpy((void*)BASE_ADDRESS(start_address), jump_code, sizeof(jump_code));
 
     if (hook_type != _hook_replace_no_nop)
     {
-        // nop the bytes leftover between the original overwritten instructions and the return point
-        // this isn't really necessary but it makes looking at the disassembly less cluttered
-        memset((void*)(base_address(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+        // nop the bytes leftover between the original overwritten instructions and the return point for sanity
+        // makes looking at the modified disassembly less chaotic
+        memset((void*)(BASE_ADDRESS(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
     }
 }
 
-// add back missing message handlers
-void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
+void increase_esp_offsets(size_t function_start, size_t function_end, size_t offset_increase)
 {
-    message_handler->handle_out_of_band_message(address, message_type, message_storage_size, message);
-}
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* stub_message)
-{
-    s_network_message const* message = (s_network_message const*)base_address(0x4FFB090);
-    message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
+    size_t i = 0;
+    size_t length = function_end - function_start;
+    size_t base_function = BASE_ADDRESS(function_start);
+    do
+    {
+        void* function_address = (void*)(base_function + i);
+        size_t instruction_length = nmd_x86_ldisasm(function_address, length, NMD_X86_MODE_32);
+        assert(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
+
+        nmd_x86_instruction instruction{};
+        nmd_x86_decode(function_address, instruction_length, &instruction, NMD_X86_MODE_32, NMD_X86_DECODER_FLAGS_MINIMAL | NMD_X86_DECODER_FLAGS_OPERANDS);
+        assert(instruction.valid && instruction.length > 0); // ensure decode ran successfully
+
+        // find instructions with esp offsets
+        for (size_t j = 0; j < instruction.num_operands; j++)
+        {
+            if (!instruction.operands[j].is_implicit && instruction.operands[j].type == NMD_X86_OPERAND_TYPE_MEMORY && instruction.operands[j].fields.mem.base == NMD_X86_REG_ESP)
+            {
+                // i'm unsure as to what scale does right now, and all instructions I've seen have it as zero
+                assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
+                //assert(instruction.operands[j].fields.mem.index == 0); // can safely ignore this?
+                //printf("ESP instruction(%p) w/ offset: %d prefixes: %d\n", function_address, instruction.displacement, instruction.num_prefixes);
+
+                // prefixes, opcode, modrm, register, displacement
+                // ensure disp_mask is as we expect it and not a combination of values
+                assert(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
+
+                long displacement_offset = instruction.num_prefixes + instruction.opcode_size + 2; // prefixes + opcode size + modrm + register
+                long assumed_size = displacement_offset + instruction.disp_mask;
+                assert(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
+                //assert(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
+                assert(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
+                // this assert is generally true but not for operands where fields.mem.index is not 0
+                //assert(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size + 1] == instruction.operands[j].fields.mem.base); // check register is where it should be
+
+                ulong64 displacement = 0;
+                ulong64 new_displacement = 0;
+                void* displacement_address = (void*)(base_function + i + displacement_offset);
+                switch (instruction.disp_mask)
+                {
+                    case NMD_X86_DISP_NONE:
+                        displacement = 0;
+                        // TODO: handle this
+                        break;
+                    case NMD_X86_DISP8:
+                        displacement = *(char*)displacement_address;
+                        assert(displacement == instruction.displacement);
+                        new_displacement = displacement + offset_increase;
+                        assert(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
+                        *(char*)displacement_address = new_displacement;
+                        break;
+                    case NMD_X86_DISP16:
+                        displacement = *(short*)displacement_address;
+                        assert(displacement == instruction.displacement);
+                        new_displacement = displacement + offset_increase;
+                        assert(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
+                        *(short*)displacement_address = new_displacement;
+                        break;
+                    case NMD_X86_DISP32:
+                        displacement = *(long*)displacement_address;
+                        assert(displacement == instruction.displacement);
+                        new_displacement = displacement + offset_increase;
+                        assert(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
+                        *(long*)displacement_address = new_displacement;
+                        break;
+                    case NMD_X86_DISP64:
+                        displacement = *(long64*)displacement_address;
+                        assert(displacement == instruction.displacement);
+                        new_displacement = displacement + offset_increase;
+                        assert(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
+                        *(long64*)displacement_address = new_displacement;
+                        break;
+                }
+            }
+        }
+
+        i += instruction_length;
+    }
+    while (i < length);
 }
 
-// create online squad when calling hf2p_setup_session
-bool __fastcall create_local_online_squad(e_network_session_class ignore) // may have thiscall for life cycle
+// correct ebp+ offsets to accomodate for newly pushed variables onto the stack at the start of functions
+void increase_positive_ebp_offsets(size_t function_start, size_t function_end, size_t offset_increase)
 {
-    return network_life_cycle_create_local_squad(_network_session_class_online);
+    size_t i = 0;
+    size_t length = function_end - function_start;
+    size_t base_function = BASE_ADDRESS(function_start);
+    do
+    {
+        void* instruction_address = (void*)(base_function + i);
+        //if (BASE_ADDRESS(0x437B07) == (size_t)instruction_address)
+        //{
+        //    printf("gabagooba\n");
+        //}
+        size_t instruction_length = nmd_x86_ldisasm(instruction_address, length, NMD_X86_MODE_32);
+        assert(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
+
+        nmd_x86_instruction instruction{};
+        bool result = nmd_x86_decode(instruction_address, instruction_length, &instruction, NMD_X86_MODE_32, NMD_X86_DECODER_FLAGS_MINIMAL | NMD_X86_DECODER_FLAGS_OPERANDS);
+        assert(result && instruction.valid && instruction.length > 0); // ensure decode ran successfully
+
+        // find instructions with positive ebp offsets
+        for (size_t j = 0; j < instruction.num_operands; j++)
+        {
+            if (!instruction.operands[j].is_implicit && instruction.operands[j].type == NMD_X86_OPERAND_TYPE_MEMORY && instruction.operands[j].fields.mem.base == NMD_X86_REG_EBP)
+            {
+                // i'm unsure as to what scale does right now, and all instructions I've seen have it as zero
+                assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
+
+                // prefixes, opcode, modrm, displacement
+                // ensure disp_mask is as we expect it and not a combination of values
+                assert(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
+
+                long displacement_offset = instruction.num_prefixes + instruction.opcode_size + 1; // prefixes + opcode size + modrm
+                long assumed_size = displacement_offset + instruction.disp_mask;
+                assert(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
+                //assert(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
+                assert(((byte*)instruction_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
+                long64 displacement = 0;
+                long64 new_displacement = 0;
+                void* displacement_address = (void*)(base_function + i + displacement_offset);
+                switch (instruction.disp_mask)
+                {
+                    case NMD_X86_DISP_NONE:
+                        displacement = 0;
+                        // TODO: handle this
+                        assert(false);
+                        break;
+                    case NMD_X86_DISP8:
+                        displacement = *(char*)displacement_address;
+                        assert(displacement == *(char*)&instruction.displacement); // ensure displacement value is correct
+                        if (displacement >= 0)
+                        {
+                            new_displacement = displacement + offset_increase;
+                            assert(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
+                            *(char*)displacement_address = new_displacement;
+                        }
+                        break;
+                    case NMD_X86_DISP16:
+                        displacement = *(short*)displacement_address;
+                        assert(displacement == *(short*)&instruction.displacement); // ensure displacement value is correct
+                        if (displacement >= 0)
+                        {
+                            new_displacement = displacement + offset_increase;
+                            assert(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
+                            *(short*)displacement_address = new_displacement;
+                        }
+                        break;
+                    case NMD_X86_DISP32:
+                        displacement = *(long*)displacement_address;
+                        assert(displacement == *(long*)&instruction.displacement); // ensure displacement value is correct
+                        if (displacement >= 0)
+                        {
+                            new_displacement = displacement + offset_increase;
+                            assert(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
+                            *(long*)displacement_address = new_displacement;
+                        }
+                        break;
+                    case NMD_X86_DISP64:
+                        displacement = *(long64*)displacement_address;
+                        assert(displacement == *(long64*)&instruction.displacement); // ensure displacement value is correct
+                        if (displacement >= 0)
+                        {
+                            new_displacement = displacement + offset_increase;
+                            assert(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
+                            *(long64*)displacement_address = new_displacement;
+                        }
+                        break;
+                }
+                if (new_displacement != 0)
+                {
+                    printf("EBP instruction(%p) w/ disp: %lld, new disp: %lld\n", instruction_address, displacement, new_displacement);
+                }
+            }
+        }
+
+        i += instruction_length;
+    } while (i < length);
 }
 
-// print to console whenever a message packet is sent
-void __stdcall send_message_hook(void* stream, e_network_message_type message_type, long message_storage_size)
+// print to console whenever a message packet is sent - this pointer is unused
+void __fastcall encode_message_header_hook(c_network_message_type_collection* _this, void*, c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
 {
-    FUNCTION_DEF(0x387A0, void, __stdcall, send_message, void* stream, e_network_message_type message_type, long message_storage_size);
-    c_network_message_gateway* message_gateway = nullptr;
-    c_network_session* session = g_network_session_manager->session[0];
-    if (session != nullptr)
-        message_gateway = session->m_message_gateway;
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    c_network_message_type_collection* message_type_collection = session->m_message_gateway->m_message_type_collection;
 
-    if (message_gateway != nullptr)
-        printf("SEND: %s\n", message_gateway->m_message_type_collection->get_message_type_name(message_type));
-    return send_message(stream, message_type, message_storage_size);
-}
-
-// add back missing host code, process_pending_joins & check_to_send_membership_update
-void __fastcall session_idle_hook(c_network_session* session)
-{
-    session->idle();
-}
-
-// add debug print back to before life cycle end is called in c_gui_location_manager::update
-void __fastcall network_life_cycle_end_hook()
-{
-    printf("Resetting network location.  If you got here and didn't just issue a console command, this is a bug.\n");
-    network_life_cycle_end();
+    printf("SEND: %s (%d bytes)\n", message_type_collection->get_message_type_name(message_type), message_storage_size);
+    DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);
 }
 
 // disable contrails to prevent gpu freezing
@@ -229,43 +409,9 @@ __declspec(naked) void contrail_fix_hook()
         jg render
         push 0x68A3E3
         retn
-        render:
+        render :
         push 0x68A390
-        retn
-    }
-}
-
-// allow view establishment to progress past the connection phase
-void __fastcall update_establishing_view_hook(c_simulation_world* simulation_world, void* unused, c_simulation_view* simulation_view)
-{
-    simulation_world->update_establishing_view(simulation_view);
-}
-
-// hook to prevent the game from adding a player to the host if we're running a dedicated server
-void __fastcall peer_request_player_add_hook(c_network_session* session, void* unused, const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
-{
-    if (!game_is_dedicated_server())
-        session->peer_request_player_add(player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
-}
-// ditto above
-bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
-{
-    bool(__thiscall* network_session_interface_get_local_user_identifier)(s_player_identifier* player_identifier) = reinterpret_cast<decltype(network_session_interface_get_local_user_identifier)>(base_address(0x3D50));
-    return !game_is_dedicated_server() && network_session_interface_get_local_user_identifier(player_identifier);
-}
-
-// reimplement network_session_check_properties by calling it at the end of network_session_interface_update_session
-void __fastcall network_session_interface_update_session_hook(c_network_session* session)
-{
-    void(__thiscall* network_session_interface_update_session)(c_network_session* session) = reinterpret_cast<decltype(network_session_interface_update_session)>(base_address(0x2F410));
-    network_session_interface_update_session(session);
-
-    if (session->established() && !session->leaving_session())
-    {
-        if (session->is_host())
-        {
-            network_session_check_properties(session);
-        }
+            retn
     }
 }
 
@@ -302,58 +448,14 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     return result;
 }
 
-bool __fastcall transport_secure_key_create_hook(s_transport_session_description* session_description)
+void __fastcall sub_7172B0_hook(void* api_loadout)
 {
-    return transport_secure_key_create(session_description);
-}
-
-void __cdecl transport_secure_address_resolve_hook()
-{
-    memset(&transport_security_globals->secure_address, 0, sizeof(s_transport_secure_address));
-    transport_secure_address_generate(&transport_security_globals->secure_address);
-    transport_security_globals->address_resolved = true;
-    memcpy(&transport_security_globals->local_unique_identifier, &transport_security_globals->secure_address, sizeof(s_transport_unique_identifier));
-}
-
-void __fastcall managed_session_delete_session_internal_hook(long managed_session_index, c_managed_session* managed_session)
-{
-    FUNCTION_DEF(0x28C30, void, __fastcall, managed_session_delete_session_internal, long managed_session_index, c_managed_session* managed_session);
-
-    if (managed_session->flags.test(_online_managed_session_created_bit) && managed_session->session_class == _network_session_class_online)
-        xnet_shim_unregister(&transport_security_globals->address);
-
-    managed_session_delete_session_internal(managed_session_index, managed_session);
-}
-
-void __fastcall network_session_interface_set_local_name_hook(wchar_t const* machine_name, wchar_t const* session_name)
-{
-    FUNCTION_DEF(0x2E680, void, __fastcall, network_session_interface_set_local_name, wchar_t const* machine_name, wchar_t const* session_name);
-    network_session_interface_set_local_name(k_anvil_machine_name, k_anvil_session_name);
-}
-
-long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* file_name, long line_number)
-{
-    FUNCTION_DEF(0x94CB0, long, __cdecl, internal_halt_render_thread_and_lock_resources, const char* file_name, long line_number);
-    long result = internal_halt_render_thread_and_lock_resources(file_name, line_number);
-
-    game_engine_attach_to_simulation();
-    return result;
-}
-
-void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
-{
-    s_player_datum* player_data = (s_player_datum*)datum_get(get_tls()->players, player_index);
-    simulation_action_object_create(player_data->unit_index);
-    simulation_action_object_update(player_data->unit_index, _simulation_unit_update_control);
-
-    // this part was removed from HO
-    //if ( game_is_multiplayer() )
-    //{
-    //  game_engine_add_starting_equipment(player_object_index);
-    //  game_engine_spawn_influencer_record_player_spawn(player_index3);
-    //}
-
-    player_set_facing(player_index, forward);
+    // Check if loadout is valid before calling first
+    // If a player kills the local player and no API loadout information for the killer exists, a nullptr is returned
+    if (api_loadout != nullptr)
+    {
+        INVOKE(0x3172B0, sub_7172B0_hook, api_loadout);
+    }
 }
 
 void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* forward)
@@ -364,8 +466,6 @@ void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* 
 void __fastcall object_scripting_clear_all_function_variables_hook(datum_index object_index)
 {
     simulation_action_object_delete(object_index);
-
-    FUNCTION_DEF(0x475CF0, void, __fastcall, object_scripting_clear_all_function_variables, datum_index object_index);
     object_scripting_clear_all_function_variables(object_index);
 }
 
@@ -376,29 +476,24 @@ c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* 
     return static_string;
 }
 
-void __cdecl game_engine_update_round_conditions_hook()
-{
-    game_engine_update_round_conditions();
-}
-
 // TODO: fix crashing
-void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_player_datum* player_data)
-{
-    FUNCTION_DEF(0xE05E0, void, __cdecl, sub_E05E0, s_player_identifier player_xuid);
-
-    byte active_armor_loadout = player_data->configuration.client.active_armor_loadout;
-    byte character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
-    if (active_armor_loadout <= 2u)
-        character_active_index = active_armor_loadout;
-    if (character_active_index != player_data->character_type_index)
-    {
-        s_player_identifier player_xuid = player_data->configuration.host.player_xuid;
-        player_data->revenge_shield_boost_multiplier = 0;
-        player_data->character_type_index = character_active_index;
-        sub_E05E0(player_xuid);
-        simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
-    }
-}
+//void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_player_datum* player_data)
+//{
+//    FUNCTION_DEF(0xE05E0, void, __cdecl, sub_E05E0, s_player_identifier player_xuid);
+//
+//    byte active_armor_loadout = player_data->configuration.client.active_armor_loadout;
+//    byte character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
+//    if (active_armor_loadout <= 2u)
+//        character_active_index = active_armor_loadout;
+//    if (character_active_index != player_data->character_type_index)
+//    {
+//        s_player_identifier player_xuid = player_data->configuration.host.player_xuid;
+//        player_data->revenge_shield_boost_multiplier = 0;
+//        player_data->character_type_index = character_active_index;
+//        sub_E05E0(player_xuid);
+//        simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
+//    }
+//}
 
 //long __cdecl ui_get_player_model_id_evaluate_hook(long a1, long a2)
 //{
@@ -428,38 +523,12 @@ void __stdcall simulation_action_object_update_with_bitmask(datum_index object_i
     simulation_action_object_update_internal(object_index, update_flags);
 }
 
-__declspec(naked) void game_engine_update_time_hook()
-{
-    __asm
-    {
-        // preserve register across call
-        push ecx
-
-        // call our inserted function
-        push 0
-        push 32 // flag 5 (1 << 5)
-        call simulation_action_game_engine_globals_update_with_bitmask
-        add esp, 8
-
-        // restore register
-        pop ecx
-
-        // execute the original instruction(s) we replaced
-        cmp ecx, 0x708
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0xC98D1
-        jmp eax
-    }
-}
-
 __declspec(naked) void player_spawn_hook()
 {
     __asm
     {
         // execute the original instruction(s) we replaced
-        call hf2p_set_user_loadout
+        call unit_add_initial_loadout
 
         // save registers across the function call
         //push eax
@@ -477,10 +546,10 @@ __declspec(naked) void player_spawn_hook()
         //pop eax
 
         // return back to the original code
-        end_label:
+    end_label:
         mov ecx, module_base
-        add ecx, 0xBB098
-        jmp ecx
+            add ecx, 0xBB098
+            jmp ecx
     }
 }
 
@@ -515,7 +584,7 @@ __declspec(naked) void object_update_hook()
         push edi // object_index
         call simulation_action_object_update_with_bitmask
 
-        end_label:
+        end_label :
         jmp object_update_part
     }
 }
@@ -526,7 +595,7 @@ __declspec(naked) void player_spawn_hook2()
     {
         // execute the original instruction(s) we replaced
         and ecx, 0x0FFFFFFF7
-        mov [ebx + 4], ecx
+        mov[ebx + 4], ecx
 
         // call our inserted function
         push 0
@@ -547,12 +616,12 @@ __declspec(naked) void player_spawn_hook3()
     __asm
     {
         // execute the original instruction(s) we replaced
-        mov byte ptr [ebx + 0x1754], 0
+        mov byte ptr[ebx + 0x1754], 0
 
         // call our inserted function
         push 0
         push 2 // flag _simulation_player_update_early_respawn (1 << 1)
-        push [ebp - 24] // player_index3
+        push[ebp - 24] // player_index3
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
 
@@ -564,108 +633,30 @@ __declspec(naked) void player_spawn_hook3()
 }
 
 // TODO: fix the crashes here
-_declspec(naked) void hf2p_loadout_update_active_character_call_hook()
-{
-    __asm
-    {
-        mov eax, eax
-        mov ebx, ebx
-        mov ecx, ecx
-        mov edx, edx
-        // execute the original instruction(s) we replaced
-        mov ecx, esi // player_index
-        call hf2p_loadout_update_active_character_hook
-
-        // return back to the original code
-        mov eax, module_base
-        add eax, 0xBAF29
-        jmp eax
-    }
-}
+//_declspec(naked) void hf2p_loadout_update_active_character_call_hook()
+//{
+//    __asm
+//    {
+//        mov eax, eax
+//        mov ebx, ebx
+//        mov ecx, ecx
+//        mov edx, edx
+//        // execute the original instruction(s) we replaced
+//        mov ecx, esi // player_index
+//        call hf2p_loadout_update_active_character_hook
+//
+//        // return back to the original code
+//        mov eax, module_base
+//        add eax, 0xBAF29
+//        jmp eax
+//    }
+//}
 
 // NEW HOOKS START HERE
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook()
-{
-    c_network_session_parameter_game_start_status* parameter;
-    s_network_session_parameter_game_start_status* start_status;
-    __asm mov parameter, ecx;
-    __asm lea eax, [esp + 0x78]; // [esp+0x398-0x388] sp is 0x39C
-    __asm mov start_status, eax;
-    parameter->set(start_status);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
-{
-    simulation_action_game_statborg_update(_simulation_statborg_update_finalize_for_game_end);
-}
-
-__declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook()
-{
-    long absolute_player_index; __asm mov absolute_player_index, esi;
-    simulation_action_game_statborg_update(absolute_player_index);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
-{
-    // I have to move this into eax first otherwise it'll refuse to compile for some reason
-    long absolute_player_index; __asm mov eax, [esp + 0x90] __asm mov absolute_player_index, eax; // originally dword ptr [esp + 0x50 - 0x24], sp was 0x50
-    simulation_action_game_statborg_update(absolute_player_index);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook2()
-{
-    long absolute_player_index; __asm mov absolute_player_index, esi;
-    simulation_action_game_statborg_update(absolute_player_index);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
-{
-    long absolute_player_index;
-    __asm mov absolute_player_index, esi;
-    simulation_action_game_statborg_update(absolute_player_index);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook3()
-{
-    long team_index; __asm mov team_index, ebx;
-    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
-}
-
-__declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook()
-{
-    long team_index; __asm mov team_index, edi;
-    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
-}
-
-__declspec(safebuffers) void __fastcall player_changed_teams_hook()
-{
-    short player_index; __asm mov player_index, bx;
-    simulation_action_game_statborg_update(_simulation_statborg_update_player0 + player_index);
-}
-
-__declspec(safebuffers) void __fastcall player_indices_swapped_hook()
-{
-    long absolute_index_a; __asm mov absolute_index_a, edi;
-    long absolute_index_b; __asm mov absolute_index_b, esi;
-    simulation_action_game_statborg_update(absolute_index_a);
-    simulation_action_game_statborg_update(absolute_index_b);
-}
-
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook2()
-{
-    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_game_finished);
-}
-
-__declspec(safebuffers) void __fastcall event_generate_part_hook()
-{
-    datum_index object_index;
-    __asm mov object_index, esi;
-    simulation_action_object_create(object_index);
-}
 
 __declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
 {
@@ -687,9 +678,9 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook2()
     short body_stun_ticks;
     s_unit_data* unit;
     bool unknown_bool;
-    float unknown_ticks;
-    float new_body_vitality;
-    float unknown_vitality;
+    real unknown_ticks;
+    real new_body_vitality;
+    real unknown_vitality;
     __asm
     {
         mov eax, [ebp + 0xF4]
@@ -718,21 +709,23 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook2()
     }
     else
     {
-        long object_type = 1 << unit->object_identifier.type.get();
-        float vitality_delta = get_tls()->game_time_globals->seconds_per_tick * unknown_ticks;
+        e_object_type object_type = unit->object_identifier.type.get();
+        TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+        real vitality_delta = game_time_globals->seconds_per_tick * unknown_ticks;
         if (TEST_BIT(_object_mask_unit, object_type))
         {
-            float vitality_multiplier = game_difficulty_get_team_value(3, unit->team);
+            // TODO: see if this gets called and works now I'm not using a broken version of the call
+            real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->team.get());
             new_body_vitality = unknown_vitality;
             vitality_delta = vitality_delta * vitality_multiplier;
         }
-        unit->damage_flags |= 0x200; // enable _model_shield_depletion_is_permanent_bit?
-        float vitality_result = unit->body_vitality + vitality_delta;
+        unit->damage_flags |= FLAG(9); // enable _model_shield_depletion_is_permanent_bit?
+        real vitality_result = unit->body_vitality + vitality_delta;
         unit->body_vitality = vitality_result;
         if (vitality_result > new_body_vitality)
         {
             unit->body_vitality = new_body_vitality;
-            unit->damage_flags &= ~0x200; // disable _model_shield_depletion_is_permanent_bit?
+            unit->damage_flags &= ~FLAG(9); // disable _model_shield_depletion_is_permanent_bit?
             simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
         }
         else
@@ -744,7 +737,7 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook2()
 
     // set unknown_bool value back to its original address
     __asm mov al, unknown_bool;
-    __asm mov [ebp + 0x113], al;
+    __asm mov[ebp + 0x113], al;
 }
 
 __declspec(safebuffers) void __fastcall object_damage_update_hook3()
@@ -843,7 +836,7 @@ __declspec(safebuffers) void __fastcall object_set_damage_owner_hook()
     {
         mov object_index, ecx
         mov damage_owner, edx
-        mov al, byte ptr [ebp + 0x1C] // [ebp+0x08] - sp was 0x04
+        mov al, byte ptr[ebp + 0x1C] // [ebp+0x08] - sp was 0x04
         mov skip_update, al
     }
     object_set_damage_owner(object_index, damage_owner, skip_update);
@@ -852,8 +845,8 @@ __declspec(safebuffers) void __fastcall object_set_damage_owner_hook()
 __declspec(safebuffers) void __fastcall object_set_damage_owner_hook2()
 {
     datum_index object_index;
-    __asm mov eax, dword ptr [edi + 0x30]
-    __asm mov object_index, eax;
+    __asm mov eax, dword ptr[edi + 0x30]
+        __asm mov object_index, eax;
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
@@ -861,7 +854,7 @@ __declspec(safebuffers) void __fastcall object_set_damage_owner_hook3()
 {
     datum_index object_index;
     __asm mov eax, [ebp + 0xE64] // [ebp-0x18] - sp was 0xE64
-    __asm mov object_index, eax
+        __asm mov object_index, eax
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
@@ -869,7 +862,7 @@ __declspec(safebuffers) void __fastcall object_set_damage_owner_hook4()
 {
     datum_index object_index;
     __asm mov eax, [ebp + 0x17C] // [ebp-0x10] - sp was 0x17C
-    __asm mov object_index, eax
+        __asm mov object_index, eax
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
@@ -884,7 +877,7 @@ __declspec(safebuffers) void __fastcall object_set_damage_owner_hook6()
 {
     datum_index object_index;
     __asm mov eax, [ebp + 0xA8] // [ebp+0x08] - sp was 0x90
-    __asm mov object_index, eax
+        __asm mov object_index, eax
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
@@ -1026,7 +1019,7 @@ __declspec(naked) void object_set_position_internal_hook2()
     {
         // execute the original instruction(s) we replaced
         mov eax, [eax + 8]
-        mov [ecx + 0x74], eax
+        mov[ecx + 0x74], eax
 
         // eax, ecx & edx are caller-saved across a cdecl function call - save their values
         push eax
@@ -1055,7 +1048,7 @@ __declspec(naked) void object_set_position_internal_hook3()
     {
         // execute the original instruction(s) we replaced
         mov eax, [esp + 0x70 - 4]
-        mov [ecx + 0x5C], eax
+        mov[ecx + 0x5C], eax
 
         // eax, ecx & edx are caller-saved across a cdecl function call - save their values
         push ecx
@@ -1084,7 +1077,7 @@ __declspec(naked) void object_set_position_internal_hook4()
     {
         // execute the original instruction(s) we replaced
         mov eax, [esi + 8]
-        mov [ecx + 0x74], eax
+        mov[ecx + 0x74], eax
 
         // eax, ecx & edx are caller-saved across a cdecl function call - save their values
         push eax
@@ -1114,13 +1107,13 @@ __declspec(naked) void object_apply_acceleration_hook()
 
         // execute the original instruction(s) we replaced
         mov ecx, [eax + ebx * 8 + 0x0C]
-        movq qword ptr [ecx + 0x78], xmm0
+        movq qword ptr[ecx + 0x78], xmm0
         mov eax, [esp + 0x30 + -0xC + 0x8]
-        mov [ecx + 0x80], eax
-        movq xmm0, qword ptr [esp + 0x30 + -0x18]
-        movq qword ptr [ecx + 0x84], xmm0
+        mov[ecx + 0x80], eax
+        movq xmm0, qword ptr[esp + 0x30 + -0x18]
+        movq qword ptr[ecx + 0x84], xmm0
         mov eax, [esp + 0x30 + -0x18 + 0x8]
-        mov [ecx + 0x8C], eax
+        mov[ecx + 0x8C], eax
 
         // retrieve object_index value
         pop ecx
@@ -1145,9 +1138,9 @@ __declspec(naked) void object_set_velocities_internal_hook()
         push ebp
         mov ebp, esp
         and esp, 0x0FFFFFFF8
-        
+
         push 0 // skip_update = false
-        push [ebp + 0x8] // angular_velocity
+        push[ebp + 0x8] // angular_velocity
         push edx // transitional_velocity
         push ecx // object_index
         call object_set_velocities_internal
@@ -1203,10 +1196,10 @@ __declspec(naked) void object_set_at_rest_hook3()
         add esp, 4
 
         // execute the original instruction(s) we replaced
-        movzx ecx, word ptr [ebx + 8]
+        movzx ecx, word ptr[ebx + 8]
         mov eax, 0x3EDDCDC
         add eax, module_base
-        mov eax, ds:[eax]
+        mov eax, ds: [eax]
 
         // return back to the original code
         mov edx, module_base
@@ -1245,7 +1238,7 @@ __declspec(naked) void object_set_at_rest_hook5()
         push edx
 
         // call our inserted function
-        push [esp + 0x5C - 0x48]  // object_index
+        push[esp + 0x5C - 0x48]  // object_index
         call object_set_at_rest_simulation_update
         add esp, 4
 
@@ -1261,10 +1254,10 @@ __declspec(naked) void object_set_at_rest_hook5()
         add eax, 0x467DF0
         jmp eax
 
-        if_label:
+        if_label :
         mov eax, module_base
-        add eax, 0x467F3C
-        jmp eax
+            add eax, 0x467F3C
+            jmp eax
     }
 }
 
@@ -1283,28 +1276,28 @@ __declspec(naked) void object_set_at_rest_hook6()
         cmp dword ptr[edx + 0xA0], 0xFFFFFFFF
         jnz if_label2
 
-        if_label1:
+        if_label1 :
         or dword ptr[edx + 0xAC], 0x200
-        
-        if_label2:
-        // preserve register
-        push eax
 
-        // call our inserted function
-        push [esp + 0x25C - 0x210]  // object_index
-        call object_set_at_rest_simulation_update
-        add esp, 4
+            if_label2 :
+            // preserve register
+            push eax
 
-        // restore register
-        pop eax
+            // call our inserted function
+            push[esp + 0x25C - 0x210]  // object_index
+            call object_set_at_rest_simulation_update
+            add esp, 4
 
-        // execute the original instruction(s) we replaced
-        mov ecx, [esp + 0x258 - 0x248]
+            // restore register
+            pop eax
 
-        // return back to the original code
-        mov edx, module_base
-        add edx, 0x464ECB
-        jmp edx
+            // execute the original instruction(s) we replaced
+            mov ecx, [esp + 0x258 - 0x248]
+
+            // return back to the original code
+            mov edx, module_base
+            add edx, 0x464ECB
+            jmp edx
     }
 }
 
@@ -1314,12 +1307,12 @@ __declspec(naked) void object_set_at_rest_hook7()
     __asm
     {
         // call our inserted function
-        push [esp + 0x298 - 0x28C]  // object_index
+        push[esp + 0x298 - 0x28C]  // object_index
         call object_set_at_rest_simulation_update
         add esp, 4
 
         // execute the original instruction(s) we replaced
-        movss xmm0, dword ptr [edi + 0x60]
+        movss xmm0, dword ptr[edi + 0x60]
 
         // return back to the original code
         mov eax, module_base
@@ -1374,8 +1367,6 @@ __declspec(naked) void object_set_at_rest_hook9()
 // scenery_new
 void __fastcall object_set_at_rest_hook10(datum_index object_index)
 {
-    FUNCTION_DEF(0x490200, void, __fastcall, scenery_animation_idle, datum_index object_index);
-
     object_set_at_rest_simulation_update(object_index);
     scenery_animation_idle(object_index);
 }
@@ -1392,7 +1383,7 @@ __declspec(naked) void object_set_at_rest_hook11()
 
         // execute the original instruction(s) we replaced
         or eax, 0xFFFFFFFF
-        mov [esp + 0x80 - 0x34], ax
+        mov[esp + 0x80 - 0x34], ax
 
         // return back to the original code
         mov ecx, module_base
@@ -1421,8 +1412,6 @@ __declspec(naked) void object_set_at_rest_hook12()
 // unit_custom_animation_play_animation_submit
 void __fastcall object_set_at_rest_hook13(datum_index object_index)
 {
-    FUNCTION_DEF(0x4056A0, void, __fastcall, object_compute_node_matrices, datum_index object_index);
-
     object_set_at_rest_simulation_update(object_index);
     object_compute_node_matrices(object_index);
 }
@@ -1433,135 +1422,13 @@ void __fastcall object_set_at_rest_hook(datum_index object_index)
     object_set_at_rest_simulation_update(object_index);
 }
 
-datum_index __fastcall weapon_barrel_create_projectiles_hook1(void* thisptr)
-{
-    FUNCTION_DEF(0x3FCEE0, datum_index, __thiscall, object_new, void* thisptr);
-
-    datum_index object_index = object_new(thisptr);
-    if (object_index != -1)
-        simulation_action_object_create(object_index);
-    return object_index;
-}
-
-__declspec(naked) void weapon_barrel_create_projectiles_hook2()
-{
-    __asm
-    {
-        // call our inserted function
-        // if (v220) 
-        cmp [esp + 0x2250 - 0x2244], 0 // v220
-        jz if_failed
-
-        push [esp + 0x2250 - 0x2230] // object_index
-        call simulation_action_object_create
-        add esp, 4
-
-        if_failed:
-        // execute the instructions we replaced
-        mov eax, [esp + 0x2250 - 0x21F8]
-        xor dl, dl
-
-        // return back to the original code
-        mov ecx, module_base
-        add ecx, 0x4394A8
-        jmp ecx
-    }
-}
-
-__declspec(naked) void throw_release_hook1()
-{
-    __asm
-    {
-        cmp [ebp + 0x20], 0
-        jnz sim_update
-        mov eax, module_base
-        add eax, 0x47CFC7
-        jmp eax
-
-        sim_update:
-        push esi // object_index
-        call simulation_action_object_create
-        add esp, 4
-
-        mov eax, module_base
-        add eax, 0x47D185
-        jmp eax
-    }
-}
-
-__declspec(naked) void throw_release_hook2()
-{
-    __asm
-    {
-        add esp, 4
-        test al, al
-        jnz sim_update
-        mov eax, module_base
-        add eax, 0x47D17B
-        jmp eax
-
-        sim_update:
-        push esi // object_index
-        call simulation_action_object_create
-        add esp, 4
-        
-        mov eax, module_base
-        add eax, 0x47D185
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_activate_hook()
-{
-    __asm
-    {
-        // preserve register
-        push eax
-
-        push eax // object_index
-        call simulation_action_object_create
-        add esp, 4
-
-        // restore register
-        pop eax
-
-        // original replaced instructions
-        mov ecx, [esp + 0x358 - 0x348]
-        mov [ecx + 0x1A0], eax
-
-        // return
-        mov eax, module_base
-        add eax, 0x451498
-        jmp eax
-    }
-}
-
-__declspec(naked) void item_in_unit_inventory_hook1()
-{
-    __asm
-    {
-        push edi // object_index
-        call simulation_action_object_create
-        add esp, 4
-
-        // original replaced instructions
-        mov eax, [ebx + 0x0C]
-        mov ecx, [ebp - 0x08]
-
-        // return
-        mov edx, module_base
-        add edx, 0x48433D
-        jmp edx
-    }
-}
-
 __declspec(naked) void item_in_unit_inventory_hook2()
 {
     __asm
     {
         // original replaced instructions
         or eax, 0xFFFFFFFF
-        mov [esi + 0x1E], ax
+        mov[esi + 0x1E], ax
 
         // preserve register
         push ecx
@@ -1593,24 +1460,24 @@ __declspec(naked) void c_map_variant__remove_object_hook()
         add ecx, ecx
         mov eax, [eax + 0x44]
         mov eax, [eax + ecx * 8 + 0x0C]
-        mov [eax + 0x1C], dx
+        mov[eax + 0x1C], dx
         jmp sim_update
 
-        sim_update:
+        sim_update :
         // if (game_is_authoritative())
         call game_is_authoritative
-        test al, al
-        jz return_label
-        push 0
-        push 8192 // _simulation_object_update_map_variant_index (1 << 13)
-        push [ebp + 0xC] // object_index
-        call simulation_action_object_update_with_bitmask
+            test al, al
+            jz return_label
+            push 0
+            push 8192 // _simulation_object_update_map_variant_index (1 << 13)
+            push[ebp + 0xC] // object_index
+            call simulation_action_object_update_with_bitmask
 
-        // return
-        return_label:
+            // return
+            return_label :
         mov eax, module_base
-        add eax, 0xADB52
-        jmp eax
+            add eax, 0xADB52
+            jmp eax
     }
 }
 
@@ -1620,7 +1487,7 @@ __declspec(naked) void c_map_variant__unknown4_hook1()
     {
         push 0
         push 6 // _simulation_object_update_position and _simulation_object_update_forward_and_up ((1 << 1) | (1 << 2))
-        push [ebx + esi + 0x134] // object_index
+        push[ebx + esi + 0x134] // object_index
         call simulation_action_object_update_with_bitmask
 
         // execute instructions we replaced
@@ -1675,7 +1542,7 @@ __declspec(naked) void player_set_unit_index_hook2()
 
         push 1 // _simulation_unit_update_assassination_data (1 << 32)
         push 0
-        push [edi + 0x30] // unit_index
+        push[edi + 0x30] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // return
@@ -1690,7 +1557,7 @@ __declspec(naked) void unit_died_hook()
     __asm
     {
         // original replaced instructions
-        movss dword ptr [eax + 0x404], xmm0
+        movss dword ptr[eax + 0x404], xmm0
 
         // preserve register
         push edx
@@ -1707,20 +1574,20 @@ __declspec(naked) void unit_died_hook()
         jmp return_label
 
         // biped update
-        biped_update:
+        biped_update :
         push 0
-        push 134217728 // _simulation_unit_update_active_camo (1 << 27)
-        push esi // unit_index
-        call simulation_action_object_update_with_bitmask
+            push 134217728 // _simulation_unit_update_active_camo (1 << 27)
+            push esi // unit_index
+            call simulation_action_object_update_with_bitmask
 
-        // restore register
-        return_label:
+            // restore register
+            return_label :
         pop edx
 
-        // return
-        mov eax, module_base
-        add eax, 0x421471
-        jmp eax
+            // return
+            mov eax, module_base
+            add eax, 0x421471
+            jmp eax
     }
 }
 
@@ -1729,7 +1596,7 @@ __declspec(naked) void grenade_throw_move_to_hand_hook()
     __asm
     {
         // original replaced instructions
-        mov [ecx + 0x324], al
+        mov[ecx + 0x324], al
 
         // preserve registers across call
         push ecx
@@ -1737,7 +1604,7 @@ __declspec(naked) void grenade_throw_move_to_hand_hook()
 
         push 0
         push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push [ebp - 0x08] // unit_index
+        push[ebp - 0x08] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // restore registers
@@ -1763,7 +1630,7 @@ __declspec(naked) void unit_add_grenade_to_inventory_hook()
 
         push 0
         push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push [ebp - 0x08] // unit_index
+        push[ebp - 0x08] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // restore registers
@@ -1781,14 +1648,14 @@ __declspec(naked) void unit_add_equipment_to_inventory_hook()
     __asm
     {
         // original replaced instructions
-        mov [ecx + 0x314], eax
+        mov[ecx + 0x314], eax
 
         // preserve registers across call
         push ecx
 
         push 0
         push 805306368 // _simulation_unit_update_equipment & _simulation_unit_update_equipment_charges ((1 << 28) | (1 << 29))
-        push [esp + 0x2C - 0x0C] // unit_index
+        push[esp + 0x2C - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // restore registers
@@ -1806,7 +1673,7 @@ __declspec(naked) void unit_update_control_hook1()
     __asm
     {
         // original replaced instructions
-        mov [edi + 0x1E4], eax
+        mov[edi + 0x1E4], eax
 
         push 0
         push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
@@ -1825,7 +1692,7 @@ __declspec(naked) void unit_update_control_hook2()
     __asm
     {
         // original replaced instructions
-        mov [edi + 0x1B4], eax
+        mov[edi + 0x1B4], eax
 
         // preserve register across call
         push ecx
@@ -1837,7 +1704,7 @@ __declspec(naked) void unit_update_control_hook2()
 
         // restore register
         pop ecx
-        
+
         // return
         mov eax, module_base
         add eax, 0x418693
@@ -1876,7 +1743,7 @@ __declspec(naked) void unit_add_initial_loadout_hook0()
     {
         // create a new variable to preserve player_object_index in
         sub esp, 0x1C0 // originally sub esp, 0x1BC
-        mov [ebp - 0x1BC], ecx // ecx is player_object_index
+        mov[ebp - 0x1BC], ecx // ecx is player_object_index
 
         // return
         mov eax, module_base
@@ -1891,7 +1758,7 @@ __declspec(naked) void unit_add_initial_loadout_hook1()
     {
         push 0
         push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push [ebp - 0x1BC] // player object index
+        push[ebp - 0x1BC] // player object index
         call simulation_action_object_update_with_bitmask
 
         // original replaced instructions
@@ -1915,7 +1782,7 @@ __declspec(naked) void unit_add_initial_loadout_hook2()
         call simulation_action_object_update_with_bitmask
 
         // original replaced instructions
-        mov byte ptr [ebx + 0x18B4], 0
+        mov byte ptr[ebx + 0x18B4], 0
 
         // return
         mov eax, module_base
@@ -1929,7 +1796,7 @@ __declspec(naked) void projectile_attach_hook()
     __asm
     {
         // original replaced instructions
-        movss dword ptr [esi + 0x18C], xmm1
+        movss dword ptr[esi + 0x18C], xmm1
 
         // preserve registers across call
         push eax
@@ -1938,7 +1805,7 @@ __declspec(naked) void projectile_attach_hook()
 
         push 0
         push 2048 // _simulation_object_update_parent_state (1 << 11)
-        push [esp + 0x6C - 0x48] // projectile_index
+        push[esp + 0x6C - 0x48] // projectile_index
         call simulation_action_object_update_with_bitmask
 
         // restore registers
@@ -1961,7 +1828,7 @@ __declspec(naked) void unit_set_aiming_vectors_hook1() // c_simulation_unit_enti
 {
     __asm
     {
-        push [edi + 0x0B4] // looking_vector
+        push[edi + 0x0B4] // looking_vector
         mov edx, [edi + 0xB4] // aiming_vector
         mov ecx, ebx // unit_index
         call unit_set_aiming_vectors
@@ -1978,10 +1845,10 @@ __declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_u
     __asm
     {
         // original replaced instruction
-        mov dword ptr [esp + 0xE0 - 0xC0], 0xFFFFFFFF
+        mov dword ptr[esp + 0xE0 - 0xC0], 0xFFFFFFFF
 
         // set new variable
-        mov dword ptr [esp + 0xE0 - 0xD4], 0xFFFFFFFF
+        mov dword ptr[esp + 0xE0 - 0xD4], 0xFFFFFFFF
 
         // return
         mov edx, module_base
@@ -1996,10 +1863,10 @@ __declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_u
     {
         // original replaced instruction
         mov eax, [esp + 0xE0 - 0xC4]
-        mov [esp + 0xE0 - 0xC0], edi
+        mov[esp + 0xE0 - 0xC0], edi
 
         // set new variable
-        mov [esp + 0xE0 - 0xD4], edi
+        mov[esp + 0xE0 - 0xD4], edi
 
         // return
         mov ecx, module_base
@@ -2013,11 +1880,11 @@ __declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fi
     __asm
     {
         // replaced instructions
-        mov [ecx + 0x1E4], eax
+        mov[ecx + 0x1E4], eax
 
         push 0
         push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push [esp + 0xE8 - 0xD4] // unit_index
+        push[esp + 0xE8 - 0xD4] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // return
@@ -2049,11 +1916,11 @@ __declspec(naked) void equipment_activate_hook2()
     __asm
     {
         // replaced instructions
-        mov [edi + 0x198], eax
+        mov[edi + 0x198], eax
 
         push 0
         push 65536 // _simulation_item_update_unknown16 (1 << 16)
-        push [esp + 0x360 - 0x328] // equipment_index
+        push[esp + 0x360 - 0x328] // equipment_index
         call simulation_action_object_update_with_bitmask
 
         // return
@@ -2068,7 +1935,7 @@ __declspec(naked) void unit_update_energy_hook()
     __asm
     {
         // replaced instructions
-        mov [esi + 0x31C], eax
+        mov[esi + 0x31C], eax
 
         push 0
         push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
@@ -2095,7 +1962,7 @@ __declspec(naked) void equipment_handle_energy_cost_hook0()
         mov esi, ecx
 
         // preserve unit_index in new variable
-        mov dword ptr [esp + 0x18 - 0x0C], esi
+        mov dword ptr[esp + 0x18 - 0x0C], esi
 
         // return
         mov eax, module_base
@@ -2106,6 +1973,8 @@ __declspec(naked) void equipment_handle_energy_cost_hook0()
 
 __declspec(naked) void equipment_handle_energy_cost_hook1()
 {
+    // Make sure this is static else the stack will break
+    static void* sub_2E7BE0 = (void*)BASE_ADDRESS(0x2E7BE0);
     __asm
     {
         // replaced instructions
@@ -2113,7 +1982,7 @@ __declspec(naked) void equipment_handle_energy_cost_hook1()
 
         push 0
         push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
-        push [esp + 0x20 - 0x0C] // unit_index
+        push[esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
         // return
@@ -2125,6 +1994,8 @@ __declspec(naked) void equipment_handle_energy_cost_hook1()
 
 __declspec(naked) void equipment_handle_energy_cost_hook2()
 {
+    // Make sure this is static else the stack will break
+    static void* hf2p_set_player_cooldown = (void*)BASE_ADDRESS(0xC19E0);
     __asm
     {
         // replaced instructions
@@ -2132,12 +2003,12 @@ __declspec(naked) void equipment_handle_energy_cost_hook2()
 
         push 0
         push 536870912 // _simulation_unit_update_equipment_charges (1 << 29)
-        push [esp + 0x20 - 0x0C] // unit_index
+        push[esp + 0x20 - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
         push 0
         push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
-        push [ebx + 0x198] // unit->player_index
+        push[ebx + 0x198] // unit->player_index
         call simulation_action_game_engine_player_update_with_bitmask
         add esp, 12
 
@@ -2174,21 +2045,21 @@ __declspec(naked) void unit_set_hologram_hook()
         jmp return_label
 
         // biped update
-        biped_update:
+        biped_update :
         push 0
-        push 134217728 // _simulation_unit_update_active_camo (1 << 27)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
+            push 134217728 // _simulation_unit_update_active_camo (1 << 27)
+            push ebx // unit_index
+            call simulation_action_object_update_with_bitmask
 
-        // restore register
-        return_label:
+            // restore register
+            return_label :
         pop edx
-        pop ecx
+            pop ecx
 
-        // return
-        mov eax, module_base
-        add eax, 0x42C578
-        jmp eax
+            // return
+            mov eax, module_base
+            add eax, 0x42C578
+            jmp eax
     }
 }
 
@@ -2200,7 +2071,7 @@ __declspec(naked) void weapon_handle_potential_inventory_item_hook()
         mov al, [ebp - 0x01]
         add esp, 8
 
-        push [ebp - 0x30] // weapon index
+        push[ebp - 0x30] // weapon index
         call simulation_action_weapon_state_update
         add esp, 4
 
@@ -2214,17 +2085,17 @@ __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 
         push 0
         push 1048576 // _simulation_weapon_update_ammo (1 << 20)
-        push [ebp - 0x24] // item index
+        push[ebp - 0x24] // item index
         call simulation_action_object_update_with_bitmask
 
         // return
-        return_label:
+        return_label :
         pop edi
-        pop esi
-        pop ebx
-        mov esp, ebp
-        pop ebp
-        retn
+            pop esi
+            pop ebx
+            mov esp, ebp
+            pop ebp
+            retn
     }
 }
 
@@ -2237,7 +2108,7 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook0()
         mov ebp, esp
         sub esp, 0x10 // originally sub esp, 0x0C
 
-        mov [ebp - 0x0C], ecx // ecx is unit_index
+        mov[ebp - 0x0C], ecx // ecx is unit_index
 
         // return
         mov eax, module_base
@@ -2272,7 +2143,7 @@ __declspec(naked) void unit_inventory_set_weapon_index_hook1()
 
         push 0
         push edx // update_flags
-        push [ebp - 0x0C] // unit_index
+        push[ebp - 0x0C] // unit_index
         call simulation_action_object_update_with_bitmask
 
         mov ecx, [ebp - 0x0C] // unit_index
@@ -2294,7 +2165,7 @@ __declspec(naked) void unit_handle_deleted_object_hook()
     {
         // replace inlined unit_inventory_set_weapon_index call with our rewritten one
         push 4 // drop_type
-        push -1 // item_index
+        push - 1 // item_index
         mov edx, ebx // inventory_index
         mov ecx, [ebp + 0x08] // unit index
         call unit_inventory_set_weapon_index
@@ -2306,56 +2177,26 @@ __declspec(naked) void unit_handle_deleted_object_hook()
     }
 }
 
-void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
-{
-    thisptr->adjust_team_stat(team_index, statistic, unknown, value);
-}
-
-void __fastcall stats_reset_for_round_switch_hook(c_game_statborg* thisptr)
-{
-    thisptr->stats_reset_for_round_switch();
-}
-
-void __fastcall game_engine_player_set_spawn_timer_hook(long player_index, long countdown_ticks)
-{
-    FUNCTION_DEF(0xC7700, void, __fastcall, game_engine_player_set_spawn_timer, long player_index, long countdown_ticks);
-    game_engine_player_set_spawn_timer(player_index, countdown_ticks);
-    simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
-}
-
 void __fastcall hf2p_player_podium_initialize_hook(long podium_biped_index, long player_index)
 {
     hf2p_player_podium_initialize(podium_biped_index, player_index);
 }
 
-void __cdecl draw_watermark_hook()
+void __cdecl game_engine_render_frame_watermarks_hook()
 {
     // empty function
 }
 
-void __fastcall game_engine_register_object_hook(datum_index object_index)
-{
-    FUNCTION_DEF(0x172600, void, __fastcall, game_engine_register_object, datum_index object_index);
-    game_engine_register_object(object_index);
-    simulation_action_object_create(object_index);
-}
-
 long __cdecl exceptions_update_hook()
 {
-    FUNCTION_DEF(0x167CF0, long, __cdecl, exceptions_update);
-    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)base_address(0x106DEC8);
+    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)BASE_ADDRESS(0x106DEC8);
     if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
         return 0;
 
     return exceptions_update();
 }
 
-bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_network_session_parameter_game_start_status* thisptr, void* unused, s_network_session_parameter_game_start_status* start_status)
-{
-    return thisptr->set(start_status);
-}
-
-void anvil_dedi_apply_patches()
+void anvil_patches_apply()
 {
     // enable tag edits
     Patch(0x082DB4, { 0xEB }).Apply();
@@ -2366,7 +2207,7 @@ void anvil_dedi_apply_patches()
     // enable netdebug
     //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
     //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
-    
+
     // test to replace tutorial map id with diamondback id in damage function
     //Patch(0x40F290, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
     //Patch(0x40F2E3, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
@@ -2376,140 +2217,14 @@ void anvil_dedi_apply_patches()
 // TODO: verify all hooks are working as intended
 // check for register corruption - especially where i've added new variables
 // TODO: insert_hook should sanitise against register corruption - replace all old hooks with new system
-void anvil_dedi_apply_hooks()
+void anvil_hooks_apply()
 {
-    // hook exceptions_update to catch esoteric crashes
-    Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9AB6B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9ABAB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9EFE3, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F07C, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F8B1, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xC3E8B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xDCCBD, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
-
-    // DEDICATED SERVER HOOKS
-    // add anvil_session_update() to the end of network_update
-    insert_hook(0x246C1, 0x246D4, anvil_session_update);
-    // hook c_network_session_parameter_game_start_status::set calls to log when the session start status & start error are updated
-    Hook(0x3BA00, c_network_session_parameter_game_start_status__set_hook).Apply();
-    insert_hook(0x4DF34, 0x4DF99, c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook, _hook_replace);
-    // hook xnet_shim_create_key() to use a lobby/party ID from the API when running as a dedicated server
-    Hook(0x3BC0, transport_secure_key_create_hook).Apply();
-    // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
-    Patch::NopFill(Pointer::Base(0x3D17), 0x25);
-    Hook(0x3D12, transport_secure_address_resolve_hook, HookFlags::IsCall).Apply(); // TODO: nop old secure address assignment code
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
-    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
-    // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
-    // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server
-    // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
-    // prevent the game from adding a player to the dedicated host
-    //Hook(0x2F5AC, peer_request_player_add_hook, HookFlags::IsCall).Apply();
-    //Hook(0x212CC, network_session_interface_get_local_user_identifier_hook, HookFlags::IsCall).Apply();
-    // set peer & session name
-    Hook(0x3AA897, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    Hook(0x3AC21A, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    Hook(0x3AC243, network_session_interface_set_local_name_hook, HookFlags::IsCall).Apply();
-    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
-    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
-
-    // SESSION HOOKS
-    // add back missing host code by replacing existing stripped down functions
-    Hook(0x25110, handle_out_of_band_message_hook).Apply();
-    Hook(0x252F0, handle_channel_message_hook).Apply();
-    Hook(0x2A580, network_join_process_joins_from_queue).Apply();
-    Hook(0x21AB0, session_idle_hook).Apply();
-    // I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
-    // add back set_peer_address & set_peer_properties to peer_request_properties_update
-    Hook(0x2F650, network_session_update_peer_properties).Apply();
-    Hook(0x3EEE1F, network_life_cycle_end_hook, HookFlags::IsCall).Apply();
-    // set network_life_cycle_create_local_squad call in hf2p_setup_session to create an online session
-    Hook(0x3AAF68, create_local_online_squad, HookFlags::IsCall).Apply();
-    // add back network_session_check_properties
-    Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
-    // unregister the host address description to the xnet shim table on session destruction - the transport_secure_key_create hook further down handles session creation
-    Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
-    Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
-    Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
-    // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
-    Hook(0xFBBA0, game_engine_should_spawn_player).Apply();
-
-    // SIMULATION HOOKS
-    // allow view_establishment to progress past connection phase to established in update_establishing_view again
-    Hook(0x370E0, update_establishing_view_hook).Apply();
-    // add game_engine_attach_to_simulation back to game_engine_game_starting
-    Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
-    // add game_engine_detach_from_simulation_gracefully back to game_engine_game_ending
-    insert_hook(0xC7320, 0xC7353, game_engine_detach_from_simulation_gracefully, _hook_replace);
-
-    // STATBORG UPDATES
-    // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
-    Hook(0xFA2D0, game_engine_player_added).Apply();
-    // c_game_statborg::stats_finalize_for_game_end
-    insert_hook(0xCA2F0, 0xCA2F7, game_engine_update_after_game_hook);
-    // c_game_statborg::adjust_player_stat
-    insert_hook(0x1AF61D, 0x1AF624, c_game_statborg__adjust_player_stat_hook);
-    insert_hook(0xC8ACE, 0xC8AF3, game_engine_end_round_with_winner_hook1);
-    insert_hook(0xC8C18, 0xC8C3D, game_engine_end_round_with_winner_hook2);
-    insert_hook(0xFAFDB, 0xFB000, game_engine_earn_wp_event_hook);
-    // TODO: other inlined instances of c_game_statborg::adjust_player_stat
-    //c_game_statborg::record_kill // this call from ms23 is gone entirely in ms29, not even inlined
-    //game_engine_adjust_player_wp // survival only
-    //metagame_earn_wp_event_maybe // survival only
-    //sub_9DBC70 // infection related, c_infection_engine::update which calls this is empty in ms29
-    //c_infection_engine::player_killed_player // also gone in ms29
-    //c_infection_engine::player_killed_player // also gone in ms29
-    //c_infection_engine::player_killed_player // also gone in ms29
-    //c_infection_engine::player_left
-    // c_game_statborg::adjust_team_stat
-    Hook(0x1AF710, adjust_team_stat_hook).Apply();
-    insert_hook(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3);
-    insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, _hook_execute_replaced_last);
-    // TODO: c_territories_engine::unknown has several c_game_statborg::adjust_team_stat calls
-    // c_game_statborg::player_changed_teams
-    insert_hook(0xFA956, 0xFA95F, player_changed_teams_hook);
-    // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
-    insert_hook(0xFA7B1, 0xFA7B8, player_indices_swapped_hook); // TODO: TEST - WHERE IS THIS USED?
-    // c_game_statborg::stats_reset_for_round_switch
-    Hook(0x1AEE00, stats_reset_for_round_switch_hook).Apply();
-    // TODO: c_game_statborg::reset_player_stat for infection
-    // TODO: c_game_statborg::reset_team_stat for territories
-
-    // GLOBALS UPDATES
-    // pre-game camera countdown
-    Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
-    // round timer - why isn't this also causing x minutes remaining events to generate?
-    Pointer::Base(0xC98CB).WriteJump(game_engine_update_time_hook, HookFlags::None);
-    // sync game end & podium
-    insert_hook(0xCA265, 0xCA26C, game_engine_update_after_game_hook2);
-
-    // OBJECT CREATION
-    // create & update player biped on spawn (player_spawn)
-    Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
-    // map variant object spawning
-    Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_map_variant::create_object
-    Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
-    Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
-    // effect object spawning
-    // replace if statement jnz with jnz near jump to return destination so we can redirect it
-    Patch(0x114A58, { 0x75, 0x12, 0x90, 0x90, 0x90, 0x90 }).Apply();
-    insert_hook(0x114A58, 0x114A6C, event_generate_part_hook, _hook_execute_replaced_first, true);
-    // weapon_barrel_create_projectiles
-    Hook(0x4391D4, weapon_barrel_create_projectiles_hook1, HookFlags::IsCall).Apply(); // crate projectiles // hooks nearby object_new
-    Pointer::Base(0x4394A2).WriteJump(weapon_barrel_create_projectiles_hook2, HookFlags::None); // standard projectiles
-    // grenade & equipment throw spawning
-    Pointer::Base(0x47CFBD).WriteJump(throw_release_hook1, HookFlags::None);
-    Pointer::Base(0x47D174).WriteJump(throw_release_hook2, HookFlags::None);
-    // hologram spawning
-    Pointer::Base(0x45113A).WriteJump(equipment_activate_hook, HookFlags::None);
-    // item inventory
-    Pointer::Base(0x484337).WriteJump(item_in_unit_inventory_hook1, HookFlags::None);
+    anvil_hooks_ds_apply(); // DEDICATED SERVER HOOKS
+    anvil_hooks_session_apply(); // SESSION HOOKS
+    anvil_hooks_simulation_apply(); // SIMULATION HOOKS
+    anvil_hooks_statborg_apply(); // STATBORG UPDATES
+    anvil_hooks_simulation_globals_apply(); // GLOBALS UPDATES
+    anvil_hooks_object_creation_apply(); // OBJECT CREATION
 
     // OBJECT DELETION
     // add simulation_action_object_delete back to object_delete
@@ -2546,10 +2261,11 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0x41854A).WriteJump(unit_update_control_hook1, HookFlags::None); // UNTESTED!!
     Pointer::Base(0x41868D).WriteJump(unit_update_control_hook2, HookFlags::None); // called for units with flag bit 2 set
     Pointer::Base(0x418A73).WriteJump(unit_update_control_hook3, HookFlags::None); // sets aim & look vectors for controlled units - ie driving vehicles
+    // TODO: creates variable and breaks SP, fix this
     // unit_add_initial_loadout
-    Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
-    Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None); 
-    Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
+    //Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
+    //Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None);
+    //Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
     // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
     Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
     // rewrite biped_update_melee_turning w/ updates
@@ -2567,19 +2283,21 @@ void anvil_dedi_apply_hooks()
     Pointer::Base(0xB911B).Write<byte>(0x20); // 0x24 to 0x20 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
     Pointer::Base(0xB911E).Write<byte>(0x10); // 0x14 to 0x10 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
     Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
-    Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
     Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
-    Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
-    Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
-    Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
+    // TODO: This is bad and breaks the stack pointer offsets for other variables
+    //Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
+    //Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
+    //Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
+    //Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
     // equipment_activate
     Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // TODO: this doesn't seem to work the way I expect it to - deployable covers still don't activate for clients
     // sync unit energy levels
     Pointer::Base(0x41B600).WriteJump(unit_update_energy_hook, HookFlags::None);
+    // TODO: creates new variable and breaks SP in doing so, fix this
     // sync energy costs / energy levels decreasing when throwing an equipment
-    Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
-    Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
-    Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
+    //Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
+    //Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
+    //Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
     // unit_set_hologram
     Pointer::Base(0x42C56E).WriteJump(unit_set_hologram_hook, HookFlags::None);
 
@@ -2674,9 +2392,10 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x42E055, 0x42E05A, weapon_trigger_update_hook);
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
+    // TODO: creates new variable and breaks SP, fix this
     // weapon set index updates
-    Pointer::Base(0x426D10).WriteJump(unit_inventory_set_weapon_index_hook0, HookFlags::None);
-    Pointer::Base(0x426D8E).WriteJump(unit_inventory_set_weapon_index_hook1, HookFlags::None);
+    //Pointer::Base(0x426D10).WriteJump(unit_inventory_set_weapon_index_hook0, HookFlags::None);
+    //Pointer::Base(0x426D8E).WriteJump(unit_inventory_set_weapon_index_hook1, HookFlags::None);
     // weapon set identifier updates
     Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
     // add inlined unit_inventory_set_weapon_index with sim updates back to unit_delete_all_weapons_internal
@@ -2690,12 +2409,8 @@ void anvil_dedi_apply_hooks()
     // add more player updates back to player_spawn - syncs player data info? TODO: investigate
     Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
     Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
-    // game_engine_player_set_spawn_timer
-    Hook(0xFA07F, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    Hook(0xFBC5B, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
-    Pointer::Base(0xFBF43).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
-    Pointer::Base(0xFBF4F).WriteJump(game_engine_player_set_spawn_timer_hook, HookFlags::None);
-    Hook(0xFC01C, game_engine_player_set_spawn_timer_hook, HookFlags::IsCall).Apply();
+    // game_engine_player_set_spawn_timer - player update spawn timer sync
+    Hook(0xC7700, game_engine_player_set_spawn_timer).Apply();
     // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
     Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?
     // add player update back to hf2p function - TODO fix crashing
@@ -2708,12 +2423,27 @@ void anvil_dedi_apply_hooks()
     insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook);
     insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook);
     insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook);
-
+    
     // MISC HOOKS
+    // hook exceptions_update to catch esoteric crashes
+    Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9AB6B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9ABAB, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9EFE3, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9F07C, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x9F8B1, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0xC3E8B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0xDCCBD, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
+    Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
+    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
     // output the message type for debugging
-    Hook(0x16AF8, send_message_hook, HookFlags::IsCall).Apply();
-    Hook(0x16C26, send_message_hook, HookFlags::IsCall).Apply();
-    Hook(0x233D4, send_message_hook, HookFlags::IsCall).Apply();
+    Hook(0x16AF8, encode_message_header_hook, HookFlags::IsCall).Apply();
+    Hook(0x16C26, encode_message_header_hook, HookFlags::IsCall).Apply();
+    Hook(0x233D4, encode_message_header_hook, HookFlags::IsCall).Apply();
     // contrail gpu freeze fix - twister
     Hook(0x28A38A, contrail_fix_hook).Apply();
     // temporary test to force elite ui model on mainmenu
@@ -2723,7 +2453,9 @@ void anvil_dedi_apply_hooks()
     // podium taunt triggering & syncing
     insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook);
     // disable build watermark text
-    //Hook(0x1B0AB0, draw_watermark_hook).Apply();
+    //Hook(0x1B0AB0, game_engine_render_frame_watermarks_hook).Apply();
     // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
     //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
+    // Fix host crashing when killed by a player when not connected to the API
+    Hook(0x318C2A, sub_7172B0_hook, HookFlags::IsCall).Apply();
 }

@@ -55,12 +55,13 @@ struct s_game_time_globals
 	word : 16;
 	real seconds_per_tick;
 	long elapsed_ticks;
-	float speed;
+	real speed;
 	real __unknown14;
 	s_game_tick_time_samples time_samples;
 };
 static_assert(sizeof(s_game_time_globals) == 0x2C);
 
 long game_time_get();
-float game_ticks_to_seconds(long ticks);
+real game_ticks_to_seconds(long ticks);
+long game_ticks_to_seconds_ceil(long ticks);
 long game_seconds_integer_to_ticks(long seconds);

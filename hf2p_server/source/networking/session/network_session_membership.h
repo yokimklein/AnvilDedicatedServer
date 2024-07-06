@@ -1,17 +1,25 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <networking\transport\transport_security.h>
+#include <cseries\language.h>
+#include <text\unicode.h>
 #include <game\players.h>
-#include <simulation\simulation.h>
 #include <game\player_configuration.h>
-#include <cstring>
+#include <simulation\simulation.h>
+#include <networking\transport\transport_security.h>
+#include <networking\session\network_session_parameters_game.h>
 
-enum e_peer_map_status : long
+enum e_network_session_map_status
 {
+	_network_session_map_status_none = 0,
+	_network_session_map_status_failed,
+	_network_session_map_status_precaching,
+	_network_session_map_status_precached,
+	_network_session_map_status_loaded,
 
+	k_network_session_map_status_count
 };
 
-enum e_network_session_peer_state : long
+enum e_network_session_peer_state
 {
 	_network_session_peer_state_none,
 	_network_session_peer_state_rejoining,
@@ -50,55 +58,72 @@ static_assert(sizeof(s_network_session_peer_connectivity) == 0x10);
 // this struct shrunk in later builds vs ms23
 struct s_network_session_peer_properties
 {
-	wchar_t peer_name[16];
-	wchar_t peer_session_name[32];
+	bool operator==(s_network_session_peer_properties other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_network_session_peer_properties other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
+	c_static_wchar_string<16> peer_name;
+	c_static_wchar_string<32> peer_session_name;
 	ulong peer_mp_map_mask;
-	ulong peer_map;
-	e_peer_map_status peer_map_status;
+	long peer_map;
+	c_enum<e_network_session_map_status, long, k_network_session_map_status_count> peer_map_status;
 	ulong peer_map_progress_percentage;
 	qword peer_game_instance;
-	ulong game_start_error;
+	//short ready_hopper_id;
+	//short : 16;
+	c_enum<e_session_game_start_error, long, k_session_game_start_error_count> game_start_error;
+	//bool peer_has_hard_drive;
+	//long estimated_downstream_bandwidth_bps;
+	//long estimated_upstream_bandwidth_bps;
+	//bool estimated_upstream_is_reliable;
+	//c_enum<e_online_nat_type, long, k_online_nat_type_count> nat_type;
 	ulong connectivity_badness_rating;
 	ulong host_badness_rating;
 	ulong client_badness_rating;
 	s_network_session_peer_connectivity connectivity;
-	ulong language;
-	ulong determinism_version;
-	ulong determinism_compatible_version;
+	c_enum<e_language, long, k_language_count> language;
+	long determinism_version;
+	long determinism_compatible_version;
 	ulong flags;
 };
 static_assert(sizeof(s_network_session_peer_properties) == 0xA8);
 
+#pragma pack(push, 4)
 struct s_network_session_peer
 {
 	s_transport_secure_address secure_address;
-	e_network_session_peer_state connection_state;
+	c_enum<e_network_session_peer_state, long, k_network_session_peer_state_count> connection_state;
 	ulong version;
 	ulong join_start_time;
 	ulong unknown;
-	s_network_session_peer_properties properties; // 8?
+	s_network_session_peer_properties properties;
 	qword party_nonce;
 	qword join_nonce;
-	ulong player_mask;
+	c_static_flags<16> player_mask;
+	long pad;
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);
+static_assert(0x20 == OFFSETOF(s_network_session_peer, properties));
+static_assert(0xD8 == OFFSETOF(s_network_session_peer, player_mask));
 
-#pragma pack(push, 1)
 struct s_network_session_player
 {
+	bool operator==(s_network_session_player other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_network_session_player other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 	long desired_configuration_version;
 	s_player_identifier player_identifier;
 	long peer_index;
-	long player_sequence_number;
-	bool player_occupies_a_public_slot;
+	long player_sequence_number; // peer_user_index
+	bool left_game;
 	byte pad[3];
 	long controller_index;
 	long unknown2;
 	s_player_configuration configuration;
 	long voice_settings;
-	long unknown3;
+	long pad2;
 };
 static_assert(sizeof(s_network_session_player) == 0xB98);
+static_assert(0x20 == OFFSETOF(s_network_session_player, configuration));
 #pragma pack(pop)
 
 #pragma pack(push, 1)
@@ -126,15 +151,17 @@ struct s_network_session_shared_membership
 	bool are_slots_locked;
 	byte pad[2];
 	long peer_count;
-	ulong peer_valid_mask;
+	c_static_flags<k_network_maximum_machines_per_session> peer_valid_mask;
 	s_network_session_peer peers[k_network_maximum_machines_per_session];
 	long player_count;
-	ulong player_valid_flags;
+	c_static_flags<k_network_maximum_players_per_session> player_valid_mask;
 	s_network_session_player players[k_network_maximum_players_per_session];
 	long player_sequence_number;
 	long : 32;
 };
 static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
+static_assert(0x20 == OFFSETOF(s_network_session_shared_membership, peers));
+static_assert(0xF08 == OFFSETOF(s_network_session_shared_membership, players));
 #pragma pack(pop)
 
 class c_network_session;
@@ -153,8 +180,8 @@ public:
 	bool is_peer_valid(long peer_index);
 	bool is_player_valid(long player_index);
 	bool add_peer(long peer_index, e_network_session_peer_state peer_state, ulong joining_network_version_number, s_transport_secure_address const* secure_address, qword join_party_nonce, qword join_nonce);
-	long find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool join_from_recruiting);
-	s_network_session_player* add_player_internal(long player_index, s_player_identifier const* player_identifier, long peer_index, long player_sequence_number, bool player_occupies_a_public_slot);
+	long find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool player_left);
+	s_network_session_player* add_player_internal(long player_index, s_player_identifier const* player_identifier, long peer_index, long player_sequence_number, bool player_left_game);
 	void update_player_data(long player_index, s_player_configuration const* player_config);
 	long get_peer_from_incoming_address(s_transport_address const* incoming_address);
 	void set_peer_connection_state(long peer_index, e_network_session_peer_state state);
@@ -181,6 +208,7 @@ public:
 	s_network_session_shared_membership* get_transmitted_membership(long peer_index);
 	void set_membership_update_number(long peer_index, long update_number);
 	void build_membership_update(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message);
+	void build_membership_update_TEMPORARY(long peer_index, s_network_session_shared_membership* membership, s_network_session_shared_membership* baseline, s_network_message_membership_update* message);
 	void build_peer_properties_update(s_network_session_peer_properties* membership_properties, s_network_session_peer_properties* baseline_properties, s_network_message_membership_update_peer_properties* peer_properties_update);
 	void set_peer_address(long peer_index, s_transport_secure_address const* secure_address);
 	void set_peer_properties(long peer_index, s_network_session_peer_properties const* peer_properties);

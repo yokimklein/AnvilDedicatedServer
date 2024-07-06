@@ -47,6 +47,7 @@ enum e_simulation_event_type
 	_simulation_event_type_object_refresh,
 	_simulation_event_type_player_editor_request,
 
+	k_simulation_event_type_count,
 	k_simulation_event_type_maximum_count = 64
 };
 

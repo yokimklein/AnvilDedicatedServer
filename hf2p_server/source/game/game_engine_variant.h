@@ -4,69 +4,67 @@
 #include <game\game_engine_traits.h>
 #include <saved_games\saved_game_files.h>
 #include <memory\bitstream.h>
+#include <game\game_engine_ctf.h>
+#include <game\game_engine_slayer.h>
+#include <game\game_engine_oddball.h>
+#include <game\game_engine_king.h>
+#include <game\game_engine_sandbox.h>
+#include <game\game_engine_vip.h>
+#include <game\game_engine_juggernaut.h>
+#include <game\game_engine_territories.h>
+#include <game\game_engine_assault.h>
+#include <game\game_engine_infection.h>
 
 enum e_game_engine_type
 {
-	_game_engine_base_variant = 0,
-	_game_engine_ctf_variant,
-	_game_engine_slayer_variant,
-	_game_engine_oddball_variant,
-	_game_engine_king_variant,
-	_game_engine_sandbox_variant,
-	_game_engine_vip_variant,
-	_game_engine_juggernaut_variant,
-	_game_engine_territories_variant,
-	_game_engine_assault_variant,
-	_game_engine_infection_variant,
+	_game_engine_type_none = 0,
+	_game_engine_type_ctf,
+	_game_engine_type_slayer,
+	_game_engine_type_oddball,
+	_game_engine_type_king,
+	_game_engine_type_sandbox,
+	_game_engine_type_vip,
+	_game_engine_type_juggernaut,
+	_game_engine_type_territories,
+	_game_engine_type_assault,
+	_game_engine_type_infection,
 
 	k_game_engine_type_count,
-	k_game_engine_type_default = _game_engine_base_variant
+	k_game_engine_type_default = _game_engine_type_none
 };
 
-#pragma pack(push, 4)
-class c_game_engine_base_variant
+class c_game_variant
 {
 public:
-	c_game_engine_base_variant() :
-		m_checksum(),
-		m_name(),
-		m_metadata(),
-		m_miscellaneous_options(),
-		m_respawn_options(),
-		m_social_options(),
-		m_map_override_options(),
-		m_flags(),
-		m_team_scoring_method()
+	c_game_variant()
 	{
+		m_game_engine_index = 0;
+		csmemset(m_storage.variant_data, 0, sizeof(this->m_storage));
 	};
+	c_game_engine_base_variant* get_active_variant();
 
-	virtual long __cdecl get_game_engine_name_string_id();
-	virtual long __thiscall get_game_engine_default_description_string_id();
-	virtual void __thiscall initialize();
-	virtual void __thiscall validate();
-	virtual void __thiscall encode(c_bitstream*);
-	virtual void __thiscall decode(c_bitstream*);
-	virtual bool __cdecl can_add_to_recent_list();
-	virtual long __thiscall get_score_to_win_round();
-	virtual long __thiscall get_score_unknown(); // halo online specific
-	virtual bool __stdcall can_be_cast_to(e_game_engine_type, void const**);
-	virtual void __stdcall custom_team_score_stats(long, long, long);
+	c_enum<e_game_engine_type, long, k_game_engine_type_count> m_game_engine_index;
+	union game_engine_variants {
+		game_engine_variants()
+		{
+			memset(this, 0, 0x260);
+		};
 
-	c_game_engine_miscellaneous_options* get_miscellaneous_options();
-	c_game_engine_respawn_options* get_respawn_options();
-	c_game_engine_social_options* get_social_options();
-
-	dword m_checksum;
-	string m_name;
-	s_saved_game_item_metadata m_metadata;
-	c_game_engine_miscellaneous_options m_miscellaneous_options;
-	c_game_engine_respawn_options m_respawn_options;
-	c_game_engine_social_options m_social_options;
-	c_game_engine_map_override_options m_map_override_options;
-	word_flags m_flags;
-	short m_team_scoring_method;
+		c_game_engine_base_variant m_base_variant;
+		c_game_engine_ctf_variant m_ctf_variant;
+		c_game_engine_slayer_variant m_slayer_variant;
+		c_game_engine_oddball_variant m_oddball_variant;
+		c_game_engine_king_variant m_king_variant;
+		c_game_engine_sandbox_variant m_sandbox_variant;
+		c_game_engine_vip_variant m_vip_variant;
+		c_game_engine_juggernaut_variant m_juggernaut_variant;
+		c_game_engine_territories_variant m_territories_variant;
+		c_game_engine_assault_variant m_assault_variant;
+		c_game_engine_infection_variant m_infection_variant;
+		byte variant_data[0x260];
+	} m_storage;
 };
-static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
-#pragma pack(pop)
+static_assert(sizeof(c_game_variant) == 0x264);
 
 //extern const char* game_engine_variant_get_name(long game_engine_variant);
+c_game_variant* __fastcall build_default_game_variant(c_game_variant* game_variant, e_game_engine_type game_engine_index);

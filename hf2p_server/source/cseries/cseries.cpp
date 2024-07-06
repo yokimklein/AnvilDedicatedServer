@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+const size_t module_base = (size_t)GetModuleHandle(NULL);
+
 // ms23 addresses
 //REFERENCE_DECLARE(0x0189CD54, real_argb_color const* const, global_real_argb_white);
 //REFERENCE_DECLARE(0x0189CD58, real_argb_color const* const, global_real_argb_grey);
@@ -205,4 +207,20 @@ char* tag_to_string(tag _tag, char* buffer)
 __int64 make_int64(__int64 a, __int64 b)
 {
     return ((a << 0) | (b << 32));
+}
+
+long bit_count(long val)
+{
+    long result = 0;
+    while (val != 0)
+    {
+        val >>= 1;
+        result++;
+    }
+    return result;
+}
+
+long __fastcall index_from_mask(dword* mask, long bit_count)
+{
+    return INVOKE(0xC3C10, index_from_mask, mask, bit_count);
 }

@@ -27,7 +27,7 @@ extern wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count);
 //extern wchar_t * ustrnlwr(wchar_t *,long);
 //extern wchar_t * ustrnupr(wchar_t *,long);
 //extern int ustricmp(wchar_t const*, wchar_t const*);
-//extern int ustrnicmp(wchar_t const *,wchar_t const *,long);
+extern int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count);
 //extern int uisalpha(wchar_t);
 //extern int uisupper(wchar_t);
 //extern int uislower(wchar_t);
@@ -109,6 +109,12 @@ public:
 		clear();
 	}
 
+	c_static_wchar_string(wchar_t const* s) :
+		c_static_wchar_string()
+	{
+		set(s);
+	}
+
 	void set(wchar_t const* s)
 	{
 		ustrnzcpy(m_string, s, k_buffer_size);
@@ -119,9 +125,39 @@ public:
 		*m_string = 0;
 	}
 
+	bool is_empty()
+	{
+		return !m_string[0];
+	}
+
+	wchar_t const* get_string() const
+	{
+		return m_string;
+	}
+
+	char const* get_offset(long offset) const
+	{
+		if (VALID_INDEX(offset, length()))
+			return &m_string[offset];
+
+		return "";
+	}
+
+	long length() const
+	{
+		return ustrnlen(m_string, k_buffer_size);
+	}
+
 	void append(wchar_t const* s)
 	{
 		ustrnzcat(m_string, s, k_buffer_size);
+	}
+
+	void append_line(wchar_t const* s = nullptr)
+	{
+		if (s != nullptr)
+			ustrnzcat(m_string, s, k_buffer_size);
+		ustrnzcat(m_string, L"\r\n", k_buffer_size);
 	}
 
 	wchar_t const* print(wchar_t const* format, ...)
@@ -132,6 +168,26 @@ public:
 		uvsnzprintf(m_string, k_buffer_size, format, list);
 
 		va_end(list);
+
+		return m_string;
+	}
+
+	wchar_t const* print_line(wchar_t const* format, ...)
+	{
+		va_list list;
+		va_start(list, format);
+
+		uvsnzprintf(m_string, k_buffer_size, format, list);
+		append_line();
+
+		va_end(list);
+
+		return m_string;
+	}
+
+	wchar_t const* vprint(wchar_t const* format, va_list list)
+	{
+		uvsnzprintf(m_string, k_buffer_size, format, list);
 
 		return m_string;
 	}
@@ -147,26 +203,41 @@ public:
 		return m_string;
 	}
 
+	wchar_t const* append_print_line(wchar_t const* format, ...)
+	{
+		va_list list;
+		va_start(list, format);
+
+		wchar_t const* result = append_vprint(format, list);
+		append_line();
+
+		va_end(list);
+		return result;
+	}
+
 	wchar_t const* append_vprint(wchar_t const* format, va_list list)
 	{
 		long current_length = length();
 
-		//assert(format);
-		//assert(current_length >= 0 && current_length < k_buffer_size);
+		//ASSERT(format);
+		//ASSERT(current_length >= 0 && current_length < k_buffer_size);
 
 		uvsnzprintf(m_string + current_length, k_buffer_size - current_length, format, list);
 
 		return m_string;
 	}
 
-	wchar_t const* get_string() const
+	bool is_equal(wchar_t const* s, bool case_sensitive) const
 	{
-		return m_string;
+		if (case_sensitive)
+			return ustrncmp(m_string, s, k_buffer_size) == 0;
+
+		return ustrnicmp(m_string, s, k_buffer_size) == 0;
 	}
 
-	long length() const
+	bool is_equal(wchar_t const* s) const
 	{
-		return ustrnlen(m_string, k_buffer_size);
+		return is_equal(s, true);
 	}
 
 protected:

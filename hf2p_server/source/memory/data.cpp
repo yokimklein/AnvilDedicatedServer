@@ -37,10 +37,9 @@ s_datum_header* s_data_array::get_datum(const datum_index index) const
 	return datum;
 }
 
-long data_next_absolute_index(s_data_array const* data, long index)
+long __fastcall data_next_absolute_index(s_data_array const* data, long index)
 {
-	FUNCTION_DEF(0xA8FE0, long, __fastcall, data_next_absolute_index_call, s_data_array const* data, long index);
-	return data_next_absolute_index_call(data, index);
+	return INVOKE(0xA8FE0, data_next_absolute_index, data, index);
 }
 
 void data_iterator_begin(s_data_iterator* iterator, s_data_array* data)
@@ -70,10 +69,9 @@ void* data_iterator_next(s_data_iterator* iterator)
 	return result;
 }
 
-void __cdecl datum_delete(s_data_array* data, long index)
+void __fastcall datum_delete(s_data_array* data, long index)
 {
-	FUNCTION_DEF(0xA8F20, void, __fastcall, datum_delete_call, s_data_array * data, long index);
-	datum_delete_call(data, index);
+	INVOKE(0xA8F20, datum_delete, data, index);
 }
 
 void datum_initialize(s_data_array* data, s_datum_header* header)
@@ -124,7 +122,7 @@ datum_index datum_new(s_data_array* data)
 	return out_index;
 }
 
-void* datum_get(s_data_array const* data, datum_index index)
+void* datum_get(s_data_array* data, datum_index index)
 {
 	return (void*)&data->data[data->size * (word)index];
 }

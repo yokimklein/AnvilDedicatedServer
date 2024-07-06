@@ -1,5 +1,6 @@
 #pragma once
 #include <networking\transport\transport_security.h>
+#include <networking\network_globals.h>
 
 class c_network_session;
 class c_network_session_manager
@@ -7,6 +8,7 @@ class c_network_session_manager
 public:
 	c_network_session* get_session(s_transport_secure_identifier const* secure_identifier);
 
-	c_network_session* session[3]; // desired state, transitory state, actual state? hosted session, client session, unknown session
+	// local (hosted), group (client syslink), squad (matchmaking)
+	c_network_session* session[k_network_maximum_sessions]; // desired state, transitory state, actual state? hosted session, client session, unknown session
 };
 static_assert(sizeof(c_network_session_manager) == 0xC);

@@ -14,7 +14,7 @@ struct s_network_message_membership_update_player
 	byte : 8;
 	ushort peer_index;
 	ulong player_addition_number;
-	bool player_occupies_a_public_slot;
+	bool player_left_game;
 	bool player_properties_updated;
 	ushort : 16;
 	ulong player_update_number;
@@ -30,13 +30,13 @@ static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
 struct s_network_message_membership_update_peer_properties
 {
 	bool peer_name_updated;
-	wchar_t peer_name[16];
-	wchar_t peer_session_name[32];
+	c_static_wchar_string<16> peer_name;
+	c_static_wchar_string<32> peer_session_name;
 	ulong game_start_error;
 	bool peer_map_id_updated;
 	ulong peer_map_id;
 	bool peer_map_updated;
-	ulong peer_map_status; // 0-4
+	c_enum<e_network_session_map_status, long, k_network_session_map_status_count> peer_map_status;
 	ulong peer_map_progress_percentage; // 0-100
 	bool peer_game_instance_exists;
 	long64 peer_game_instance;
@@ -84,8 +84,8 @@ struct s_network_message_membership_update : s_network_message
 	ulong baseline_checksum;
 	ushort peer_update_count; // max 34? number of updates rather than peers
 	ushort player_update_count; // max 32? ditto
-	s_network_message_membership_update_peer peers[k_network_maximum_machines_per_session];
-	s_network_message_membership_update_player players[k_network_maximum_players_per_session];
+	s_network_message_membership_update_peer peer_updates[k_network_maximum_machines_per_session];
+	s_network_message_membership_update_player player_updates[k_network_maximum_players_per_session];
 	bool player_addition_number_updated;
 	ulong player_addition_number;
 	bool leader_updated;

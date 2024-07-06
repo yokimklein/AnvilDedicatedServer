@@ -1,5 +1,4 @@
 #pragma once
-#include <winsock.h>
 
 enum e_transport_type
 {
@@ -11,7 +10,9 @@ enum e_transport_type
 
 struct s_transport_endpoint
 {
-	SOCKET socket;
+	void* socket;
 	e_transport_type type;
 	long flags;
 };
+
+//long netadapter_test();

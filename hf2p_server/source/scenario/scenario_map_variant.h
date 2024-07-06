@@ -4,10 +4,10 @@
 constexpr long k_number_of_map_variant_simulation_entities = 80;
 
 // uncommented maps are included in cache 11.1.601838
-enum e_map_id : long
+enum e_map_id
 {
 			_map_id_none = -1,
-	           _mainmenu = 0x10231971, // Mainmenu (this is the birthday of one of the halo 3 developer's wife, 23rd October 1971)
+	           _mainmenu = 0x10231971, // Mainmenu (this is the birthday of a halo 3 developer's wife, 23rd October 1971)
 	           _zanzibar = 30,  // Last Resort
 	           _s3d_turf = 31,  // Icebox
 //            _construct = 300, // Construct
@@ -36,6 +36,11 @@ enum e_map_id : long
 //            _spacecamp = 500, // Orbital
 //              _volcano = 510, // Volcano
 //              _lockout = 520, // Blackout
+//                       = 530, // 
+//                       = 540, // 
+//                       = 550, // 
+//                       = 560, // 
+//                       = 570, // 
 //               _armory = 580, // Rat's Nest
 //            _ghosttown = 590, // Ghost Town
 //             _chillout = 600, // Cold Storage
@@ -91,10 +96,10 @@ struct s_map_variant_placement_properties
 	byte respawn_time;
 	char object_type;
 	char boundry_shape;
-	float boundry_width;
-	float boundry_length;
-	float boundry_top;
-	float boundry_bottom;
+	real boundry_width;
+	real boundry_length;
+	real boundry_top;
+	real boundry_bottom;
 };
 
 struct s_variant_object_datum

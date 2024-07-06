@@ -5,6 +5,9 @@
 #include <winsock.h>
 #include <game\game.h>
 
+REFERENCE_DECLARE(0x4EBE9D0, s_transport_security_globals, transport_security_globals);
+REFERENCE_DECLARE(0x49C1060, s_transport_secure_address const, g_session_secure_address);
+
 char const* transport_secure_nonce_get_string(qword secure_nonce)
 {
     byte* nonce_bytes = (byte*)&secure_nonce;
@@ -58,13 +61,13 @@ char const* transport_session_description_get_string(s_transport_session_descrip
 bool transport_secure_address_get(s_transport_secure_address* secure_address)
 {
     if (secure_address != nullptr)
-        *secure_address = transport_security_globals->secure_address;
-    return transport_security_globals->address_resolved;
+        *secure_address = transport_security_globals.secure_address;
+    return transport_security_globals.address_resolved;
 }
 
 const s_transport_unique_identifier* transport_unique_identifier_get()
 {
-    return &transport_security_globals->local_unique_identifier;
+    return &transport_security_globals.local_unique_identifier;
 }
 
 void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address)
@@ -95,7 +98,7 @@ char* transport_secure_address_to_string(s_transport_secure_address const* secur
 bool transport_secure_identifier_retrieve(s_transport_address const* usable_address, e_transport_platform transport_platform, s_transport_secure_identifier* secure_identifier, s_transport_secure_address* secure_address)
 {
     if (usable_address->address_size == 4 && usable_address != nullptr && transport_platform != _transport_platform_xnet)
-        return xnet_shim_inaddr_to_xnaddr2(usable_address, secure_address, secure_identifier);
+        return XNetInAddrToXnAddr(usable_address, secure_address, secure_identifier);
     else
         return false;
 }
@@ -139,52 +142,51 @@ void transport_secure_address_generate(s_transport_secure_address* secure_addres
         get_session_secure_address(secure_address);
 }
 
-// rewrote this for a hook, but xnet_shim_get_title_xnaddr doesn't play nice with it, so this goes unused
-// the mid section was reused however
-bool transport_secure_address_resolve()
+bool __cdecl transport_secure_address_resolve()
 {
-    if (!transport_security_globals->address_resolved)
+    if (!transport_security_globals.address_resolved)
     {
-        s_transport_address transport_addresses[8];
-        memset(transport_addresses, 0, sizeof(transport_addresses));
-        char host_name[256];
-        gethostname(host_name, 256);
-        host_name[255] = 0;
-        if (xnet_shim_get_title_xnaddr(transport_addresses))
+        s_xnet_address xnet_address;
+        memset(&xnet_address, 0, sizeof(s_xnet_address::addresses));
+        gethostname(xnet_address.hostname, sizeof(s_xnet_address::hostname));
+        xnet_address.hostname[sizeof(s_xnet_address::hostname) - 0x1] = 0;
+
+        if (XNetGetTitleXnAddr(&xnet_address))
         {
-            transport_security_globals->address = transport_addresses[0];
-            transport_security_globals->address.port = *g_game_port;
-            memset(&transport_security_globals->secure_address, 0, sizeof(s_transport_secure_address));
-            transport_secure_address_generate(&transport_security_globals->secure_address);
-            transport_security_globals->address_resolved = true;
+            transport_security_globals.address = xnet_address.addresses[0]; // TODO: get default gateway IP instead of just grabbing the first
+            transport_security_globals.address.port = g_game_port;
+            memset(&transport_security_globals.secure_address, 0, sizeof(s_transport_secure_address));
+            transport_secure_address_generate(&transport_security_globals.secure_address);
+            transport_security_globals.address_resolved = true;
             transport_secure_address_resolve();
-            memcpy(&transport_security_globals->local_unique_identifier, &transport_security_globals->secure_address, sizeof(s_transport_unique_identifier));
+            memcpy(&transport_security_globals.local_unique_identifier, &transport_security_globals.secure_address, sizeof(s_transport_unique_identifier));
         }
         else
         {
             printf("MP/NET/TRANSPORT,SECURE: %s: Address resolution failed, networking is unavailable\n", __FUNCTION__);
-            transport_security_globals->address_resolved = false;
+            transport_security_globals.address_resolved = false;
         }
     }
-    return transport_security_globals->address_resolved;
+    return transport_security_globals.address_resolved;
 }
 
 s_transport_secure_address* get_session_secure_address(s_transport_secure_address* out_address)
 {
-    *out_address = *g_session_secure_address;
+    *out_address = g_session_secure_address;
     return out_address;
 }
 
-bool transport_secure_key_create(s_transport_session_description* session_description)
+bool __fastcall transport_secure_key_create(s_transport_session_description* session_description)
 {
-    if (session_description != (s_transport_session_description*)0xFFFFFFF0) // what's up with this?
-        session_description->host_address = transport_security_globals->secure_address;
+    if (session_description != (s_transport_session_description*)0xFFFFFFF0) // TODO what's up with this?
+        session_description->host_address = transport_security_globals.secure_address;
 
-    if (transport_security_globals->address_resolved)
+    if (transport_security_globals.address_resolved)
     {
-        xnet_shim_create_key(session_description);
+        XNetCreateKey(&session_description->session_id);
+        memset(&session_description->key, 0, sizeof(s_transport_secure_key));
         // register the host address description to the xnet shim table on session creation
-        xnet_shim_register(&transport_security_globals->address, &session_description->host_address, &session_description->session_id);
+        XNetRegisterKey(&transport_security_globals.address, &session_description->host_address, &session_description->session_id);
         return true;
     }
     else

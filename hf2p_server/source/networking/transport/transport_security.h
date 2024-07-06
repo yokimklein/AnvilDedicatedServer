@@ -12,6 +12,9 @@ static_assert(sizeof(s_transport_unique_identifier) == 0x10);
 
 struct s_transport_secure_address
 {
+	bool operator==(s_transport_secure_address other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_transport_secure_address other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 	dword part0;
 	word part4[2];
 	byte part8[8];
@@ -69,9 +72,9 @@ void transport_secure_address_build_from_identifier(s_transport_unique_identifie
 bool transport_secure_identifier_retrieve(s_transport_address const* usable_address, e_transport_platform transport_platform, s_transport_secure_identifier* secure_identifier, s_transport_secure_address* secure_address);
 void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_id);
 void transport_secure_address_generate(s_transport_secure_address* secure_address);
-bool transport_secure_address_resolve();
+bool __cdecl transport_secure_address_resolve();
 s_transport_secure_address* get_session_secure_address(s_transport_secure_address* out_address);
-bool transport_secure_key_create(s_transport_session_description* session_description);
+bool __fastcall transport_secure_key_create(s_transport_session_description* session_description);
 
-static s_transport_security_globals* transport_security_globals = (s_transport_security_globals*)base_address(0x4EBE9D0);
-static s_transport_secure_address const* g_session_secure_address = (s_transport_secure_address*)base_address(0x49C1060);
+extern s_transport_security_globals& transport_security_globals;
+extern s_transport_secure_address const& g_session_secure_address;

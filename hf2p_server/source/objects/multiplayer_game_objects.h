@@ -1,7 +1,6 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <tag_files\tag_field.h>
-#include <game\game_engine.h>
 
 enum e_multiplayer_object_type
 {

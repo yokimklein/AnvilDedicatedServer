@@ -3,10 +3,12 @@
 #include <game\game_globals.h>
 #include <game\game_engine_util.h>
 #include <game\game_engine_team.h>
+#include <networking\network_configuration.h>
+#include <memory\tls.h>
 
 game_options* game_options_get()
 {
-	game_globals_storage* game_globals = game_globals_get();
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	assert(game_globals && (game_globals->initializing || game_globals->map_active));
 
 	return &game_globals->options;
@@ -49,7 +51,7 @@ e_game_playback_type game_playback_get()
 
 bool game_is_available()
 {
-	game_globals_storage* game_globals = game_globals_get();
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	return game_globals != nullptr && game_globals->map_active && game_globals->options.game_mode != _game_mode_none;
 }
 
@@ -76,7 +78,7 @@ bool game_engine_has_teams()
 
 bool game_in_progress()
 {
-	game_globals_storage* game_globals = game_globals_get();
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	if (game_globals != nullptr && game_globals->game_in_progress && !game_globals->initializing)
 		return game_globals->map_active;
 	else
@@ -90,6 +92,11 @@ bool game_is_dedicated_server()
 	return true;
 }
 
+bool game_is_campaign()
+{
+	return game_options_get()->game_mode == _game_mode_campaign;
+}
+
 bool game_is_multiplayer()
 {
 	return game_options_get()->game_mode == _game_mode_multiplayer;
@@ -97,7 +104,7 @@ bool game_is_multiplayer()
 
 bool game_is_survival()
 {
-	game_globals_storage* game_globals = game_globals_get();
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	if (game_globals && (game_globals->initializing || game_globals->map_active))
 		return game_globals->options.game_mode == _game_mode_campaign && game_globals->options.survival_enabled;
 	else
@@ -106,7 +113,24 @@ bool game_is_survival()
 
 bool game_is_finished()
 {
-	game_globals_storage* game_globals = game_globals_get();
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	assert(game_globals && game_globals->map_active);
 	return game_globals->game_finished;
+}
+
+e_campaign_difficulty_level game_difficulty_level_get()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
+	if (game_globals->options.game_mode == _game_mode_campaign)
+		return game_globals->options.campaign_difficulty;
+	else
+		return _campaign_difficulty_level_normal;
+}
+
+void game_get_determinism_versions(long* determinism_version, long* determinism_compatible_version)
+{
+	if (determinism_version)
+		*determinism_version = get_network_configuration()->determinism_version;
+	if (determinism_compatible_version)
+		*determinism_compatible_version = get_network_configuration()->determinism_compatible_version;
 }

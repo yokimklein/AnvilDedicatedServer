@@ -2,6 +2,7 @@
 #include <cseries\cseries.h>
 #include <networking\session\network_session_membership.h>
 #include <networking\session\network_session_parameters.h>
+#include <networking\session\network_session_parameters_session.h>
 #include <networking\session\network_observer.h>
 #include <networking\messages\network_messages_session_membership.h>
 #include <networking\messages\network_messages_session_protocol.h>
@@ -10,13 +11,13 @@
 enum e_network_session_type
 {
 	_network_session_type_none,
-	_network_session_type_group,
 	_network_session_type_squad,
+	_network_session_type_group,
 
 	k_network_session_type_count
 };
 
-enum e_network_session_boot_reason : long // from ms23/ED
+enum e_network_session_boot_reason
 {
 	_network_session_boot_reason_player_booted_player,
 	_network_session_boot_reason_unknown1,
@@ -46,18 +47,37 @@ enum e_session_game_mode
 	k_session_game_mode_count
 };
 
+enum e_network_session_disconnection_policy
+{
+	_network_session_disconnection_waiting_for_establishment = 0,
+	_network_session_disconnection_allowed,
+	_network_session_disconnection_reestablish_as_host,
+
+	k_network_session_disconnection_policy_count
+};
+
 #pragma pack(push, 4)
+struct s_network_session_local_player
+{
+	s_player_identifier player_identifier;
+	s_transport_secure_address secure_address;
+	long peer_output_user_index;
+};
+static_assert(sizeof(s_network_session_local_player) == 0x1C);
+
+struct s_local_player_add_queue_entry
+{
+	s_player_identifier identifier;
+	c_enum<e_network_join_refuse_reason, long, k_network_join_refuse_reason_count> refuse_reason;
+	dword add_time;
+};
+static_assert(sizeof(s_local_player_add_queue_entry) == 0x10);
+
 class c_network_message_gateway;
 class c_network_session_manager;
 class c_network_session : c_network_channel_owner
 {
 public:
-	virtual bool __thiscall desire_channel_heartbeat(long channel_index);
-	virtual bool __thiscall channel_is_load_bearing(long channel_index);
-	virtual bool __thiscall attempt_channel_reconnection(long channel_index, bool unknown);
-	virtual void __thiscall notify_channel_connection(long channel_index, long unused, bool notify_host);
-	virtual void __thiscall notify_channel_died(long channel_index);
-
 	bool handle_join_request(s_transport_address const* address, s_network_message_join_request const* message);
 	bool acknowledge_join_request(s_transport_address const* address, e_network_join_refuse_reason reason);
 	bool handle_peer_connect(s_transport_address const* outgoing_address, s_network_message_peer_connect const* message);
@@ -113,7 +133,7 @@ public:
 	e_network_session_type session_type();
 	bool host_join_nonce_valid();
 	void add_pending_join_to_session(qword join_nonce);
-	e_network_observer_owner session_index();
+	long session_index();
 	bool handle_peer_establish(c_network_channel* channel, s_network_message_peer_establish const* message);
 	bool leaving_session();
 	void time_set(ulong time);
@@ -128,16 +148,23 @@ public:
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;
 	c_network_session_manager* m_session_manager;
-	e_network_observer_owner m_session_index;
-	e_network_session_type m_session_type;
-	e_network_session_class m_session_class;
+	long m_session_index; // TODO: different enum max of 3 here
+	c_enum<e_network_session_type, long, k_network_session_type_count> m_session_type;
+	c_enum<e_network_session_class, long, k_network_session_class_count> m_session_class;
 	long : 32;
 	c_network_session_membership m_session_membership;
 	c_network_session_parameters m_session_parameters;
 	long : 32;
-	e_network_session_state m_local_state;
+	c_enum<e_network_session_state, long, k_network_session_state_count> m_local_state;
 	long : 32;
-	char m_local_state_data[0x288]; // host s_transport_address @ byte offset 20
+	union
+	{
+		s_network_session_state_peer_creating peer_creating;
+		s_network_session_state_peer_joining peer_joining;
+		s_network_session_state_peer_join_abort peer_join_abort;
+		s_network_session_state_peer_established peer_established;
+		s_network_session_state_peer_leaving peer_leaving;
+	};
 	ulong m_connection_identifier;
 	ulong m_time_synchronization_end_time;
 	ulong m_time_synchronization_start_time;
@@ -145,17 +172,13 @@ public:
 	ulong m_time;
 	long unknown; // recevied packet pointer?
 	long m_managed_session_index;
-	e_network_join_refuse_reason m_join_refuse_reason;
+	c_enum<e_network_join_refuse_reason, long, k_network_join_refuse_reason_count> m_join_refuse_reason;
 	qword m_host_join_nonce;
 	long : 32;
-	ulong m_disconnection_policy;
-	s_player_identifier m_player_add_single_player_identifier;
-	s_transport_secure_address m_player_add_secure_address;
-	long m_player_add_peer_index;
+	c_enum<e_network_session_disconnection_policy, long, k_network_session_disconnection_policy_count> m_disconnection_policy;
+	s_network_session_local_player m_player_we_are_adding;
 	long : 32;
-	s_player_identifier m_player_add_player_identifier;
-	e_network_join_refuse_reason m_player_add_join_refuse_reason;
-	ulong m_player_add_time;
+	s_local_player_add_queue_entry m_local_user_player_add;
 
 private:
 

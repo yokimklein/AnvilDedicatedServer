@@ -15,6 +15,7 @@ enum e_game_engine_miscellaneous_option_flags
 	_game_engine_miscellaneous_option_teams_enabled = 0,
 	_game_engine_miscellaneous_option_round_reset_players,
 	_game_engine_miscellaneous_option_round_reset_map,
+	_game_engine_miscellaneous_option_unknown_bit3, // Unique to HO - spectator player switching allowed?
 
 	k_game_engine_miscellaneous_option_flags
 };
@@ -32,17 +33,17 @@ enum e_game_engine_respawn_options_flags
 
 enum e_game_engine_social_options_flags
 {
-	_game_engine_social_options_observers_enabled = 0,
-	_game_engine_social_options_team_changing_enabled,
-	_game_engine_social_options_team_changing_balancing_only,
+	// Removed from ODST
+	//_game_engine_social_options_observers_enabled,
+	//_game_engine_social_options_team_changing_enabled,
+	//_game_engine_social_options_team_changing_balancing_only,
+	_game_engine_social_options_enemy_voice_enabled,
+	_game_engine_social_options_open_channel_voice_enabled,
+	_game_engine_social_options_dead_player_voice_enabled,
 	_game_engine_social_options_friendly_fire_enabled,
 	_game_engine_social_options_betrayal_booting_enabled,
+	// New to Halo Online
 	_game_engine_social_options_spartans_vs_elites_enabled,
-
-	// these may or may not have been removed in HO
-	//_game_engine_social_options_enemy_voice_enabled,
-	//_game_engine_social_options_open_channel_voice_enabled,
-	//_game_engine_social_options_dead_player_voice_enabled,
 
 	k_game_engine_social_options_flags
 };
@@ -166,4 +167,4 @@ struct c_game_engine_map_override_options
 };
 static_assert(sizeof(c_game_engine_map_override_options) == 0x7C);
 
-void game_engine_assemble_player_traits(datum_index absolute_player_index);
+void __fastcall game_engine_assemble_player_traits(datum_index absolute_player_index);

@@ -1,22 +1,70 @@
 #pragma once
 
 #include <cseries\cseries.h>
-#include <game\game_engine_traits.h>
 #include <tag_files\files.h>
+#include <game\game_engine_traits.h>
+#include <saved_games\saved_game_files.h>
 
 enum e_multiplayer_team;
 enum e_team_scoring_method;
-struct game_engine_interface_state;
-struct s_chud_navpoint;
-struct s_netgame_goal_influencer;
 enum e_game_team;
 enum e_multiplayer_team_designator;
 enum e_game_engine_kill_flags;
 enum e_simulation_entity_type;
+enum e_simulation_event_type;
+class c_bitstream;
+struct game_engine_interface_state;
+struct s_chud_navpoint;
+struct s_netgame_goal_influencer;
 struct s_game_engine_state_data;
 struct s_game_engine_event_data;
-enum e_simulation_event_type;
 struct s_multiplayer_runtime_globals_definition;
+
+#pragma pack(push, 4)
+class c_game_engine_base_variant
+{
+public:
+	c_game_engine_base_variant() :
+		m_checksum(),
+		m_name(),
+		m_metadata(),
+		m_miscellaneous_options(),
+		m_respawn_options(),
+		m_social_options(),
+		m_map_override_options(),
+		m_flags(),
+		m_team_scoring_method()
+	{
+	};
+
+	virtual long __cdecl get_game_engine_name_string_id();
+	virtual long __thiscall get_game_engine_default_description_string_id();
+	virtual void __thiscall initialize();
+	virtual void __thiscall validate();
+	virtual void __thiscall encode(c_bitstream*);
+	virtual void __thiscall decode(c_bitstream*);
+	virtual bool __cdecl can_add_to_recent_list();
+	virtual long __thiscall get_score_to_win_round();
+	virtual long __thiscall get_score_unknown(); // halo online specific
+	virtual bool __stdcall can_be_cast_to(enum e_game_engine_type, void const**);
+	virtual void __stdcall custom_team_score_stats(long, long, long);
+
+	c_game_engine_miscellaneous_options* get_miscellaneous_options();
+	c_game_engine_respawn_options* get_respawn_options();
+	c_game_engine_social_options* get_social_options();
+
+	dword m_checksum;
+	string m_name;
+	s_saved_game_item_metadata m_metadata;
+	c_game_engine_miscellaneous_options m_miscellaneous_options;
+	c_game_engine_respawn_options m_respawn_options;
+	c_game_engine_social_options m_social_options;
+	c_game_engine_map_override_options m_map_override_options;
+	word_flags m_flags;
+	short m_team_scoring_method;
+};
+static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
+#pragma pack(pop)
 
 class c_game_engine
 {

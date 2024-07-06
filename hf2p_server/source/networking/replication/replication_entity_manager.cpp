@@ -53,7 +53,7 @@ long c_replication_entity_manager::preallocate_entity()
 
 long c_replication_entity_manager::create_local_entity_internal(long absolute_index)
 {
-	auto entity_data = &this->m_entity_data[absolute_index];
+	s_replication_entity_data* entity_data = &this->m_entity_data[absolute_index];
 	assert(absolute_index >= 0 && absolute_index < NUMBEROF(this->m_entity_data));
 	assert(this->m_entity_data[absolute_index].flags.get_unsafe() == FLAG(_replication_entity_allocated_flag));
 	entity_data->flags.set(_replication_entity_local_flag, true);

@@ -3,6 +3,7 @@
 #include <game\players.h>
 #include <memory\data.h>
 #include <game\game_globals.h>
+#include <game\game_engine.h>
 #include <simulation\simulation_gamestate_entities.h>
 #include <game\player_mapping.h>
 #include <game\game_time.h>
@@ -11,8 +12,8 @@ struct s_thread_local_storage
 {
 	byte* __unknown0;
 	s_data_array* actor;
-	c_smart_data_array<s_player_datum>* players;
-	c_smart_data_array<s_object_header>* object_headers; // object
+	c_smart_data_array<s_player_datum> players;
+	c_smart_data_array<s_object_header> object_headers; // object
 	s_game_engine_globals* game_engine_globals;
 	byte* __unknown14; // prop_ref
 	byte* hs_thread_deterministic_data;
@@ -50,7 +51,7 @@ struct s_thread_local_storage
 	byte* __unknown98; // recycling_group
 	byte* __unknown9C; // effect location
 	byte* __unknownA0;
-	byte* __unknownA4;
+	byte* __unknownA4; // rasterizer game states?
 	byte* __unknownA8; // vocalization records
 	byte* __unknownAC;
 	byte* __unknownB0;
@@ -85,7 +86,7 @@ struct s_thread_local_storage
 	byte* __unknown124; // squad_patrol
 	byte* __unknown128; // leaf system
 	byte* __unknown12C;
-	c_smart_data_array<simulation_gamestate_entity_datum>* simulation_gamestate_entities; // sim. gamestate entities
+	c_smart_data_array<simulation_gamestate_entity_datum> simulation_gamestate_entities; // sim. gamestate entities
 	byte* __unknown134; // dynamic firing points
 	byte* __unknown138; // particle_emitter
 	byte* __unknown13C; // particle_location
@@ -124,7 +125,7 @@ struct s_thread_local_storage
 	byte* __unknown1C0;
 	byte* __unknown1C4;
 	byte* __unknown1C8; // c_contrail_gpu::s_row
-	byte* __unknown1CC;
+	byte* __unknown1CC; // hue saturation control?
 	byte* __unknown1D0;
 	byte* __unknown1D4; // c_beam_gpu::s_row
 	byte* __unknown1D8; // c_light_volume_gpu::s_row
@@ -188,7 +189,7 @@ struct s_thread_local_storage
 	byte* __unknown2C0;
 	byte* __unknown2C4;
 	byte* __unknown2C8;
-	byte* __unknown2CC;
+	byte* __unknown2CC; // used
 	byte* __unknown2D0; // cluster light reference
 	byte* __unknown2D4; // light cluster reference
 	byte* __unknown2D8;
@@ -201,7 +202,7 @@ struct s_thread_local_storage
 	byte* __unknown2F4;
 	byte* __unknown2F8;
 	byte* __unknown2FC;
-	byte* __unknown300;
+	byte* __unknown300; // used
 	byte* __unknown304;
 	byte* __unknown308;
 	byte* __unknown30C;
@@ -223,5 +224,7 @@ struct s_thread_local_storage
 	byte* __unknown34C;
 };
 static_assert(sizeof(s_thread_local_storage) == 0x350);
+
+#define TLS_DATA_GET_VALUE_REFERENCE(NAME) decltype(get_tls()->NAME)& NAME = get_tls()->NAME
 
 s_thread_local_storage* get_tls();

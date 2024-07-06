@@ -3,11 +3,12 @@
 #include <simulation\simulation.h>
 #include <shell\shell.h>
 #include <game\game_progression.h>
-#include <game\game_variant.h>
 #include <tools\network_webstats.h>
 #include <scenario\scenario_map_variant.h>
+#include <cseries\language.h>
 #include <game\players.h>
 #include <game\player_configuration.h>
+#include <game\game_engine_variant.h>
 
 #pragma pack(push, 1)
 struct game_machine_options
@@ -23,15 +24,22 @@ struct game_machine_options
 static_assert(sizeof(game_machine_options) == 0x128);
 #pragma pack(pop)
 
+struct s_network_session_status_data_player
+{
+	s_player_identifier identifier;
+	s_player_configuration configuration;
+};
+static_assert(sizeof(s_network_session_status_data_player) == 0xB78);
+
 struct game_player_options
 {
-	bool valid;
-	byte : 8;
-	ushort input_user_index;
+	bool player_valid;
+	bool player_left_game;
+	ushort user_index;
 	ushort controller_index;
+	word : 16;
 	s_machine_identifier machine_identifier;
-	s_player_identifier player_identifier;
-	s_player_configuration player_configuration;
+	s_network_session_status_data_player player_data;
 };
 static_assert(sizeof(game_player_options) == 0xB90);
 
@@ -60,7 +68,7 @@ struct game_options
 	byte : 8;
 	long playback_start_in_ticks;
 	long playback_length_in_ticks;
-	c_enum<e_campaign_difficulty_level, short, k_campaign_difficulty_levels_count> campaign_difficulty;
+	c_enum<e_campaign_difficulty_level, short, k_number_of_campaign_difficulty_levels> campaign_difficulty;
 	short campaign_insertion_index;
 	short campaign_metagame_scoring;
 	bool campaign_metagame_enabled;

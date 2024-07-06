@@ -84,8 +84,8 @@ public:
 		encode_t* encode_function,
 		decode_t* decode_function,
 		compare_t* compare_function,
-		dispose_t* dispose_function
-	);
+		dispose_t* dispose_function);
+	void encode_message_header(c_bitstream* stream, e_network_message_type message_type, long message_storage_size);
 protected:
 	s_network_message_type m_message_types[k_network_message_type_count];
 };

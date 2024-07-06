@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <networking\network_memory.h>
 #include <simulation\simulation_gamestate_entities.h>
+#include <simulation\simulation_queue_entities.h>
 
 long c_simulation_entity_database::entity_create(e_simulation_entity_type entity_type)
 {
@@ -49,7 +50,7 @@ long c_simulation_entity_database::entity_create(e_simulation_entity_type entity
 bool c_simulation_entity_database::entity_allocate_creation_data(e_simulation_entity_type entity_type, long* out_creation_data_size, void** out_creation_data)
 {
 	bool result = true;
-	auto entity_definition = this->m_type_collection->get_entity_definition(entity_type);
+	c_simulation_entity_definition* entity_definition = this->m_type_collection->get_entity_definition(entity_type);
 	assert(entity_definition);
 	assert(out_creation_data_size);
 	assert(out_creation_data);
@@ -81,7 +82,7 @@ bool c_simulation_entity_database::entity_allocate_creation_data(e_simulation_en
 bool c_simulation_entity_database::entity_allocate_state_data(e_simulation_entity_type entity_type, long* out_state_data_size, void** out_state_data)
 {
 	bool result = true;
-	auto entity_definition = this->m_type_collection->get_entity_definition(entity_type);
+	c_simulation_entity_definition* entity_definition = this->m_type_collection->get_entity_definition(entity_type);
 	assert(entity_definition);
 	assert(out_state_data_size);
 	assert(out_state_data);
@@ -233,8 +234,6 @@ void c_simulation_entity_database::entity_delete_gameworld(long entity_index, bo
 	if (entity->gamestate_index != -1)
 	{
 		simulation_gamestate_entity_set_simulation_entity_index(entity->gamestate_index, -1);
-
-		FUNCTION_DEF(0x55B80, void, __fastcall, simulation_queue_entity_deletion_insert, s_simulation_entity* entity, bool unknown);
 		simulation_queue_entity_deletion_insert(entity, unknown);
 	}
 	entity->gamestate_index = -1;

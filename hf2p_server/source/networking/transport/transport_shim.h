@@ -1,5 +1,6 @@
 #pragma once
 #include <networking\transport\transport_address.h>
+#include <networking\transport\transport_security.h>
 #include <networking\network_globals.h>
 #include <simulation\simulation.h>
 
@@ -9,6 +10,9 @@ constexpr long k_xnet_shim_table_rows = k_network_maximum_machines_per_session *
 struct s_xnet_shim_table_row
 {
 	bool valid;
+	byte : 8;
+	byte : 8;
+	byte : 8;
 	s_transport_address inaddr; // insecure_address
 	s_transport_secure_address xnaddr; // xnet_address
 	s_transport_secure_identifier xnkid; // xnet_identifier
@@ -21,13 +25,19 @@ struct s_xnet_shim_table
 };
 static_assert(sizeof(s_xnet_shim_table) == 0xB28);
 
-static s_xnet_shim_table* g_xnet_shim_table = (s_xnet_shim_table*)base_address(0x49C0260);
+extern s_xnet_shim_table& g_xnet_shim_table;
 
-long xnet_shim_table_find_row(const s_transport_address* address, const s_transport_secure_address* secure_address, bool ignore_invalid_rows);
-void xnet_shim_register(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
-void xnet_shim_unregister(const s_transport_address* address);
-bool xnet_shim_inaddr_to_xnaddr(const s_transport_address* address, s_transport_secure_address* secure_address);
-bool xnet_shim_inaddr_to_xnaddr2(const s_transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);
-bool xnet_shim_xnaddr_to_inaddr(const s_transport_secure_address* secure_address, s_transport_address* address);
-bool xnet_shim_get_title_xnaddr(s_transport_address* out_addresses);
-s_transport_session_description* xnet_shim_create_key(s_transport_session_description* session_description);
+struct s_xnet_address
+{
+	s_transport_address addresses[8];
+	char hostname[0x100];
+};
+
+long XNetFindEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, bool ignore_invalid_rows);
+void XNetRegisterKey(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
+void XNetUnregisterKey(const s_transport_address* address);
+bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address);
+bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);
+bool XNetXnAddrToInAddr(const s_transport_secure_address* secure_address, s_transport_address* address);
+bool __fastcall XNetGetTitleXnAddr(s_xnet_address* out_addresses);
+void XNetCreateKey(s_transport_secure_identifier* out_secure_identifier);

@@ -12,10 +12,10 @@
     </LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'">
-    <LocalDebuggerCommand>"C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\halo_online.exe"</LocalDebuggerCommand>
+    <LocalDebuggerCommand>halo_online.exe</LocalDebuggerCommand>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerCommandArguments>--account username --sign-in-code password</LocalDebuggerCommandArguments>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
   </PropertyGroup>

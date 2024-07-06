@@ -184,7 +184,7 @@ struct s_simulation_globals
 };
 static_assert(sizeof(s_simulation_globals) == 0x124); // 0x1784 in ms23
 
-static s_simulation_globals* simulation_globals = (s_simulation_globals*)base_address(0x4EBEBA8);
+extern s_simulation_globals& simulation_globals;
 
 //extern bool __cdecl simulation_starting_up(); // 0x004420E0 in ms23
 bool simulation_reset_in_progress();

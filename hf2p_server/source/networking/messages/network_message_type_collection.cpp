@@ -86,3 +86,8 @@ void c_network_message_type_collection::register_message_type(
 	type->dispose_function = dispose_function;
 	type->initialized = true;
 }
+
+void c_network_message_type_collection::encode_message_header(c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
+{
+	DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(this, stream, message_type, message_storage_size);
+}
