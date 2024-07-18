@@ -8,6 +8,8 @@
 #include <anvil\hooks\simulation\hooks_statborg.h>
 #include <anvil\hooks\simulation\hooks_simulation_globals.h>
 #include <anvil\hooks\simulation\hooks_object_creation.h>
+#include <anvil\hooks\simulation\hooks_object_deletion.h>
+#include <anvil\hooks\simulation\hooks_object_updates.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
@@ -62,8 +64,8 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
         assert(i + 1 <= length);
 
         // switch opcode
-        ulong offset;
-        byte short_offset;
+        long offset;
+        char short_offset;
         bool near_jump_is_in_bounds;
         switch (code_buffer[i])
         {
@@ -72,8 +74,8 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             case 0xE9: // call
                 // ensure instruction length is valid for a jump/call
                 assert(instruction_length == 5);
-                offset = *(ulong*)&code_buffer[i + 1]; // near offset
-                offset = (ulong)(((size_t)source + i) + offset + 5); // destination address
+                offset = *(long*)&code_buffer[i + 1]; // near offset
+                offset = (long)(((size_t)source + i) + offset + 5); // destination address
                 offset = offset - ((size_t)destination + i) - 5; // new offset
                 memcpy(&code_buffer[i + 1], &offset, sizeof(offset));
                 break;
@@ -93,7 +95,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                 {
                     offset = (length - (i + 2)); // redirect near jump to NOP at the end of the buffer
                     assert(offset <= 255); // Ensure we don't go beyond the short jump offset range
-                    short_offset = static_cast<byte>(offset);
+                    short_offset = static_cast<char>(offset);
                     code_buffer[i + 1] = short_offset;
                 }
                 else
@@ -102,6 +104,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                     assert(near_jump_is_in_bounds);
                 }
                 break;
+
             // TODO: unimplemented/untested short jump instructions
             case 0x70: // jo
             case 0x71: // jno
@@ -116,6 +119,39 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             case 0x7F: // jg
             case 0xE3: // jcxz
                 assert(false);
+                break;
+
+            // Near jumps
+            case 0x0F:
+                switch (code_buffer[i + 1])
+                {
+                    case 0x85: // jnz
+                        // ensure instruction length is valid for a near jump
+                        assert(instruction_length == 6);
+                        offset = *(long*)&code_buffer[i + 2]; // near offset
+                        offset = (long)(((size_t)source + i) + offset + 6); // destination address
+                        offset = offset - ((size_t)destination + i) - 6; // new offset
+                        *(long*)&code_buffer[i + 2] = offset;
+                        break;
+                    // TODO: unimplemented/untested near jump instructions
+                    case 0x80: // jo
+                    case 0x81: // jno
+                    case 0x88: // js
+                    case 0x89: // jns
+                    case 0x84: // jz
+                    case 0x82: // jb
+                    case 0x83: // jnb
+                    case 0x86: // jbe
+                    case 0x87: // ja
+                    case 0x8C: // jl
+                    case 0x8D: // jge
+                    case 0x8E: // jle
+                    case 0x8F: // jg
+                    case 0x8A: // jp
+                    case 0x8B: // jnp
+                        assert(false);
+                        break;
+                }
                 break;
         }
         i += instruction_length;
@@ -132,14 +168,18 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
 // NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
 // NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
+// NOTE: ensure the area you're overwriting is at least 5 bytes in size
+// NOTE: if using _hook_stack_frame_increase or _hook_stack_frame_cleanup, inserted_function becomes the number of bytes you wish to (de)allocate on the stack
 void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
     byte restore_registers[3] = { 0x5A, 0x59, 0x58 }; // pop edx, pop ecx, pop eax
-    byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder nops where the function address will go
-    byte return_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
-    byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder nops
+    byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder bytes where the function address will go
+    byte return_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
+    byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
+    byte sub_esp_code[3] = { 0x83, 0xEC, 0x00 }; // sub esp, 0
+    byte add_esp_code[3] = { 0x83, 0xC4, 0x00 }; // add esp, 0
 
     long length = return_address - start_address;
     if (length < sizeof(jump_code))
@@ -149,9 +189,13 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
 
     // initialise our new code block
-    long inserted_code_size = +sizeof(preserve_registers) + sizeof(call_code) + sizeof(restore_registers) + sizeof(return_code);
+    long inserted_code_size = sizeof(return_code);
     if (hook_type != _hook_replace && hook_type != _hook_replace_no_nop)
         inserted_code_size += length;
+    if (hook_type == _hook_stack_frame_increase || hook_type == _hook_stack_frame_cleanup)
+        inserted_code_size += sizeof(sub_esp_code);
+    else
+        inserted_code_size += sizeof(call_code) + sizeof(preserve_registers) + sizeof(restore_registers);
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
     if (inserted_code == NULL)
@@ -160,28 +204,48 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
         return;
     }
 
-    if (hook_type == _hook_execute_replaced_first)
+    if (hook_type == _hook_execute_replaced_first || hook_type == _hook_stack_frame_cleanup)
     {
         // copy & format the instructions we're replacing into our new code block
         insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
-    // preserve registers across call
-    memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
-    code_offset += sizeof(preserve_registers);
+    if (hook_type == _hook_stack_frame_increase)
+    {
+        assert((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
+        char increase_bytes = (char)inserted_function;
+        memcpy(&sub_esp_code[2], &increase_bytes, sizeof(increase_bytes));
+        memcpy(inserted_code + code_offset, sub_esp_code, sizeof(sub_esp_code));
+        code_offset += sizeof(sub_esp_code);
+    }
+    else if (hook_type == _hook_stack_frame_cleanup)
+    {
+        assert((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
+        char decrease_bytes = (char)inserted_function;
+        memcpy(&add_esp_code[2], &decrease_bytes, sizeof(decrease_bytes));
+        memcpy(inserted_code + code_offset, add_esp_code, sizeof(add_esp_code));
+        code_offset += sizeof(add_esp_code);
+    }
+    else
+    {
+        // preserve registers across call
+        memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
+        code_offset += sizeof(preserve_registers);
 
-    // call inserted function
-    size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
-    memcpy(&call_code[1], &call_offset, sizeof(call_code));
-    memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
-    code_offset += sizeof(call_code);
+        // call inserted function
+        size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
+        memcpy(&call_code[1], &call_offset, sizeof(call_offset));
+        memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
+        code_offset += sizeof(call_code);
 
-    // restore registers
-    memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
-    code_offset += sizeof(restore_registers);
+        // restore registers
+        memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
+        code_offset += sizeof(restore_registers);
+    }
 
-    if (hook_type == _hook_execute_replaced_last)
+
+    if (hook_type == _hook_execute_replaced_last || hook_type == _hook_stack_frame_increase)
     {
         // copy & format the instructions we're replacing into our new code block
         insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
@@ -190,13 +254,13 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
 
     // return
     size_t return_offset = (BASE_ADDRESS(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
-    memcpy(&return_code[1], &return_offset, sizeof(return_code));
+    memcpy(&return_code[1], &return_offset, sizeof(return_offset));
     memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
     code_offset += sizeof(return_code);
 
     // write jump to inserted function
     size_t jump_offset = ((size_t)(inserted_code)-BASE_ADDRESS(start_address) - sizeof(jump_code));
-    memcpy(&jump_code[1], &jump_offset, sizeof(jump_code));
+    memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
     memcpy((void*)BASE_ADDRESS(start_address), jump_code, sizeof(jump_code));
 
     if (hook_type != _hook_replace_no_nop)
@@ -207,6 +271,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
 }
 
+// Now unused - I tried to create new variables by adding to the stack pointer and correcting all the esp offsets, but there were plenty of spaces where I couldn't do this without overflowing the offsets
 void increase_esp_offsets(size_t function_start, size_t function_end, size_t offset_increase)
 {
     size_t i = 0;
@@ -299,10 +364,6 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
     do
     {
         void* instruction_address = (void*)(base_function + i);
-        //if (BASE_ADDRESS(0x437B07) == (size_t)instruction_address)
-        //{
-        //    printf("gabagooba\n");
-        //}
         size_t instruction_length = nmd_x86_ldisasm(instruction_address, length, NMD_X86_MODE_32);
         assert(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
 
@@ -316,7 +377,7 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
             if (!instruction.operands[j].is_implicit && instruction.operands[j].type == NMD_X86_OPERAND_TYPE_MEMORY && instruction.operands[j].fields.mem.base == NMD_X86_REG_EBP)
             {
                 // i'm unsure as to what scale does right now, and all instructions I've seen have it as zero
-                assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
+                //assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
 
                 // prefixes, opcode, modrm, displacement
                 // ensure disp_mask is as we expect it and not a combination of values
@@ -334,14 +395,13 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                 {
                     case NMD_X86_DISP_NONE:
                         displacement = 0;
-                        // TODO: handle this
-                        assert(false);
+                        assert(false); // TODO: handle this
                         break;
                     case NMD_X86_DISP8:
                         displacement = *(char*)displacement_address;
-                        assert(displacement == *(char*)&instruction.displacement); // ensure displacement value is correct
                         if (displacement >= 0)
                         {
+                            assert(displacement == *(char*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
                             assert(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
                             *(char*)displacement_address = new_displacement;
@@ -349,9 +409,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         break;
                     case NMD_X86_DISP16:
                         displacement = *(short*)displacement_address;
-                        assert(displacement == *(short*)&instruction.displacement); // ensure displacement value is correct
                         if (displacement >= 0)
                         {
+                            assert(displacement == *(short*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
                             assert(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
                             *(short*)displacement_address = new_displacement;
@@ -359,9 +419,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         break;
                     case NMD_X86_DISP32:
                         displacement = *(long*)displacement_address;
-                        assert(displacement == *(long*)&instruction.displacement); // ensure displacement value is correct
                         if (displacement >= 0)
                         {
+                            assert(displacement == *(long*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
                             assert(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
                             *(long*)displacement_address = new_displacement;
@@ -369,24 +429,47 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         break;
                     case NMD_X86_DISP64:
                         displacement = *(long64*)displacement_address;
-                        assert(displacement == *(long64*)&instruction.displacement); // ensure displacement value is correct
                         if (displacement >= 0)
                         {
+                            assert(displacement == *(long64*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
                             assert(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
                             *(long64*)displacement_address = new_displacement;
                         }
                         break;
                 }
-                if (new_displacement != 0)
-                {
-                    printf("EBP instruction(%p) w/ disp: %lld, new disp: %lld\n", instruction_address, displacement, new_displacement);
-                }
+                //if (new_displacement != 0)
+                //{
+                //    printf("EBP instruction(%p) w/ disp: %lld, new disp: %lld\n", instruction_address, displacement, new_displacement);
+                //}
             }
         }
 
         i += instruction_length;
     } while (i < length);
+}
+
+// ALWAYS compare a function's instructions *before* AND *after* this has been called to ensure it has worked properly.
+// NOTE: You have to manually clean up the stack after calling this, it does not handle it for you! There isn't always 5 bytes worth of space at the return to replace. You may have to cleanup after the function call.
+void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes)
+{
+    size_t bytes_to_overwrite = 0;
+    size_t length = function_end - function_start;
+    size_t base_function = BASE_ADDRESS(function_start);
+    do
+    {
+        void* instruction_address = (void*)(base_function + bytes_to_overwrite);
+        bytes_to_overwrite += nmd_x86_ldisasm(instruction_address, length, NMD_X86_MODE_32);
+
+    }
+    while (bytes_to_overwrite < 5);
+    assert(bytes_to_overwrite < length); // ensure the space we want to overwrite hasn't exceeded the bounds of the function
+
+    // make new hook flag to jump to raw assembly shellcode?
+    insert_hook(function_start, function_start + bytes_to_overwrite, (void*)space_in_bytes, _hook_stack_frame_increase);
+
+    // correct positive ebp offsets (usually function arguments) to account for the extra space we've pushed to the stack
+    increase_positive_ebp_offsets(function_start, function_end, space_in_bytes);
 }
 
 // print to console whenever a message packet is sent - this pointer is unused
@@ -409,9 +492,9 @@ __declspec(naked) void contrail_fix_hook()
         jg render
         push 0x68A3E3
         retn
-        render :
+        render:
         push 0x68A390
-            retn
+        retn
     }
 }
 
@@ -456,17 +539,6 @@ void __fastcall sub_7172B0_hook(void* api_loadout)
     {
         INVOKE(0x3172B0, sub_7172B0_hook, api_loadout);
     }
-}
-
-void __fastcall player_set_facing_hook(datum_index player_index, real_vector3d* forward)
-{
-    player_set_facing(player_index, forward);
-}
-
-void __fastcall object_scripting_clear_all_function_variables_hook(datum_index object_index)
-{
-    simulation_action_object_delete(object_index);
-    object_scripting_clear_all_function_variables(object_index);
 }
 
 // TODO: this doesn't work outside of proxydll atm, our launcher is injecting too late
@@ -518,7 +590,7 @@ void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_inde
 // TODO: replace this with new update call
 void __stdcall simulation_action_object_update_with_bitmask(datum_index object_index, ulong64 raw_bits)
 {
-    c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+    c_simulation_object_update_flags update_flags{};
     update_flags.set_raw(raw_bits);
     simulation_action_object_update_internal(object_index, update_flags);
 }
@@ -550,42 +622,6 @@ __declspec(naked) void player_spawn_hook()
         mov ecx, module_base
             add ecx, 0xBB098
             jmp ecx
-    }
-}
-
-__declspec(naked) void object_update_part()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov ecx, edi
-        call attachments_update
-
-        // return back to the original code
-        mov edx, module_base
-        add edx, 0x40490E
-        jmp edx
-    }
-}
-
-// TODO: why isn't the object_needs_rigid_body_update check ever succeeding? is the hook broken or do no rigid bodies exist? the only one I know of is the flood tentacle on cold storage
-__declspec(naked) void object_update_hook()
-{
-    __asm
-    {
-        // call our inserted function
-        mov ecx, edi
-        call object_needs_rigid_body_update
-        movzx eax, al
-        test eax, eax
-        je end_label
-        push 0
-        push 16384 // _simulation_generic_update_rigid_body (1 << 14)
-        push edi // object_index
-        call simulation_action_object_update_with_bitmask
-
-        end_label :
-        jmp object_update_part
     }
 }
 
@@ -820,7 +856,7 @@ __declspec(safebuffers) void __fastcall damage_response_fire_hook()
     if (!game_is_predicted() && object->gamestate_index != -1)
     {
         simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
-        c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+        c_simulation_object_update_flags update_flags{};
         update_flags.set_flag(object_index, _simulation_object_update_region_state);
         update_flags.set_flag(object_index, _simulation_object_update_constraint_state);
         simulation_action_object_update_internal(object_index, update_flags);
@@ -951,6 +987,35 @@ __declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
     datum_index weapon_index;
     __asm mov weapon_index, ebx
     simulation_action_weapon_state_update(weapon_index);
+}
+
+// preserve unit_index variable
+__declspec(naked) void unit_inventory_set_weapon_index_hook0()
+{
+    __asm mov [ebp + 4], ecx;
+    __asm retn;
+}
+
+__declspec(safebuffers) void __fastcall unit_inventory_set_weapon_index_hook1()
+{
+    datum_index unit_index;
+    short inventory_index;
+    c_simulation_object_update_flags update_flags;
+    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(unit_index) + (sizeof(inventory_index) + 2) + sizeof(update_flags));
+
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 4];
+    __asm mov unit_index, eax;
+    
+    __asm mov eax, original_ebp;
+    __asm mov ax, [eax - 2];
+    __asm mov inventory_index, ax;
+    
+    update_flags.m_flags.clear();
+    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_type);
+    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_state);
+    simulation_action_object_update_internal(unit_index, update_flags);
+    unit_inventory_cycle_weapon_set_identifier(unit_index);
 }
 
 __declspec(safebuffers) void __fastcall damage_section_deplete_hook()
@@ -1422,647 +1487,6 @@ void __fastcall object_set_at_rest_hook(datum_index object_index)
     object_set_at_rest_simulation_update(object_index);
 }
 
-__declspec(naked) void item_in_unit_inventory_hook2()
-{
-    __asm
-    {
-        // original replaced instructions
-        or eax, 0xFFFFFFFF
-        mov[esi + 0x1E], ax
-
-        // preserve register
-        push ecx
-
-        push edi // object_index
-        call simulation_action_object_delete
-        add esp, 4
-
-        // restore register
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x48418D
-        jmp eax
-    }
-}
-
-__declspec(naked) void c_map_variant__remove_object_hook()
-{
-    __asm
-    {
-        // original replaced if statement
-        cmp ecx, 0xFFFFFFFF
-        jz sim_update
-        mov eax, [esi]
-        movzx ecx, cx
-        mov eax, [eax + 0x0C]
-        add ecx, ecx
-        mov eax, [eax + 0x44]
-        mov eax, [eax + ecx * 8 + 0x0C]
-        mov[eax + 0x1C], dx
-        jmp sim_update
-
-        sim_update :
-        // if (game_is_authoritative())
-        call game_is_authoritative
-            test al, al
-            jz return_label
-            push 0
-            push 8192 // _simulation_object_update_map_variant_index (1 << 13)
-            push[ebp + 0xC] // object_index
-            call simulation_action_object_update_with_bitmask
-
-            // return
-            return_label :
-        mov eax, module_base
-            add eax, 0xADB52
-            jmp eax
-    }
-}
-
-__declspec(naked) void c_map_variant__unknown4_hook1()
-{
-    __asm
-    {
-        push 0
-        push 6 // _simulation_object_update_position and _simulation_object_update_forward_and_up ((1 << 1) | (1 << 2))
-        push[ebx + esi + 0x134] // object_index
-        call simulation_action_object_update_with_bitmask
-
-        // execute instructions we replaced
-        mov ax, [ebx + esi + 0x130]
-        shr ax, 9
-
-        // return
-        mov ecx, module_base
-        add ecx, 0xABA8A
-        jmp ecx
-    }
-}
-
-__declspec(naked) void c_map_variant__unknown4_hook2()
-{
-    __asm
-    {
-        // execute instructions we replaced
-        mov eax, [esp + 0x84 - 0x70]
-        add esp, 4
-
-        // preserve register
-        push eax
-
-        push 0
-        push 2048 // _simulation_object_update_parent_state (1 << 11)
-        push[ebx + esi + 0x134] // object_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore register
-        pop eax
-
-        // return
-        mov ecx, module_base
-        add ecx, 0xABAAA
-        jmp ecx
-    }
-}
-
-void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
-{
-    simulation_action_object_update(unit_index, _simulation_unit_update_control);
-    unit_set_actively_controlled(unit_index, unknown);
-}
-
-__declspec(naked) void player_set_unit_index_hook2()
-{
-    __asm
-    {
-        // original replaced instructions
-        call player_clear_assassination_state
-
-        push 1 // _simulation_unit_update_assassination_data (1 << 32)
-        push 0
-        push[edi + 0x30] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov ecx, module_base
-        add ecx, 0xB628E
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_died_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        movss dword ptr[eax + 0x404], xmm0
-
-        // preserve register
-        push edx
-
-        // biped/vehicle update
-        cmp byte ptr[eax + 0x9A], 1
-        jnz biped_update
-
-        // vehicle update
-        push 0
-        push 131072 // _simulation_vehicle_update_active_camo (1 << 17)
-        push esi // unit_index
-        call simulation_action_object_update_with_bitmask
-        jmp return_label
-
-        // biped update
-        biped_update :
-        push 0
-            push 134217728 // _simulation_unit_update_active_camo (1 << 27)
-            push esi // unit_index
-            call simulation_action_object_update_with_bitmask
-
-            // restore register
-            return_label :
-        pop edx
-
-            // return
-            mov eax, module_base
-            add eax, 0x421471
-            jmp eax
-    }
-}
-
-__declspec(naked) void grenade_throw_move_to_hand_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[ecx + 0x324], al
-
-        // preserve registers across call
-        push ecx
-        push edx
-
-        push 0
-        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push[ebp - 0x08] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore registers
-        pop edx
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x47D435
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_add_grenade_to_inventory_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        inc byte ptr[esi + ebx + 0x324]
-
-        // preserve registers across call
-        push edx
-
-        push 0
-        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push[ebp - 0x08] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore registers
-        pop edx
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x4243DF
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_add_equipment_to_inventory_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[ecx + 0x314], eax
-
-        // preserve registers across call
-        push ecx
-
-        push 0
-        push 805306368 // _simulation_unit_update_equipment & _simulation_unit_update_equipment_charges ((1 << 28) | (1 << 29))
-        push[esp + 0x2C - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore registers
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x42458C
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook1()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[edi + 0x1E4], eax
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov eax, module_base
-        add eax, 0x418550
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook2()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[edi + 0x1B4], eax
-
-        // preserve register across call
-        push ecx
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore register
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x418693
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook3()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov eax, [edx + 0x1A4]
-
-        // preserve register across call
-        push edx
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore register
-        pop edx
-
-        // return
-        mov eax, module_base
-        add eax, 0x418A79
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_add_initial_loadout_hook0()
-{
-    __asm
-    {
-        // create a new variable to preserve player_object_index in
-        sub esp, 0x1C0 // originally sub esp, 0x1BC
-        mov[ebp - 0x1BC], ecx // ecx is player_object_index
-
-        // return
-        mov eax, module_base
-        add eax, 0xFB6E9
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_add_initial_loadout_hook1()
-{
-    __asm
-    {
-        push 0
-        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push[ebp - 0x1BC] // player object index
-        call simulation_action_object_update_with_bitmask
-
-        // original replaced instructions
-        mov ecx, [ebx + 0x4C]
-        cmp ecx, 0xFFFFFFFF
-
-        // return
-        mov eax, module_base
-        add eax, 0xFBA3A
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_add_initial_loadout_hook2()
-{
-    __asm
-    {
-        push 0
-        push 128 // _simulation_object_update_shield_vitality (1 << 7)
-        push[ebp - 0x1BC] // player object index
-        call simulation_action_object_update_with_bitmask
-
-        // original replaced instructions
-        mov byte ptr[ebx + 0x18B4], 0
-
-        // return
-        mov eax, module_base
-        add eax, 0xFBAE0
-        jmp eax
-    }
-}
-
-__declspec(naked) void projectile_attach_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        movss dword ptr[esi + 0x18C], xmm1
-
-        // preserve registers across call
-        push eax
-        push ecx
-        push edx
-
-        push 0
-        push 2048 // _simulation_object_update_parent_state (1 << 11)
-        push[esp + 0x6C - 0x48] // projectile_index
-        call simulation_action_object_update_with_bitmask
-
-        // restore registers
-        pop edx
-        pop ecx
-        pop eax
-
-        // replaced instructions
-        mov eax, [eax + 0x0C]
-        mov eax, [eax + 0x44]
-        mov cl, [eax + ecx * 8 + 3]
-        // return
-        mov eax, module_base
-        add eax, 0x467F23
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook1() // c_simulation_unit_entity_definition::apply_object_update
-{
-    __asm
-    {
-        push[edi + 0x0B4] // looking_vector
-        mov edx, [edi + 0xB4] // aiming_vector
-        mov ecx, ebx // unit_index
-        call unit_set_aiming_vectors
-
-        // return
-        mov eax, module_base
-        add eax, 0x59F48
-        jmp eax
-    }
-}
-
-__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook1()
-{
-    __asm
-    {
-        // original replaced instruction
-        mov dword ptr[esp + 0xE0 - 0xC0], 0xFFFFFFFF
-
-        // set new variable
-        mov dword ptr[esp + 0xE0 - 0xD4], 0xFFFFFFFF
-
-        // return
-        mov edx, module_base
-        add edx, 0x60BE5
-        jmp edx
-    }
-}
-
-__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook2()
-{
-    __asm
-    {
-        // original replaced instruction
-        mov eax, [esp + 0xE0 - 0xC4]
-        mov[esp + 0xE0 - 0xC0], edi
-
-        // set new variable
-        mov[esp + 0xE0 - 0xD4], edi
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x60C74
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fire_event_definition::apply_object_update
-{
-    __asm
-    {
-        // replaced instructions
-        mov[ecx + 0x1E4], eax
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push[esp + 0xE8 - 0xD4] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x610CF
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook3() // c_vehicle_auto_turret::control
-{
-    __asm
-    {
-        lea eax, [esi + 0x8BC]
-        push eax // looking_vector
-        mov edx, eax // aiming_vector
-        mov ecx, ebx // unit_index
-        call unit_set_aiming_vectors
-
-        // return
-        mov eax, module_base
-        add eax, 0x4A1010
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_activate_hook2()
-{
-    __asm
-    {
-        // replaced instructions
-        mov[edi + 0x198], eax
-
-        push 0
-        push 65536 // _simulation_item_update_unknown16 (1 << 16)
-        push[esp + 0x360 - 0x328] // equipment_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov eax, module_base
-        add eax, 0x4514E2
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_energy_hook()
-{
-    __asm
-    {
-        // replaced instructions
-        mov[esi + 0x31C], eax
-
-        push 0
-        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov eax, module_base
-        add eax, 0x41B606
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_handle_energy_cost_hook0()
-{
-    __asm
-    {
-        // add new variable to preserve unit_index in
-        sub esp, 0x10 // increased by 4 bytes from 0x0C
-        push ebx
-        push esi
-        push edi
-        mov edi, [eax]
-        mov esi, ecx
-
-        // preserve unit_index in new variable
-        mov dword ptr[esp + 0x18 - 0x0C], esi
-
-        // return
-        mov eax, module_base
-        add eax, 0x42D2A6
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_handle_energy_cost_hook1()
-{
-    // Make sure this is static else the stack will break
-    static void* sub_2E7BE0 = (void*)BASE_ADDRESS(0x2E7BE0);
-    __asm
-    {
-        // replaced instructions
-        call sub_2E7BE0
-
-        push 0
-        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
-        push[esp + 0x20 - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        mov eax, module_base
-        add eax, 0x42D39D
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_handle_energy_cost_hook2()
-{
-    // Make sure this is static else the stack will break
-    static void* hf2p_set_player_cooldown = (void*)BASE_ADDRESS(0xC19E0);
-    __asm
-    {
-        // replaced instructions
-        call hf2p_set_player_cooldown
-
-        push 0
-        push 536870912 // _simulation_unit_update_equipment_charges (1 << 29)
-        push[esp + 0x20 - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        push 0
-        push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
-        push[ebx + 0x198] // unit->player_index
-        call simulation_action_game_engine_player_update_with_bitmask
-        add esp, 12
-
-        // return
-        pop edi
-        pop esi
-        pop ebx
-        mov esp, ebp
-        pop ebp
-        retn
-    }
-}
-
-__declspec(naked) void unit_set_hologram_hook()
-{
-    __asm
-    {
-        // replaced instructions
-        mov dword ptr[eax + 0x400], 0x3F800000
-
-        // save register across call
-        push ecx
-        push edx
-
-        // biped/vehicle update
-        cmp byte ptr[esi + 0x9A], 1
-        jnz biped_update
-
-        // vehicle update
-        push 0
-        push 131072 // _simulation_vehicle_update_active_camo (1 << 17)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask
-        jmp return_label
-
-        // biped update
-        biped_update :
-        push 0
-            push 134217728 // _simulation_unit_update_active_camo (1 << 27)
-            push ebx // unit_index
-            call simulation_action_object_update_with_bitmask
-
-            // restore register
-            return_label :
-        pop edx
-            pop ecx
-
-            // return
-            mov eax, module_base
-            add eax, 0x42C578
-            jmp eax
-    }
-}
-
 __declspec(naked) void weapon_handle_potential_inventory_item_hook()
 {
     __asm
@@ -2096,66 +1520,6 @@ __declspec(naked) void weapon_handle_potential_inventory_item_hook()
             mov esp, ebp
             pop ebp
             retn
-    }
-}
-
-__declspec(naked) void unit_inventory_set_weapon_index_hook0()
-{
-    __asm
-    {
-        // create a new variable to preserve unit_index in
-        push ebp
-        mov ebp, esp
-        sub esp, 0x10 // originally sub esp, 0x0C
-
-        mov[ebp - 0x0C], ecx // ecx is unit_index
-
-        // return
-        mov eax, module_base
-        add eax, 0x426D16
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_inventory_set_weapon_index_hook1()
-{
-    __asm
-    {
-        //c_flags<long, ulong64, 64> update_flags = {};
-        //update_flags.set(inventory_index + 18, true);
-        //update_flags.set(inventory_index + 22, true);
-        //simulation_action_object_update(unit_index, &update_flags);
-
-        // flags1 = (1 << (inventory_index + _simulation_unit_update_weapon1_type))
-        mov ecx, [ebp - 0x02] // inventory_index - TODO: is this a datum_index in the original code? make sure those top 16 bits won't interfere with this
-        add ecx, 18 // inventory_index + _simulation_unit_update_weapon1_type
-        mov edx, 1
-        shl edx, cl
-        mov eax, edx
-
-        // flags2 = (1 << (inventory_index + _simulation_unit_update_weapon1_state))
-        mov ecx, [ebp - 0x02] // inventory_index
-        add ecx, 22 // inventory_index + _simulation_unit_update_weapon1_state
-        mov edx, 1
-        shl edx, cl
-
-        or edx, eax // update_flags = flags1 | flags2;
-
-        push 0
-        push edx // update_flags
-        push[ebp - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask
-
-        mov ecx, [ebp - 0x0C] // unit_index
-        call unit_inventory_cycle_weapon_set_identifier // fastcall
-
-        // return
-        pop edi
-        pop esi
-        pop ebx
-        mov esp, ebp
-        pop ebp
-        retn
     }
 }
 
@@ -2225,81 +1589,8 @@ void anvil_hooks_apply()
     anvil_hooks_statborg_apply(); // STATBORG UPDATES
     anvil_hooks_simulation_globals_apply(); // GLOBALS UPDATES
     anvil_hooks_object_creation_apply(); // OBJECT CREATION
-
-    // OBJECT DELETION
-    // add simulation_action_object_delete back to object_delete
-    Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
-    // item inventory
-    Pointer::Base(0x484186).WriteJump(item_in_unit_inventory_hook2, HookFlags::None);
-
-    // OBJECT UPDATES
-    // add simulation_action_object_update back to object_update
-    Pointer::Base(0x404907).WriteJump(object_update_hook, HookFlags::None);
-    Pointer::Base(0x4047B4).WriteJump(object_update_part, HookFlags::None);
-    // add simulation_action_object_update back to player_set_facing
-    Hook(0xB6300, player_set_facing_hook).Apply();
-    // c_map_variant::remove_object - should fix map variant object respawn times
-    Pointer::Base(0xADB2B).WriteJump(c_map_variant__remove_object_hook, HookFlags::None);
-    // c_map_variant::unknown4 - called when objects spawn/respawn on sandtrap's elephants
-    Pointer::Base(0xABA7E).WriteJump(c_map_variant__unknown4_hook1, HookFlags::None); // UNTESTED!!
-    Pointer::Base(0xABAA3).WriteJump(c_map_variant__unknown4_hook2, HookFlags::None); // UNTESTED!!
-    // player_set_unit_index
-    Hook(0xB5F8E, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
-    Hook(0xB60E4, player_set_unit_index_hook1, HookFlags::IsCall).Apply(); // hooks nearby unit_set_actively_controlled call
-    Pointer::Base(0xB6289).WriteJump(player_set_unit_index_hook2, HookFlags::None);
-    // player_increment_control_context - fixes player control after respawning
-    Hook(0xB9A90, player_increment_control_context).Apply();
-    // unit_died - sync unit deaths
-    Pointer::Base(0x421469).WriteJump(unit_died_hook, HookFlags::None);
-    // sync grenade count after throw
-    Pointer::Base(0x47D42F).WriteJump(grenade_throw_move_to_hand_hook, HookFlags::None);
-    // sync grenade pickups
-    Pointer::Base(0x4243D8).WriteJump(unit_add_grenade_to_inventory_hook, HookFlags::None);
-    // sync equipment pickup
-    Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
-    // unit_update_control
-    Pointer::Base(0x41854A).WriteJump(unit_update_control_hook1, HookFlags::None); // UNTESTED!!
-    Pointer::Base(0x41868D).WriteJump(unit_update_control_hook2, HookFlags::None); // called for units with flag bit 2 set
-    Pointer::Base(0x418A73).WriteJump(unit_update_control_hook3, HookFlags::None); // sets aim & look vectors for controlled units - ie driving vehicles
-    // TODO: creates variable and breaks SP, fix this
-    // unit_add_initial_loadout
-    //Pointer::Base(0xFB6E3).WriteJump(unit_add_initial_loadout_hook0, HookFlags::None); // create a variable to preserve player_object_index in for the 2 hooks below
-    //Pointer::Base(0xFBA34).WriteJump(unit_add_initial_loadout_hook1, HookFlags::None);
-    //Pointer::Base(0xFBAD9).WriteJump(unit_add_initial_loadout_hook2, HookFlags::None); // used to sync the revenge_shield_boost modifier shield bonus
-    // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
-    Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
-    // rewrite biped_update_melee_turning w/ updates
-    Hook(0x440E30, biped_update_melee_turning).Apply();
-    // unit_control
-    Hook(0x2BB82, unit_control, HookFlags::IsCall).Apply();
-    Hook(0xBD4E7, unit_control, HookFlags::IsCall).Apply();
-    Hook(0xBD573, unit_control, HookFlags::IsCall).Apply();
-    Hook(0x181410, unit_control, HookFlags::IsCall).Apply();
-    Hook(0x69BB96, unit_control, HookFlags::IsCall).Apply();
-    Hook(0x69DA76, unit_control, HookFlags::IsCall).Apply();
-    // unit_set_aiming_vectors
-    Hook(0x42A490, unit_set_aiming_vectors).Apply(); // UNTESTED!! called by c_game_engine::apply_player_update & player_teleport_on_bsp_switch
-    Patch::NopFill(Pointer::Base(0x1C9AF5), 3);// remove push 4 after original call to convert usercall to fastcall
-    Pointer::Base(0xB911B).Write<byte>(0x20); // 0x24 to 0x20 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
-    Pointer::Base(0xB911E).Write<byte>(0x10); // 0x14 to 0x10 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
-    Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
-    Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
-    // TODO: This is bad and breaks the stack pointer offsets for other variables
-    //Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
-    //Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
-    //Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
-    //Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
-    // equipment_activate
-    Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // TODO: this doesn't seem to work the way I expect it to - deployable covers still don't activate for clients
-    // sync unit energy levels
-    Pointer::Base(0x41B600).WriteJump(unit_update_energy_hook, HookFlags::None);
-    // TODO: creates new variable and breaks SP in doing so, fix this
-    // sync energy costs / energy levels decreasing when throwing an equipment
-    //Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
-    //Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
-    //Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
-    // unit_set_hologram
-    Pointer::Base(0x42C56E).WriteJump(unit_set_hologram_hook, HookFlags::None);
+    anvil_hooks_object_deletion_apply(); // OBJECT DELETION
+    anvil_hooks_object_updates_apply(); // OBJECT UPDATES
 
     // OBJECT PHYSICS UPDATES
     // object_set_position_internal
@@ -2392,10 +1683,13 @@ void anvil_hooks_apply()
     insert_hook(0x42E055, 0x42E05A, weapon_trigger_update_hook);
     // ammo pickup
     Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
-    // TODO: creates new variable and breaks SP, fix this
+    
     // weapon set index updates
-    //Pointer::Base(0x426D10).WriteJump(unit_inventory_set_weapon_index_hook0, HookFlags::None);
-    //Pointer::Base(0x426D8E).WriteJump(unit_inventory_set_weapon_index_hook1, HookFlags::None);
+    add_variable_space_to_stack_frame(0x426D10, 0x426DD6, 4); // Add 4 bytes of variable space to the stack frame
+    insert_hook(0x426D16, 0x426D1C, unit_inventory_set_weapon_index_hook0, _hook_execute_replaced_last); // preserve unit_index in a new variable
+    insert_hook(0x426D8E, 0x426DCF, unit_inventory_set_weapon_index_hook1, _hook_replace);
+    insert_hook(0x426DD0, 0x426DD5, (void*)4, _hook_stack_frame_cleanup); // cleanup new variable from stack on return
+
     // weapon set identifier updates
     Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
     // add inlined unit_inventory_set_weapon_index with sim updates back to unit_delete_all_weapons_internal

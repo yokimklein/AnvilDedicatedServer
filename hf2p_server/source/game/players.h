@@ -176,7 +176,7 @@ public:
 bool player_identifier_is_valid(s_player_identifier const* identifier);
 const char* player_identifier_get_string(s_player_identifier const* identifier);
 long player_mapping_get_input_user(datum_index player_index);
-void player_set_facing(datum_index player_index, real_vector3d* forward);
+void __fastcall player_set_facing(datum_index player_index, real_vector3d* forward);
 void __fastcall player_control_set_facing(long input_user_index, real_vector3d* forward);
 long player_index_from_absolute_player_index(short absolute_player_index);
 void __fastcall player_increment_control_context(datum_index player_index);

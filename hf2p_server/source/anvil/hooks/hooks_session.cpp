@@ -1,6 +1,5 @@
 #include "hooks_session.h"
 #include <anvil\hooks\hooks.h>
-#include <anvil\server_tools.h>
 #include <Patch.hpp>
 #include <networking\messages\network_message_handler.h>
 #include <networking\session\network_session.h>
@@ -9,13 +8,6 @@
 #include <networking\session\network_managed_session.h>
 #include <networking\transport\transport_shim.h>
 #include <game\game_engine_spawning.h>
-
-// runtime checks need to be disabled for these, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-// TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
-#pragma runtime_checks("", off)
-
-#pragma runtime_checks("", restore)
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
@@ -70,17 +62,23 @@ void anvil_hooks_session_apply()
     Hook(0x252F0, handle_channel_message_hook).Apply();
     Hook(0x2A580, network_join_process_joins_from_queue).Apply();
     Hook(0x21AB0, session_idle_hook).Apply();
+
     // I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
     // add back set_peer_address & set_peer_properties to peer_request_properties_update
     Hook(0x2F650, network_session_update_peer_properties).Apply();
+
+    // add debug print back to before life cycle end is called in c_gui_location_manager::update
     Hook(0x3EEE1F, network_life_cycle_end_hook, HookFlags::IsCall).Apply();
+
     // add back network_session_check_properties
     Hook(0x2AD9E, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
     Hook(0x2DC71, network_session_interface_update_session_hook, HookFlags::IsCall).Apply();
+
     // unregister the host address description to the xnet shim table on session destruction - the transport_secure_key_create hook further down handles session creation
     Hook(0x21342, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Hook(0x28051, managed_session_delete_session_internal_hook, HookFlags::IsCall).Apply();
     Pointer::Base(0x284B8).WriteJump(managed_session_delete_session_internal_hook, HookFlags::None);
+
     // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
     Hook(0xFBBA0, game_engine_should_spawn_player).Apply();
 }

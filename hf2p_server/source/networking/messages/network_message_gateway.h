@@ -3,15 +3,16 @@
 #include <networking\messages\network_message_type_collection.h>
 #include <networking\transport\transport_address.h>
 #include <memory\bitstream.h>
-#include <networking\messages\network_messages_out_of_band.h>
+#include <networking\messages\network_out_of_band_consumer.h>
 
 class c_network_link;
 class c_network_message_handler;
 class c_network_message_type_collection;
-class c_network_message_gateway : c_network_out_of_band_consumer
+class c_network_message_gateway : public c_network_out_of_band_consumer
 {
 public:
-	virtual bool __cdecl receive_out_of_band_packet(s_transport_address const* address, c_bitstream* packet);
+	virtual bool __cdecl receive_out_of_band_packet(s_transport_address const* incoming_address, c_bitstream* packet) override;
+
 	c_network_link* get_network_link();
 	bool send_message_directed(s_transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, s_network_message const* message);
 

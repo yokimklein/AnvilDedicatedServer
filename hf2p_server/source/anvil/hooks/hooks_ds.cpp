@@ -1,7 +1,7 @@
 #include "hooks_ds.h"
 #include <anvil\hooks\hooks.h>
-#include <anvil\server_tools.h>
 #include <Patch.hpp>
+#include <anvil\server_tools.h>
 #include <networking\session\network_session_parameters_game.h>
 #include <networking\transport\transport_security.h>
 #include <networking\session\network_session.h>
@@ -24,9 +24,13 @@ __declspec(safebuffers) void __fastcall c_life_cycle_state_handler_pre_game__squ
 {
     c_network_session_parameter_game_start_status* parameter;
     s_network_session_parameter_game_start_status* start_status;
+    DEFINE_ORIGINAL_EBP_ESP(0x39C, sizeof(parameter) + sizeof(start_status));
+    
     __asm mov parameter, ecx;
-    __asm lea eax, [esp + 0x78]; // [esp+0x398-0x388] sp is 0x39C
+    __asm mov eax, original_esp;
+    __asm lea eax, [eax + 0x398 - 0x388];
     __asm mov start_status, eax;
+    
     parameter->set(start_status);
 }
 

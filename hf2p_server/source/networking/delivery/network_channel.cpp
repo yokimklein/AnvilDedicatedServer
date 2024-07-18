@@ -73,29 +73,36 @@ const char* c_network_channel::get_short_name()
 	static c_static_string<16> channel_remote_name{};
 	channel_remote_name.clear();
 
-	e_network_observer_owner observer_owner = m_observer->m_session->observer_owner();
-	long observer_index = m_observer->observer_channel_find_by_network_channel(observer_owner, this);
-	if (observer_index != -1)
+	// find current channel's owner type
+	for (long owner_type = 0; owner_type < k_network_observer_owner_count; owner_type++)
 	{
-		long peer_index = m_observer->m_session->get_session_membership()->get_peer_from_observer_channel(observer_index);
-		if (peer_index != -1)
+		// find current channel's observer index
+		long observer_index = m_observer->observer_channel_find_by_network_channel((e_network_observer_owner)owner_type, this);
+		if (observer_index != -1)
 		{
-			s_network_session_peer* peer = m_observer->m_session->get_session_membership()->get_peer(peer_index);
-			return channel_remote_name.print("%ls", peer->properties.peer_name.get_string());
+			// find peer paired to this channel
+			c_network_session_membership* membership = m_observer->m_owners[owner_type].owner->get_session_membership();
+			for (long peer_index = membership->get_first_peer(); peer_index != -1; peer_index = membership->get_next_peer(peer_index))
+			{
+				if (observer_index == membership->get_observer_channel_index(peer_index))
+				{
+					// set matching peer name as the channel's short name
+					c_static_wchar_string<16>* peer_name = &membership->get_peer(peer_index)->properties.peer_name;
+					if (!peer_name->is_empty())
+						return channel_remote_name.print("%ls", peer_name->get_string());
+					else
+						return channel_remote_name.print("%s", "unnamed_peer");
+				}
+			}
 		}
 	}
-	return channel_remote_name.get_string();
+	return channel_remote_name.print("%s", "unknown_peer");
 }
 
 e_network_channel_state c_network_channel::get_state()
 {
 	return this->m_channel_state;
 }
-
-//char* c_network_channel::get_message_type_name(e_network_message_type message_type) // this belongs to c_network_message_type_collection?
-//{
-//	return 0;
-//}
 
 bool c_network_channel::get_remote_address(s_transport_address* remote_address)
 {

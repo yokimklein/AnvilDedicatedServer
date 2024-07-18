@@ -26,9 +26,10 @@ bool c_network_session_parameter_session_mode::set(e_network_session_mode sessio
 
 bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter_lobby_vote_set* vote_set)
 {
-	if (memcmp(&m_data.vote_options, &vote_set->vote_options, 6) != 0 || m_data.winning_vote_index != vote_set->winning_vote_index || !this->get_allowed())
+	if (memcmp(&m_data.vote_options, &vote_set->vote_options, sizeof(s_network_session_parameter_lobby_vote_set::vote_options)) != 0
+		|| m_data.winning_vote_index != vote_set->winning_vote_index || !this->get_allowed())
 	{
-		memcpy(&m_data.vote_options, &vote_set->vote_options, 6);
+		m_data.vote_options = vote_set->vote_options;
 		m_data.winning_vote_index = vote_set->winning_vote_index;
 		this->set_update_required();
 	}
@@ -37,6 +38,6 @@ bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter
 
 void c_network_session_parameter_lobby_vote_set::get(s_network_session_parameter_lobby_vote_set* output)
 {
-	memcpy(&output->vote_options, &m_data.vote_options, 6);
+	output->vote_options = m_data.vote_options;
 	output->winning_vote_index = m_data.winning_vote_index;
 }

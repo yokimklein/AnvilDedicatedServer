@@ -24,9 +24,9 @@ enum e_game_engine_round_condition
 	_game_engine_round_condition_unknown0,
 	_game_engine_round_condition_unknown1,
 	_game_engine_round_condition_unknown2,
-	_game_engine_round_condition_unknown3,
-	_game_engine_round_condition_unknown4,
-	_game_engine_round_condition_unknown5,
+	_game_engine_round_condition_unknown3, // INGAME_STATE_WAITING_FOR_PLAYERS
+	_game_engine_round_condition_unknown4, // INGAME_STATE_LOADOUT_SELECTION_INITIAL
+	_game_engine_round_condition_unknown5, // INGAME_STATE_MATCH_INTRODUCTION
 	_game_engine_round_condition_unknown6,
 	_game_engine_round_condition_unknown7,
 

@@ -33,26 +33,21 @@ void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
     while (counter < 4);
 }
 
+// I could easily rewrite this function however its strange calling convention makes this finicky to hook & replace
+// disabled RTC here to prevent it from throwing an exception before the assembly corrects the stack
+#pragma runtime_checks("", off)
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type)
 {
-    // convert fastcall to usercall
-    static void* unit_inventory_set_weapon_index_call = (void*)BASE_ADDRESS(0x426D10);
-    __asm
-    {
-        push drop_type
-        push item_index
-        mov edx, inventory_index
-        mov ecx, unit_index
-        call unit_inventory_set_weapon_index_call
-        add esp, 8 // this is the only real difference as far as i can tell
-    }
+    INVOKE(0x426D10, unit_inventory_set_weapon_index, unit_index, inventory_index, item_index, drop_type);
+    __asm add esp, 8; // cleanup stack after usercall
 }
+#pragma runtime_checks("", restore)
 
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
 {
     INVOKE(0x41BA10, unit_control, unit_index, unit_control_data);
 
-    c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+    c_simulation_object_update_flags update_flags{};
     update_flags.set_flag(unit_index, _simulation_unit_update_desired_aiming_vector);
     update_flags.set_flag(unit_index, _simulation_unit_update_desired_weapon_set);
     simulation_action_object_update_internal(unit_index, update_flags);

@@ -30,7 +30,7 @@ long XNetFindEntry(const s_transport_address* address, const s_transport_secure_
 	return first_invalid_row;
 }
 
-void XNetRegisterKey(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier)
+void XNetAddEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier)
 {
 	long row_index = XNetFindEntry(address, secure_address, false);
 	if (row_index != -1)

@@ -34,7 +34,7 @@ struct s_xnet_address
 };
 
 long XNetFindEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, bool ignore_invalid_rows);
-void XNetRegisterKey(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
+void XNetAddEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
 void XNetUnregisterKey(const s_transport_address* address);
 bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address);
 bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);

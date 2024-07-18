@@ -165,6 +165,8 @@
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_globals.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_creation.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h" />
@@ -209,6 +211,7 @@
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_manager.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_state_handler.h" />
     <ClInclude Include="source\networking\logic\network_bandwidth.h" />
+    <ClInclude Include="source\networking\messages\network_out_of_band_consumer.h" />
     <ClInclude Include="source\networking\network_configuration.h" />
     <ClInclude Include="source\networking\network_memory.h" />
     <ClInclude Include="source\networking\replication\replication_control_view.h" />
@@ -296,6 +299,7 @@
     <ClInclude Include="source\simulation\simulation_debug_globals.h" />
     <ClInclude Include="source\simulation\simulation_entity_database.h" />
     <ClInclude Include="source\simulation\simulation_entity_definition.h" />
+    <ClInclude Include="source\simulation\simulation_event_definition.h" />
     <ClInclude Include="source\simulation\simulation_event_handler.h" />
     <ClInclude Include="source\simulation\simulation_gamestate_entities.h" />
     <ClInclude Include="source\simulation\simulation_players.h" />
@@ -370,6 +374,8 @@
   <ItemGroup>
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_globals.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_creation.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp" />
@@ -394,6 +400,7 @@
     <ClCompile Include="source\game\game_time.cpp" />
     <ClCompile Include="source\game\game_options.cpp" />
     <ClCompile Include="source\game\player_mapping.cpp" />
+    <ClCompile Include="source\game\survival_mode.h" />
     <ClCompile Include="source\hf2p\hf2p_session.cpp" />
     <ClCompile Include="source\hf2p\hq.cpp" />
     <ClCompile Include="source\hf2p\podium.cpp" />
@@ -404,6 +411,7 @@
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />
+    <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp" />
     <ClCompile Include="source\networking\network_configuration.cpp" />
     <ClCompile Include="source\networking\network_globals.cpp" />
     <ClCompile Include="source\networking\network_memory.cpp" />

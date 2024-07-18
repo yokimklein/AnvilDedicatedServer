@@ -7,6 +7,7 @@
 #include <simulation\simulation_gamestate_entities.h>
 #include <game\player_mapping.h>
 #include <game\game_time.h>
+#include <game\survival_mode.h>
 
 struct s_thread_local_storage
 {
@@ -47,7 +48,7 @@ struct s_thread_local_storage
 	byte* __unknown88; // lights
 	byte* __unknown8C;
 	byte* __unknown90;
-	byte* __unknown94;
+	s_survival_mode_globals* survival_mode_globals;
 	byte* __unknown98; // recycling_group
 	byte* __unknown9C; // effect location
 	byte* __unknownA0;

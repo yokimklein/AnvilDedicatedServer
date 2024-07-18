@@ -253,7 +253,7 @@ enum e_modifiers : long
 	_melee_resist, // real 0.0-max ()
 	// This value is multiplied by 1 to a max of 3 every time the player dies
 	// There's nothing in the code to suggest this occurs when they die without scoring as the modifier description says
-	_revenge_shield_boost, // real 0.0-max, default 0.0 (The amount your shields are multiplied by on spawn + 1.0, a value of 1.0 would multiply your shields by 2x)
+	_revenge_shield_boost, // real 0.0-max, default 0.0 (The amount your shields are multiplied by on spawn + 1.0, a value of 1.0 would grand you an extra layer of shields every time a player successively kills you)
 	_respawn_modifier, // int 0-max (Number of seconds removed from your respawn timer)
 	_grenades_max, // int 0-100 (Number of additional grenades to spawn with on top of the 2 of the type assigned to your loadout)
 	_motion_sensor_range, // real 0.0-max (Number of additional meters of range on top of the gamemode default)

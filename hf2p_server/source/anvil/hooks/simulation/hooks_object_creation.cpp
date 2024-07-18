@@ -1,6 +1,5 @@
 #include "hooks_object_creation.h"
 #include <anvil\hooks\hooks.h>
-#include <anvil\server_tools.h>
 #include <Patch.hpp>
 #include <memory\data.h>
 #include <memory\tls.h>
@@ -8,7 +7,7 @@
 #include <objects\crates.h>
 #include <nmd_assembly.h>
 
-// runtime checks need to be disabled for these, make sure to write them within the pragmas
+// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
@@ -26,12 +25,92 @@ __declspec(safebuffers) void __fastcall event_generate_part_hook()
 	simulation_action_object_create(object_index);
 }
 
-// preserve no_barrel_prediction
-thread_local static bool no_barrel_prediction;
-__declspec(safebuffers) void __fastcall weapon_barrel_create_projectiles_hook0()
+// preserve no_barrel_prediction variable
+__declspec(naked) void weapon_barrel_create_projectiles_hook0()
 {
-	__asm mov eax, [esp + 0x2264 - 0x2244]; // TODO: thread local crashes, also debug disassembly to ensure we're getting the right variable here
+	// esp + original sp - variable offset + new stack space
+	__asm mov eax, [esp + 0x2254 - 0x2244 + 0x0C];
+	__asm mov[ebp + 4], eax;
+	__asm retn;
+}
+
+// crate projectiles
+__declspec(safebuffers) void __fastcall weapon_barrel_create_projectiles_hook1()
+{
+	datum_index object_index;
+	s_object_placement_data* placement_data;
+	DEFINE_ORIGINAL_EBP_ESP(0x2254, sizeof(object_index) + sizeof(placement_data));
+
+	__asm mov eax, original_esp;
+	__asm lea eax, [eax + 0x2250 - 0x2048];
+	__asm mov placement_data, eax;
+
+	object_index = object_new(placement_data);
+	if (object_index != -1)
+		simulation_action_object_create(object_index);
+}
+
+// non-predicted standard projectiles
+__declspec(safebuffers) void __fastcall weapon_barrel_create_projectiles_hook2()
+{
+	datum_index object_index;
+	bool no_barrel_prediction;
+	DEFINE_ORIGINAL_EBP_ESP(0x2254, sizeof(object_index) + (sizeof(no_barrel_prediction) + 3));
+
+	__asm mov eax, original_esp;
+	__asm mov eax, [eax + 0x2250 - 0x2230];
+	__asm mov object_index, eax;
+
+	__asm mov eax, original_ebp;
+	__asm mov eax, [eax + 4];
 	__asm mov no_barrel_prediction, al;
+
+	if (no_barrel_prediction)
+		simulation_action_object_create(object_index);
+}
+
+// preserve object_force_inside_bsp return
+__declspec(naked) void throw_release_hook0()
+{
+	__asm mov[ebp + 4], eax;
+	__asm retn;
+}
+
+__declspec(safebuffers) void __fastcall throw_release_hook1()
+{
+	datum_index object_index;
+	bool force_inside_bsp;
+	bool stick;
+	DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(object_index) + (sizeof(force_inside_bsp) + sizeof(stick) + 2));
+
+	__asm mov object_index, esi;
+
+	__asm mov eax, original_ebp;
+	__asm mov eax, [eax + 4];
+	__asm mov force_inside_bsp, al;
+
+	__asm mov eax, original_ebp;
+	__asm mov eax, [eax + 24];
+	__asm mov stick, al;
+
+	if (stick || force_inside_bsp) // needs to stay in this order - force inside may not have a valid value if object_force_inside_bsp hasn't run?
+		simulation_action_object_create(object_index);
+}
+
+__declspec(safebuffers) void __fastcall equipment_activate_hook()
+{
+	datum_index object_index;
+	__asm mov object_index, eax;
+
+	simulation_action_object_create(object_index);
+}
+
+__declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
+{
+	datum_index object_index;
+	__asm mov object_index, edi;
+
+	simulation_action_object_create(object_index);
 }
 #pragma runtime_checks("", restore)
 
@@ -58,152 +137,35 @@ void __fastcall game_engine_register_object_hook(datum_index object_index)
 	simulation_action_object_create(object_index);
 }
 
-datum_index __fastcall weapon_barrel_create_projectiles_hook1(s_object_placement_data* placement_data)
-{
-	datum_index object_index = object_new(placement_data);
-	if (object_index != -1)
-		simulation_action_object_create(object_index);
-	return object_index;
-}
-
-__declspec(naked) void weapon_barrel_create_projectiles_hook2()
-{
-	__asm
-	{
-		// call our inserted function
-		// if (v220) 
-		cmp[esp + 0x2250 - 0x2244], 0 // v220
-		jz if_failed
-
-		push[esp + 0x2250 - 0x2228] // object_index 0x2228
-		call simulation_action_object_create
-		add esp, 4
-
-		if_failed:
-		// execute the instructions we replaced
-		mov eax, [esp + 0x2250 - 0x21F8]
-		xor dl, dl
-
-		// return back to the original code
-		mov ecx, module_base
-		add ecx, 0x4394A8
-		jmp ecx
-	}
-}
-
-__declspec(naked) void throw_release_hook1()
-{
-	__asm
-	{
-		cmp[ebp + 0x20], 0
-		jnz sim_update
-		mov eax, module_base
-		add eax, 0x47CFC7
-		jmp eax
-
-		sim_update :
-		push esi // object_index
-		call simulation_action_object_create
-		add esp, 4
-
-		mov eax, module_base
-		add eax, 0x47D185
-		jmp eax
-	}
-}
-
-__declspec(naked) void throw_release_hook2()
-{
-	__asm
-	{
-		add esp, 4
-		test al, al
-		jnz sim_update
-		mov eax, module_base
-		add eax, 0x47D17B
-		jmp eax
-
-		sim_update :
-		push esi // object_index
-		call simulation_action_object_create
-		add esp, 4
-
-		mov eax, module_base
-		add eax, 0x47D185
-		jmp eax
-	}
-}
-
-__declspec(naked) void equipment_activate_hook()
-{
-	__asm
-	{
-		// preserve register
-		push eax
-
-		push eax // object_index
-		call simulation_action_object_create
-		add esp, 4
-
-		// restore register
-		pop eax
-
-		// original replaced instructions
-		mov ecx, [esp + 0x358 - 0x348]
-		mov[ecx + 0x1A0], eax
-
-		// return
-		mov eax, module_base
-		add eax, 0x451498
-		jmp eax
-	}
-}
-
-__declspec(naked) void item_in_unit_inventory_hook1()
-{
-	__asm
-	{
-		push edi // object_index
-		call simulation_action_object_create
-		add esp, 4
-
-		// original replaced instructions
-		mov eax, [ebx + 0x0C]
-		mov ecx, [ebp - 0x08]
-
-		// return
-		mov edx, module_base
-		add edx, 0x48433D
-		jmp edx
-	}
-}
-
 void anvil_hooks_object_creation_apply()
 {
 	// create & update player biped on spawn (player_spawn)
 	Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
+
 	// map variant object spawning
 	Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_map_variant::create_object
 	Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
 	Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
+
 	// effect object spawning
 	insert_hook(0x114A2F, 0x114A6C, event_generate_part_hook, _hook_replace);
 	
 	// weapon_barrel_create_projectiles
-	//insert_hook(0x4373B4, 0x4373BB, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve variable used in hook2
-	Hook(0x4391D4, weapon_barrel_create_projectiles_hook1, HookFlags::IsCall).Apply(); // crate projectiles // hooks nearby object_new
-	// TODO: Preserve v220 variable here for this to work
-	//Pointer::Base(0x4394A2).WriteJump(weapon_barrel_create_projectiles_hook2, HookFlags::None); // standard projectiles
-	
-	//insert_hook(0x114A2F, 0x114A6C, event_generate_part_hook, _hook_execute_replaced_last);
-	increase_positive_ebp_offsets(0x4371F0, 0x439A50, 4);
+	add_variable_space_to_stack_frame(0x4371F0, 0x439A51, 4); // Add 4 bytes of variable space to the stack frame
+	insert_hook(0x4373B4, 0x4373BB, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve no_barrel_prediction in our new variable
+	insert_hook(0x4391CD, 0x4391D9, weapon_barrel_create_projectiles_hook1, _hook_replace); // crate projectiles
+	insert_hook(0x4394A2, 0x4394A8, weapon_barrel_create_projectiles_hook2, _hook_execute_replaced_last); // non-predicted standard projectiles
+	insert_hook(0x439A4B, 0x439A50, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
 	// grenade & equipment throw spawning
-	//insert_hook(0x47CFBD, );
-	Pointer::Base(0x47CFBD).WriteJump(throw_release_hook1, HookFlags::None);
-	Pointer::Base(0x47D174).WriteJump(throw_release_hook2, HookFlags::None);
+	add_variable_space_to_stack_frame(0x47CE00, 0x47D21C, 4); // Add 4 bytes of variable space to the stack frame
+	insert_hook(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
+	insert_hook(0x47D185, 0x47D18D, throw_release_hook1, _hook_execute_replaced_last); // create thrown projectiles
+	insert_hook(0x47D213, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+	
 	// hologram spawning
-	Pointer::Base(0x45113A).WriteJump(equipment_activate_hook, HookFlags::None);
+	insert_hook(0x45113A, 0x451144, equipment_activate_hook, _hook_execute_replaced_last);
+
 	// item inventory
-	Pointer::Base(0x484337).WriteJump(item_in_unit_inventory_hook1, HookFlags::None);
+	insert_hook(0x484337, 0x48433D, item_in_unit_inventory_hook, _hook_execute_replaced_last);
 }

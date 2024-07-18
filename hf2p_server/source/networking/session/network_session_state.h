@@ -26,9 +26,13 @@ enum e_dedicated_server_session_state
 	_dedicated_server_session_state_waiting_for_voting_set,
 	_dedicated_server_session_state_voting,
 	_dedicated_server_session_state_game_start_countdown,
-	_dedicated_server_session_state_in_game,
+	_dedicated_server_session_state_game_start_countdown2, // unknown difference
+	_dedicated_server_session_state_in_game, // unknown difference
+	_dedicated_server_session_state_in_game2, // unknown difference
+	_dedicated_server_session_state_in_game3, // unknown difference
+	_dedicated_server_session_state_in_game4, // unknown difference
 
-	k_dedicated_server_session_state_count // between 0-10? How did I come to believe this?
+	k_dedicated_server_session_state_count
 };
 
 struct s_network_session_state_peer_creating

@@ -149,7 +149,7 @@ struct s_network_session_parameter_lobby_vote_set
 	struct s_lobby_vote
 	{
 		byte gamemode; // ditto below, for modes
-		byte map; // ID of the map info title instance on the API, these are assigned in the order that they're sent by the API
+		byte map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
 		byte number_of_votes;
 	};
 

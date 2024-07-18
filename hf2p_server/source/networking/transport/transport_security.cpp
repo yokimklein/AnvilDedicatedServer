@@ -186,7 +186,7 @@ bool __fastcall transport_secure_key_create(s_transport_session_description* ses
         XNetCreateKey(&session_description->session_id);
         memset(&session_description->key, 0, sizeof(s_transport_secure_key));
         // register the host address description to the xnet shim table on session creation
-        XNetRegisterKey(&transport_security_globals.address, &session_description->host_address, &session_description->session_id);
+        XNetAddEntry(&transport_security_globals.address, &session_description->host_address, &session_description->session_id);
         return true;
     }
     else

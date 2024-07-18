@@ -84,15 +84,15 @@ void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badn
 
 long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel)
 {
-	long channel_index = -1;
 	assert(owner_type >= 0 && owner_type < k_network_observer_owner_count);
 	assert(channel != NULL);
 	s_channel_observer* observer = this->find_observer_by_channel(channel);
 	assert(observer != NULL);
 	
-	if (observer->state != _observer_state_none && ((byte)(1 << owner_type) & observer->owner_flags) != 0)
-		channel_index = ((byte*)observer - (byte*)&m_channel_observers[0]) / sizeof(s_channel_observer); // (target address - start address) / struct size
-	return channel_index;
+	if (observer->state != _observer_state_none && TEST_BIT(observer->owner_flags, owner_type))
+		return observer - m_channel_observers;
+	else
+		return NONE;
 }
 
 c_network_observer::s_channel_observer* c_network_observer::find_observer_by_channel(c_network_channel* channel)
@@ -105,5 +105,5 @@ c_network_observer::s_channel_observer* c_network_observer::find_observer_by_cha
 
 bool c_network_observer::is_bandwidth_stable()
 {
-	return this->time_statistics.bandwidth_unstable == false;
+	return this->m_bandwidth_unstable == false;
 }

@@ -75,7 +75,7 @@ e_object_type c_object_identifier::get_type()
 void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update)
 {
 	s_object_data* object = object_get(object_index);
-	c_simulation_object_update_flags update_flags = c_simulation_object_update_flags();
+	c_simulation_object_update_flags update_flags{};
 	if (transitional_velocity)
 	{
 		object->transitional_velocity = *transitional_velocity;

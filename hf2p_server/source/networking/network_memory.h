@@ -53,9 +53,21 @@ struct s_network_base_memory_globals
 	c_simulation_watcher simulation_watcher;
 	c_simulation_type_collection simulation_types;
 };
-static_assert(sizeof(s_network_base_memory_globals) == 0x540A60); // TODO: confirm size
+static_assert(sizeof(s_network_base_memory_globals) == 0x535F58);
+static_assert(0x0 == OFFSETOF(s_network_base_memory_globals, link));
+static_assert(0x378 == OFFSETOF(s_network_base_memory_globals, message_types));
+static_assert(0x8B0 == OFFSETOF(s_network_base_memory_globals, message_gateway));
+static_assert(0xE30 == OFFSETOF(s_network_base_memory_globals, message_handler));
+static_assert(0xE48 == OFFSETOF(s_network_base_memory_globals, observer));
+static_assert(0x24700 == OFFSETOF(s_network_base_memory_globals, session_manager));
+static_assert(0x24710 == OFFSETOF(s_network_base_memory_globals, sessions));
+static_assert(0x5288D8 == OFFSETOF(s_network_base_memory_globals, sesssion_parameter_types));
+static_assert(0x528D38 == OFFSETOF(s_network_base_memory_globals, simulation_world));
+static_assert(0x52A278 == OFFSETOF(s_network_base_memory_globals, simulation_watcher));
+static_assert(0x535DD0 == OFFSETOF(s_network_base_memory_globals, simulation_types));
 
 extern s_network_shared_memory_globals& network_shared_memory_globals;
+extern s_network_base_memory_globals& network_base_memory_globals;
 
 void* network_heap_allocate_block(long block_size);
 void network_heap_free_block(void* block);

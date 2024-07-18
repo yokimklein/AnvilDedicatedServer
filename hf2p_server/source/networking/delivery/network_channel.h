@@ -141,7 +141,6 @@ public:
 	const char* get_name();
 	const char* get_short_name();
 	e_network_channel_state get_state();
-	//char* get_message_type_name(e_network_message_type message_type); // belongs to c_network_message_type_collection?
 	bool get_remote_address(s_transport_address* remote_address);
 	bool allocated();
 	// allocate()

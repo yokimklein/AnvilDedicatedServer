@@ -29,7 +29,7 @@ long player_mapping_get_input_user(datum_index player_index)
 		return player_mapping_globals->player_input_user_mapping[player_index];
 }
 
-void player_set_facing(datum_index player_index, real_vector3d* forward)
+void __fastcall player_set_facing(datum_index player_index, real_vector3d* forward)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
 	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);

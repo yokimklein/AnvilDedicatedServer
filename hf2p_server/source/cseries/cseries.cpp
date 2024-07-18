@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
+// TODO: remove this
 const size_t module_base = (size_t)GetModuleHandle(NULL);
 
 // ms23 addresses

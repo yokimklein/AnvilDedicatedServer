@@ -627,6 +627,18 @@
     <ClInclude Include="source\objects\crates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\messages\network_out_of_band_consumer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\simulation_event_definition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -948,6 +960,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\objects\crates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\survival_mode.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

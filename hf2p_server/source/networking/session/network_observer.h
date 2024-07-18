@@ -5,7 +5,7 @@
 #include <networking\network_statistics.h>
 #include <networking\logic\network_bandwidth.h>
 
-constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc?
+constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc
 
 enum e_network_observer_owner : long
 {
@@ -40,14 +40,16 @@ class c_network_observer
 	public:
 		struct s_channel_observer_owner
 		{
-			e_network_observer_owner owner; // this is c_network_session*?
+			c_network_session* owner;
 			long managed_session_index;
 		};
 		static_assert(sizeof(s_channel_observer_owner) == 0x8);
+		static_assert(0x0 == OFFSETOF(s_channel_observer_owner, owner));
+		static_assert(0x4 == OFFSETOF(s_channel_observer_owner, managed_session_index));
 
 		struct s_channel_observer : c_network_channel
 		{
-			e_observer_state state;
+			c_enum<e_observer_state, long, k_observer_state_count> state;
 			long m_allocated_timestamp1;
 			byte flags;
 			byte owner_flags;
@@ -102,90 +104,14 @@ class c_network_observer
 		c_network_message_handler* m_message_handler;
 		c_network_message_type_collection* m_message_type_collection;
 		s_observer_configuration* m_configuration;
-		c_network_session* m_session;
 		s_channel_observer_owner m_owners[k_network_observer_owner_count];
+		byte __data[4]; // c_network_session?
 		s_channel_observer m_channel_observers[k_network_maximum_observers];
-
-		// TODO: verify offsets here are correct
-		byte __data[0x08];
-		c_network_time_statistics time_statistics;
-		byte __data2[0x158];
-
-		//bool m_quality_statistics_are_set;
-		//int __unknown23CEC;
-		//s_network_quality_statistics m_quality_statistics;
-		//byte __data23DB0[8];
-		//bool m_prioritize_upload_bandwidth;
-		//bool m_online_network_environment;
-
-		//byte __data[0x238];
+		byte __data2[0xC0]; // m_quality_statistics?
+		bool m_bandwidth_unstable;
+		byte __data3[0x168];
 };
-static_assert(sizeof(c_network_observer) == 0x238C0);
+static_assert(sizeof(c_network_observer) == 0x238B8);
+static_assert(0x14 == OFFSETOF(c_network_observer, m_owners));
 static_assert(0x38 == OFFSETOF(c_network_observer, m_channel_observers));
-// -0x178 from end is network stable
-/*
-
-class c_network_observer : c_network_channel
-{
-	struct s_channel_observer_owner
-	{
-		e_network_observer_owner owner;
-		long managed_session_index;
-	};
-
-	struct s_channel_observer
-	{
-		// c_network_channel*?
-		// 14 = state
-		// 1152 byte security_flags[k_network_maximum_observers]
-		// 1550 byte stream[0xD8]; byte array? struct is size 0xD8 (contains active, (+2 bytes is_simulation)
-		// 1604 bool badness_reported_good_stream
-		// size 0x1920 in h3debug
-
-		// size 1078 in ms23
-		// 0 void*
-		// 76 c_network_time_statistics?
-		// 234 bool?
-		// 256 long?
-		// 508 c_network_time_statistics*
-		// 685 owner_flags
-		// 686 
-	};
-
-	// ms23 (using offsets of 4 bytes)
-	// 687: c_network_channel m_channel_observers[k_network_maximum_observers];
-
-	// h3debug:
-	// c_network_link* m_link;
-	// c_network_message_gateway* m_message_gateway;
-	// c_network_message_handler* m_message_handler;
-	// c_network_message_type_collection* m_message_type_collection;
-	// void* m_unknown;
-	// s_network_observer_owner m_owners[k_network_observer_owner_count];
-	// s_channel_observer m_channel_observers[k_network_maximum_observers]; // starts at byte offset 52
-	// byte rest_of_struct[0x258];
-	// 51456 - value after observers array
-	// 51470 - bool quality_statistics_set
-	// 51472 s_network_quality_statistics (sizeof = 192)
-	// 51520 bool is_bandwidth_stable;
-	// 51523/3? bool online_network_environment? probably the same bool as above
-	// 51524 = 0x100000? estimated bandwidth?
-	// 51525 - long bandwidth_successful_bps
-	// 51526 - long bandwidth_unsafe_bps
-	// 51528 - 0
-	// 51530 - long bandwidth something bps?
-	// 51535 - something +312 h3debug in c_network_session
-	// 51536 - 1024
-	// 51537 - 
-	// 51538 - c_network_time_statistics*
-	// 51592
-	// 51593
-	// 51594 - real
-	// 51595 - real
-	// 51598 - network_time_get()
-	// 51599 - network_time_get()
-	// 51602.5? - bool
-	// 51606 - network_time_get()
-};
-
-*/
+static_assert(0x23748 == OFFSETOF(c_network_observer, m_bandwidth_unstable));

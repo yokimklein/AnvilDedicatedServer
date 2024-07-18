@@ -3,6 +3,7 @@
 #include <memory\rockall_heap.h>
 
 REFERENCE_DECLARE(0x1038284, s_network_shared_memory_globals, network_shared_memory_globals);
+REFERENCE_DECLARE(0x394BA58, s_network_base_memory_globals, network_base_memory_globals);
 
 void* network_heap_allocate_block(long block_size)
 {

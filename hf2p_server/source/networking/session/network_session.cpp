@@ -271,7 +271,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                     && this->get_session_membership()->add_peer(peer_index, _network_session_peer_state_reserved, join_request->joining_peers[i].joining_network_version_number,
                         &join_request->joining_peers[i].joining_peer_address, join_request->join_party_nonce, join_request->join_nonce))
                 {
-                    XNetRegisterKey(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
+                    XNetAddEntry(address, &join_request->joining_peers[i].joining_peer_address, &session_description.session_id);
                     this->m_observer->observer_channel_initiate_connection(this->observer_owner(), this->get_session_membership()->get_observer_channel_index(peer_index));
 
                     // if not refused

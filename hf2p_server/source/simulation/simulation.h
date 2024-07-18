@@ -148,17 +148,12 @@ struct s_simulation_globals
 	bool fatal_error;
 	bool saved_film_revert;
 	bool aborted;
-
 	dword network_time_since_abort;
-
 	c_enum<e_simulation_abort_reason, long, k_simulation_abort_reason_count> abort_reason;
-
 	bool reset;
 	bool reset_in_progress;
-	byte __unknownE;
-
+	bool in_online_networked_session;
 	bool prepare_to_load_saved_game;
-
 	bool recording_film;
 	byte __unknown11;
 	byte __unknown12;
@@ -183,6 +178,7 @@ struct s_simulation_globals
 	*/
 };
 static_assert(sizeof(s_simulation_globals) == 0x124); // 0x1784 in ms23
+static_assert(0x0E == OFFSETOF(s_simulation_globals, in_online_networked_session));
 
 extern s_simulation_globals& simulation_globals;
 

@@ -142,10 +142,12 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            printf("Starting session countdown...\n");
-            parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
-            e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
-            parameters->dedicated_server_session_state.set(&session_state);
+            printf("Setting test player data...\n");
+            anvil_session_set_test_player_data(membership);
+            //printf("Starting session countdown...\n");
+            //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
+            //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+            //parameters->dedicated_server_session_state.set(&session_state);
         }
         else if (anvil_key_pressed(VK_END, &key_held_end))
         {
@@ -154,20 +156,20 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
-            //printf("Setting test mode...\n");
-            //anvil_session_set_gamemode(network_session, _game_engine_type_slayer);
-            //anvil_session_set_map(_guardian);
+            printf("Setting test mode...\n");
+            anvil_session_set_gamemode(network_session, _game_engine_type_slayer);
+            anvil_session_set_map(_guardian);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             
-            printf("TEST: loading campaign file...\n");
-            s_file_reference file_reference;
-            file_reference_create_from_path(&file_reference, L"maps\\halo3.campaign", false);
-            levels_add_campaign(&file_reference);
+            //printf("TEST: loading campaign file...\n");
+            //s_file_reference file_reference;
+            //file_reference_create_from_path(&file_reference, L"maps\\halo3.campaign", false);
+            //levels_add_campaign(&file_reference);
         }
 
         // update dedicated server state
-        if (!parameters->dedicated_server_session_state.get_allowed()) return; // Skip if data is not available
+        if (!parameters->dedicated_server_session_state.get_allowed()) return; // skip if data is not available
 
         e_dedicated_server_session_state* dedicated_server_session_state = parameters->dedicated_server_session_state.get();
         if (dedicated_server_session_state != nullptr && game_is_dedicated_server())
@@ -270,7 +272,7 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     //game_variant.m_storage.m_base_variant.m_map_override_options.m_player_traits.m_weapon_traits.m_initial_primary_weapon = 12;
     game_variant.m_storage.m_slayer_variant.m_score_to_win = 25;
     //game_variant.m_storage.m_slayer_variant.m_suicide_points = 1;
-    //game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_flags.set(_game_engine_miscellaneous_option_teams_enabled, true);
+    game_variant.m_storage.m_base_variant.m_miscellaneous_options.m_flags.set(_game_engine_miscellaneous_option_teams_enabled, false);
 
     //game_variant.m_storage.m_base_variant.m_respawn_options.m_flags.set(_game_engine_respawn_options_auto_respawn_disabled, false);
     //wchar_t variant_name[16] = L"RESPAWN TEST";
@@ -300,10 +302,15 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         //host_configuration->s3d_player_customization.override_api_data = true;
         //host_configuration->s3d_player_container.override_api_data = true;
 
-        // yokim player data
-        if (current_player->configuration.host.player_xuid.user_id == 2)
+        if (current_player->configuration.host.player_xuid.user_id == 2) // yokim
         {
-            //host_configuration->player_appearance.player_model_choice = 1;
+            host_configuration->team_index = 0;
+            host_configuration->user_selected_team_index = 0;
+        }
+        if (current_player->configuration.host.player_xuid.user_id == 3) // twister
+        {
+            host_configuration->team_index = 1;
+            host_configuration->user_selected_team_index = 1;
         }
 
         //host_configuration->s3d_player_container.loadouts[0].primary_weapon = _none;
@@ -339,10 +346,11 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _adrenaline;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _reactive_armor;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _deployable_cover;
+        configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 1.0f;
         player_data_updated = true;
 
         // dedi host loadout
@@ -356,6 +364,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
             configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
             configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
+            configuration->s3d_player_container.loadouts[0].secondary_weapon = _rocket_launcher;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_player_cdt] = 1.0f;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_vehicle_cdt] = 1.0f;
             configuration->s3d_player_customization.override_api_data = true;
