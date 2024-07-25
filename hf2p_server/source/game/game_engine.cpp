@@ -16,6 +16,8 @@
 #include <networking\network_utilities.h>
 #include <networking\session\network_session.h>
 #include <networking\logic\network_life_cycle.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
+#include <simulation\game_interface\simulation_game_engine_globals.h>
 
 REFERENCE_DECLARE_ARRAY(0xF01EC0, c_game_engine*, game_engines, k_game_engine_type_count);
 

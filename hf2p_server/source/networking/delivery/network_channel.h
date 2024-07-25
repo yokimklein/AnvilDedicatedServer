@@ -23,7 +23,7 @@ enum e_network_channel_activity
 	k_network_channel_activity_count = 6
 };
 
-enum e_network_channel_closure_reason : long
+enum e_network_channel_closure_reason
 {
 	_network_channel_reason_none,
 	_network_channel_reason_link_destroyed,
@@ -60,7 +60,7 @@ enum e_network_channel_state
 	k_network_channel_state_count
 };
 
-enum e_observer_state : long
+enum e_observer_state
 {
 	_observer_state_none = 0,
 	_observer_state_dead,
@@ -175,7 +175,7 @@ public:
 	ulong m_local_identifier; // 0xA08 // 0xA14 in H3debug
 	ulong m_remote_identifier; // 0xA0C
 	e_network_channel_state m_channel_state; // 0xA10
-	e_network_channel_closure_reason m_closure_reason;
+	c_enum<e_network_channel_closure_reason, long, k_network_channel_reason_count> m_closure_reason;
 	s_transport_address m_local_address;
 	s_transport_address m_remote_address;
 	bool m_send_connect_packets;

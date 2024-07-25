@@ -44,6 +44,12 @@
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
 #include <cseries\cseries_windows_debug_pc.h>
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
+#include <simulation\game_interface\simulation_game_damage.h>
+#include <simulation\game_interface\simulation_game_weapons.h>
+#include <simulation\game_interface\simulation_game_units.h>
+#include <simulation\game_interface\simulation_game_projectiles.h>
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)

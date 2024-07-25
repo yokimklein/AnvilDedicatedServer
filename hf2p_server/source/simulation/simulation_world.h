@@ -10,7 +10,7 @@
 #include <networking\replication\replication_event_manager.h>
 #include <networking\replication\replication_entity_manager.h>
 
-enum e_simulation_world_type : long
+enum e_simulation_world_type
 {
 	_simulation_world_type_none,
 	_simulation_world_type_local,
@@ -58,7 +58,7 @@ public:
 
 	c_simulation_watcher* m_watcher;
 	c_simulation_distributed_world* m_distributed_world;
-	e_simulation_world_type m_world_type;
+	c_enum<e_simulation_world_type, long, k_simulation_world_type_count> m_world_type;
 
 	union
 	{

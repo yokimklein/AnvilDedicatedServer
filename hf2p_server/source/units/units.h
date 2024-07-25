@@ -26,7 +26,7 @@ enum e_unit_control_flags
 	k_unit_control_flags_count
 };
 
-enum e_unit_drop_type : long
+enum e_unit_drop_type
 {
 	_unit_drop_type_none = -1,
 	_unit_drop_type_0,
@@ -269,6 +269,21 @@ static_assert(0x444 == OFFSETOF(s_unit_data, hologram_ticks_left));
 static_assert(0x448 == OFFSETOF(s_unit_data, hologram_definition_index));
 static_assert(0x44C == OFFSETOF(s_unit_data, hologram_shimmer_value));
 static_assert(0x450 == OFFSETOF(s_unit_data, hologram_destination));
+
+struct s_new_unit_action_grenade
+{
+	int unk1;
+	byte unk2_1;
+	byte unk2_2;
+	byte unk_type;
+	bool unk2_4; // from client?
+	byte unk3_1;
+	char unk3_2;
+	byte unk3_3;
+	byte unk3_4;
+	int throw_type_index;
+	int projectile_index;
+};
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled);
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);

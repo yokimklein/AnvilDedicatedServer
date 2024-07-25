@@ -142,8 +142,15 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            printf("Setting test player data...\n");
-            anvil_session_set_test_player_data(membership);
+            printf("Running test command...\n");
+            //s_player_identifier* player_identifier = &network_session->get_session_membership()->get_player(0)->configuration.host.player_xuid;
+            //s_s3d_player_container container = s_s3d_player_container();
+            //hf2p_retrieve_loadouts(player_identifier, &container);
+
+            printf("Command finished!\n");
+
+            //printf("Setting test player data...\n");
+            //anvil_session_set_test_player_data(membership);
             //printf("Starting session countdown...\n");
             //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
             //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
@@ -158,7 +165,7 @@ void anvil_session_update()
         {
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer);
-            anvil_session_set_map(_guardian);
+            anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             
@@ -346,7 +353,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _auto_turret;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _deployable_cover;

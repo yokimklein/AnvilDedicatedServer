@@ -6,7 +6,7 @@
 
 struct s_network_message_view_establishment : s_network_message
 {
-	e_simulation_view_establishment_mode establishment_mode;
+	c_enum<e_simulation_view_establishment_mode, long, k_simulation_view_establishment_mode_count> establishment_mode;
 	long establishment_identifier;
 	bool signature_exists;
 	long signature_size;

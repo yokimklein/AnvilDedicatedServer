@@ -1,6 +1,6 @@
 #pragma once
 
-enum e_gui_game_mode : long
+enum e_gui_game_mode
 {
 	_gui_game_mode_none = -1,
 	_gui_game_mode_campaign,

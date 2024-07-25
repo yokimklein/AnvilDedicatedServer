@@ -1,0 +1,11 @@
+#pragma once
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+
+enum e_simulation_juggernaut_engine_globals_update_flag
+{
+	_simulation_juggernaut_engine_globals_update_juggernaut_player = k_simulation_game_engine_globals_flag_count,
+	_simulation_juggernaut_engine_globals_update_unknown8, // updates unknown_seconds
+	_simulation_juggernaut_engine_globals_update_unknown9, // updates __unknown6
+
+	k_simulation_juggernaut_engine_globals_flag_count
+};

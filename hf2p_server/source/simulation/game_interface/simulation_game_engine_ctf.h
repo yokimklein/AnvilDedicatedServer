@@ -1,0 +1,14 @@
+#pragma once
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+
+enum e_simulation_ctf_engine_globals_update_flag
+{
+	_simulation_ctf_engine_globals_update_defensive_team = k_simulation_game_engine_globals_flag_count,
+	_simulation_ctf_engine_globals_update_flag_swap_timer,
+	_simulation_ctf_engine_globals_update_touch_return_timers,
+	_simulation_ctf_engine_globals_update_flag_reset_timers,
+	_simulation_ctf_engine_globals_update_flag_weapon_flags,
+	_simulation_ctf_engine_globals_update_helper_flags,
+
+	k_simulation_ctf_engine_globals_flag_count
+};

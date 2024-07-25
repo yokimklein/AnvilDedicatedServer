@@ -6,7 +6,7 @@
 #include <networking\replication\replication_entity_manager_view.h>
 #include <networking\replication\replication_control_view.h>
 
-enum e_simulation_view_establishment_mode : long
+enum e_simulation_view_establishment_mode
 {
 	_simulation_view_establishment_mode_none = -1,
 	_simulation_view_establishment_mode_detached,

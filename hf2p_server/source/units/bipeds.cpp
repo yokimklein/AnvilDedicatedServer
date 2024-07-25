@@ -1,6 +1,6 @@
 #include "bipeds.h"
 #include <memory\tls.h>
-#include <simulation\game_interface\simulation_game_objects.h>
+#include <simulation\game_interface\simulation_game_units.h>
 
 bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vector3d* melee_aiming_vector)
 {

@@ -91,7 +91,7 @@ void c_network_message_handler::handle_connect_closed(c_network_channel* channel
     }
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' remotely closed (reason #%d: '%s')\n",
         channel->get_name(),
-        message->closure_reason,
+        message->closure_reason.get(),
         channel->get_closure_reason_string(message->closure_reason));
     channel->close(_network_channel_reason_remote_closure);
 }
@@ -436,7 +436,7 @@ void c_network_message_handler::handle_parameters_request(c_network_channel* cha
 void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
 {
     // non original but useful log
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode.get());
 
     DECLFUNC(0x257B0, void, __thiscall, c_network_channel*)(channel/*this, channel, message*/);
 }

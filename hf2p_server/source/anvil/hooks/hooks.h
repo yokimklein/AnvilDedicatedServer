@@ -3,6 +3,7 @@
 // ogebp = ogesp + ogsp
 // ogesp = esp + default stack space + original_ebp/esp size + variable space + 3x pre-call pushes & return address + 4x hook func prologue pushes
 // NOTE: this overwrites eax
+// NOTE: only ebp is affected by the input sp value, so if this is wrong and you don't use ebp you may not notice
 #define DEFINE_ORIGINAL_EBP_ESP(original_sp, variable_space)                    \
     long original_ebp;                                                          \
     long original_esp;                                                          \

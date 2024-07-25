@@ -1,0 +1,36 @@
+#pragma once
+#include <cseries\cseries.h>
+
+enum e_simulation_statborg_update_flag
+{
+	_simulation_statborg_update_player0,
+	_simulation_statborg_update_player1,
+	_simulation_statborg_update_player2,
+	_simulation_statborg_update_player3,
+	_simulation_statborg_update_player4,
+	_simulation_statborg_update_player5,
+	_simulation_statborg_update_player6,
+	_simulation_statborg_update_player7,
+	_simulation_statborg_update_player8,
+	_simulation_statborg_update_player9,
+	_simulation_statborg_update_player10,
+	_simulation_statborg_update_player11,
+	_simulation_statborg_update_player12,
+	_simulation_statborg_update_player13,
+	_simulation_statborg_update_player14,
+	_simulation_statborg_update_player15,
+	_simulation_statborg_update_team0,
+	_simulation_statborg_update_team1,
+	_simulation_statborg_update_team2,
+	_simulation_statborg_update_team3,
+	_simulation_statborg_update_team4,
+	_simulation_statborg_update_team5,
+	_simulation_statborg_update_team6,
+	_simulation_statborg_update_team7,
+	_simulation_statborg_update_finalize_for_game_end,
+
+	k_simulation_statborg_update_flag_count
+};
+
+void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags);
+void simulation_action_game_statborg_update(long update_flag);

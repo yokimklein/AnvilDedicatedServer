@@ -2,10 +2,16 @@
 #include <memory\tls.h>
 #include "assert.h"
 #include <stdio.h>
-#include <simulation\game_interface\simulation_game_objects.h>
 #include <cache\cache_files.h>
 #include <objects\object_definitions.h>
 #include <physics\havok_component.h>
+#include <simulation\game_interface\simulation_game_projectiles.h>
+#include <simulation\game_interface\simulation_game_items.h>
+
+s_object_data* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
+{
+	return INVOKE(0x403000, object_try_and_get_and_verify_type, object_index, object_type_mask);
+}
 
 s_object_data* object_get(datum_index object_index)
 {

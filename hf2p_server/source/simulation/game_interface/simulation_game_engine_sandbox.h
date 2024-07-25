@@ -1,0 +1,13 @@
+#pragma once
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+
+enum e_simulation_sandbox_engine_globals_update_flag
+{
+	_simulation_sandbox_engine_globals_update_object_team = k_simulation_game_engine_globals_flag_count,
+	_simulation_sandbox_engine_globals_update_object_grab,
+	_simulation_sandbox_engine_globals_update_budget,
+	_simulation_sandbox_engine_globals_update_object_count,
+	_simulation_sandbox_engine_globals_update_content_type,
+
+	k_simulation_sandbox_engine_globals_flag_count
+};

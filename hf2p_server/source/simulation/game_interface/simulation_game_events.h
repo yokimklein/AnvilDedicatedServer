@@ -51,30 +51,12 @@ enum e_simulation_event_type
 	k_simulation_event_type_maximum_count = 64
 };
 
-enum e_damage_section_response_type
-{
-	_damage_section_receives_all_damage,
-	_damage_section_receives_area_effect_damage,
-	_damage_section_receives_local_damage,
-
-	k_damage_section_response_type_count = 3
-};
-
 struct s_simulation_player_taunt_request_data
 {
 	long player_index;
 };
 static_assert(sizeof(s_simulation_player_taunt_request_data) == 0x4);
 
-struct s_simulation_damage_section_response_data
-{
-	long damage_section_index;
-	long response_index; // max of 16
-	c_enum<e_damage_section_response_type, long, k_damage_section_response_type_count> damage_section_response_type;
-};
-static_assert(sizeof(s_simulation_damage_section_response_data) == 0xC);
-
 bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload);
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, long* object_references, long ignore_player_index, long payload_size, void const* payload_data);
 void simulation_event_generate_for_clients(e_simulation_event_type event_type, long object_references_count, long* object_references, long ignore_player_index, long payload_size, void const* payload_data);
-void simulation_action_damage_section_response(datum_index object_index, long damage_section_index, long response_index, e_damage_section_response_type damage_section_response_type);

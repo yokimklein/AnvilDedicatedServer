@@ -1,22 +1,18 @@
 #include "hooks_object_updates.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
-#include <memory\data.h>
-#include <game\players.h>
 #include <game\game.h>
-#include <simulation\game_interface\simulation_game_objects.h>
-#include <units\units.h>
-#include <units\bipeds.h>
+#include <game\players.h>
+#include <memory\data.h>
 #include <memory\tls.h>
 #include <objects\objects.h>
-
-// TODO: DELETE THIS
-void __stdcall simulation_action_object_update_with_bitmask2(datum_index object_index, ulong64 raw_bits)
-{
-    c_simulation_object_update_flags update_flags{};
-    update_flags.set_raw(raw_bits);
-    simulation_action_object_update_internal(object_index, update_flags);
-}
+#include <Patch.hpp>
+#include <simulation\game_interface\simulation_game_generics.h>
+#include <simulation\game_interface\simulation_game_units.h>
+#include <simulation\game_interface\simulation_game_vehicles.h>
+#include <simulation\game_interface\simulation_game_items.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
+#include <units\bipeds.h>
+#include <units\units.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -109,6 +105,54 @@ __declspec(safebuffers) void __fastcall unit_died_hook()
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
+__declspec(safebuffers) void __fastcall grenade_throw_move_to_hand_hook()
+{
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(unit_index));
+
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax - 0x08];
+    __asm mov unit_index, eax;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
+}
+
+__declspec(safebuffers) void __fastcall unit_add_grenade_to_inventory_hook()
+{
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(unit_index));
+
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax - 0x08];
+    __asm mov unit_index, eax;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
+}
+
+__declspec(safebuffers) void __fastcall unit_add_equipment_to_inventory_hook()
+{
+    datum_index unit_index;
+    c_simulation_object_update_flags update_flags;
+    DEFINE_ORIGINAL_EBP_ESP(0x24, sizeof(unit_index) + sizeof(update_flags));
+
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0x20 - 0x0C];
+    __asm mov unit_index, eax;
+
+    update_flags.m_flags.clear();
+    update_flags.set_flag(unit_index, _simulation_unit_update_equipment);
+    update_flags.set_flag(unit_index, _simulation_unit_update_equipment_charges);
+    simulation_action_object_update_internal(unit_index, update_flags);
+}
+
+__declspec(safebuffers) void __fastcall unit_update_control_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, ebx;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_desired_aiming_vector);
+}
+
 // preserve player_object_index variable
 __declspec(naked) void unit_add_initial_loadout_hook0()
 {
@@ -141,430 +185,144 @@ __declspec(safebuffers) void __fastcall unit_add_initial_loadout_hook2()
 
     simulation_action_object_update(player_object_index, _simulation_object_update_shield_vitality);
 }
+
+__declspec(safebuffers) void __fastcall projectile_attach_hook()
+{
+    datum_index projectile_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(projectile_index));
+
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0x58 - 0x48];
+    __asm mov projectile_index, eax;
+
+    simulation_action_object_update(projectile_index, _simulation_object_update_parent_state);
+}
+
+__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook1()
+{
+    datum_index unit_index;
+    s_simulation_unit_state_data* unit_state_data;
+
+    __asm mov unit_index, ebx;
+    __asm mov unit_state_data, edi;
+
+    unit_set_aiming_vectors(unit_index, &unit_state_data->desired_aiming_vector, &unit_state_data->desired_aiming_vector);
+}
+
+__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook2()
+{
+    datum_index unit_index;
+    real_vector3d* forward;
+    DEFINE_ORIGINAL_EBP_ESP(0xE0, sizeof(unit_index) + sizeof(forward));
+
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0xE0 - 0xB4];
+    __asm mov unit_index, eax;
+    __asm mov forward, edx;
+
+    unit_set_aiming_vectors(unit_index, forward, forward);
+}
+
+__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook3()
+{
+    datum_index unit_index;
+    real_vector3d* forward;
+
+    __asm mov unit_index, ebx;
+    __asm lea eax, [esi + 0x8BC];
+    __asm mov forward, eax;
+
+    unit_set_aiming_vectors(unit_index, forward, forward);
+}
+
+__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook4()
+{
+    datum_index unit_index;
+    real_vector3d* forward;
+    DEFINE_ORIGINAL_EBP_ESP(0x8C, sizeof(unit_index) + sizeof(forward));
+
+    __asm mov unit_index, edi;
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax - 0x2C];
+    __asm mov forward, eax;
+
+    unit_set_aiming_vectors(unit_index, forward, forward);
+
+    // preserve overwritten assembly instructions re-used later on
+    __asm movzx edi, di;
+    __asm add edi, edi;
+    __asm add esp, 0x28;
+}
+
+__declspec(safebuffers) void __fastcall equipment_activate_hook2()
+{
+    datum_index equipment_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x35C, sizeof(equipment_index));
+
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0x358 - 0x328];
+    __asm mov equipment_index, eax;
+
+    simulation_action_object_update(equipment_index, _simulation_item_update_equipment_creation_time);
+}
+
+__declspec(safebuffers) void __fastcall unit_update_energy_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, ebx;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
+}
+
+// preserve unit_index variable
+__declspec(naked) void equipment_handle_energy_cost_hook0()
+{
+    __asm mov [ebp + 4], ecx;
+    __asm retn;
+}
+
+__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook1()
+{
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(unit_index));
+
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 4];
+    __asm mov unit_index, eax;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
+}
+
+__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
+{
+    s_unit_data* unit;
+    __asm mov unit, ebx;
+
+    simulation_action_game_engine_player_update(unit->player_index, _simulation_player_update_equipment_charges);
+}
+
+__declspec(safebuffers) void __fastcall unit_set_hologram_hook()
+{
+    c_simulation_object_update_flags update_flags;
+    s_unit_data* unit;
+    datum_index unit_index;
+
+    __asm mov unit_index, ebx;
+    __asm mov unit, esi;
+
+    update_flags.m_flags.clear();
+    if (unit->object_identifier.type == _object_type_vehicle)
+        update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    else
+        update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    simulation_action_object_update_internal(unit_index, update_flags);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
 {
     simulation_action_object_update(unit_index, _simulation_unit_update_control);
     unit_set_actively_controlled(unit_index, unknown);
-}
-
-__declspec(naked) void grenade_throw_move_to_hand_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[ecx + 0x324], al
-
-        // preserve registers across call
-        push ecx
-        push edx
-
-        push 0
-        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push[ebp - 0x08] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore registers
-        pop edx
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x47D435
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_add_grenade_to_inventory_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        inc byte ptr[esi + ebx + 0x324]
-
-        // preserve registers across call
-        push edx
-
-        push 0
-        push 67108864 // _simulation_unit_update_grenade_counts (1 << 26)
-        push[ebp - 0x08] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore registers
-        pop edx
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x4243DF
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_add_equipment_to_inventory_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[ecx + 0x314], eax
-
-        // preserve registers across call
-        push ecx
-
-        push 0
-        push 805306368 // _simulation_unit_update_equipment & _simulation_unit_update_equipment_charges ((1 << 28) | (1 << 29))
-        push[esp + 0x2C - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore registers
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x42458C
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook1()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[edi + 0x1E4], eax
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // return
-        mov eax, module_base
-        add eax, 0x418550
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook2()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov[edi + 0x1B4], eax
-
-        // preserve register across call
-        push ecx
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore register
-        pop ecx
-
-        // return
-        mov eax, module_base
-        add eax, 0x418693
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_control_hook3()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov eax, [edx + 0x1A4]
-
-        // preserve register across call
-        push edx
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore register
-        pop edx
-
-        // return
-        mov eax, module_base
-        add eax, 0x418A79
-        jmp eax
-    }
-}
-
-__declspec(naked) void projectile_attach_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        movss dword ptr[esi + 0x18C], xmm1
-
-        // preserve registers across call
-        push eax
-        push ecx
-        push edx
-
-        push 0
-        push 2048 // _simulation_object_update_parent_state (1 << 11)
-        push[esp + 0x6C - 0x48] // projectile_index
-        call simulation_action_object_update_with_bitmask2
-
-        // restore registers
-        pop edx
-        pop ecx
-        pop eax
-
-        // replaced instructions
-        mov eax, [eax + 0x0C]
-        mov eax, [eax + 0x44]
-        mov cl, [eax + ecx * 8 + 3]
-        // return
-        mov eax, module_base
-        add eax, 0x467F23
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook1() // c_simulation_unit_entity_definition::apply_object_update
-{
-    __asm
-    {
-        push[edi + 0x0B4] // looking_vector
-        mov edx, [edi + 0xB4] // aiming_vector
-        mov ecx, ebx // unit_index
-        call unit_set_aiming_vectors
-
-        // return
-        mov eax, module_base
-        add eax, 0x59F48
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook3() // c_vehicle_auto_turret::control
-{
-    __asm
-    {
-        lea eax, [esi + 0x8BC]
-        push eax // looking_vector
-        mov edx, eax // aiming_vector
-        mov ecx, ebx // unit_index
-        call unit_set_aiming_vectors
-
-        // return
-        mov eax, module_base
-        add eax, 0x4A1010
-        jmp eax
-    }
-}
-
-__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook1()
-{
-    __asm
-    {
-        // original replaced instruction
-        mov dword ptr[esp + 0xE0 - 0xC0], 0xFFFFFFFF
-
-        // set new variable
-        mov dword ptr[esp + 0xE0 - 0xD4], 0xFFFFFFFF
-
-        // return
-        mov edx, module_base
-        add edx, 0x60BE5
-        jmp edx
-    }
-}
-
-__declspec(naked) void c_simulation_weapon_fire_event_definition__apply_object_update_hook2()
-{
-    __asm
-    {
-        // original replaced instruction
-        mov eax, [esp + 0xE0 - 0xC4]
-        mov[esp + 0xE0 - 0xC0], edi
-
-        // set new variable
-        mov[esp + 0xE0 - 0xD4], edi
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x60C74
-        jmp ecx
-    }
-}
-
-__declspec(naked) void unit_set_aiming_vectors_hook2() // c_simulation_weapon_fire_event_definition::apply_object_update
-{
-    __asm
-    {
-        // replaced instructions
-        mov[ecx + 0x1E4], eax
-
-        push 0
-        push 65536 // _simulation_unit_update_desired_aiming_vector (1 << 16)
-        push[esp + 0xE8 - 0xD4] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // return
-        mov ecx, module_base
-        add ecx, 0x610CF
-        jmp ecx
-    }
-}
-
-__declspec(naked) void equipment_activate_hook2()
-{
-    __asm
-    {
-        // replaced instructions
-        mov[edi + 0x198], eax
-
-        push 0
-        push 65536 // _simulation_item_update_unknown16 (1 << 16)
-        push[esp + 0x360 - 0x328] // equipment_index
-        call simulation_action_object_update_with_bitmask2
-
-        // return
-        mov eax, module_base
-        add eax, 0x4514E2
-        jmp eax
-    }
-}
-
-__declspec(naked) void unit_update_energy_hook()
-{
-    __asm
-    {
-        // replaced instructions
-        mov[esi + 0x31C], eax
-
-        push 0
-        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // return
-        mov eax, module_base
-        add eax, 0x41B606
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_handle_energy_cost_hook0()
-{
-    __asm
-    {
-        // add new variable to preserve unit_index in
-        sub esp, 0x10 // increased by 4 bytes from 0x0C
-        push ebx
-        push esi
-        push edi
-        mov edi, [eax]
-        mov esi, ecx
-
-        // preserve unit_index in new variable
-        mov dword ptr[esp + 0x18 - 0x0C], esi
-
-        // return
-        mov eax, module_base
-        add eax, 0x42D2A6
-        jmp eax
-    }
-}
-
-__declspec(naked) void equipment_handle_energy_cost_hook1()
-{
-    // Make sure this is static else the stack will break
-    static void* sub_2E7BE0 = (void*)BASE_ADDRESS(0x2E7BE0);
-    __asm
-    {
-        // replaced instructions
-        call sub_2E7BE0
-
-        push 0
-        push 1073741824 // _simulation_unit_update_consumable_energy (1 << 30)
-        push[esp + 0x20 - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        // return
-        mov eax, module_base
-        add eax, 0x42D39D
-        jmp eax
-    }
-}
-/*
-__declspec(naked) void equipment_handle_energy_cost_hook2()
-{
-    // Make sure this is static else the stack will break
-    static void* hf2p_set_player_cooldown = (void*)BASE_ADDRESS(0xC19E0);
-    __asm
-    {
-        // replaced instructions
-        call hf2p_set_player_cooldown
-
-        push 0
-        push 536870912 // _simulation_unit_update_equipment_charges (1 << 29)
-        push[esp + 0x20 - 0x0C] // unit_index
-        call simulation_action_object_update_with_bitmask2
-
-        push 0
-        push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
-        push[ebx + 0x198] // unit->player_index
-        call simulation_action_game_engine_player_update_with_bitmask
-        add esp, 12
-
-        // return
-        pop edi
-        pop esi
-        pop ebx
-        mov esp, ebp
-        pop ebp
-        retn
-    }
-}
-*/
-__declspec(naked) void unit_set_hologram_hook()
-{
-    __asm
-    {
-        // replaced instructions
-        mov dword ptr[eax + 0x400], 0x3F800000
-
-        // save register across call
-        push ecx
-        push edx
-
-        // biped/vehicle update
-        cmp byte ptr[esi + 0x9A], 1
-        jnz biped_update
-
-        // vehicle update
-        push 0
-        push 131072 // _simulation_vehicle_update_active_camo (1 << 17)
-        push ebx // unit_index
-        call simulation_action_object_update_with_bitmask2
-        jmp return_label
-
-        // biped update
-        biped_update :
-        push 0
-            push 134217728 // _simulation_unit_update_active_camo (1 << 27)
-            push ebx // unit_index
-            call simulation_action_object_update_with_bitmask2
-
-            // restore register
-            return_label :
-        pop edx
-            pop ecx
-
-            // return
-            mov eax, module_base
-            add eax, 0x42C578
-            jmp eax
-    }
 }
 
 void anvil_hooks_object_updates_apply()
@@ -594,15 +352,18 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0x421469, 0x421471, unit_died_hook, _hook_execute_replaced_first);
 
     // sync grenade count after throw
-    Pointer::Base(0x47D42F).WriteJump(grenade_throw_move_to_hand_hook, HookFlags::None);
+    insert_hook(0x47D42F, 0x47D435, grenade_throw_move_to_hand_hook, _hook_execute_replaced_first);
+
     // sync grenade pickups
-    Pointer::Base(0x4243D8).WriteJump(unit_add_grenade_to_inventory_hook, HookFlags::None);
+    insert_hook(0x4243D8, 0x4243DF, unit_add_grenade_to_inventory_hook, _hook_execute_replaced_first);
+
     // sync equipment pickup
-    Pointer::Base(0x424586).WriteJump(unit_add_equipment_to_inventory_hook, HookFlags::None);
+    insert_hook(0x424586, 0x42458C, unit_add_equipment_to_inventory_hook, _hook_execute_replaced_first);
+
     // unit_update_control
-    Pointer::Base(0x41854A).WriteJump(unit_update_control_hook1, HookFlags::None); // UNTESTED!!
-    Pointer::Base(0x41868D).WriteJump(unit_update_control_hook2, HookFlags::None); // called for units with flag bit 2 set
-    Pointer::Base(0x418A73).WriteJump(unit_update_control_hook3, HookFlags::None); // sets aim & look vectors for controlled units - ie driving vehicles
+    insert_hook(0x41854A, 0x418550, unit_update_control_hook, _hook_execute_replaced_first); // UNTESTED!!
+    insert_hook(0x41868D, 0x418693, unit_update_control_hook, _hook_execute_replaced_first); // called for units with flag bit 2 set
+    insert_hook(0x418A73, 0x418A79, unit_update_control_hook, _hook_execute_replaced_first); // sets aim & look vectors for controlled units - ie driving vehicles
     
     // unit_add_initial_loadout - sync spawn loadouts
     add_variable_space_to_stack_frame(0xFB6E0, 0xFBAFD, 4); // Add 4 bytes of variable space to the stack frame
@@ -613,9 +374,11 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0xFBAF2, 0xFBAFC, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
     // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
-    Pointer::Base(0x467F11).WriteJump(projectile_attach_hook, HookFlags::None);
+    insert_hook(0x467F11, 0x467F19, projectile_attach_hook, _hook_execute_replaced_first);
+
     // rewrite biped_update_melee_turning w/ updates
     Hook(0x440E30, biped_update_melee_turning).Apply();
+
     // unit_control
     Hook(0x2BB82, unit_control, HookFlags::IsCall).Apply();
     Hook(0xBD4E7, unit_control, HookFlags::IsCall).Apply();
@@ -623,27 +386,30 @@ void anvil_hooks_object_updates_apply()
     Hook(0x181410, unit_control, HookFlags::IsCall).Apply();
     Hook(0x69BB96, unit_control, HookFlags::IsCall).Apply();
     Hook(0x69DA76, unit_control, HookFlags::IsCall).Apply();
+
     // unit_set_aiming_vectors
     Hook(0x42A490, unit_set_aiming_vectors).Apply(); // UNTESTED!! called by c_game_engine::apply_player_update & player_teleport_on_bsp_switch
     Patch::NopFill(Pointer::Base(0x1C9AF5), 3);// remove push 4 after original call to convert usercall to fastcall
     Pointer::Base(0xB911B).Write<byte>(0x20); // 0x24 to 0x20 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
     Pointer::Base(0xB911E).Write<byte>(0x10); // 0x14 to 0x10 // stack correction // UNTESTED!! called by player_teleport_on_bsp_switch
-    Pointer::Base(0x59EFF).WriteJump(unit_set_aiming_vectors_hook1, HookFlags::None); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
-    Pointer::Base(0x4A0FCB).WriteJump(unit_set_aiming_vectors_hook3, HookFlags::None); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
-    // TODO: This is bad and breaks the stack pointer offsets for other variables
-    //Pointer::Base(0x60B68).Write<byte>(0xD8); // expand variable space by 4 bytes to create a new variable (0xD4 to 0xD8)
-    //Pointer::Base(0x60BDD).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook1, HookFlags::None); // set new variable to -1
-    //Pointer::Base(0x60C6C).WriteJump(c_simulation_weapon_fire_event_definition__apply_object_update_hook2, HookFlags::None); // preserve unit_index in our new variable for unit_set_aiming_vectors_hook2 to use
-    //Pointer::Base(0x610C9).WriteJump(unit_set_aiming_vectors_hook2, HookFlags::None); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
+    insert_hook(0x59EFF, 0x59F48, unit_set_aiming_vectors_hook1, _hook_replace); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
+    insert_hook(0x61093, 0x610CF, unit_set_aiming_vectors_hook2, _hook_replace); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
+    insert_hook(0x4A0FCB, 0x4A1010, unit_set_aiming_vectors_hook3, _hook_replace); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
+    insert_hook(0xF87BF, 0xF87F4, unit_set_aiming_vectors_hook4, _hook_replace); // UNTESTED!! attach_biped_to_player, sandbox only
+
     // equipment_activate
-    Pointer::Base(0x4514DC).WriteJump(equipment_activate_hook2, HookFlags::None); // TODO: this doesn't seem to work the way I expect it to - deployable covers still don't activate for clients
+    insert_hook(0x4514E2, 0x4514E8, equipment_activate_hook2, _hook_execute_replaced_last); // sync equipment creation time
+
     // sync unit energy levels
-    Pointer::Base(0x41B600).WriteJump(unit_update_energy_hook, HookFlags::None);
-    // TODO: creates new variable and breaks SP in doing so, fix this
+    insert_hook(0x41B600, 0x41B606, unit_update_energy_hook, _hook_execute_replaced_first);
+
     // sync energy costs / energy levels decreasing when throwing an equipment
-    //Pointer::Base(0x42D29C).WriteJump(equipment_handle_energy_cost_hook0, HookFlags::None);
-    //Pointer::Base(0x42D398).WriteJump(equipment_handle_energy_cost_hook1, HookFlags::None);
-    //Pointer::Base(0x42D3ED).WriteJump(equipment_handle_energy_cost_hook2, HookFlags::None); // includes player update
-    // unit_set_hologram
-    Pointer::Base(0x42C56E).WriteJump(unit_set_hologram_hook, HookFlags::None);
+    add_variable_space_to_stack_frame(0x42D290, 0x42D3F9, 4); // Add 4 bytes of variable space to the stack frame
+    insert_hook(0x42D2A4, 0x42D2A9, equipment_handle_energy_cost_hook0, _hook_execute_replaced_last); // preserve unit_index
+    insert_hook(0x42D392, 0x42D398, equipment_handle_energy_cost_hook1, _hook_execute_replaced_first); // unit energy
+    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first); // TODO: move to player updates
+    insert_hook(0x42D3F3, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+
+    // sync hologram camo
+    insert_hook(0x42C56E, 0x42C578, unit_set_hologram_hook, _hook_execute_replaced_first);
 }

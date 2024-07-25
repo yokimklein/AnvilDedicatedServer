@@ -231,6 +231,7 @@ struct s_object_header : s_datum_header
 };
 static_assert(sizeof(s_object_header) == 0x10);
 
+s_object_data* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask);
 s_object_data* object_get(datum_index object_index);
 e_object_type object_get_type(datum_index object_index);
 bool object_is_multiplayer_cinematic_object(datum_index object_index);

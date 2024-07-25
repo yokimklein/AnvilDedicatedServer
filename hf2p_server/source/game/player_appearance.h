@@ -4,7 +4,7 @@
 
 constexpr long k_player_configuration_maximum_loadouts = 3; // 5 in earlier builds
 
-enum e_gender : byte
+enum e_gender
 {
 	_male,
 	_female,
@@ -14,7 +14,7 @@ enum e_gender : byte
 
 // IDs are based on globals\hf2p_globals.hf2p_globals > RaceArmors[0].Genders[0].ArmorObjects
 // this assumes you are playing as a spartan, genders use the same IDs
-enum e_armor_type : byte
+enum e_armor_type
 {
 	_armor_air_assault,
 	_armor_ballista,
@@ -122,8 +122,9 @@ enum e_armor_colors // ew american spelling
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].GameVariantWeapons
-enum e_weapon_type : char
+enum e_weapon_type
 {
+	_random = -2,
 	_none = -1,
 	_battle_rifle,
 	_assault_rifle,
@@ -194,25 +195,29 @@ enum e_weapon_type : char
 	_plasma_pistol_v2, // weapon tag missing in ms29
 	_plasma_pistol_v3, // weapon tag missing in ms29
 	_needle_rifle, // weapon tag missing in ms29
-	_battle_rifle_v7
+	_battle_rifle_v7,
+
+	k_weapon_type_count
 };
 
 // IDs are based on globals\globals.globals > Grenades
-enum e_grenade_type : byte
+enum e_grenade_type
 {
 	_frag_grenade,
 	_plasma_grenade,
 	_claymore_grenade,
-	_firebomb_grenade // tags don't exist in ms29
+	_firebomb_grenade, // tags don't exist in ms29
+
+	k_grenade_type_count
 };
 
 // TODO - find out what these are
-enum e_support_package : byte
+enum e_support_package
 {
-
+	k_support_package_count
 };
 
-enum e_modifiers : long
+enum e_modifiers
 {
 	_safety_booster, // bool (Forcefully ejects the player they're in on destruction)
 	_explosives_damage, // unknown
@@ -331,7 +336,7 @@ enum e_modifiers : long
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
-enum e_tactical_package : byte
+enum e_tactical_package
 {
 	_empty,
 	_jammer,
@@ -359,7 +364,9 @@ enum e_tactical_package : byte
 	_ammo_pack,
 	_consumable_vision,
 	_bubbleshield_tutorial,
-	_consumable_vision_tutorial
+	_consumable_vision_tutorial,
+
+	k_tactical_package_count
 };
 
 struct s_emblem_info
@@ -412,14 +419,13 @@ static_assert(sizeof(s_player_appearance) == 0x660);
 
 struct s_s3d_player_loadout
 {
-	// long armor_pieces[5]; // previously existed prior to armr tag system - may be colours
-	e_gender gender;
-	e_armor_type armor_suit;
-	e_weapon_type primary_weapon;
-	e_weapon_type secondary_weapon;
-	e_grenade_type grenade;
-	e_support_package support_pack; // actually boosters? or just for the in game playercard? support packs are mechanically handled by the player modifiers
-	e_tactical_package tactical_packs[4];
+	c_enum<e_gender, byte, k_gender_count> gender;
+	c_enum<e_armor_type, byte, k_armor_count> armor_suit;
+	c_enum<e_weapon_type, byte, k_weapon_type_count> primary_weapon;
+	c_enum<e_weapon_type, byte, k_weapon_type_count> secondary_weapon;
+	c_enum<e_grenade_type, byte, k_grenade_type_count> grenade;
+	c_enum<e_support_package, byte, k_support_package_count> support_pack; // actually boosters? or just for the in game playercard? support packs are mechanically handled by the player modifiers
+	c_enum<e_tactical_package, byte, k_tactical_package_count> tactical_packs[4];
 };
 static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 

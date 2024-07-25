@@ -1,0 +1,10 @@
+#pragma once
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+
+enum e_simulation_king_engine_globals_update_flag
+{
+	_simulation_king_engine_globals_update_unknown7 = k_simulation_game_engine_globals_flag_count,
+	_simulation_king_engine_globals_update_unknown8,
+
+	k_simulation_king_engine_globals_flag_count
+};

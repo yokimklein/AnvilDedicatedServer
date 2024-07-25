@@ -7,7 +7,7 @@
 
 constexpr long k_network_maximum_observers = 34; // 32 in h3debug, 33 in mcc
 
-enum e_network_observer_owner : long
+enum e_network_observer_owner
 {
 	_network_observer_owner_squad_one = 0,
 	_network_observer_owner_squad_two,

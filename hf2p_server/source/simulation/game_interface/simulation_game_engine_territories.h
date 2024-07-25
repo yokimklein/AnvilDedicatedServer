@@ -1,0 +1,19 @@
+#pragma once
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+
+enum e_simulation_territories_engine_globals_update_flag
+{
+	_simulation_territories_engine_globals_update_territory1 = k_simulation_game_engine_globals_flag_count,
+	_simulation_territories_engine_globals_update_territory2,
+	_simulation_territories_engine_globals_update_territory3,
+	_simulation_territories_engine_globals_update_territory4,
+	_simulation_territories_engine_globals_update_territory5,
+	_simulation_territories_engine_globals_update_territory6,
+	_simulation_territories_engine_globals_update_territory7,
+	_simulation_territories_engine_globals_update_territory8,
+	_simulation_territories_engine_globals_update_unknown15, // updates __unknown430
+	_simulation_territories_engine_globals_update_unknown16, // updates __unknown434
+	_simulation_territories_engine_globals_update_unknown17, // updates __unknown438
+
+	k_simulation_territories_engine_globals_flag_count
+};

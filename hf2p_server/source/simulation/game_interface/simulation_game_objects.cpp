@@ -1,10 +1,10 @@
 #include "simulation_game_objects.h"
-#include <game\game.h>
 #include "assert.h"
-#include <simulation\simulation_gamestate_entities.h>
-#include <stdio.h>
-#include <simulation\simulation_world.h>
+#include <game\game.h>
 #include <memory\tls.h>
+#include <simulation\simulation_gamestate_entities.h>
+#include <simulation\simulation_world.h>
+#include <stdio.h>
 
 void __cdecl simulation_action_object_create(datum_index object_index)
 {
@@ -13,7 +13,7 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 		long entity_count = 0;
 		e_simulation_entity_type entity_types[4] = {};
 		long entity_object_indices[4] = {};
-		simulation_action_object_create_build_entity_types(object_index, -1, 4, &entity_count, entity_types, entity_object_indices);
+		simulation_action_object_create_build_entity_types(object_index, NONE, 4, &entity_count, entity_types, entity_object_indices);
 		assert(entity_count <= NUMBEROF(entity_object_indices));
 		if (entity_count > 0)
 		{
@@ -28,7 +28,7 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 				if (!game_is_playback())
 				{
 					long entity_index = simulation_entity_create(entity_types[i], entity_object_indices[i], gamestate_index);
-					if (entity_index == -1)
+					if (entity_index == NONE)
 					{
 						printf("MP/NET/SIMULATION,ACTION: simulation_action_object_create: object entity creation failed! 0x%8X/%d\n", entity_object_indices[i], entity_types[i]);
 					}
@@ -63,7 +63,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 	s_object_data* object = object_get(object_index);
 	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
 	datum_index object_ultimate_parent = object_get_ultimate_parent(object_index);
-	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->gamestate_index == -1 && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
+	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->gamestate_index == NONE && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
 	{
 		e_simulation_entity_type entity_type = simulation_entity_type_from_object_creation(object->definition_index, last_object_index, object->recycling_flags.test(_object_recycling_candidate));
 		if (entity_type != k_simulation_entity_type_none && *out_entity_count < maximum_entity_count)
@@ -72,7 +72,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 			entity_types[*out_entity_count] = entity_type;
 			entity_object_indices[(*out_entity_count)++] = object_index;
 			s_object_data* current_object = object;
-			for (datum_index i = object->first_child_object_index; i != -1; i = current_object->next_object_index)
+			for (datum_index i = object->first_child_object_index; i != NONE; i = current_object->next_object_index)
 			{
 				current_object = object_get(i);
 				if (current_object->flags.test(_object_created_with_parent_bit))

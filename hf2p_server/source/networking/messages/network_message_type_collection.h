@@ -3,7 +3,7 @@
 #include <memory\bitstream.h>
 #include <networking\logic\network_join.h>
 
-enum e_network_message_type : long
+enum e_network_message_type
 {
 	_network_message_type_ping,
 	_network_message_type_pong,

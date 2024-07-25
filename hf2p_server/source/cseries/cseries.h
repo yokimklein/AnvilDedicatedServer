@@ -487,7 +487,7 @@ public:
 		return static_cast<T>(m_storage);
 	}
 
-	t_type get()
+	t_type get() const
 	{
 		return static_cast<t_type>(m_storage);
 	}

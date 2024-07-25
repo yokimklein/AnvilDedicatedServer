@@ -2,7 +2,7 @@
 #include <anvil\hooks\hooks.h>
 #include <Patch.hpp>
 #include <game\game_engine.h>
-#include <simulation\game_interface\simulation_game_action.h>
+#include <simulation\game_interface\simulation_game_engine_globals.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible

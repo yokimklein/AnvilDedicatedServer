@@ -1,13 +1,10 @@
 #include "simulation_game_action.h"
 #include <game\game.h>
-#include <simulation\simulation_gamestate_entities.h>
-#include <simulation\game_interface\simulation_game_entities.h>
-#include <simulation\simulation_world.h>
-#include <simulation\game_interface\simulation_game_objects.h>
 #include <game\game_engine_simulation.h>
-#include <items\weapons.h>
-#include "assert.h"
-#include <stdio.h>
+#include <simulation\simulation_gamestate_entities.h>
+#include <simulation\simulation_entity_database.h>
+#include <simulation\simulation_world.h>
+
 
 void simulation_action_game_engine_globals_create()
 {
@@ -178,154 +175,8 @@ void simulation_action_game_map_variant_delete()
 	}
 }
 
-void simulation_action_game_engine_player_create(short player_absolute_index)
-{
-	if (game_is_server() && game_is_distributed())
-	{
-		assert(game_engine_globals_get_player_gamestate_index(player_absolute_index) == NONE);
-		datum_index gamestate_index = simulation_gamestate_entity_create();
-		game_engine_globals_set_player_gamestate_index(player_absolute_index, gamestate_index);
-		simulation_gamestate_entity_set_object_index(gamestate_index, -1);
-		if (!game_is_playback())
-		{
-			long entity_index = simulation_entity_create(_simulation_entity_type_game_engine_player, -1, gamestate_index);
-			if (entity_index != -1)
-			{
-				c_simulation_entity_database* simulation_entity_database = simulation_get_world()->get_entity_database();
-				s_simulation_entity* entity = simulation_entity_database->entity_get(entity_index);
-				assert(entity->gamestate_index != NONE);
-				simulation_entity_database->entity_capture_creation_data(entity_index);
-			}
-		}
-	}
-}
-
-void simulation_action_game_engine_player_delete(short player_absolute_index)
-{
-	if (game_is_server() && game_is_distributed())
-	{
-		datum_index gamestate_index = game_engine_globals_get_player_gamestate_index(player_absolute_index);
-		if (gamestate_index != -1)
-		{
-			if (!game_is_playback())
-			{
-				long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
-				if (entity_index != -1)
-					simulation_entity_delete(entity_index, -1, gamestate_index);
-				else
-					printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_delete: global player %d gamestate index 0x%8X not attached to entity\n", player_absolute_index, gamestate_index);
-			}
-			simulation_gamestate_entity_delete(gamestate_index);
-		}
-		else
-		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_map_variant_delete: global player %d has no gamestate representation\n", player_absolute_index);
-		}
-		game_engine_globals_set_player_gamestate_index(player_absolute_index, -1);
-	}
-}
-
 void simulation_action_breakable_surfaces_create()
 {
 	// there is code for this in ms23, but it doesn't seem like it would function?
 	// TODO: revisit this
-}
-
-void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_flags)
-{
-	if (game_is_server() && game_is_distributed() && !game_is_playback())
-	{
-		datum_index gamestate_index = game_engine_globals_get_statborg_gamestate_index();
-		if (gamestate_index == -1)
-		{
-			if (game_is_available())
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg does not have valid gamestate index to update\n");
-		}
-		else
-		{
-			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
-			if (entity_index == -1)
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg has invalid entity, can't update (gamestate 0x%8X)\n", gamestate_index);
-			else
-				simulation_entity_update(entity_index, -1, update_flags);
-		}
-	}
-}
-
-void simulation_action_game_statborg_update(long update_flag)
-{
-	assert(update_flag >= 0 && update_flag < k_simulation_statborg_update_flag_count);
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(update_flag, true);
-	simulation_action_game_statborg_update(&update_flags);
-}
-
-void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags)
-{
-	if (game_is_server() && game_is_distributed() && !game_is_playback())
-	{
-		datum_index gamestate_index = game_engine_globals_get_player_gamestate_index(player_index);
-		if (gamestate_index == -1)
-		{
-			if (game_is_available())
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d not attached to gamestate\n", player_index);
-		}
-		else
-		{
-			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
-			if (entity_index == -1)
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d gamestate 0x%8X not attached to entity\n", player_index, gamestate_index);
-			else
-				simulation_entity_update(entity_index, -1, update_flags);
-		}
-	}
-}
-
-void simulation_action_game_engine_player_update(datum_index player_index, long update_flag)
-{
-	assert(update_flag >= 0 && update_flag < k_simulation_player_update_flag_count);
-	assert((word)player_index >= 0 && (word)player_index <= 16);
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(update_flag, true);
-	simulation_action_game_engine_player_update((word)player_index, &update_flags);
-}
-
-void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags)
-{
-	if (game_is_server() && game_is_distributed() && !game_is_playback())
-	{
-		datum_index gamestate_index = game_engine_globals_get_gamestate_index();
-		if (gamestate_index == -1)
-		{
-			if (game_is_available())
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_update: game engine globals does not have gamestate to update?\n");
-		}
-		else
-		{
-			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
-			if (entity_index == -1)
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_update: game engine globals has invalid entity index (gamestate 0x%8X) can't update\n", gamestate_index);
-			else
-				simulation_entity_update(entity_index, -1, update_flags);
-		}
-	}
-}
-
-void simulation_action_game_engine_globals_update(long update_flag)
-{
-	assert(update_flag >= 0 && update_flag < 30); // roughly accurate, vip has the most flags w/ 30 total
-	c_flags<long, ulong64, 64> update_flags = {};
-	update_flags.set(update_flag, true);
-	simulation_action_game_engine_globals_update(&update_flags);
-}
-
-void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
-{
-	if (game_is_distributed() && game_is_server() && !game_is_playback())
-	{
-		datum_index owner_unit_index = weapon_get_owner_unit_index(weapon_index);
-		datum_index owner_unit_inventory_index = weapon_get_owner_unit_inventory_index(weapon_index);
-		if (owner_unit_index != -1 && owner_unit_inventory_index < 4)
-			simulation_action_object_update(owner_unit_index, (e_simulation_unit_update_flag)(owner_unit_inventory_index + _simulation_unit_update_weapon1_state));
-	}
 }

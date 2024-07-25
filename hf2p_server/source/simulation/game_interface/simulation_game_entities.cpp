@@ -1,28 +1,24 @@
 #include "simulation_game_entities.h"
-#include "assert.h"
-#include <cseries\cseries.h>
-#include <simulation\simulation_world.h>
-#include <stdio.h>
-#include <simulation\simulation_gamestate_entities.h>
-#include <simulation\simulation_type_collection.h>
-#include <game\game_engine_simulation.h>
 #include <cache\cache_files.h>
+#include <game\game.h>
+#include <game\game_engine_simulation.h>
 #include <game\game_engine_util.h>
 #include <models\model_definitions.h>
-#include <models\damage_info_definitions.h>
 #include <objects\object_definitions.h>
 #include <physics\physics_model_definitions.h>
-#include <game\game.h>
+#include <simulation\simulation_gamestate_entities.h>
+#include <simulation\simulation_type_collection.h>
+#include <simulation\simulation_world.h>
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index)
 {
-	long entity_index = -1;
+	long entity_index = NONE;
 	c_simulation_world* simulation_world = simulation_get_world();
 	if (simulation_world->is_distributed() && simulation_world->is_authority())
 	{
 		c_simulation_entity_database* entity_database = simulation_world->get_entity_database();
 		entity_index = entity_database->entity_create(simulation_entity_type);
-		if (entity_index == -1)
+		if (entity_index == NONE)
 		{
 			printf("MP/NET/SIMULATION,ENTITIES: simulation_entity_create: failed to create entity (type %d/%s object [0x%08x])\n",
 				simulation_entity_type,
@@ -66,7 +62,7 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 		case _object_type_vehicle:
 			return _simulation_entity_type_vehicle;
 		case _object_type_weapon:
-			if (object_index != -1)
+			if (object_index != NONE)
 				return k_simulation_entity_type_none;
 			return _simulation_entity_type_weapon;
 		case _object_type_equipment:
@@ -85,7 +81,7 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 				if (object_tag->multiplayer_object.count() > 0)
 					return _simulation_entity_type_generic;
 			}
-			else if (object_tag->model.index != -1)
+			else if (object_tag->model.index != NONE)
 			{
 				s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
 				if (model_tag->damage_info.count() > 0)
@@ -101,11 +97,11 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 		}
 		case _object_type_crate:
 		{
-			if (object_tag->model.index == -1)
+			if (object_tag->model.index == NONE)
 				return k_simulation_entity_type_none;
 			s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
 			s_physics_model_definition* physics_model_tag = (s_physics_model_definition*)tag_get('phmo', model_tag->physics_model.index);
-			if (model_tag->physics_model.index != -1 && physics_model_tag->flags.test(_physics_model_flags_make_physical_children_keyframed_bit))
+			if (model_tag->physics_model.index != NONE && physics_model_tag->flags.test(_physics_model_flags_make_physical_children_keyframed_bit))
 				return k_simulation_entity_type_none;
 			return recycling ? _simulation_entity_type_generic_garbage : _simulation_entity_type_generic;
 		}
@@ -127,14 +123,14 @@ void simulation_entity_delete(long entity_index, datum_index object_index, datum
 		assert(entity->exists_in_gameworld);
 		if (entity_database->entity_is_local(entity_index))
 		{
-			entity->gamestate_index = -1;
+			entity->gamestate_index = NONE;
 			entity->exists_in_gameworld = false;
 			entity_database->entity_delete(entity_index);
 			return;
 		}
 		if (!simulation_reset_in_progress() && game_in_progress())
 		{
-			if (object_index == -1)
+			if (object_index == NONE)
 			{
 				printf("MP/NET/SIMULATION,ENTITY: simulation_entity_delete: game engine entity deleted with non-local entity 0x%08x type %d\n",
 					entity_index,
@@ -150,7 +146,7 @@ void simulation_entity_delete(long entity_index, datum_index object_index, datum
 					entity->entity_type);
 			}
 		}
-		entity->gamestate_index = -1;
+		entity->gamestate_index = NONE;
 		entity->exists_in_gameworld = false;
 	}
 }

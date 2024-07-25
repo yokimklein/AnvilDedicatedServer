@@ -19,7 +19,7 @@ private:
 	virtual void __thiscall notify_packet_retired(long, bool, bool);
 };
 
-enum e_network_channel_closure_reason : long;
+enum e_network_channel_closure_reason;
 struct c_replication_telemetry_provider;
 struct c_replication_scheduler : c_network_channel_client
 {

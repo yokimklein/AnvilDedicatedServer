@@ -1,7 +1,7 @@
 #include "units.h"
 #include <game\game.h>
 #include <memory\tls.h>
-#include <simulation\game_interface\simulation_game_objects.h>
+#include <simulation\game_interface\simulation_game_units.h>
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
 {

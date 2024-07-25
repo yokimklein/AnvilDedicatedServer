@@ -1,11 +1,11 @@
 #include "hooks_object_creation.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
 #include <memory\data.h>
 #include <memory\tls.h>
-#include <simulation\game_interface\simulation_game_objects.h>
-#include <objects\crates.h>
 #include <nmd_assembly.h>
+#include <objects\crates.h>
+#include <Patch.hpp>
+#include <simulation\game_interface\simulation_game_units.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -78,10 +78,13 @@ __declspec(naked) void throw_release_hook0()
 
 __declspec(safebuffers) void __fastcall throw_release_hook1()
 {
+	s_new_unit_action_grenade* action_state_storage;
 	datum_index object_index;
 	bool force_inside_bsp;
 	bool stick;
-	DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(object_index) + (sizeof(force_inside_bsp) + sizeof(stick) + 2));
+	DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(action_state_storage) + sizeof(object_index) + (sizeof(force_inside_bsp) + sizeof(stick) + 2));
+
+	__asm mov action_state_storage, ebx;
 
 	__asm mov object_index, esi;
 
@@ -93,8 +96,15 @@ __declspec(safebuffers) void __fastcall throw_release_hook1()
 	__asm mov eax, [eax + 24];
 	__asm mov stick, al;
 
-	if (stick || force_inside_bsp) // needs to stay in this order - force inside may not have a valid value if object_force_inside_bsp hasn't run?
-		simulation_action_object_create(object_index);
+	// Added these checks which the update would be nested within had there been enough space to fit it
+	if (object_index != NONE && !action_state_storage->unk2_4) // TODO: figure out what this field is
+	{
+		assert(force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
+		if (stick || force_inside_bsp) // needs to stay in this order - force inside may not have a valid value if object_force_inside_bsp hasn't run?
+		{
+			simulation_action_object_create(object_index);
+		}
+	}
 }
 
 __declspec(safebuffers) void __fastcall equipment_activate_hook()

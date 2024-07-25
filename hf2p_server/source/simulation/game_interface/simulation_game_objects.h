@@ -1,8 +1,8 @@
 #pragma once
-#include <simulation\game_interface\simulation_game_entities.h>
 #include <cseries\cseries.h>
+#include <simulation\game_interface\simulation_game_entities.h>
 
-enum e_simulation_object_update_flag : long
+enum e_simulation_object_update_flag
 {
 	_simulation_object_update_dead,
 	_simulation_object_update_position,
@@ -22,88 +22,44 @@ enum e_simulation_object_update_flag : long
 	k_simulation_object_update_flag_count
 };
 
-enum e_simulation_unit_update_flag : long
+struct s_simulation_object_state_data
 {
-	_simulation_unit_update_control = k_simulation_object_update_flag_count,
-	_simulation_unit_update_parent_vehicle,
-	_simulation_unit_update_desired_aiming_vector,
-	_simulation_unit_update_desired_weapon_set,
-	_simulation_unit_update_weapon1_type,
-	_simulation_unit_update_weapon2_type,
-	_simulation_unit_update_weapon3_type,
-	_simulation_unit_update_weapon4_type,
-	_simulation_unit_update_weapon1_state,
-	_simulation_unit_update_weapon2_state,
-	_simulation_unit_update_weapon3_state,
-	_simulation_unit_update_weapon4_state,
-	_simulation_unit_update_grenade_counts,
-	_simulation_unit_update_active_camo,
-	_simulation_unit_update_equipment,
-	_simulation_unit_update_equipment_charges,
-	_simulation_unit_update_consumable_energy,
-	_simulation_unit_update_control_context,
-	_simulation_unit_update_assassination_data,
-	// removed from HO
-	//_simulation_unit_update_hud_info,
-	//_simulation_unit_update_map_editor_flags,
-
-	k_simulation_unit_update_flag_count
+	real_point3d position;
+	real_vector3d forward;
+	real_vector3d up;
+	real scale;
+	real_vector3d transitional_velocity;
+	real_vector3d angular_velocity;
+	real body_vitality;
+	bool body_stunned;
+	real shield_vitality;
+	bool shield_stunned;
+	bool shield_charging;
+	bool shield_depleted;
+	bool dead;
+	short owner_team_index;
+	byte region_count;
+	byte region_state[16];
+	byte constraint_count;
+	short destroyed_constraints;
+	short loosened_constraints;
+	long replication_entity_index;
+	long gamestate_index;
+	long node;
+	bool initial_attachment;
+	real_point3d attachment_position;
+	real_vector3d attachment_up;
+	real_vector3d attachment_forward;
+	word_flags multiplayer_properties_data_flags;
+	short map_variant_index;
 };
-
-enum e_simulation_item_update_flag : long
+static_assert(sizeof(s_simulation_object_state_data) == 0xA0);
+struct c_simulation_object_index_state_data
 {
-	_simulation_item_update_set_at_rest = k_simulation_object_update_flag_count,
-	// equipment only
-	_simulation_item_update_equipment_begin_animation_state,
-	_simulation_item_update_equipment_creation_time,
-	_simulation_item_update_equipment_owner,
-
-	k_simulation_item_update_flag_count
+	long m_entity_index;
+	long m_simulation_object_glue_index;
 };
-
-enum e_simulation_projectile_update_flag : long
-{
-	_simulation_projectile_update_set_at_rest = k_simulation_object_update_flag_count,
-	// surprisingly nothing was added for projectile latching
-
-	k_simulation_projectile_update_flag_count
-};
-
-enum e_simulation_weapon_update_flag : long
-{
-	_simulation_weapon_update_weapon_flags = k_simulation_item_update_flag_count,
-	_simulation_weapon_update_multiplayer_weapon_registration,
-	_simulation_weapon_update_ammo,
-
-	k_simulation_weapon_update_flag_count
-};
-
-enum e_simulation_generic_update_flag : long
-{
-	_simulation_generic_update_rigid_body = k_simulation_object_update_flag_count,
-
-	k_simulation_generic_update_flag_count
-};
-
-enum e_simulation_device_update_flag : long
-{
-	_simulation_device_update_position = k_simulation_object_update_flag_count,
-	_simulation_device_update_15, // TODO
-	_simulation_device_update_power,
-	_simulation_device_update_17, // power group related
-
-	k_simulation_device_update_flag_count
-};
-
-enum e_simulation_vehicle_update_flag : long
-{
-	_simulation_vehicle_update_auto_turret = k_simulation_object_update_flag_count, // auto turret initialisation?
-	_simulation_vehicle_update_auto_turret_tracking, // auto turret tracking?
-	_simulation_vehicle_update_seat_power,
-	_simulation_vehicle_update_active_camo,
-
-	k_simulation_vehicle_update_flag_count
-};
+static_assert(sizeof(c_simulation_object_index_state_data) == 0x8);
 
 class c_simulation_object_update_flags
 {
