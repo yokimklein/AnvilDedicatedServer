@@ -696,6 +696,15 @@
     <ClInclude Include="source\simulation\game_interface\simulation_game_engine_infection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ai\sector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\physics\character_physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1050,6 +1059,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_engine_king.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

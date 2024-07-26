@@ -63,15 +63,12 @@ struct s_player_identifier
 	bool operator==(s_player_identifier other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
 	bool operator!=(s_player_identifier other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
 
-	union
-	{
-		struct
-		{
-			dword user_id; // used to be ip_addr
-			dword unknown;
-		};
-		qword data;
-	};
+	dword ipv4_address;
+	word port;
+
+	// online_xuid_is_guest_account
+	// 0000 0000 1100 1001
+	word_flags flags;
 };
 static_assert(sizeof(s_player_identifier) == 0x8);
 
@@ -107,7 +104,7 @@ static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 struct s_player_configuration_from_host
 {
 	s_player_configuration_from_host() :
-		player_xuid(),
+		user_id(),
 		player_name(),
 		team_index(),
 		user_selected_team_index(),
@@ -119,7 +116,7 @@ struct s_player_configuration_from_host
 		user_selected_team_index = _game_team_none;
 	};
 
-	s_player_identifier player_xuid;
+	qword user_id;
 	c_static_wchar_string<16> player_name;
 	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team_index;
 	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;

@@ -1257,7 +1257,7 @@ bool c_network_session::host_join_nonce_valid()
 void c_network_session::add_pending_join_to_session(qword join_nonce)
 {
     bool players_left[k_network_maximum_players_per_session] = {};
-    s_player_identifier player_xuids[k_network_maximum_players_per_session] = {};
+    qword player_xuids[k_network_maximum_players_per_session] = {};
     long xuid_count = 0;
     for (long i = this->get_session_membership()->get_first_peer(); i != -1; i = this->get_session_membership()->get_next_peer(i))
     {
@@ -1267,14 +1267,14 @@ void c_network_session::add_pending_join_to_session(qword join_nonce)
             long player_index = index_from_mask(player_mask.get_writeable_bits_direct(), player_mask.MAX_COUNT);
             if (player_index != -1)
             {
-                player_xuids[xuid_count] = this->get_session_membership()->get_player(player_index)->configuration.host.player_xuid;
+                player_xuids[xuid_count] = this->get_session_membership()->get_player(player_index)->configuration.host.user_id;
                 players_left[xuid_count] = !this->get_session_membership()->get_player(player_index)->left_game;
                 xuid_count++;
             }
             this->get_session_membership()->set_peer_connection_state(i, _network_session_peer_state_joining);
         }
     }
-    managed_session_add_players(this->managed_session_index(), (qword*)player_xuids, players_left, xuid_count);
+    managed_session_add_players(this->managed_session_index(), player_xuids, players_left, xuid_count);
 }
 
 long c_network_session::session_index()

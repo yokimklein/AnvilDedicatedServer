@@ -162,11 +162,13 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\ai\sector.h" />
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_globals.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_creation.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h" />
@@ -232,6 +234,7 @@
     <ClInclude Include="source\objects\object_types.h" />
     <ClInclude Include="source\objects\scenery.h" />
     <ClInclude Include="source\objects\target_tracking.h" />
+    <ClInclude Include="source\physics\character_physics.h" />
     <ClInclude Include="source\physics\havok_component.h" />
     <ClInclude Include="source\physics\physics_model_definitions.h" />
     <ClInclude Include="source\render\render_visibility_collection.h" />
@@ -395,6 +398,7 @@
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_globals.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_creation.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp" />

@@ -78,7 +78,7 @@ e_object_type c_object_identifier::get_type()
 	return this->type.get();
 }
 
-void __cdecl object_set_velocities_internal(datum_index object_index, const union real_vector3d* transitional_velocity, const union real_vector3d* angular_velocity, bool skip_update)
+void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
 {
 	s_object_data* object = object_get(object_index);
 	c_simulation_object_update_flags update_flags{};
@@ -175,9 +175,15 @@ datum_index __fastcall object_new(s_object_placement_data* placement_data)
 
 // Had to disable RTC here otherwise it'll throw an exception before add esp 4 corrects the stack
 #pragma runtime_checks("", off)
-void __fastcall object_set_garbage(long object_index, bool unknown_bool, long collection_ticks)
+void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, long collection_ticks)
 {
 	INVOKE(0x403C50, object_set_garbage, object_index, unknown_bool, collection_ticks);
 	__asm add esp, 4; // Fix usercall & cleanup stack
+}
+
+bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected)
+{
+	INVOKE(0x3FBF90, object_set_position_internal, object_index, desired_position, desired_forward, desired_up, location, compute_node_matrices, set_havok_object_position, in_editor, disconnected);
+	__asm add esp, 0x1C; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)

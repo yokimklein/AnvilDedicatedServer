@@ -697,7 +697,7 @@ void c_network_session_membership::remove_player(long player_index)
 {
     s_network_session_player* player = this->get_player(player_index);
     if (this->get_peer_connection_state(player->peer_index) >= _network_session_peer_state_joining)
-        managed_session_remove_players(this->get_session()->managed_session_index(), (qword*)&player->configuration.host.player_xuid, 1);
+        managed_session_remove_players(this->get_session()->managed_session_index(), &player->configuration.host.user_id, 1);
     this->remove_player_internal(player_index);
     this->increment_update();
 }
