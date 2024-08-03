@@ -166,6 +166,7 @@
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h" />
@@ -396,6 +397,7 @@
   <ItemGroup>
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp" />
@@ -410,6 +412,7 @@
     <ClCompile Include="source\game\game_allegiance.cpp" />
     <ClCompile Include="source\game\game_engine_candy_monitor.cpp" />
     <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
+    <ClCompile Include="source\game\game_engine_player_traits.cpp" />
     <ClCompile Include="source\game\game_engine_scoring.cpp" />
     <ClCompile Include="source\game\game_engine_simulation.cpp" />
     <ClCompile Include="source\game\game_engine_spawning.cpp" />

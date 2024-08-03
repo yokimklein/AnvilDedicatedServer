@@ -104,7 +104,7 @@ static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 struct s_player_configuration_from_host
 {
 	s_player_configuration_from_host() :
-		user_id(),
+		user_xuid(),
 		player_name(),
 		team_index(),
 		user_selected_team_index(),
@@ -116,7 +116,7 @@ struct s_player_configuration_from_host
 		user_selected_team_index = _game_team_none;
 	};
 
-	qword user_id;
+	qword user_xuid;
 	c_static_wchar_string<16> player_name;
 	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team_index;
 	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;

@@ -60,7 +60,6 @@ class c_havok_component : s_datum_header
 public:
 	void force_activate(bool active);
 
-private:
 	struct c_rigid_body
 	{
 		struct s_contact_point_buffer

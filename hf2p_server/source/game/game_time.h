@@ -65,3 +65,4 @@ long game_time_get();
 real game_ticks_to_seconds(long ticks);
 long game_ticks_to_seconds_ceil(long ticks);
 long game_seconds_integer_to_ticks(long seconds);
+real game_seconds_to_ticks_real(real seconds);

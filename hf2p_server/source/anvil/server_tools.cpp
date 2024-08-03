@@ -165,7 +165,7 @@ void anvil_session_update()
         {
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer);
-            anvil_session_set_map(_s3d_reactor);
+            anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             
@@ -309,12 +309,12 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
         //host_configuration->s3d_player_customization.override_api_data = true;
         //host_configuration->s3d_player_container.override_api_data = true;
 
-        if (current_player->configuration.host.user_id == 2) // yokim
+        if (current_player->configuration.host.user_xuid == 2) // yokim
         {
             host_configuration->team_index = 0;
             host_configuration->user_selected_team_index = 0;
         }
-        if (current_player->configuration.host.user_id == 3) // twister
+        if (current_player->configuration.host.user_xuid == 3) // twister
         {
             host_configuration->team_index = 1;
             host_configuration->user_selected_team_index = 1;
@@ -339,7 +339,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     s_network_session_peer* peer = membership->get_peer(player->peer_index);
     // if the player's xuid is unassigned 
     // temp peer name check, we're currently relying on this to assign the right user id so we need to wait until the first peer properties update comes in and sets this
-    if (configuration->user_id == 0 && peer->properties.peer_name.length() > 0)
+    if (configuration->user_xuid == 0 && peer->properties.peer_name.length() > 0)
     {        
         // assign player name based on peer name - TODO: THIS IS TEMPORARY, WE NEED A MORE RIGOROUS WAY OF VERIFYING USER CREDENTIALS
         configuration->player_name.set(peer->properties.peer_name.get_string());
@@ -353,7 +353,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _auto_turret;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _powerdrain;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _deployable_cover;
@@ -363,7 +363,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         // dedi host loadout
         if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
         {
-            configuration->user_id = 3; // -1 SYSTEM/invalid player id, 0 empty ID
+            configuration->user_xuid = 3; // -1 SYSTEM/invalid player id, 0 empty ID
             player->controller_index = 0;
             configuration->s3d_player_customization.colors[_primary] = 0x0F0F0F;
             configuration->s3d_player_customization.colors[_secondary] = 0x05286E;
@@ -390,7 +390,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                 // if a match is found
                 if (peer->properties.peer_name.is_equal(player_list[i]))
                 {
-                    configuration->user_id = i + 1;
+                    configuration->user_xuid = i + 1;
                     // set dev service tag
                     if (i == 0 || i == 1 || i == 2)
                     {

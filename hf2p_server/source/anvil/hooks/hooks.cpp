@@ -11,6 +11,7 @@
 #include <anvil\hooks\simulation\hooks_object_deletion.h>
 #include <anvil\hooks\simulation\hooks_object_updates.h>
 #include <anvil\hooks\simulation\hooks_physics_updates.h>
+#include <anvil\hooks\simulation\hooks_damage_updates.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
@@ -77,8 +78,8 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
         switch (code_buffer[i])
         {
             // fix jump & call offsets
-            case 0xE8: // jump
-            case 0xE9: // call
+            case 0xE8: // call
+            case 0xE9: // jump
                 // ensure instruction length is valid for a jump/call
                 assert(instruction_length == 5);
                 offset = *(long*)&code_buffer[i + 1]; // near offset
@@ -484,6 +485,22 @@ void nop_region(size_t address, size_t length)
     memset((void*)BASE_ADDRESS(address), 0x90, length);
 }
 
+void hook_function(size_t function_address, size_t length, void* hook_function)
+{
+    byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
+
+    // ensure we have the space to write a jump
+    assert(length >= 5);
+
+    // cleanup old function code
+    nop_region(function_address, length);
+
+    // write jump to hook function
+    size_t jump_offset = ((size_t)(hook_function)-BASE_ADDRESS(function_address) - sizeof(jump_code));
+    memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
+    memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
+}
+
 // print to console whenever a message packet is sent - this pointer is unused
 void __fastcall encode_message_header_hook(c_network_message_type_collection* _this, void*, c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
 {
@@ -705,222 +722,6 @@ __declspec(naked) void player_spawn_hook3()
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
-
-__declspec(safebuffers) void __fastcall object_damage_update_hook1()
-{
-    datum_index object_index;
-    __asm mov eax, [ebp + 0xF4] __asm mov object_index, eax;
-    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
-}
-
-__declspec(safebuffers) void __fastcall object_damage_update_hook2()
-{
-    datum_index object_index;
-    short body_stun_ticks;
-    s_unit_data* unit;
-    bool unknown_bool;
-    real unknown_ticks;
-    real new_body_vitality;
-    real unknown_vitality;
-    __asm
-    {
-        mov eax, [ebp + 0xF4]
-        mov object_index, eax
-        mov body_stun_ticks, cx
-        mov unit, edi
-        mov al, [ebp + 0x113] // original was [ebp - 0x01]
-        mov unknown_bool, al
-        movss unknown_ticks, xmm0
-        movss new_body_vitality, xmm3
-        movss xmm1, [ebp + 0x108] // original was [ebp - 0x0C]
-        movss unknown_vitality, xmm1
-    }
-
-    if (body_stun_ticks)
-    {
-        if (!game_is_predicted())
-        {
-            unit->body_stun_ticks = body_stun_ticks - 1;
-        }
-        else
-        {
-            unknown_bool = true;
-            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
-        }
-    }
-    else
-    {
-        e_object_type object_type = unit->object_identifier.type.get();
-        TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
-        real vitality_delta = game_time_globals->seconds_per_tick * unknown_ticks;
-        if (TEST_BIT(_object_mask_unit, object_type))
-        {
-            // TODO: see if this gets called and works now I'm not using a broken version of the call
-            real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->team.get());
-            new_body_vitality = unknown_vitality;
-            vitality_delta = vitality_delta * vitality_multiplier;
-        }
-        unit->damage_flags |= FLAG(9); // enable _model_shield_depletion_is_permanent_bit?
-        real vitality_result = unit->body_vitality + vitality_delta;
-        unit->body_vitality = vitality_result;
-        if (vitality_result > new_body_vitality)
-        {
-            unit->body_vitality = new_body_vitality;
-            unit->damage_flags &= ~FLAG(9); // disable _model_shield_depletion_is_permanent_bit?
-            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
-        }
-        else
-        {
-            unknown_bool = true;
-            simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
-        }
-    }
-
-    // set unknown_bool value back to its original address
-    __asm mov al, unknown_bool;
-    __asm mov[ebp + 0x113], al;
-}
-
-__declspec(safebuffers) void __fastcall object_damage_update_hook3()
-{
-    datum_index object_index;
-    s_unit_data* unit;
-    bool unknown_bool;
-    short shield_stun_ticks;
-    __asm
-    {
-        mov shield_stun_ticks, ax
-        mov eax, [ebp + 0xF4]
-        mov object_index, eax
-        mov unit, edi
-        mov al, [ebp + 0x113] // original was [ebp - 0x01]
-        mov unknown_bool, al
-    }
-
-    if (!game_is_predicted() && shield_stun_ticks != 0x7FFF)
-    {
-        shield_stun_ticks--;
-        unit->shield_stun_ticks = shield_stun_ticks;
-        unknown_bool = true;
-    }
-    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
-
-    // set unknown_bool value back to its original address
-    __asm mov al, unknown_bool;
-    __asm mov[ebp + 0x113], al;
-}
-
-__declspec(safebuffers) void __fastcall object_damage_shield_hook1()
-{
-    s_player_datum* player_data;
-    __asm mov player_data, esi;
-    simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
-}
-
-__declspec(safebuffers) void __fastcall object_damage_shield_hook2()
-{
-    datum_index object_index;
-    __asm mov object_index, esi;
-    simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
-}
-
-__declspec(safebuffers) void __fastcall object_damage_body_hook1()
-{
-    datum_index object_index;
-    __asm mov object_index, edx;
-    simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
-}
-
-__declspec(safebuffers) void __fastcall object_deplete_body_internal_hook1()
-{
-    datum_index object_index;
-    __asm mov object_index, edi;
-    simulation_action_object_update(object_index, _simulation_object_update_dead);
-}
-
-__declspec(safebuffers) void __fastcall damage_response_fire_hook()
-{
-    s_object_data* object;
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    __asm
-    {
-        mov eax, [esp + 0x7C + 0x20] // sp 0x98, [esp+0x94-0x74]
-        mov object, eax
-
-        mov eax, [esp + 0x7C + 0x10] // sp 0x98, [esp+0x94-0x84]
-        mov object_index, eax
-
-        mov eax, [ebp + 0xB0 + 0x10]
-        mov damage_section_index, eax
-
-        mov eax, [ebp + 0xB0 + 0x14]
-        mov response_index, eax
-    }
-    if (!game_is_predicted() && object->gamestate_index != -1)
-    {
-        simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
-        c_simulation_object_update_flags update_flags{};
-        update_flags.set_flag(object_index, _simulation_object_update_region_state);
-        update_flags.set_flag(object_index, _simulation_object_update_constraint_state);
-        simulation_action_object_update_internal(object_index, update_flags);
-    }
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook()
-{
-    datum_index object_index;
-    s_damage_owner* damage_owner;
-    bool skip_update;
-    __asm
-    {
-        mov object_index, ecx
-        mov damage_owner, edx
-        mov al, byte ptr[ebp + 0x1C] // [ebp+0x08] - sp was 0x04
-        mov skip_update, al
-    }
-    object_set_damage_owner(object_index, damage_owner, skip_update);
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook2()
-{
-    datum_index object_index;
-    __asm mov eax, dword ptr[edi + 0x30]
-        __asm mov object_index, eax;
-    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook3()
-{
-    datum_index object_index;
-    __asm mov eax, [ebp + 0xE64] // [ebp-0x18] - sp was 0xE64
-        __asm mov object_index, eax
-    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook4()
-{
-    datum_index object_index;
-    __asm mov eax, [ebp + 0x17C] // [ebp-0x10] - sp was 0x17C
-        __asm mov object_index, eax
-    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook5()
-{
-    datum_index object_index;
-    __asm mov object_index, ebx
-    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
-}
-
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook6()
-{
-    datum_index object_index;
-    __asm mov eax, [ebp + 0xA8] // [ebp+0x08] - sp was 0x90
-        __asm mov object_index, eax
-    simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
-}
 
 __declspec(safebuffers) void __fastcall weapon_age_hook()
 {
@@ -1188,33 +989,11 @@ void anvil_hooks_apply()
     anvil_hooks_object_deletion_apply(); // OBJECT DELETION
     anvil_hooks_object_updates_apply(); // OBJECT UPDATES
     anvil_hooks_physics_updates_apply(); // OBJECT PHYSICS UPDATES
-    //anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
+    anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
     //anvil_hooks_weapon_state_updates_apply(); // WEAPON STATE UPDATES
     //anvil_hooks_player_updates_apply(); // PLAYER UPDATES
     // OBJECT DAMAGE EVENTS
     // MISCELLANEOUS
-
-    // OBJECT DAMAGE UPDATES
-    // object_damage_update
-    insert_hook(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace_no_nop); // same update as below, compiled logic requires hooks in 2 separate places
-    insert_hook(0x40D526, 0x40D542, object_damage_update_hook3, _hook_replace, true); // same update as above, compiled logic requires hooks in 2 separate places
-    insert_hook(0x40D5CB, 0x40D660, object_damage_update_hook2, _hook_replace, true);
-    // object_damage_shield
-    insert_hook(0x41268C, 0x412694, object_damage_shield_hook1); // shield vamparism trait
-    insert_hook(0x41287B, 0x412881, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be in esi
-    // object_damage_body
-    insert_hook(0x411E2B, 0x411E37, object_damage_body_hook1, _hook_execute_replaced_first, true);
-    // object_deplete_body_internal
-    insert_hook(0x40D9D5, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last);
-    // damage_response_fire
-    insert_hook(0x413D43, 0x413D50, damage_response_fire_hook); // includes simulation_action_damage_section_response
-    // object_set_damage_owner
-    insert_hook(0x404323, 0x404393, object_set_damage_owner_hook, _hook_replace);
-    insert_hook(0x113B0F, 0x113B15, object_set_damage_owner_hook2); // inlined in event_generate_accelerations
-    insert_hook(0x20CF07, 0x20CF0D, object_set_damage_owner_hook3); // inlined in havok_collision_damage_update
-    insert_hook(0x40F00C, 0x40F012, object_set_damage_owner_hook4); // inlined in object_cause_damage
-    insert_hook(0x4572A5, 0x4572AB, object_set_damage_owner_hook5); // inlined in motor_animation_exit_seat_immediate_internal
-    insert_hook(0x4BEA5D, 0x4BEA63, object_set_damage_owner_hook6); // inlined in vehicle_flip_submit
 
     // WEAPON STATE UPDATES
     // weapon_age
@@ -1271,7 +1050,7 @@ void anvil_hooks_apply()
     // simulation_action_damage_section_response
     insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook);
     insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook);
-    insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook);
+    //insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook); // TODO FIX OFFSETS                                                      
     
     // MISC HOOKS
     // hook exceptions_update to catch esoteric crashes

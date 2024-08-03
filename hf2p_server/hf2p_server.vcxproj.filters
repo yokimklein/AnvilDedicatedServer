@@ -705,6 +705,9 @@
     <ClInclude Include="source\physics\character_physics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1062,6 +1065,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\game_engine_player_traits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,209 +1,190 @@
 #pragma once
-#pragma pack(push, 1)
 #include <cseries\cseries.h>
+#pragma pack(push, 1)
 
 enum e_damage_resistance_percentage_setting
 {
-	// UNCHANGED
 	_damage_resistance_percentage_setting_unchanged = 0,
 
-	// 0.1
-	_damage_resistance_percentage_setting_10_percent,
+	_damage_resistance_percentage_setting_10_percent,   // 0.1
+	_damage_resistance_percentage_setting_50_percent,   // 0.5
+	_damage_resistance_percentage_setting_90_percent,   // 0.9
+	_damage_resistance_percentage_setting_100_percent,  // 1.0
+	_damage_resistance_percentage_setting_110_percent,  // 1.1
+	_damage_resistance_percentage_setting_150_percent,  // 1.5
+	_damage_resistance_percentage_setting_200_percent,  // 2.0
+	_damage_resistance_percentage_setting_300_percent,  // 3.0
+	_damage_resistance_percentage_setting_500_percent,  // 5.0
+	_damage_resistance_percentage_setting_1000_percent, // 10.0
+	_damage_resistance_percentage_setting_2000_percent, // 20.0
+	_damage_resistance_percentage_setting_invulnerable, // 1000.0
 
-	// 0.5
-	_damage_resistance_percentage_setting_50_percent,
+	k_damage_resistance_percentage_settings,
+	k_damage_resistance_percentage_setting_default = _damage_resistance_percentage_setting_100_percent
+};
 
-	// 0.9
-	_damage_resistance_percentage_setting_90_percent,
-
-	// 1.0
-	_damage_resistance_percentage_setting_100_percent,
-
-	// 1.1
-	_damage_resistance_percentage_setting_110_percent,
-
-	// 1.5
-	_damage_resistance_percentage_setting_150_percent,
-
-	// 2.0
-	_damage_resistance_percentage_setting_200_percent,
-
-	// 3.0
-	_damage_resistance_percentage_setting_300_percent,
-
-	// 5.0
-	_damage_resistance_percentage_setting_500_percent,
-
-	// 10.0
-	_damage_resistance_percentage_setting_1000_percent,
-
-	// 20.0
-	_damage_resistance_percentage_setting_2000_percent,
-
-	// 1000.0
-	_damage_resistance_percentage_setting_invulnerable,
-
-
-	k_damage_resistance_percentage_settings
+constexpr real k_damage_resistance_percentage_values[k_damage_resistance_percentage_settings - _damage_resistance_percentage_setting_10_percent]
+{
+	0.1f,
+	0.5f,
+	0.9f,
+	1.0f,
+	1.1f,
+	1.5f,
+	2.0f,
+	3.0f,
+	5.0f,
+	10.0f,
+	20.0f,
+	1000.0f
 };
 
 enum e_shield_recharge_rate_percentage_setting
 {
-	// UNCHANGED
 	_shield_recharge_rate_percentage_setting_unchanged = 0,
 
-	// -0.25
-	_shield_recharge_rate_percentage_setting_negative_25_percent,
+	_shield_recharge_rate_percentage_setting_negative_25_percent, // -0.25
+	_shield_recharge_rate_percentage_setting_negative_10_percent, // -0.1
+	_shield_recharge_rate_percentage_setting_negative_5_percent,  // -0.05
+	_shield_recharge_rate_percentage_setting_0_percent,           // 0.0
+	_shield_recharge_rate_percentage_setting_50_percent,          // 0.5
+	_shield_recharge_rate_percentage_setting_90_percent,          // 0.9
+	_shield_recharge_rate_percentage_setting_100_percent,         // 1.0
+	_shield_recharge_rate_percentage_setting_110_percent,         // 1.1
+	_shield_recharge_rate_percentage_setting_200_percent,         // 2.0
 
-	// -0.1
-	_shield_recharge_rate_percentage_setting_negative_10_percent,
+	k_shield_recharge_rate_percentage_settings,
+	k_shield_recharge_rate_percentage_setting_default = _shield_recharge_rate_percentage_setting_100_percent
+};
 
-	// -0.05
-	_shield_recharge_rate_percentage_setting_negative_5_percent,
-
-	// 0.0
-	_shield_recharge_rate_percentage_setting_0_percent,
-
-	// 0.5
-	_shield_recharge_rate_percentage_setting_50_percent,
-
-	// 0.9
-	_shield_recharge_rate_percentage_setting_90_percent,
-
-	// 1.0
-	_shield_recharge_rate_percentage_setting_100_percent,
-
-	// 1.1
-	_shield_recharge_rate_percentage_setting_110_percent,
-
-	// 2.0
-	_shield_recharge_rate_percentage_setting_200_percent,
-
-
-	k_shield_recharge_rate_percentage_settings
+constexpr real k_shield_recharge_rate_percentage_values[k_shield_recharge_rate_percentage_settings - _shield_recharge_rate_percentage_setting_negative_25_percent]
+{
+	-0.25f,
+	-0.1f,
+	-0.05f,
+	0.0f,
+	0.5f,
+	0.9f,
+	1.0f,
+	1.1f,
+	2.0f
 };
 
 enum e_vampirism_percentage_setting
 {
-	// UNCHANGED
 	_vampirism_percentage_setting_unchanged = 0,
 
-	// 0.0
-	_vampirism_percentage_setting_0_percent,
+	_vampirism_percentage_setting_0_percent,   // 0.0
+	_vampirism_percentage_setting_10_percent,  // 0.1
+	_vampirism_percentage_setting_25_percent,  // 0.25
+	_vampirism_percentage_setting_50_percent,  // 0.5
+	_vampirism_percentage_setting_100_percent, // 1.0
 
-	// 0.1
-	_vampirism_percentage_setting_10_percent,
+	k_vampirism_percentage_settings,
+	k_vampirism_percentage_setting_default = _vampirism_percentage_setting_0_percent
+};
 
-	// 0.25
-	_vampirism_percentage_setting_25_percent,
-
-	// 0.5
-	_vampirism_percentage_setting_50_percent,
-
-	// 1.0
-	_vampirism_percentage_setting_100_percent,
-
-
-	k_vampirism_percentage_settings
+constexpr real k_vampirism_percentage_values[k_vampirism_percentage_settings - _vampirism_percentage_setting_0_percent]
+{
+	0.0f,
+	0.1f,
+	0.25f,
+	0.5f,
+	1.0f
 };
 
 enum e_headshot_immunity_setting
 {
-	// UNCHANGED
 	_headshot_immunity_setting_unchanged = 0,
 
-	// ENABLED
 	_headshot_immunity_setting_immune_to_headshots,
-
-	// DISABLED
 	_headshot_immunity_setting_not_immune_to_headshots,
-
 
 	k_headshot_immunity_settings
 };
 
 enum e_shield_multiplier_setting
 {
-	// UNCHANGED
 	_shield_multiplier_setting_unchanged = 0,
 
-	// 0
-	_shield_multiplier_setting_0x,
+	_shield_multiplier_setting_0x, // 0
+	_shield_multiplier_setting_1x, // 1
+	_shield_multiplier_setting_2x, // 2
+	_shield_multiplier_setting_3x, // 3
+	_shield_multiplier_setting_4x, // 4
 
-	// 1 (NORMAL)
-	_shield_multiplier_setting_1x,
+	k_shield_multiplier_settings,
+	k_shield_multiplier_setting_default = _shield_multiplier_setting_1x
+};
 
-	// 2
-	_shield_multiplier_setting_2x,
-
-	// 3
-	_shield_multiplier_setting_3x,
-
-	// 4
-	_shield_multiplier_setting_4x,
-
-
-	k_shield_multiplier_settings
+constexpr long k_shield_multiplier_values[k_shield_multiplier_settings - _shield_multiplier_setting_0x]
+{
+	0,
+	1,
+	2,
+	3,
+	4
 };
 
 enum e_damage_modifier_percentage_setting
 {
-	// UNCHANGED
 	_damage_modifier_percentage_setting_unchanged = 0,
 
-	// 0.0
-	_damage_modifier_percentage_setting_0_percent,
+	_damage_modifier_percentage_setting_0_percent,   // 0.0
+	_damage_modifier_percentage_setting_25_percent,  // 0.25
+	_damage_modifier_percentage_setting_50_percent,  // 0.5
+	_damage_modifier_percentage_setting_75_percent,  // 0.75
+	_damage_modifier_percentage_setting_90_percent,  // 0.9
+	_damage_modifier_percentage_setting_100_percent, // 1.0
+	_damage_modifier_percentage_setting_110_percent, // 1.1
+	_damage_modifier_percentage_setting_125_percent, // 1.25
+	_damage_modifier_percentage_setting_150_percent, // 1.5
+	_damage_modifier_percentage_setting_200_percent, // 2.0
+	_damage_modifier_percentage_setting_300_percent, // 3.0
+	_damage_modifier_percentage_setting_fatality,    // 1000.0
 
-	// 0.25
-	_damage_modifier_percentage_setting_25_percent,
+	k_damage_modifier_percentage_settings,
+	k_damage_modifier_percentage_setting_default = _damage_modifier_percentage_setting_100_percent
+};
 
-	// 0.5
-	_damage_modifier_percentage_setting_50_percent,
-
-	// 0.75
-	_damage_modifier_percentage_setting_75_percent,
-
-	// 0.9
-	_damage_modifier_percentage_setting_90_percent,
-
-	// 1.0
-	_damage_modifier_percentage_setting_100_percent,
-
-	// 1.1
-	_damage_modifier_percentage_setting_110_percent,
-
-	// 1.25
-	_damage_modifier_percentage_setting_125_percent,
-
-	// 1.5
-	_damage_modifier_percentage_setting_150_percent,
-
-	// 2.0
-	_damage_modifier_percentage_setting_200_percent,
-
-	// 3.0
-	_damage_modifier_percentage_setting_300_percent,
-
-	// 1000.0 (FATALITY)
-	_damage_modifier_percentage_setting_fatality,
-
-
-	k_damage_modifier_percentage_settings
+constexpr real k_damage_modifier_percentage_values[k_damage_modifier_percentage_settings - _damage_modifier_percentage_setting_0_percent]
+{
+	0.0f,
+	0.25f,
+	0.5f,
+	0.75f,
+	0.9f,
+	1.0f,
+	1.1f,
+	1.25f,
+	1.5f,
+	2.0f,
+	3.0f,
+	1000.0f
 };
 
 enum e_grenade_count_setting
 {
-	// UNCHANGED
 	_grenade_count_setting_unchanged = 0,
-
-	// MAP DEFAULT
 	_grenade_count_setting_map_default,
 
-	// NONE
-	_grenade_count_setting_none,
+	_grenade_count_setting_none,    // 0
+	_grenade_count_setting_one,     // 1
+	_grenade_count_setting_two,     // 2
+	//_grenade_count_setting_three, // 3
+	//_grenade_count_setting_four,  // 4
 
+	k_grenade_count_settings,
+	k_grenade_count_setting_default = _grenade_count_setting_two
+};
 
-	k_grenade_count_settings
+constexpr char k_grenade_count_values[k_grenade_count_settings - _grenade_count_setting_none]
+{
+	0,
+	1,
+	2,
+	//3,
+	//4
 };
 
 enum e_recharging_grenades_setting
@@ -216,6 +197,9 @@ enum e_recharging_grenades_setting
 
 	// DISABLED
 	_recharging_grenades_setting_disabled,
+
+	//// ENABLED INCLUDING FIREBOMBS
+	//_recharging_grenades_setting_enabled_including_firebombs,
 
 
 	k_recharging_grenades_settings
@@ -231,6 +215,9 @@ enum e_infinite_ammo_setting
 
 	// ENABLED
 	_infinite_ammo_setting_enabled,
+
+	//// BOTTOMLESS CLIP
+	//_infinite_ammo_setting_bottomless_clip,
 
 
 	k_infinite_ammo_settings
@@ -253,65 +240,58 @@ enum e_weapon_pickup_setting
 
 enum e_player_speed_setting
 {
-	// UNCHANGED
 	_player_speed_setting_unchanged = 0,
 
-	// 0.25
-	_player_speed_setting_25_percent,
+	_player_speed_setting_25_percent,  // 0.25
+	_player_speed_setting_50_percent,  // 0.5
+	_player_speed_setting_75_percent,  // 0.75
+	_player_speed_setting_90_percent,  // 0.9
+	_player_speed_setting_100_percent, // 1.0
+	_player_speed_setting_110_percent, // 1.1
+	_player_speed_setting_125_percent, // 1.25
+	_player_speed_setting_150_percent, // 1.5
+	_player_speed_setting_200_percent, // 2.0
+	_player_speed_setting_300_percent, // 3.0
 
-	// 0.5
-	_player_speed_setting_50_percent,
+	k_player_speed_settings,
+	k_player_speed_setting_default = _player_speed_setting_100_percent
+};
 
-	// 0.75
-	_player_speed_setting_75_percent,
-
-	// 0.9
-	_player_speed_setting_90_percent,
-
-	// 1.0
-	_player_speed_setting_100_percent,
-
-	// 1.1
-	_player_speed_setting_110_percent,
-
-	// 1.25
-	_player_speed_setting_125_percent,
-
-	// 1.5
-	_player_speed_setting_150_percent,
-
-	// 2.0
-	_player_speed_setting_200_percent,
-
-	// 3.0
-	_player_speed_setting_300_percent,
-
-
-	k_player_speed_settings
+constexpr real k_player_speed_values[k_player_speed_settings - _player_speed_setting_25_percent]
+{
+	0.25f,
+	0.5f,
+	0.75f,
+	0.9f,
+	1.0f,
+	1.1f,
+	1.25f,
+	1.5f,
+	2.0f,
+	3.0f
 };
 
 enum e_player_gravity_setting
 {
-	// UNCHANGED
 	_player_gravity_setting_unchanged = 0,
 
-	// 0.5
-	_player_gravity_setting_50_percent,
+	_player_gravity_setting_50_percent,  // 0.5
+	_player_gravity_setting_75_percent,  // 0.75
+	_player_gravity_setting_100_percent, // 1.0
+	_player_gravity_setting_150_percent, // 1.5
+	_player_gravity_setting_200_percent, // 2.0
 
-	// 0.75
-	_player_gravity_setting_75_percent,
+	k_player_gravity_settings,
+	k_player_gravity_setting_default = _player_gravity_setting_100_percent
+};
 
-	// 1.0
-	_player_gravity_setting_100_percent,
-
-	// 1.5
-	_player_gravity_setting_150_percent,
-
-	// 2.0
-	_player_gravity_setting_200_percent,
-
-
-	k_player_gravity_settings
+constexpr real k_player_gravity_values[k_player_gravity_settings - _player_gravity_setting_50_percent]
+{
+	0.5f,
+	0.75f,
+	1.0f,
+	1.5f,
+	2.0f
 };
 
 enum e_vehicle_usage_setting
@@ -463,48 +443,50 @@ enum e_motion_tracker_setting
 
 enum e_motion_tracker_range_setting
 {
-	// UNCHANGED
 	_motion_tracker_range_setting_unchanged = 0,
 
-	// 10m
-	_motion_tracker_range_setting_10_meters,
+	_motion_tracker_range_setting_10_meters,  // 10.0
+	_motion_tracker_range_setting_15_meters,  // 15.0
+	_motion_tracker_range_setting_25_meters,  // 25.0
+	_motion_tracker_range_setting_50_meters,  // 50.0
+	_motion_tracker_range_setting_75_meters,  // 75.0
+	_motion_tracker_range_setting_100_meters, // 100.0
+	_motion_tracker_range_setting_150_meters, // 150.0
 
-	// 15m
-	_motion_tracker_range_setting_15_meters,
-
-	// 25m
-	_motion_tracker_range_setting_25_meters,
-
-	// 50m
-	_motion_tracker_range_setting_50_meters,
-
-	// 75m
-	_motion_tracker_range_setting_75_meters,
-
-	// 100m
-	_motion_tracker_range_setting_100_meters,
-
-	// 150m
-	_motion_tracker_range_setting_150_meters,
-
-
-	k_motion_tracker_range_settings
+	k_motion_tracker_range_settings,
+	//k_motion_tracker_range_setting_default = _motion_tracker_range_setting_0_meters // 0.0
 };
 
-struct c_player_trait_shield_vitality
+constexpr real k_motion_tracker_range_values[k_motion_tracker_range_settings - _motion_tracker_range_setting_10_meters]
 {
-	c_enum<e_damage_resistance_percentage_setting, char, k_damage_resistance_percentage_settings> m_damage_resistance;
-	c_enum<e_shield_recharge_rate_percentage_setting, char, k_shield_recharge_rate_percentage_settings> m_shield_recharge_rate;
-	c_enum<e_vampirism_percentage_setting, char, k_vampirism_percentage_settings> m_shield_vampirism;
-	c_enum<e_headshot_immunity_setting, char, k_headshot_immunity_settings> m_headshot_immunity;
-	c_enum<e_shield_multiplier_setting, char, k_shield_multiplier_settings> m_shield_multiplier;
+	10.0f,
+	15.0f,
+	25.0f,
+	50.0f,
+	75.0f,
+	100.0f,
+	150.0f
+};
+
+class c_player_trait_shield_vitality
+{
+public:
+	e_shield_recharge_rate_percentage_setting get_shield_recharge_rate_percentage_setting() const;
+	real get_shield_recharge_rate_percentage() const;
+
+protected:
+	c_enum<e_damage_resistance_percentage_setting, char, k_damage_resistance_percentage_settings> m_damage_resistance_percentage_setting;
+	c_enum<e_shield_recharge_rate_percentage_setting, char, k_shield_recharge_rate_percentage_settings> m_shield_recharge_rate_percentage_setting;
+	c_enum<e_vampirism_percentage_setting, char, k_vampirism_percentage_settings> m_vampirism_percentage_setting;
+	c_enum<e_headshot_immunity_setting, char, k_headshot_immunity_settings> m_headshot_immunity_setting;
+	c_enum<e_shield_multiplier_setting, char, k_shield_multiplier_settings> m_shield_multiplier_setting;
 
 	// elephant
 	byte pad[3];
 };
 static_assert(sizeof(c_player_trait_shield_vitality) == 0x8);
 
-struct c_player_trait_weapons
+class c_player_trait_weapons
 {
 	c_enum<e_grenade_count_setting, word, k_grenade_count_settings> m_initial_grenade_count;
 	char m_initial_primary_weapon;
@@ -516,7 +498,7 @@ struct c_player_trait_weapons
 };
 static_assert(sizeof(c_player_trait_weapons) == 0x8);
 
-struct c_player_trait_movement
+class c_player_trait_movement
 {
 	c_enum<e_player_speed_setting, char, k_player_speed_settings> m_speed_multiplier;
 	c_enum<e_player_gravity_setting, char, k_player_gravity_settings> m_gravity_multiplier;
@@ -528,7 +510,7 @@ struct c_player_trait_movement
 static_assert(sizeof(c_player_trait_movement) == 0x4);
 
 // Traits that affect the player's appearance
-struct c_player_trait_appearance
+class c_player_trait_appearance
 {
 	c_enum<e_active_camo_setting, char, k_active_camo_settings> m_active_camo_setting;
 	c_enum<e_waypoint_setting, char, k_waypoint_settings> m_waypoint_setting;
@@ -538,16 +520,20 @@ struct c_player_trait_appearance
 static_assert(sizeof(c_player_trait_appearance) == 0x4);
 
 // Traits that affect the HUD motion sensor behavior
-struct c_player_trait_sensors
+class c_player_trait_sensors
 {
 	c_enum<e_motion_tracker_setting, short, k_motion_tracker_settings> m_motion_tracker_settings;
 	c_enum<e_motion_tracker_range_setting, short, k_motion_tracker_range_settings> m_motion_tracker_range;
 };
 static_assert(sizeof(c_player_trait_sensors) == 0x4);
 
-struct c_player_traits
+class c_player_traits
 {
-	c_player_trait_shield_vitality m_shield_traits;
+public:
+	c_player_trait_shield_vitality const* get_shield_vitality_traits() const;
+
+protected:
+	c_player_trait_shield_vitality m_shield_vitality_traits;
 	c_player_trait_weapons m_weapon_traits;
 	c_player_trait_movement m_movement_traits;
 	c_player_trait_appearance m_appearance_traits;

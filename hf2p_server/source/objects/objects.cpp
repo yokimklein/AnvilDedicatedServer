@@ -156,6 +156,18 @@ void __fastcall object_set_requires_motion(datum_index object_index)
 bool __fastcall object_needs_rigid_body_update(datum_index object_index)
 {
 	return INVOKE(0x3FE620, object_needs_rigid_body_update, object_index);
+
+	//s_object_data* object = object_try_and_get_and_verify_type(object_index, -1);
+	//if (object->gamestate_index == NONE)
+	//	return false;
+	//if (object->havok_component_index == NONE || object->object_identifier.type.get() != _object_type_crate)
+	//	return false;
+	//c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->havok_component_index);
+	//for (long i = 0; i < havok_component->m_havok_rigid_bodies.m_size; i++)
+	//{
+	//	c_havok_component::c_rigid_body* rigid_body = havok_component->m_havok_rigid_bodies.m_data + (i * sizeof(c_havok_component::c_rigid_body));
+	//	char rb_type = *(char*)((size_t)rigid_body->m_rigid_body + 0xA8);
+	//}
 }
 
 void __fastcall attachments_update(datum_index object_index)

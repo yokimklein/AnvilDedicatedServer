@@ -1267,7 +1267,7 @@ void c_network_session::add_pending_join_to_session(qword join_nonce)
             long player_index = index_from_mask(player_mask.get_writeable_bits_direct(), player_mask.MAX_COUNT);
             if (player_index != -1)
             {
-                player_xuids[xuid_count] = this->get_session_membership()->get_player(player_index)->configuration.host.user_id;
+                player_xuids[xuid_count] = this->get_session_membership()->get_player(player_index)->configuration.host.user_xuid;
                 players_left[xuid_count] = !this->get_session_membership()->get_player(player_index)->left_game;
                 xuid_count++;
             }

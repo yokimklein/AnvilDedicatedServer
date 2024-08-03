@@ -32,3 +32,11 @@ long game_seconds_integer_to_ticks(long seconds)
 	assert(game_time_globals->initialized);
 	return seconds * game_time_globals->tick_rate;
 }
+
+real game_seconds_to_ticks_real(real seconds)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+	assert(game_time_globals);
+	assert(game_time_globals->initialized);
+	return seconds * game_time_globals->tick_rate;
+}

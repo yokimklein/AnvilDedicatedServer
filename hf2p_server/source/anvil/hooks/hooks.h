@@ -24,6 +24,8 @@ enum e_hook_type
 void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);
 void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes);
 void nop_region(size_t address, size_t length);
+void hook_function(size_t function_address, size_t length, void* hook_function);
+// TODO: hook_call
 
 void anvil_patches_apply();
 void anvil_hooks_apply();

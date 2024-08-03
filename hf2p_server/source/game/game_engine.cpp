@@ -113,14 +113,14 @@ void game_engine_update_round_conditions()
 		long game_over_timer = game_engine_globals->game_over_timer;
 		c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> condition;
 		condition.clear();
-		condition.set(_game_engine_round_condition_unknown0, round_time < 5);
-		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1));
-		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(3));
-		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(4)); // team voice announcer
-		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(k_pre_game_camera_seconds - 4)); // player control (ORIGINALLY 11)
-		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // team intro widget
-		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(k_pre_game_camera_seconds)); // camera position (ORIGINALLY 18)
-		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4));
+		condition.set(_game_engine_round_condition_unknown0, round_time < 1); // 5
+		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1)); // 1
+		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(1)); // 3
+		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(1)); // team voice announcer 4
+		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(1)); // player control 11
+		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(1)); // team intro widget 5
+		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(1)); // camera position 18
+		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(1)); // 4
 		if (game_engine_globals->round_condition_flags != condition)
 		{
 			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_unknown3) && !condition.test(_game_engine_round_condition_unknown3))

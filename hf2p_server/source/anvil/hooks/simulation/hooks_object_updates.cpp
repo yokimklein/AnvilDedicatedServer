@@ -22,10 +22,9 @@ __declspec(safebuffers) void __fastcall object_update_hook()
 {
     datum_index object_index;
     __asm mov object_index, edi;
-    c_smart_data_array<s_object_header> object_headers;
-    s_object_header* object_header;
-    object_headers = get_tls()->object_headers;
-    object_header = (s_object_header*)datum_get(*object_headers, object_index);
+
+    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+    s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
     
     // we've left the scope of this if check where we've hooked, so we need to check it again
     if (!object_header->flags.test(_object_header_do_not_update_bit))
