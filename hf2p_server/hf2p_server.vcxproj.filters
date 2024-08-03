@@ -711,6 +711,9 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_miscellaneous.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1077,6 +1080,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\hooks\simulation\hooks_weapon_updates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_miscellaneous.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

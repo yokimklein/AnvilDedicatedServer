@@ -13,6 +13,7 @@
 #include <anvil\hooks\simulation\hooks_physics_updates.h>
 #include <anvil\hooks\simulation\hooks_damage_updates.h>
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
+#include <anvil\hooks\simulation\hooks_miscellaneous.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
@@ -502,82 +503,6 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
 }
 
-// print to console whenever a message packet is sent - this pointer is unused
-void __fastcall encode_message_header_hook(c_network_message_type_collection* _this, void*, c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
-{
-    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
-    c_network_message_type_collection* message_type_collection = session->m_message_gateway->m_message_type_collection;
-
-    printf("SEND: %s (%d bytes)\n", message_type_collection->get_message_type_name(message_type), message_storage_size);
-    DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);
-}
-
-// disable contrails to prevent gpu freezing
-__declspec(naked) void contrail_fix_hook()
-{
-    __asm
-    {
-        add edx, [0x0068A38A]
-        cmp edx, -1
-        jg render
-        push 0x68A3E3
-        retn
-        render:
-        push 0x68A390
-        retn
-    }
-}
-
-int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t MaxCount, const char* Format, va_list ArgList)
-{
-    // original function call
-    int result = vsnprintf_s(DstBuf, SizeInBytes, MaxCount, Format, ArgList);
-
-    // check if we're building a URI - we don't want to print these
-    if (strcmp(Format, "/%s.svc/%s") != 0)
-    {
-        printf("[+] %s \n", DstBuf);
-    }
-    // parse obfuscated URIs - temporarily disabled
-    //else if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
-    //{
-    //    char resource_uri[0x100];
-    //    memcpy(resource_uri, va_arg(ArgList, char*), 0x100); // occasional access violations here - TODO FIX
-    //    backend_deobfuscate_uri(resource_uri, 0x100);
-    //
-    //    // potentially dangerous, but acceptable given the context?
-    //    // these will return random data from memory for request logs
-    //    // but they are ignored by the request format in snprintf
-    //    long request_status = va_arg(ArgList, long); // more likely to be error code - response code
-    //    long response_status = va_arg(ArgList, long);
-    //
-    //    char deobfuscated_log[0x100];
-    //    memcpy(deobfuscated_log, DstBuf, 0x100);
-    //    snprintf(deobfuscated_log, 0x100, Format, resource_uri, request_status, response_status);
-    //
-    //    printf("[+] %s \n", deobfuscated_log);
-    //}
-
-    return result;
-}
-
-void __fastcall sub_7172B0_hook(void* api_loadout)
-{
-    // Check if loadout is valid before calling first
-    // If a player kills the local player and no API loadout information for the killer exists, a nullptr is returned
-    if (api_loadout != nullptr)
-    {
-        INVOKE(0x3172B0, sub_7172B0_hook, api_loadout);
-    }
-}
-
-// TODO: this doesn't work outside of proxydll atm, our launcher is injecting too late
-c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
-{
-    static_string->print("Halo Online %s %s", anvil_get_config_string(), "Live_release_11.1.604673");
-    return static_string;
-}
-
 // TODO: fix crashing
 //void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_player_datum* player_data)
 //{
@@ -595,12 +520,6 @@ c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* 
 //        sub_E05E0(player_xuid);
 //        simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
 //    }
-//}
-
-//long __cdecl ui_get_player_model_id_evaluate_hook(long a1, long a2)
-//{
-//    FUNCTION_DEF(0x1210F0, long, __fastcall, hs_return, long a1, long a2);
-//    return hs_return(a2, 1);
 //}
 
 void __cdecl simulation_action_game_engine_globals_update_with_bitmask(ulong64 raw_bits)
@@ -775,33 +694,7 @@ __declspec(safebuffers) void __fastcall object_damage_new_hook()
     }
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
-
-__declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
-{
-    long player_index;
-    __asm mov player_index, esi
-    hf2p_trigger_player_podium_taunt(player_index);
-}
 #pragma runtime_checks("", restore)
-
-void __fastcall hf2p_player_podium_initialize_hook(long podium_biped_index, long player_index)
-{
-    hf2p_player_podium_initialize(podium_biped_index, player_index);
-}
-
-void __cdecl game_engine_render_frame_watermarks_hook()
-{
-    // empty function
-}
-
-long __cdecl exceptions_update_hook()
-{
-    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)BASE_ADDRESS(0x106DEC8);
-    if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
-        return 0;
-
-    return exceptions_update();
-}
 
 void anvil_patches_apply()
 {
@@ -821,8 +714,6 @@ void anvil_patches_apply()
     //Patch(0x411E02, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
 }
 
-// TODO: verify all hooks are working as intended
-// check for register corruption - especially where i've added new variables
 // TODO: insert_hook should sanitise against register corruption - replace all old hooks with new system
 void anvil_hooks_apply()
 {
@@ -839,7 +730,7 @@ void anvil_hooks_apply()
     anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
     //anvil_hooks_player_updates_apply(); // PLAYER UPDATES
     // OBJECT DAMAGE EVENTS
-    // MISCELLANEOUS
+    anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn
@@ -861,39 +752,4 @@ void anvil_hooks_apply()
     insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook);
     insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook);
     //insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook); // TODO FIX OFFSETS                                                      
-    
-    // MISC HOOKS
-    // hook exceptions_update to catch esoteric crashes
-    Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9AB6B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9ABAB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9EFE3, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F07C, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F8B1, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xC3E8B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xDCCBD, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
-    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
-    // output the message type for debugging
-    Hook(0x16AF8, encode_message_header_hook, HookFlags::IsCall).Apply();
-    Hook(0x16C26, encode_message_header_hook, HookFlags::IsCall).Apply();
-    Hook(0x233D4, encode_message_header_hook, HookFlags::IsCall).Apply();
-    // contrail gpu freeze fix - twister
-    Hook(0x28A38A, contrail_fix_hook).Apply();
-    // temporary test to force elite ui model on mainmenu
-    //Hook(0x2059B0, ui_get_player_model_id_evaluate_hook).Apply();
-    // podium animation testing
-    Hook(0x2E8750, hf2p_player_podium_initialize_hook).Apply();
-    // podium taunt triggering & syncing
-    insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook);
-    // disable build watermark text
-    //Hook(0x1B0AB0, game_engine_render_frame_watermarks_hook).Apply();
-    // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
-    //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
-    // Fix host crashing when killed by a player when not connected to the API
-    Hook(0x318C2A, sub_7172B0_hook, HookFlags::IsCall).Apply();
 }

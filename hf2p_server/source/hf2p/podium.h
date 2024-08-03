@@ -34,7 +34,7 @@ static_assert(sizeof(s_player_podium) == 0x2C);
 extern long& g_player_podium_count;
 extern s_player_podium(&g_player_podiums)[k_maximum_multiplayer_players];
 
-void hf2p_player_podium_initialize(long podium_biped_index, long player_index);
+void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long player_index);
 void hf2p_trigger_player_podium_taunt(long player_podium_index);
 void __fastcall hf2p_player_podium_increment_loop_count(long player_index);
 
