@@ -12,6 +12,7 @@
 #include <anvil\hooks\simulation\hooks_object_updates.h>
 #include <anvil\hooks\simulation\hooks_physics_updates.h>
 #include <anvil\hooks\simulation\hooks_damage_updates.h>
+#include <anvil\hooks\simulation\hooks_weapon_updates.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
@@ -723,107 +724,6 @@ __declspec(naked) void player_spawn_hook3()
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
 
-__declspec(safebuffers) void __fastcall weapon_age_hook()
-{
-    datum_index weapon_index;
-    __asm mov weapon_index, edi;
-    weapon_delay_predicted_state(weapon_index);
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_barrel_fire_hook()
-{
-    datum_index weapon_index;
-    __asm mov eax, [esp + 0xB8] __asm mov weapon_index, eax;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_magazine_execute_reload_hook()
-{
-    datum_index weapon_index;
-    __asm mov eax, [ebp + 0x20] __asm mov weapon_index, eax;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_magazine_update_hook()
-{
-    datum_index weapon_index;
-    __asm mov weapon_index, ebx;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_report_kill_hook()
-{
-    datum_index weapon_index;
-    __asm mov eax, [ebp + 0x24] __asm mov weapon_index, eax;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-// TODO: untested, ensure ebp offset is correct
-__declspec(safebuffers) void __fastcall weapon_set_current_amount_hook()
-{
-    datum_index weapon_index;
-    __asm mov eax, [ebp + 0x1C] __asm mov weapon_index, eax;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_set_total_rounds_hook()
-{
-    datum_index weapon_index;
-    __asm mov eax, [ebp + 0x28] __asm mov weapon_index, eax;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_take_inventory_rounds_hook1()
-{
-    datum_index weapon_index;
-    __asm mov weapon_index, edi;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_take_inventory_rounds_hook2()
-{
-    datum_index unit_weapon_object_index;
-    __asm mov unit_weapon_object_index, esi;
-    simulation_action_weapon_state_update(unit_weapon_object_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
-{
-    datum_index weapon_index;
-    __asm mov weapon_index, ebx
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-// preserve unit_index variable
-__declspec(naked) void unit_inventory_set_weapon_index_hook0()
-{
-    __asm mov [ebp + 4], ecx;
-    __asm retn;
-}
-
-__declspec(safebuffers) void __fastcall unit_inventory_set_weapon_index_hook1()
-{
-    datum_index unit_index;
-    short inventory_index;
-    c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(unit_index) + (sizeof(inventory_index) + 2) + sizeof(update_flags));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov unit_index, eax;
-    
-    __asm mov eax, original_ebp;
-    __asm mov ax, [eax - 2];
-    __asm mov inventory_index, ax;
-    
-    update_flags.m_flags.clear();
-    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_type);
-    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_state);
-    simulation_action_object_update_internal(unit_index, update_flags);
-    unit_inventory_cycle_weapon_set_identifier(unit_index);
-}
-
 __declspec(safebuffers) void __fastcall damage_section_deplete_hook()
 {
     // we're inserting just before a call's stack cleanup has run, so be mindful that this hook's esp is offset by 0x14
@@ -884,60 +784,6 @@ __declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
 }
 #pragma runtime_checks("", restore)
 
-__declspec(naked) void weapon_handle_potential_inventory_item_hook()
-{
-    __asm
-    {
-        // original replaced instructions
-        mov al, [ebp - 0x01]
-        add esp, 8
-
-        push[ebp - 0x30] // weapon index
-        call simulation_action_weapon_state_update
-        add esp, 4
-
-        // if ( ((1 << *item_tag) & 4) != 0 ) // if statement passes for weapons, but not ammo packs?
-        mov ecx, [ebp - 0x28] // item tag
-        mov eax, 1
-        mov cl, [ecx]
-        shl eax, cl
-        test al, 4
-        je return_label
-
-        push 0
-        push 1048576 // _simulation_weapon_update_ammo (1 << 20)
-        push[ebp - 0x24] // item index
-        call simulation_action_object_update_with_bitmask
-
-        // return
-        return_label :
-        pop edi
-            pop esi
-            pop ebx
-            mov esp, ebp
-            pop ebp
-            retn
-    }
-}
-
-__declspec(naked) void unit_handle_deleted_object_hook()
-{
-    __asm
-    {
-        // replace inlined unit_inventory_set_weapon_index call with our rewritten one
-        push 4 // drop_type
-        push - 1 // item_index
-        mov edx, ebx // inventory_index
-        mov ecx, [ebp + 0x08] // unit index
-        call unit_inventory_set_weapon_index
-
-        // return
-        mov eax, module_base
-        add eax, 0x427178
-        jmp eax
-    }
-}
-
 void __fastcall hf2p_player_podium_initialize_hook(long podium_biped_index, long player_index)
 {
     hf2p_player_podium_initialize(podium_biped_index, player_index);
@@ -990,46 +836,10 @@ void anvil_hooks_apply()
     anvil_hooks_object_updates_apply(); // OBJECT UPDATES
     anvil_hooks_physics_updates_apply(); // OBJECT PHYSICS UPDATES
     anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
-    //anvil_hooks_weapon_state_updates_apply(); // WEAPON STATE UPDATES
+    anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
     //anvil_hooks_player_updates_apply(); // PLAYER UPDATES
     // OBJECT DAMAGE EVENTS
     // MISCELLANEOUS
-
-    // WEAPON STATE UPDATES
-    // weapon_age
-    insert_hook(0x433CE6, 0x433CF0, weapon_age_hook, _hook_replace);
-    // weapon_barrel_fire
-    insert_hook(0x43577A, 0x43577F, weapon_barrel_fire_hook);
-    // weapon_magazine_execute_reload
-    insert_hook(0x434ECE, 0x434ED6, weapon_magazine_execute_reload_hook);
-    // weapon_magazine_update (syncs Weapon > Magazines > RoundsRecharged)
-    insert_hook(0x42DBB4, 0x42DBB9, weapon_magazine_update_hook);
-    // weapon_report_kill (syncs weapon ages with each kill flag, used by the energy sword)
-    insert_hook(0x4339C5, 0x4339CA, weapon_report_kill_hook);
-    // weapon_set_current_amount (used by scripts & actors only, TODO: untested)
-    insert_hook(0x43374B, 0x433750, weapon_set_current_amount_hook);
-    // weapon_set_total_rounds
-    insert_hook(0x433479, 0x43347F, weapon_set_total_rounds_hook, _hook_execute_replaced_last);
-    // weapon_take_inventory_rounds 2x
-    insert_hook(0x432147, 0x43214E, weapon_take_inventory_rounds_hook1);
-    insert_hook(0x4321E1, 0x4321E8, weapon_take_inventory_rounds_hook2);
-    // weapon_trigger_update
-    insert_hook(0x42E055, 0x42E05A, weapon_trigger_update_hook);
-    // ammo pickup
-    Pointer::Base(0x4310CC).WriteJump(weapon_handle_potential_inventory_item_hook, HookFlags::None);
-    
-    // weapon set index updates
-    add_variable_space_to_stack_frame(0x426D10, 0x426DD6, 4); // Add 4 bytes of variable space to the stack frame
-    insert_hook(0x426D16, 0x426D1C, unit_inventory_set_weapon_index_hook0, _hook_execute_replaced_last); // preserve unit_index in a new variable
-    insert_hook(0x426D8E, 0x426DCF, unit_inventory_set_weapon_index_hook1, _hook_replace);
-    insert_hook(0x426DD0, 0x426DD5, (void*)4, _hook_stack_frame_cleanup); // cleanup new variable from stack on return
-
-    // weapon set identifier updates
-    Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();
-    // add inlined unit_inventory_set_weapon_index with sim updates back to unit_delete_all_weapons_internal
-    Hook(0x424E60, unit_delete_all_weapons_internal).Apply();
-    // add inlined unit_inventory_set_weapon_index with sim updates back to unit_handle_deleted_object
-    Pointer::Base(0x427119).WriteJump(unit_handle_deleted_object_hook, HookFlags::None);
 
     // PLAYER UPDATES
     // add back simulation_action_game_engine_player_update to player_spawn

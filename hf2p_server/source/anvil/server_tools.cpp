@@ -371,7 +371,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             configuration->s3d_player_customization.colors[_lights] = 0xFF640A;
             configuration->s3d_player_customization.colors[_holo] = 0xFF640A;
             configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
-            configuration->s3d_player_container.loadouts[0].secondary_weapon = _shotgun;
+            configuration->s3d_player_container.loadouts[0].secondary_weapon = _energy_sword;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_player_cdt] = 1.0f;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_vehicle_cdt] = 1.0f;
             configuration->s3d_player_customization.override_api_data = true;
