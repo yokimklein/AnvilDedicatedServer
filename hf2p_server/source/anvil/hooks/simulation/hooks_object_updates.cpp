@@ -356,6 +356,18 @@ __declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
 }
+
+__declspec(safebuffers) void __fastcall unit_delete_current_equipment_hook()
+{
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(unit_index));
+
+    _asm mov eax, original_ebp;
+    _asm mov eax, [eax + 0x08];
+    _asm mov unit_index, eax;
+
+    simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -460,4 +472,7 @@ void anvil_hooks_object_updates_apply()
 
     // sync vehicle emp timer - TODO: ditto above
     insert_hook(0x417B9D, 0x417BA4, unit_respond_to_emp_hook, _hook_execute_replaced_first);
+
+    // sync equipment deletion
+    insert_hook(0x417CE5, 0x417CEF, unit_delete_current_equipment_hook, _hook_execute_replaced_first);
 }

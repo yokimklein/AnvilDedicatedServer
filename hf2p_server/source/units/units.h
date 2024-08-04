@@ -3,10 +3,11 @@
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/units/units.hpp
 
 #include <cseries\cseries.h>
+#include <ai\sector.h>
 #include <game\aim_assist.h>
+#include <game\player_configuration.h>
 #include <objects\objects.h>
 #include <objects\target_tracking.h>
-#include <game\player_configuration.h>
 
 enum e_weapon_set
 {
@@ -219,8 +220,9 @@ struct s_unit_data : s_motor_data
 	long unknown_team_index;
 	long unknown_object_index;
 	s_object_header_block_reference animation_storage;
-	s_object_header_block_reference speech_storage;
+	s_object_header_block_reference speech_storage; // seat storage?
 	ulong unit_ai_flags;
+	c_sector_ref pathfinding_sector;
 	long : 32;
 	long : 32;
 	long : 32;
@@ -238,9 +240,8 @@ struct s_unit_data : s_motor_data
 	long : 32;
 	long : 32;
 	long : 32;
-	long : 32;
-	long : 32;
-	long : 32;
+	long emblem_unknown_index1; // used in unit_delete & unit_disconnect_from_structure_bsp - accesses global array with size 0xCD
+	long emblem_unknown_index2; // used in unit_delete & unit_disconnect_from_structure_bsp - accesses global array with size 0xCD
 	long : 32;
 };
 static_assert(sizeof(s_unit_data) == 0x598);
