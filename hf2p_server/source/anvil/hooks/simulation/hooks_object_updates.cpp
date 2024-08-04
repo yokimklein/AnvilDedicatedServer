@@ -325,6 +325,23 @@ __declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
     s_player_datum* player_data = &players[unit->player_index];
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
+
+__declspec(safebuffers) void __fastcall unit_update_damage_hook()
+{
+    s_unit_data* unit;
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x70, sizeof(unit) + sizeof(unit_index));
+
+    __asm mov unit, esi;
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0x70 - 0x64];
+    __asm mov unit_index, eax;
+
+    if (unit->object_identifier.type.get() == _object_type_vehicle)
+    {
+        simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -423,4 +440,7 @@ void anvil_hooks_object_updates_apply()
 
     // sync shield restoration with shield_recharge_on_melee_kill modifier
     insert_hook(0x412E41, 0x412E4F, object_apply_damage_aftermath_hook, _hook_execute_replaced_first, true);
+
+    // sync vehicle emp timer - TODO: test this once vehicles sync
+    insert_hook(0x41AE09, 0x41AE10, unit_update_damage_hook, _hook_execute_replaced_first);
 }
