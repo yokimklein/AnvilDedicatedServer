@@ -342,6 +342,20 @@ __declspec(safebuffers) void __fastcall unit_update_damage_hook()
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
 }
+
+__declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
+{
+    s_unit_data* unit;
+    datum_index unit_index;
+
+    __asm mov unit, edi;
+    __asm mov unit_index, esi;
+
+    if (unit->object_identifier.type.get() == _object_type_vehicle)
+    {
+        simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -443,4 +457,7 @@ void anvil_hooks_object_updates_apply()
 
     // sync vehicle emp timer - TODO: test this once vehicles sync
     insert_hook(0x41AE09, 0x41AE10, unit_update_damage_hook, _hook_execute_replaced_first);
+
+    // sync vehicle emp timer - TODO: ditto above
+    insert_hook(0x417B9D, 0x417BA4, unit_respond_to_emp_hook, _hook_execute_replaced_first);
 }
