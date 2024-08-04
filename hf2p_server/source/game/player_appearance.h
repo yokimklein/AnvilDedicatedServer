@@ -322,7 +322,7 @@ enum e_modifiers
 	_enemies_always_on_radar, // bool (Always shows enemies on radar even if they are moving slow or standing still)
 	_plant_plasma_on_death, // bool (Attaches a silent, long fuse plasma grenade to the player's hand on death)
 	_shield_regen_rate_near_killed_enemies, // real 0.0-max, default 0.0 (Shield regen rate/speed added onto your standard rate when near 1 or more enemy bodies)
-	_shield_recharge_on_melee_kill, // bool (Recharge shields on melee kill)
+	_shield_recharge_on_melee_kill, // bool (Instantly restores shield vitality to 1.0 on melee kill)
 	_frag_grenades_max, // int 0-max (Number of additional frag grenades to spawn with, regardless of loadout grenades)
 	_plasma_grenades_max, // int 0-max (Number of additional plasma grenades to spawn with, regardless of loadout grenades)
 	_claymore_grenade_aoe_size, // real 0.0-max (Additional AOE for spike grenades. Not sure what this is measured in)

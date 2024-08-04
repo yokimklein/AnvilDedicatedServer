@@ -315,6 +315,16 @@ __declspec(safebuffers) void __fastcall unit_set_hologram_hook()
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
     simulation_action_object_update_internal(unit_index, update_flags);
 }
+
+__declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
+{
+    s_unit_data* unit;
+    __asm mov unit, esi;
+    TLS_DATA_GET_VALUE_REFERENCE(players);
+
+    s_player_datum* player_data = &players[unit->player_index];
+    simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -410,4 +420,7 @@ void anvil_hooks_object_updates_apply()
 
     // sync hologram camo
     insert_hook(0x42C56E, 0x42C578, unit_set_hologram_hook, _hook_execute_replaced_first);
+
+    // sync shield restoration with shield_recharge_on_melee_kill modifier
+    insert_hook(0x412E41, 0x412E4F, object_apply_damage_aftermath_hook, _hook_execute_replaced_first, true);
 }
