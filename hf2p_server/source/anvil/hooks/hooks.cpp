@@ -1,7 +1,5 @@
-// TODO: This file needs some serious cleanup, I'm sorry to anyone who has to sift through all of this
-// I will eventually make it look better - Yokim
-
 #include "hooks.h"
+#include <cseries\cseries.h>
 #include <anvil\hooks\hooks_ds.h>
 #include <anvil\hooks\hooks_session.h>
 #include <anvil\hooks\simulation\hooks_simulation.h>
@@ -14,47 +12,12 @@
 #include <anvil\hooks\simulation\hooks_damage_updates.h>
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
 #include <anvil\hooks\simulation\hooks_player_updates.h>
+#include <anvil\hooks\simulation\hooks_damage_events.h>
 #include <anvil\hooks\simulation\hooks_miscellaneous.h>
-#include <Patch.hpp> // TODO: replace & remove ED's patch system
-#include <cseries\cseries.h>
-#include <networking\session\network_session.h>
-#include <networking\messages\network_message_handler.h>
-#include <simulation\simulation_world.h>
-#include <networking\messages\network_message_gateway.h>
-#include <networking\logic\network_session_interface.h>
-#include <networking\network_globals.h>
-#include <anvil\backend.h>
-#include <networking\logic\network_life_cycle.h>
-#include <networking\transport\transport_shim.h>
-#include <networking\session\network_managed_session.h>
-#include <anvil\server_tools.h>
-#include <simulation\simulation_debug_globals.h>
-#include <simulation\game_interface\simulation_game_action.h>
-#include <memory\tls.h>
-#include <simulation\game_interface\simulation_game_objects.h>
-#include <anvil\build_version.h>
-#include <game\game_results.h>
-#include <hf2p\podium.h>
-#include <objects\objects.h>
-#include <simulation\game_interface\simulation_game_events.h>
-#include <game\game.h>
-#include <units\units.h>
-#include <units\bipeds.h>
-#include <game\game_engine_spawning.h>
-#include <game\game_engine.h>
-#include <items\weapons.h>
-#include <main\main.h>
-#include <objects\object_scripting.h>
-#include <objects\scenery.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
-#include <cseries\cseries_windows_debug_pc.h>
-#include <simulation\game_interface\simulation_game_engine_globals.h>
-#include <simulation\game_interface\simulation_game_engine_player.h>
-#include <simulation\game_interface\simulation_game_damage.h>
-#include <simulation\game_interface\simulation_game_weapons.h>
-#include <simulation\game_interface\simulation_game_units.h>
-#include <simulation\game_interface\simulation_game_projectiles.h>
+#include <stdio.h>
+#include <Patch.hpp> // TODO: replace ED hook system
 
 // helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)
@@ -504,65 +467,6 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
 }
 
-// NEW HOOKS START HERE
-// runtime checks need to be disabled for these, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-// TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
-#pragma runtime_checks("", off)
-
-__declspec(safebuffers) void __fastcall damage_section_deplete_hook()
-{
-    // we're inserting just before a call's stack cleanup has run, so be mindful that this hook's esp is offset by 0x14
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    __asm
-    {
-        mov eax, [ebp + 0x4C] // sp was 0x48, [ebp-0x0C]
-        mov object_index, eax
-        mov eax, [ebp + 0x68] // sp was 0x48, [ebp+0x10]
-        mov damage_section_index, eax
-        mov eax, [ebp + 0x50] // sp was 0x48, [ebp-0x08]
-        mov response_index, eax
-    }
-    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
-}
-
-__declspec(safebuffers) void __fastcall damage_section_respond_to_damage_hook()
-{
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    __asm
-    {
-        // TODO: THIS FUNCTION IS UNTESTED, CHECK IF THESE VARIABLES ARE CORRECT!!
-        mov object_index, edx
-        mov eax, [ebp + 0x78] // sp is 0x58, [ebp+0x10]
-        mov damage_section_index, eax
-        mov eax, [ebp + 0x50] // [ebp-0x18]
-        mov response_index, eax
-    }
-    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
-}
-
-__declspec(safebuffers) void __fastcall object_damage_new_hook()
-{
-    // we're inserting just before a call's stack cleanup has run, so be mindful that this hook's esp is offset by 0x14
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    __asm
-    {
-        // TODO: THIS FUNCTION IS UNTESTED, CHECK IF THESE VARIABLES ARE CORRECT!!
-        mov object_index, edi
-        mov eax, [esp + 0x00 + 0x00] // [esp + 0x94 - 0x6C] - TODO CORRECT THIS OFFSET
-        mov damage_section_index, eax
-        mov response_index, ebx
-    }
-    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
-}
-#pragma runtime_checks("", restore)
-
 void anvil_patches_apply()
 {
     // enable tag edits
@@ -583,7 +487,6 @@ void anvil_patches_apply()
     //Patch(0x411E02, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
 }
 
-// TODO: insert_hook should sanitise against register corruption - replace all old hooks with new system
 void anvil_hooks_apply()
 {
     anvil_hooks_ds_apply(); // DEDICATED SERVER HOOKS
@@ -598,12 +501,6 @@ void anvil_hooks_apply()
     anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
     anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
     anvil_hooks_player_updates_apply(); // PLAYER UPDATES
-    // anvil_hooks_damage_events_apply(); // OBJECT DAMAGE EVENTS
-    anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
-
-    // SIMULATION EVENTS
-    // simulation_action_damage_section_response
-    insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook);
-    insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook);
-    //insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook); // TODO FIX OFFSETS                                                      
+    anvil_hooks_damage_events_apply(); // OBJECT DAMAGE EVENTS
+    anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS                                                   
 }

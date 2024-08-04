@@ -166,6 +166,7 @@
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_events.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_miscellaneous.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
@@ -400,6 +401,7 @@
   <ItemGroup>
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_events.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_miscellaneous.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
