@@ -1,8 +1,9 @@
 #include "players.h"
-#include <stdio.h>
-#include <memory\tls.h>
 #include <game\game.h>
+#include <game\game_engine_util.h>
+#include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
+#include <stdio.h>
 
 bool player_identifier_is_valid(s_player_identifier const* identifier)
 {
@@ -65,16 +66,18 @@ long player_index_from_absolute_player_index(short absolute_player_index)
 void __fastcall player_increment_control_context(datum_index player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
-	datum_index unit_index = player_data->unit_index;
+	s_player_datum* player = (s_player_datum*)datum_get(*players, player_index);
+	datum_index unit_index = player->unit_index;
 	if (unit_index != -1)
 	{
 		TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-		s_unit_data* unit = (s_unit_data*)datum_get(*object_headers, unit_index);
-		unit->control_context_identifier = player_data->control_context_identifier;
+		s_object_header* unit_header = (s_object_header*)datum_get(*object_headers, unit_index);
+		s_unit_data* unit = (s_unit_data*)unit_header->data;
+		unit->next_spawn_control_context = player->next_spawn_control_context;
 		simulation_action_object_update(unit_index, _simulation_unit_update_control_context);
 	}
-	player_data->control_context_identifier = (player_data->control_context_identifier + 1) & 0xF;
+	player->next_spawn_control_context++;
+	SET_MASK(player->next_spawn_control_context, MASK(get_player_action_control_context_identifier_bits()), false);
 }
 
 bool __fastcall player_is_local(datum_index player_index)
@@ -85,4 +88,14 @@ bool __fastcall player_is_local(datum_index player_index)
 void __fastcall player_clear_assassination_state(datum_index player_index)
 {
 	INVOKE(0xBA0F0, player_clear_assassination_state, player_index);
+}
+
+long get_player_action_control_context_identifier_bits()
+{
+	return 4;
+
+	// reach & h4
+	//if (game_engine_is_sandbox())
+	//	return 4;
+	//return 2;
 }

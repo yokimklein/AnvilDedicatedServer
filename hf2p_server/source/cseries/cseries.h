@@ -141,8 +141,15 @@ const long LONG_BITS = SIZEOF_BITS(long);
 
 #define FLAG(bit) (1 << (bit))
 #define MASK(bit) ((1 << (bit)) - 1)
-#define TEST_BIT(flags, bit) ((flags & (1 << (bit))) != 0)
+#define TEST_BIT(flags, bit) (((flags) & (1 << (bit))) != 0)
+#define TEST_FLAG(flags, bit) (flags.test((bit)))
+#define TEST_MASK(flags, mask) (((flags) & mask) != 0)
 #define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))
+#define ALIGN_UP(value, bit) ((((value) & ((1 << (bit)) - 1)) == 0) ? (value) : ((value) | ((1 << (bit)) - 1)) + 1)
+#define SET_BIT(flags, bit, enable) { if ((enable)) { (flags) |= FLAG((bit)); } else { (flags) &= ~FLAG((bit)); } }
+#define SET_MASK(flags, mask, enable) { if ((enable)) { (flags) |= (mask); } else { (flags) &= (mask); } }
+#define VALID_BITS(flags, max_bits) ((flags) & ~((1 << (max_bits)) - 1))
+
 #define ENTITY_INDEX_TO_SEED(value) ((ulong)(value >> 28))
 #define SEED_TO_ENTITY_INDEX(value) ((ulong)(value << 28))
 

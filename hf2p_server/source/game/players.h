@@ -26,7 +26,7 @@ struct s_player_datum : s_datum_header
 	ushort unknown_simulation_ticks4; // hf2p cooldown?
 	ushort unknownflags3;
 	uchar unknown_simulation_ticks;
-	uchar control_context_identifier;
+	uchar next_spawn_control_context;
 	uchar field_4C;
 	uchar field_4B;
 	long character_type_index;
@@ -155,6 +155,8 @@ struct s_player_datum : s_datum_header
 	byte unknown_data[8];
 };
 static_assert(sizeof(s_player_datum) == 0x19B0);
+static_assert(0x30 == OFFSETOF(s_player_datum, unit_index));
+static_assert(0x49 == OFFSETOF(s_player_datum, next_spawn_control_context));
 static_assert(0x4C == OFFSETOF(s_player_datum, character_type_index));
 
 class c_player_in_game_iterator : public c_data_iterator<s_player_datum>
@@ -182,3 +184,4 @@ long player_index_from_absolute_player_index(short absolute_player_index);
 void __fastcall player_increment_control_context(datum_index player_index);
 bool __fastcall player_is_local(datum_index player_index);
 void __fastcall player_clear_assassination_state(datum_index player_index);
+long get_player_action_control_context_identifier_bits();

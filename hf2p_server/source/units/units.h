@@ -91,26 +91,26 @@ static_assert(sizeof(s_motor_data) == 0x188);
 struct s_unit_data : s_motor_data
 {
 	//long awake_tick_count; // seems to have been removed since ms23
-	long actor_index; // 0x188
-	long simulation_actor_index; // 0x18C
+	long actor_index;
+	long simulation_actor_index;
 	c_flags<e_unit_flags, ulong, k_unit_flags_count> unit_flags;
 	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
-	long player_index; // 0x198
+	long player_index;
 	long last_weak_player_index;
 	long game_time_at_last_unit_effect;
 	long unit_control_flags;
 	long desired_animation_seat;
 	real_vector3d facing_vector;
-	real_vector3d aiming_vector; // 0x1B8
+	real_vector3d aiming_vector;
 	real_vector3d melee_aiming_vector;
 	real_vector3d field_1D0;
-	real_vector3d looking_vector; // 0x1DC
+	real_vector3d looking_vector;
 	real_vector3d previous_looking_vector;
 	real_vector3d field_1F4;
 	real_point3d gaze_position;
 	real_vector3d throttle;
 	real_vector3d control_throttle;
-	uchar control_context_identifier; // 0x224
+	uchar next_spawn_control_context;
 	char aiming_speed;
 	s_damage_reporting_info special_death_damage_reporting_info;
 	char special_death_type;
@@ -132,19 +132,16 @@ struct s_unit_data : s_motor_data
 	real self_illumination;
 	real mouth_aperture;
 	real mouth_time;
-	s_unit_weapon_set current_weapon_set; // 0x2C8
-	s_unit_weapon_set desired_weapon_set; // 0x2CC
-	c_static_array<long, 4> weapon_object_indices; // offset 0x2D0
+	s_unit_weapon_set current_weapon_set;
+	s_unit_weapon_set desired_weapon_set;
+	c_static_array<long, 4> weapon_object_indices;
 	c_static_array<long, 4> weapon_last_used_at_game_time;
-	c_static_array<long, 4> equipment_object_indices; // offset 0x2F0
+	c_static_array<long, 4> equipment_object_indices;
 	c_static_array<long, 4> active_equipment_object_indices;
+	dword_flags active_equipment_slots; // new since ms23, bits correspond to which equipment slots are currently active
 	long equipment_pickup_time;
-
-	// TODO: an extra 4 byte field was added BEFORE consumable_energy_level and AFTER equipment_object_indices
-	long unknown_todo;
-
-	long consumable_energy_level; // offset 0x318
-	long consumable_energy_restored_game_time; // offset 0x31C
+	long consumable_energy_level;
+	long consumable_energy_restored_game_time;
 	short weapon_firing_time;
 	char current_grenade_index;
 	char desired_grenade_index;
@@ -166,7 +163,7 @@ struct s_unit_data : s_motor_data
 	real integrated_light_battery;
 	real integrated_night_vision_power;
 	real open_state;
-	byte seat_acceleration_state[0x6C];
+	byte seat_acceleration_state[0x6C + 4]; // 4 additional bytes since ms23
 	long predicted_player_index;
 	long predicted_simulation_actor_index;
 	long predicted_simulation_actor_squad_index;
@@ -174,7 +171,7 @@ struct s_unit_data : s_motor_data
 	long predicted_simulation_actor_spawn_point_index;
 	c_static_array<s_unit_predicted_weapon_state, 4> predicted_weapon_state;
 	real active_camouflage;
-	real active_camouflage_maximum; // 0x400 - TODO, this is -4 bytes offset
+	real active_camouflage_maximum;
 	real active_camouflage_regrowth;
 	long active_camouflage_end_time;
 	real last_used_healthpack_game_time;
@@ -191,15 +188,12 @@ struct s_unit_data : s_motor_data
 	long flaming_death_attacker_object_index;
 	real run_blindly_angle;
 	real run_blindly_angular_velocity;
-
-	long unknown_todo2; // TODO: a new field was added somewhere before this point - find out what this is
-
-	long hologram_creator_weak_unit_index; // 0x43C
-	long hologram_creation_time; // 0x440
-	long hologram_ticks_left; // 0x444
-	long hologram_definition_index; // 0x448
-	real hologram_shimmer_value; // 0x44C
-	real_point3d hologram_destination; // 0x450
+	long hologram_creator_weak_unit_index;
+	long hologram_creation_time;
+	long hologram_ticks_left;
+	long hologram_definition_index;
+	real hologram_shimmer_value;
+	real_point3d hologram_destination;
 	long sync_action_type;
 	real_point3d sync_action_origin;
 	real_vector3d sync_action_forward;
@@ -211,7 +205,7 @@ struct s_unit_data : s_motor_data
 	short movement_stun_ticks;
 	short : 16;
 	long : 32;
-	short : 16;
+	short melee_inhibit_time;
 	short : 16;
 	c_static_array<s_unit_attacker, 4> attackers;
 	c_static_array<long, 4> attacker_weapon_unit_indices;
@@ -255,20 +249,35 @@ static_assert(0x18C == OFFSETOF(s_unit_data, simulation_actor_index));
 static_assert(0x198 == OFFSETOF(s_unit_data, player_index));
 static_assert(0x1B8 == OFFSETOF(s_unit_data, aiming_vector));
 static_assert(0x1DC == OFFSETOF(s_unit_data, looking_vector));
-static_assert(0x224 == OFFSETOF(s_unit_data, control_context_identifier));
+static_assert(0x224 == OFFSETOF(s_unit_data, next_spawn_control_context));
 static_assert(0x2C8 == OFFSETOF(s_unit_data, current_weapon_set));
 static_assert(0x2CC == OFFSETOF(s_unit_data, desired_weapon_set));
 static_assert(0x2D0 == OFFSETOF(s_unit_data, weapon_object_indices));
 static_assert(0x2F0 == OFFSETOF(s_unit_data, equipment_object_indices));
+static_assert(0x300 == OFFSETOF(s_unit_data, active_equipment_object_indices));
+static_assert(0x310 == OFFSETOF(s_unit_data, active_equipment_slots));
+static_assert(0x314 == OFFSETOF(s_unit_data, equipment_pickup_time));
 static_assert(0x318 == OFFSETOF(s_unit_data, consumable_energy_level));
 static_assert(0x31C == OFFSETOF(s_unit_data, consumable_energy_restored_game_time));
-//static_assert(0x400 == OFFSETOF(s_unit_data, active_camouflage_maximum));
+static_assert(0x344 == OFFSETOF(s_unit_data, seat_power));
+static_assert(0x3C8 == OFFSETOF(s_unit_data, predicted_player_index));
+static_assert(0x3CC == OFFSETOF(s_unit_data, predicted_simulation_actor_index));
+static_assert(0x3FC == OFFSETOF(s_unit_data, active_camouflage));
+static_assert(0x400 == OFFSETOF(s_unit_data, active_camouflage_maximum));
+static_assert(0x404 == OFFSETOF(s_unit_data, active_camouflage_regrowth));
+static_assert(0x408 == OFFSETOF(s_unit_data, active_camouflage_end_time));
+static_assert(0x41A == OFFSETOF(s_unit_data, emp_timer));
+static_assert(0x41C == OFFSETOF(s_unit_data, emp_campaign_metagame_timer));
+static_assert(0x424 == OFFSETOF(s_unit_data, delayed_damage_category));
+static_assert(0x428 == OFFSETOF(s_unit_data, delayed_damage_peak));
+static_assert(0x42C == OFFSETOF(s_unit_data, delayed_damage_owner_weak_object_index));
 static_assert(0x43C == OFFSETOF(s_unit_data, hologram_creator_weak_unit_index));
 static_assert(0x440 == OFFSETOF(s_unit_data, hologram_creation_time));
 static_assert(0x444 == OFFSETOF(s_unit_data, hologram_ticks_left));
 static_assert(0x448 == OFFSETOF(s_unit_data, hologram_definition_index));
 static_assert(0x44C == OFFSETOF(s_unit_data, hologram_shimmer_value));
 static_assert(0x450 == OFFSETOF(s_unit_data, hologram_destination));
+static_assert(0x4C0 == OFFSETOF(s_unit_data, melee_inhibit_time));
 
 struct s_new_unit_action_grenade
 {

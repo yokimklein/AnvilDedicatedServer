@@ -144,15 +144,24 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
             printf("Running test command...\n");
-            
-            if (hf2p_set_local_player_equipment(0, 3))
-            {
-                printf("Success!\n");
-            }
-            else
-            {
-                printf("Command failed!\n");
-            }
+
+            TLS_DATA_GET_VALUE_REFERENCE(players);
+            TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+            datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);
+            s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+            s_object_header* unit_header = (s_object_header*)datum_get(*object_headers, player_data->unit_index);
+            s_unit_data* unit = (s_unit_data*)unit_header->data;
+            dword_flags* active_equipment_slots = &unit->active_equipment_slots;
+
+            printf("Command finished!\n");
+            //if (hf2p_set_local_player_equipment(0, 3))
+            //{
+            //    printf("Success!\n");
+            //}
+            //else
+            //{
+            //    printf("Command failed!\n");
+            //}
             
             //qword* player_xuid = &network_session->get_session_membership()->get_player(0)->configuration.host.user_id;
             //s_s3d_player_container container = s_s3d_player_container();
@@ -164,7 +173,6 @@ void anvil_session_update()
             //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
             //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
             //parameters->dedicated_server_session_state.set(&session_state);
-            printf("Command finished!\n");
         }
         else if (anvil_key_pressed(VK_END, &key_held_end))
         {
