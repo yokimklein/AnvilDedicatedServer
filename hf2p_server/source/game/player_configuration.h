@@ -78,22 +78,22 @@ struct s_player_configuration_from_client
 		name(),
 		user_selected_team_index(),
 		vote_selection_index(),
-		active_armor_loadout(),
-		active_weapon_loadout(),
+		active_loadout(),
+		unknown(),
 		player_is_griefer(),
 		pad(), // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
 		cheat_flags(),
 		ban_flags()
 	{
 		user_selected_team_index = _game_team_none;
-		active_armor_loadout = -1;
+		active_loadout = -1;
 	};
 
 	wchar_t name[16];
 	c_enum<e_game_team, byte, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
 	c_enum<e_player_vote_selection, byte, k_player_vote_selection_count> vote_selection_index;
-	char active_armor_loadout;
-	char active_weapon_loadout; // this might now be unused or something under a different name?
+	byte active_loadout;
+	char unknown; // previously active_weapon_loadout, this might now be unused or something under a different name?
 	bool player_is_griefer;
 	byte pad[3];
 	dword_flags cheat_flags;

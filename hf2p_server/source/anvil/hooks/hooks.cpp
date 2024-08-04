@@ -13,6 +13,7 @@
 #include <anvil\hooks\simulation\hooks_physics_updates.h>
 #include <anvil\hooks\simulation\hooks_damage_updates.h>
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
+#include <anvil\hooks\simulation\hooks_player_updates.h>
 #include <anvil\hooks\simulation\hooks_miscellaneous.h>
 #include <Patch.hpp> // TODO: replace & remove ED's patch system
 #include <cseries\cseries.h>
@@ -503,140 +504,6 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
 }
 
-// TODO: fix crashing
-//void __fastcall hf2p_loadout_update_active_character_hook(long player_index, s_player_datum* player_data)
-//{
-//    FUNCTION_DEF(0xE05E0, void, __cdecl, sub_E05E0, s_player_identifier player_xuid);
-//
-//    byte active_armor_loadout = player_data->configuration.client.active_armor_loadout;
-//    byte character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
-//    if (active_armor_loadout <= 2u)
-//        character_active_index = active_armor_loadout;
-//    if (character_active_index != player_data->character_type_index)
-//    {
-//        s_player_identifier player_xuid = player_data->configuration.host.player_xuid;
-//        player_data->revenge_shield_boost_multiplier = 0;
-//        player_data->character_type_index = character_active_index;
-//        sub_E05E0(player_xuid);
-//        simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
-//    }
-//}
-
-void __cdecl simulation_action_game_engine_globals_update_with_bitmask(ulong64 raw_bits)
-{
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set_raw_bits(raw_bits);
-    simulation_action_game_engine_globals_update(&update_flags);
-}
-
-void __cdecl simulation_action_game_engine_player_update_with_bitmask(datum_index player_index, ulong64 raw_bits)
-{
-    c_flags<long, ulong64, 64> update_flags = {};
-    update_flags.set_raw_bits(raw_bits);
-    simulation_action_game_engine_player_update((word)player_index, &update_flags);
-}
-
-// TODO: replace this with new update call
-void __stdcall simulation_action_object_update_with_bitmask(datum_index object_index, ulong64 raw_bits)
-{
-    c_simulation_object_update_flags update_flags{};
-    update_flags.set_raw(raw_bits);
-    simulation_action_object_update_internal(object_index, update_flags);
-}
-
-__declspec(naked) void player_spawn_hook()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        call unit_add_initial_loadout
-
-        // save registers across the function call
-        //push eax
-
-        // call our inserted function
-        test byte ptr[ebx + 4], 8 // if ((player_data->flags & 8) != 0)
-        jz end_label
-        push 0
-        push 262144 // flag _simulation_player_update_equipment_charges (1 << 18)
-        push esi // player_index
-        call simulation_action_game_engine_player_update_with_bitmask
-        add esp, 12
-
-        // restore registers - TODO ARE THESE NEEDED? CHECK!!
-        //pop eax
-
-        // return back to the original code
-    end_label:
-        mov ecx, module_base
-            add ecx, 0xBB098
-            jmp ecx
-    }
-}
-
-__declspec(naked) void player_spawn_hook2()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        and ecx, 0x0FFFFFFF7
-        mov[ebx + 4], ecx
-
-        // call our inserted function
-        push 0
-        push 1 // flag _simulation_player_update_spawn_timer (1 << 0)
-        push[ebp - 24] // player_index3
-        call simulation_action_game_engine_player_update_with_bitmask
-        add esp, 12
-
-        // return back to the original code
-        mov ecx, module_base
-        add ecx, 0xBB43B
-        jmp ecx
-    }
-}
-
-__declspec(naked) void player_spawn_hook3()
-{
-    __asm
-    {
-        // execute the original instruction(s) we replaced
-        mov byte ptr[ebx + 0x1754], 0
-
-        // call our inserted function
-        push 0
-        push 2 // flag _simulation_player_update_early_respawn (1 << 1)
-        push[ebp - 24] // player_index3
-        call simulation_action_game_engine_player_update_with_bitmask
-        add esp, 12
-
-        // return back to the original code
-        mov ecx, module_base
-        add ecx, 0xBB460
-        jmp ecx
-    }
-}
-
-// TODO: fix the crashes here
-//_declspec(naked) void hf2p_loadout_update_active_character_call_hook()
-//{
-//    __asm
-//    {
-//        mov eax, eax
-//        mov ebx, ebx
-//        mov ecx, ecx
-//        mov edx, edx
-//        // execute the original instruction(s) we replaced
-//        mov ecx, esi // player_index
-//        call hf2p_loadout_update_active_character_hook
-//
-//        // return back to the original code
-//        mov eax, module_base
-//        add eax, 0xBAF29
-//        jmp eax
-//    }
-//}
-
 // NEW HOOKS START HERE
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -702,8 +569,10 @@ void anvil_patches_apply()
     Patch(0x082DB4, { 0xEB }).Apply();
     Patch::NopFill(Pointer::Base(0x083120), 2);
     Patch::NopFill(Pointer::Base(0x083AFC), 2);
+
     // contrail gpu freeze fix - twister
     Patch(0x1D6B70, { 0xC3 }).Apply();
+
     // enable netdebug
     //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
     //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
@@ -728,24 +597,9 @@ void anvil_hooks_apply()
     anvil_hooks_physics_updates_apply(); // OBJECT PHYSICS UPDATES
     anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
     anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
-    //anvil_hooks_player_updates_apply(); // PLAYER UPDATES
-    // OBJECT DAMAGE EVENTS
+    anvil_hooks_player_updates_apply(); // PLAYER UPDATES
+    // anvil_hooks_damage_events_apply(); // OBJECT DAMAGE EVENTS
     anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
-
-    // PLAYER UPDATES
-    // add back simulation_action_game_engine_player_update to player_spawn
-    Pointer::Base(0xBB093).WriteJump(player_spawn_hook, HookFlags::None);
-    // add more player updates back to player_spawn - syncs player data info? TODO: investigate
-    Pointer::Base(0xBB435).WriteJump(player_spawn_hook2, HookFlags::None);
-    Pointer::Base(0xBB459).WriteJump(player_spawn_hook3, HookFlags::None);
-    // game_engine_player_set_spawn_timer - player update spawn timer sync
-    Hook(0xC7700, game_engine_player_set_spawn_timer).Apply();
-    // add simulation_action_game_engine_player_update back to c_simulation_player_respawn_request_event_definition::apply_game_event
-    Hook(0x68B40, c_simulation_player_respawn_request_event_definition__apply_game_event).Apply(); // I'm not sure what this request is used for, something spectator?
-    // add player update back to hf2p function - TODO fix crashing
-    //Patch(0xBAF22, { 0x89, 0xF1 }).Apply(); // replace player_data parameter with player_index  mov ecx,esi in call
-    //Pointer::Base(0xBAF24).WriteJump(hf2p_loadout_update_active_character_call_hook, HookFlags::None);
-    //Hook(0xE0660, hf2p_loadout_update_active_character_hook).Apply();
 
     // SIMULATION EVENTS
     // simulation_action_damage_section_response

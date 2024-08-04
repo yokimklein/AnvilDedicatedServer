@@ -2,20 +2,9 @@
 #include <text\unicode.h>
 #include <cseries\cseries.h>
 #include <game\player_configuration.h>
+#include <game\player_mapping.h>
 #include <networking\session\network_session_membership.h>
 #include <networking\session\network_session_parameters_saved_film_game_options.h>
-
-enum e_output_user_index
-{
-    _output_user_index0 = 0,
-    _output_user_index1,
-    _output_user_index2,
-    _output_user_index3,
-
-    k_number_of_output_users,
-
-    k_output_user_none = -1
-};
 
 #pragma pack(push, 1)
 struct s_network_session_interface_user
@@ -24,7 +13,7 @@ struct s_network_session_interface_user
     s_player_identifier identifier;
     long controller_index;
     s_player_configuration player_data;
-    e_output_user_index output_user_index;
+    c_enum<e_output_user_index, long, k_number_of_output_users> output_user_index;
     c_static_string<64> override_hopper_directory;
     long player_voice_settings;
     byte __data78[0x20];

@@ -16,6 +16,7 @@
 #include <interface\user_interface_networking.h>
 #include <networking\logic\network_life_cycle.h>
 #include <networking/transport/transport_endpoint_winsock.h>
+#include <hf2p\loadouts.h>
 
 const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -143,11 +144,19 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
             printf("Running test command...\n");
+            
+            if (hf2p_set_local_player_equipment(0, 3))
+            {
+                printf("Success!\n");
+            }
+            else
+            {
+                printf("Command failed!\n");
+            }
+            
             //qword* player_xuid = &network_session->get_session_membership()->get_player(0)->configuration.host.user_id;
             //s_s3d_player_container container = s_s3d_player_container();
             //hf2p_retrieve_loadouts(player_xuid, &container);
-
-            printf("Command finished!\n");
 
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
@@ -155,6 +164,7 @@ void anvil_session_update()
             //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
             //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
             //parameters->dedicated_server_session_state.set(&session_state);
+            printf("Command finished!\n");
         }
         else if (anvil_key_pressed(VK_END, &key_held_end))
         {

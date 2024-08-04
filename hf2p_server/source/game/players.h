@@ -29,8 +29,7 @@ struct s_player_datum : s_datum_header
 	uchar control_context_identifier;
 	uchar field_4C;
 	uchar field_4B;
-	__int16 character_type_index;
-	__int16 previous_character_type_index;
+	long character_type_index;
 	ulong loadout_index; // consumable_index;
 	uchar melee_recovery_timer;
 	uchar melee_soft_recovery_timer;
@@ -156,6 +155,7 @@ struct s_player_datum : s_datum_header
 	byte unknown_data[8];
 };
 static_assert(sizeof(s_player_datum) == 0x19B0);
+static_assert(0x4C == OFFSETOF(s_player_datum, character_type_index));
 
 class c_player_in_game_iterator : public c_data_iterator<s_player_datum>
 {

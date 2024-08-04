@@ -12,7 +12,6 @@
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-// TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
 __declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
 {
@@ -120,7 +119,6 @@ void __fastcall sub_7172B0_hook(void* api_loadout)
 
 void anvil_hooks_miscellaneous_apply()
 {
-    // MISC HOOKS
     // hook exceptions_update to catch esoteric crashes
     Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
     Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();

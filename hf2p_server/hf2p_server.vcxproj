@@ -171,6 +171,7 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_player_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_globals.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_creation.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h" />
@@ -199,7 +200,7 @@
     <ClInclude Include="source\game\player_mapping.h" />
     <ClInclude Include="source\hf2p\podium.h" />
     <ClInclude Include="source\hf2p\hq.h" />
-    <ClInclude Include="source\hf2p\user.h" />
+    <ClInclude Include="source\hf2p\loadouts.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\weapons.h" />
     <ClInclude Include="source\main\levels.h" />
@@ -404,6 +405,7 @@
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_player_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_globals.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_creation.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp" />
@@ -434,7 +436,7 @@
     <ClCompile Include="source\hf2p\hf2p_session.cpp" />
     <ClCompile Include="source\hf2p\hq.cpp" />
     <ClCompile Include="source\hf2p\podium.cpp" />
-    <ClCompile Include="source\hf2p\user.cpp" />
+    <ClCompile Include="source\hf2p\loadouts.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
     <ClCompile Include="source\main\levels.cpp" />

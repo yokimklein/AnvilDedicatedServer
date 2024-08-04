@@ -639,7 +639,7 @@
     <ClInclude Include="source\simulation\simulation_event_definition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\hf2p\user.h">
+    <ClInclude Include="source\hf2p\loadouts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\simulation\game_interface\simulation_game_units.h">
@@ -712,6 +712,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\anvil\hooks\simulation\hooks_miscellaneous.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_player_updates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1049,7 +1052,7 @@
     <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\hf2p\user.cpp">
+    <ClCompile Include="source\hf2p\loadouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_engine_player.cpp">
@@ -1083,6 +1086,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\hooks\simulation\hooks_miscellaneous.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_player_updates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

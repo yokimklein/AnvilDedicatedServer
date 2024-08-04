@@ -174,22 +174,89 @@ extern bool string_is_not_empty(char const* s);
 extern char* strncpy_debug(char* s1, dword size1, char const* s2, dword size2);
 extern long strlen_debug(char const* s);
 
-template<typename t_type, size_t k_count>
+template<typename t_type, long k_count>
 struct c_static_array
 {
-	t_type m_storage[k_count];
-
-	t_type& operator[](long index)
+public:
+	c_static_array()
 	{
-		//assert(index >= 0 && index >= k_count);
+		clear();
+	}
 
-		return m_storage[index];
+	c_static_array<t_type, k_count>& reverse()
+	{
+		_reverse(begin(), end() - 1);
+
+		return *this;
+	}
+
+	t_type* begin()
+	{
+		return m_storage;
+	}
+
+	t_type* end()
+	{
+		return &m_storage[k_count];
+	}
+
+	t_type const* begin() const
+	{
+		return m_storage;
+	}
+
+	t_type const* end() const
+	{
+		return &m_storage[k_count];
 	}
 
 	void clear()
 	{
 		csmemset(m_storage, 0, sizeof(m_storage));
 	}
+
+	long get_count() const
+	{
+		return k_count;
+	}
+
+	t_type* get_elements()
+	{
+		return m_storage;
+	}
+
+	bool valid(long index) const
+	{
+		return VALID_INDEX(index, k_count);
+	}
+
+	void set_all(t_type const& value)
+	{
+		for (long i = 0; i < k_count; i++)
+			m_storage[i] = value;
+	}
+
+	long get_total_element_size() const
+	{
+		return sizeof(t_type) * k_count;
+	}
+
+	t_type const& operator[](long index) const
+	{
+		assert(valid(index));
+
+		return m_storage[index];
+	}
+
+	t_type& operator[](long index)
+	{
+		assert(valid(index));
+
+		return m_storage[index];
+	}
+
+protected:
+	t_type m_storage[k_count];
 };
 
 template<typename t_type, typename t_storage_type, size_t k_count>
