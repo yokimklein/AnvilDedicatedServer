@@ -79,7 +79,7 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
     {
         TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
         real vitality_delta = game_time_globals->seconds_per_tick * unknown_ticks;
-        if (TEST_BIT(_object_mask_unit, unit->object_identifier.type.get()))
+        if (TEST_BIT(_object_mask_unit, unit->object_identifier.m_type.get()))
         {
             // TODO: see if this gets called and works now I'm not using a broken version of the call
             real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->team.get());

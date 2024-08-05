@@ -75,7 +75,7 @@ void object_detach_gamestate_entity(datum_index object_index, datum_index gamest
 
 e_object_type c_object_identifier::get_type()
 {
-	return this->type.get();
+	return this->m_type.get();
 }
 
 void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
@@ -199,3 +199,32 @@ bool __fastcall object_set_position_internal(datum_index object_index, real_poin
 	__asm add esp, 0x1C; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
+
+s_object_header const* object_header_get(datum_index object_index)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+	return static_cast<s_object_header*>(datum_try_and_get(*object_headers, object_index));
+}
+
+s_object_data* object_get_and_verify_type(datum_index object_index, dword object_type_mask)
+{
+	//ASSERT(game_state_is_locked(), "someone is calling object_get when the game state is locked");
+
+	s_object_header const* object_header = object_header_get(object_index);
+	if (!object_header)
+		return NULL;
+
+	s_object_data* object = object_header->data;
+
+	//if (!_bittest((long*)&object_type_mask, object->object_identifier.m_type.get()))
+	//{
+	//	c_static_string<256> string_builder;
+	//	string_builder.print_line("got an object type we didn't expect (expected one of 0x%08x but got #%d).",
+	//		object_type_mask,
+	//		object->object_identifier.m_type.get());
+	//
+	//	assert(!_bittest((long*)&object_type_mask, object->object_identifier.m_type.get()), string_builder.get_string());
+	//}
+
+	return object;
+}

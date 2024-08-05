@@ -30,7 +30,7 @@ enum e_unit_control_flags
 enum e_unit_drop_type
 {
 	_unit_drop_type_none = -1,
-	_unit_drop_type_0,
+	_unit_drop_type_drop,
 	_unit_drop_type_delete,
 	_unit_drop_type_2,
 	_unit_drop_type_3,
@@ -299,6 +299,8 @@ void __fastcall unit_set_actively_controlled(datum_index unit_index, bool active
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
+void __fastcall unit_drop_item(datum_index unit_index, datum_index equipment_index, e_unit_drop_type drop_type);
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data);
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector);
 void __fastcall unit_add_initial_loadout(datum_index unit_index); // saber/hf2p function
+void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index);

@@ -96,10 +96,10 @@ class c_object_identifier
 public:
 	e_object_type get_type();
 
-	datum_index unique_id;
-	short origin_bsp_index;
-	c_enum<e_object_type, byte, k_object_type_count> type;
-	byte source;
+	datum_index m_unique_id;
+	short m_origin_bsp_index;
+	c_enum<e_object_type, byte, k_object_type_count> m_type;
+	byte m_source;
 };
 static_assert(sizeof(c_object_identifier) == 0x8);
 
@@ -250,3 +250,5 @@ void __fastcall object_compute_node_matrices(datum_index object_index);
 datum_index __fastcall object_new(s_object_placement_data* placement_data);
 void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, long collection_ticks);
 bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected);
+s_object_header const* object_header_get(datum_index object_index);
+s_object_data* object_get_and_verify_type(datum_index object_index, dword object_type_mask);

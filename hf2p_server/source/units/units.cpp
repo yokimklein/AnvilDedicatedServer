@@ -23,14 +23,13 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 {
     s_unit_data* unit = (s_unit_data*)object_get(unit_index);
-    long counter = 0;
-    do
+    for (long i = 0; i < 4; i++)
     {
-        if (unit->weapon_object_indices[counter] != -1)
-            unit_inventory_set_weapon_index(unit_index, counter, -1, _unit_drop_type_delete);
-        counter++;
+        if (unit->weapon_object_indices[i] != NONE)
+        {
+            unit_inventory_set_weapon_index(unit_index, i, NONE, _unit_drop_type_delete);
+        }
     }
-    while (counter < 4);
 }
 
 // I could easily rewrite this function however its strange calling convention makes this finicky to hook & replace
@@ -40,6 +39,12 @@ void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_in
 {
     INVOKE(0x426D10, unit_inventory_set_weapon_index, unit_index, inventory_index, item_index, drop_type);
     __asm add esp, 8; // cleanup stack after usercall
+}
+
+void __fastcall unit_drop_item(datum_index unit_index, datum_index equipment_index, e_unit_drop_type drop_type)
+{
+    INVOKE(0x426500, unit_drop_item, unit_index, equipment_index, drop_type);
+    __asm add esp, 4; // cleanup stack after usercall
 }
 #pragma runtime_checks("", restore)
 
@@ -65,4 +70,25 @@ void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* a
 void __fastcall unit_add_initial_loadout(datum_index unit_index)
 {
     INVOKE(0xFB6E0, unit_add_initial_loadout, unit_index);
+}
+
+void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
+{
+    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    if (slot_index < 4)
+    {
+        datum_index equipment_index = unit->equipment_object_indices[slot_index];
+        if (equipment_index != NONE)
+        {
+            unit_drop_item(unit_index, equipment_index, _unit_drop_type_delete);
+            unit->equipment_object_indices[slot_index] = NONE;
+            unit->equipment_pickup_time = NONE;
+            simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
+            if (unit->actor_index != NONE)
+            {
+                actor_handle_equipment_delete(unit->actor_index);
+            }
+        }
+    }
 }

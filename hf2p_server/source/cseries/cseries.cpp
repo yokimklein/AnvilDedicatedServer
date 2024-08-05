@@ -225,3 +225,43 @@ long __fastcall index_from_mask(dword* mask, long bit_count)
 {
     return INVOKE(0xC3C10, index_from_mask, mask, bit_count);
 }
+
+void* offset_pointer(void* pointer, long offset)
+{
+    return pointer_from_address(address_from_pointer(pointer) + offset);
+}
+
+void const* offset_pointer(void const* pointer, long offset)
+{
+    return pointer_from_address(address_from_pointer(pointer) + offset);
+}
+
+unsigned int address_from_pointer(void const* pointer)
+{
+    return reinterpret_cast<unsigned int>(pointer);
+}
+
+void* pointer_from_address(unsigned int address)
+{
+    return reinterpret_cast<void*>(address);
+}
+
+unsigned int align_address(unsigned int address, long alignment_bits)
+{
+    return (address + (1 << alignment_bits) - 1) & ~((1 << alignment_bits) - 1);
+}
+
+void* align_pointer(void* pointer, long alignment_bits)
+{
+    return pointer_from_address(align_address(address_from_pointer(pointer), alignment_bits));
+}
+
+long pointer_distance(void const* pointer_a, void const* pointer_b)
+{
+    return static_cast<long>((char*)pointer_b - (char*)pointer_a);
+}
+
+long pointer_difference(void const* pointer_a, void const* pointer_b)
+{
+    return static_cast<long>((char*)pointer_b - (char*)pointer_a);
+}

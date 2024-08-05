@@ -8,11 +8,12 @@
 #include <game\player_mapping.h>
 #include <game\game_time.h>
 #include <game\survival_mode.h>
+#include <ai\actors.h>
 
 struct s_thread_local_storage
 {
 	byte* __unknown0;
-	s_data_array* actor;
+	c_smart_data_array<actor_datum> actor_data;
 	c_smart_data_array<s_player_datum> players;
 	c_smart_data_array<s_object_header> object_headers; // object
 	s_game_engine_globals* game_engine_globals;

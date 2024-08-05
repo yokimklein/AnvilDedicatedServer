@@ -127,6 +127,49 @@ void* datum_get(s_data_array* data, datum_index index)
 	return (void*)&data->data[data->size * (word)index];
 }
 
+void* __cdecl datum_try_and_get(s_data_array const* data, long index)
+{
+	if (!data)
+		return NULL;
+
+	void* result = NULL;
+
+	assert(data);
+	assert(data->valid);
+
+	word identifier = DATUM_INDEX_TO_IDENTIFIER(index);
+	word absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
+
+	if (index != NONE || absolute_index != 0xFFFF)
+	{
+		//if (!identifier)
+		//	ASSERT2(c_string_builder("tried to access %s using datum_try_and_get() with an absolute index #%d",
+		//		data->name.get_string(),
+		//		absolute_index).get_string());
+		//
+		//if (absolute_index < 0 || absolute_index >= data->maximum_count)
+		//	ASSERT2(c_string_builder("tried to access %s using datum_try_and_get() with an index 0x%08X outside maximum range [0, %d)",
+		//		data->name.get_string(),
+		//		index,
+		//		data->maximum_count).get_string());
+
+		if (absolute_index < data->first_unallocated)
+		{
+			void** data_ptr = (void**)offset_pointer(data, OFFSETOF(s_data_array, data));
+			s_datum_header* header = (s_datum_header*)offset_pointer(*data_ptr, absolute_index * data->size);
+
+			if (header->identifier)
+			{
+				if (header->identifier == identifier)
+					result = header;
+			}
+		}
+	}
+
+	assert(result == align_pointer(result, data->alignment_bits));
+	return result;
+}
+
 void* __cdecl datum_try_and_get_absolute(s_data_array const* data, long absolute_index)
 {
 	if (absolute_index >= 0 && absolute_index < data->first_unallocated)

@@ -162,6 +162,8 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\ai\actors.h" />
+    <ClInclude Include="source\ai\joint_behavior.h" />
     <ClInclude Include="source\ai\sector.h" />
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
@@ -399,6 +401,7 @@
     <ClInclude Include="third_party\nmd\nmd_assembly.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\ai\actors.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_events.cpp" />

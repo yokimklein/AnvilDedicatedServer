@@ -96,7 +96,7 @@ __declspec(safebuffers) void __fastcall unit_died_hook()
     __asm mov unit, ecx;
 
     update_flags.m_flags.clear();
-    if (unit->object_identifier.type == _object_type_vehicle)
+    if (unit->object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -309,7 +309,7 @@ __declspec(safebuffers) void __fastcall unit_set_hologram_hook()
     __asm mov unit, esi;
 
     update_flags.m_flags.clear();
-    if (unit->object_identifier.type == _object_type_vehicle)
+    if (unit->object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -337,7 +337,7 @@ __declspec(safebuffers) void __fastcall unit_update_damage_hook()
     __asm mov eax, [eax + 0x70 - 0x64];
     __asm mov unit_index, eax;
 
-    if (unit->object_identifier.type.get() == _object_type_vehicle)
+    if (unit->object_identifier.m_type.get() == _object_type_vehicle)
     {
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
@@ -351,7 +351,7 @@ __declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
     __asm mov unit, edi;
     __asm mov unit_index, esi;
 
-    if (unit->object_identifier.type.get() == _object_type_vehicle)
+    if (unit->object_identifier.m_type.get() == _object_type_vehicle)
     {
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
@@ -367,6 +367,44 @@ __declspec(safebuffers) void __fastcall unit_delete_current_equipment_hook()
     _asm mov unit_index, eax;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
+}
+
+__declspec(safebuffers) void __fastcall unit_place_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, edi;
+
+    for (long i = 0; i < 4; i++)
+    {
+        unit_delete_equipment(unit_index, i);
+    }
+}
+
+__declspec(safebuffers) void __fastcall unit_add_initial_loadout_hook3()
+{
+    datum_index unit_index;
+    long slot_index;
+    __asm mov unit_index, ebx;
+    __asm mov slot_index, ecx;
+
+    unit_delete_equipment(unit_index, slot_index);
+}
+
+__declspec(naked) void unit_add_initial_loadout_hook4()
+{
+    __asm mov esi, [ebp - 0x08];
+    __asm retn;
+}
+
+// TODO: figure out how to trigger this to test
+__declspec(safebuffers) void __fastcall c_simulation_unit_entity_definition__apply_object_update_hook()
+{
+    datum_index unit_index;
+    long slot_index;
+    __asm mov unit_index, ebx;
+    __asm mov slot_index, ecx;
+
+    unit_delete_equipment(unit_index, slot_index);
 }
 #pragma runtime_checks("", restore)
 
@@ -475,4 +513,9 @@ void anvil_hooks_object_updates_apply()
 
     // sync equipment deletion
     insert_hook(0x417CE5, 0x417CEF, unit_delete_current_equipment_hook, _hook_execute_replaced_first);
+    hook_function(0x424660, 0x75, unit_delete_equipment); // called by unit_drop_equipment & hf2p_set_local_player_equipment
+    insert_hook(0x4171D5, 0x41725C, unit_place_hook, _hook_replace); // replace inlined function
+    insert_hook(0xFB7F4, 0xFB864, unit_add_initial_loadout_hook3, _hook_replace); // replace inlined function
+    insert_hook(0xFB864, 0xFB869, unit_add_initial_loadout_hook4, _hook_execute_replaced_last); // add back overwritten variable
+    insert_hook(0x5A23A, 0x5A2A4, c_simulation_unit_entity_definition__apply_object_update_hook, _hook_replace); // replace inlined function
 }
