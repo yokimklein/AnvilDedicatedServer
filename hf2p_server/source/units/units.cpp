@@ -109,10 +109,29 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camo_de
     unit->active_camouflage_regrowth = MIN(camo_regrowth, unit->active_camouflage_regrowth);
     real camo_delta = unit->active_camouflage - camo_decay;
     unit->active_camouflage = camo_delta;
-    if (unit->unit_flags.test(_unit_flags_bit3) && camo_delta < 0.05f)
+    if (unit->unit_flags.test(_unit_flags_camo) && camo_delta < 0.05f)
     {
         unit->active_camouflage = 0.05f;
     }
+
+    c_simulation_object_update_flags update_flags{};
+    if (unit->object_identifier.m_type == _object_type_vehicle)
+        update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    else
+        update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    simulation_action_object_update_internal(unit_index, update_flags);
+}
+
+void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds)
+{
+    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+
+    unit->unit_flags.set(_unit_flags_camo, false);
+    real camo_regrowth = regrowth_seconds;
+    camo_regrowth = FLOOR(camo_regrowth, game_tick_length());
+    unit->active_camouflage_end_time = NONE;
+    unit->active_camouflage_regrowth = 1.0f / camo_regrowth;
 
     c_simulation_object_update_flags update_flags{};
     if (unit->object_identifier.m_type == _object_type_vehicle)

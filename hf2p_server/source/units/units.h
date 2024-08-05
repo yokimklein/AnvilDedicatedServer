@@ -22,7 +22,7 @@ enum e_unit_flags
 	_unit_flags_bit0,
 	_unit_flags_bit1,
 	_unit_flags_bit2,
-	_unit_flags_bit3,
+	_unit_flags_camo,
 
 	k_unit_flags_count
 };
@@ -310,3 +310,4 @@ void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* a
 void __fastcall unit_add_initial_loadout(datum_index unit_index); // saber/hf2p function
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index);
 void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camo_decay, real regrowth_seconds);
+void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds);

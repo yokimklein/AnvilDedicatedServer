@@ -427,6 +427,17 @@ __declspec(safebuffers) void __fastcall throw_release_hook2()
 
     unit_active_camouflage_ding(unit_index, 0.6f, 0.0f);
 }
+
+__declspec(safebuffers) void __fastcall unit_active_camouflage_disable_hook()
+{
+    // usercall wrapper
+    datum_index unit_index;
+    real regrowth_seconds;
+    __asm mov unit_index, ecx;
+    __asm movss regrowth_seconds, xmm1;
+
+    unit_active_camouflage_disable(unit_index, regrowth_seconds);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -543,4 +554,7 @@ void anvil_hooks_object_updates_apply()
     // camo decreasing on weapon fire/grenade throw/damage
     hook_function(0x42AAE0, 0x9C, unit_active_camouflage_ding_hook);
     insert_hook(0x47D18D, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
+
+    // camo disable
+    hook_function(0x42AA80, 0x56, unit_active_camouflage_disable_hook);
 }

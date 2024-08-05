@@ -371,10 +371,10 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _powerdrain;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _invisibility_vehicle;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _auto_turret;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
         configuration->s3d_player_container.modifiers[0].modifier_values[_shield_recharge_on_melee_kill] = true;
         player_data_updated = true;
 
