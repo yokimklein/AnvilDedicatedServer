@@ -40,11 +40,11 @@ extern const size_t module_base;
 #define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *reinterpret_cast<c_static_array<type, count>*>(BASE_ADDRESS_REFERENCE(address))
 
 #define FLOOR(a, b) ((a) <= (b) ? (b) : (a))
-#define MIN(x, low) ((x) < (low) ? (x) : (low))
-#define MAX(x, high) ((x) > (high) ? (x) : (high))
-#define PIN(value, min_value, max_value) ((value) < (min_value) ? (min_value) : ((value) > (max_value) ? (max_value) : (value)))
-#define PIN_LOWER(x, low, high) ((x) >= (high) - (low) ? (x) - (high) : (low))
-#define PIN_UPPER(x, low, high) ((x) <= (high) - (low) ? (x) + (low) : (high))
+#define MIN(x, low) ((x) <= (low) ? (x) : (low))
+#define MAX(x, high) ((x) >= (high) ? (x) : (high))
+#define PIN(v, v_min, v_max) MAX(v_min, MIN(v, v_max))
+//#define PIN_LOWER(x, low, high) ((x) >= (high)-(low) ? (x)-(high) : (low))
+//#define PIN_UPPER(x, low, high) ((x) <= (high)-(low) ? (x)+(low) : (high))
 
 #define try_bool(X) if (!X) return false
 

@@ -406,6 +406,27 @@ __declspec(safebuffers) void __fastcall c_simulation_unit_entity_definition__app
 
     unit_delete_equipment(unit_index, slot_index);
 }
+
+__declspec(safebuffers) void __fastcall unit_active_camouflage_ding_hook()
+{
+    // wrapper for usercall
+    datum_index unit_index;
+    real camo_decay;
+    real regrowth_seconds;
+    __asm mov unit_index, ecx;
+    __asm movss camo_decay, xmm1;
+    __asm movss regrowth_seconds, xmm2;
+
+    unit_active_camouflage_ding(unit_index, camo_decay, regrowth_seconds);
+}
+
+__declspec(safebuffers) void __fastcall throw_release_hook2()
+{
+    datum_index unit_index;
+    __asm mov unit_index, edi;
+
+    unit_active_camouflage_ding(unit_index, 0.6f, 0.0f);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -518,4 +539,8 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0xFB7F4, 0xFB864, unit_add_initial_loadout_hook3, _hook_replace); // replace inlined function
     insert_hook(0xFB864, 0xFB869, unit_add_initial_loadout_hook4, _hook_execute_replaced_last); // add back overwritten variable
     insert_hook(0x5A23A, 0x5A2A4, c_simulation_unit_entity_definition__apply_object_update_hook, _hook_replace); // replace inlined function
+
+    // camo decreasing on weapon fire/grenade throw/damage
+    hook_function(0x42AAE0, 0x9C, unit_active_camouflage_ding_hook);
+    insert_hook(0x47D18D, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
 }

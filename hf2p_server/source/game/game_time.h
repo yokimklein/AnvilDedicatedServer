@@ -40,23 +40,25 @@ enum e_game_time_pause_reason
 struct s_game_tick_time_samples
 {
 	long flags;
-	real __unknown4;
-	real __unknown8;
-	real __unknownC;
-	dword __unknown10;
+	real shell_seconds_elapsed;
+	real world_seconds_elapsed;
+	real game_seconds_elapsed;
+	dword game_ticks_elapsed;
 };
 static_assert(sizeof(s_game_tick_time_samples) == 0x14);
 
 struct s_game_time_globals
 {
 	bool initialized;
+	// halo 3: bool paused
+	byte : 8;
 	c_flags<e_game_time_pause_reason, short, k_game_time_pause_reason_count> flags;
 	short tick_rate;
 	word : 16;
-	real seconds_per_tick;
+	real tick_length;
 	long elapsed_ticks;
 	real speed;
-	real __unknown14;
+	real ticks_leftover;
 	s_game_tick_time_samples time_samples;
 };
 static_assert(sizeof(s_game_time_globals) == 0x2C);
@@ -66,3 +68,4 @@ real game_ticks_to_seconds(long ticks);
 long game_ticks_to_seconds_ceil(long ticks);
 long game_seconds_integer_to_ticks(long seconds);
 real game_seconds_to_ticks_real(real seconds);
+real game_tick_length();

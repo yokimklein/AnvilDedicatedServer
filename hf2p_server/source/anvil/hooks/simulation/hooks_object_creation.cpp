@@ -169,7 +169,7 @@ void anvil_hooks_object_creation_apply()
 	// grenade & equipment throw spawning
 	add_variable_space_to_stack_frame(0x47CE00, 0x47D21C, 4); // Add 4 bytes of variable space to the stack frame
 	insert_hook(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
-	insert_hook(0x47D185, 0x47D18D, throw_release_hook1, _hook_execute_replaced_last); // create thrown projectiles
+	insert_hook(0x47D185, 0x47D18D, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
 	insert_hook(0x47D213, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 	
 	// hologram spawning

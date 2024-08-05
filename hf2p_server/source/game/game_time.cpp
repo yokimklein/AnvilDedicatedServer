@@ -14,7 +14,7 @@ real game_ticks_to_seconds(long ticks)
 	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
 	assert(game_time_globals);
 	assert(game_time_globals->initialized);
-	return game_time_globals->seconds_per_tick * ticks;
+	return game_time_globals->tick_length * ticks;
 }
 
 long game_ticks_to_seconds_ceil(long ticks)
@@ -39,4 +39,12 @@ real game_seconds_to_ticks_real(real seconds)
 	assert(game_time_globals);
 	assert(game_time_globals->initialized);
 	return seconds * game_time_globals->tick_rate;
+}
+
+real game_tick_length()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+	assert(game_time_globals);
+	assert(game_time_globals->initialized);
+	return game_time_globals->tick_length;
 }

@@ -2,6 +2,7 @@
 #include <game\game.h>
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
+#include <simulation\game_interface\simulation_game_vehicles.h>
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
 {
@@ -91,4 +92,32 @@ void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
             }
         }
     }
+}
+
+void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camo_decay, real regrowth_seconds)
+{
+    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
+    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    
+    real camo_regrowth = regrowth_seconds;
+    if (camo_regrowth == 0.0f)
+    {
+        camo_regrowth = 4.0f;
+    }
+    camo_regrowth = FLOOR(camo_regrowth, game_tick_length());
+    camo_regrowth = 1.0f / camo_regrowth;
+    unit->active_camouflage_regrowth = MIN(camo_regrowth, unit->active_camouflage_regrowth);
+    real camo_delta = unit->active_camouflage - camo_decay;
+    unit->active_camouflage = camo_delta;
+    if (unit->unit_flags.test(_unit_flags_bit3) && camo_delta < 0.05f)
+    {
+        unit->active_camouflage = 0.05f;
+    }
+
+    c_simulation_object_update_flags update_flags{};
+    if (unit->object_identifier.m_type == _object_type_vehicle)
+        update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    else
+        update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    simulation_action_object_update_internal(unit_index, update_flags);
 }

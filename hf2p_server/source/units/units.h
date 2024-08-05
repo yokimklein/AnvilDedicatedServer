@@ -19,6 +19,11 @@ enum e_weapon_set
 
 enum e_unit_flags
 {
+	_unit_flags_bit0,
+	_unit_flags_bit1,
+	_unit_flags_bit2,
+	_unit_flags_bit3,
+
 	k_unit_flags_count
 };
 
@@ -304,3 +309,4 @@ void __fastcall unit_control(datum_index unit_index, void* unit_control_data);
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector);
 void __fastcall unit_add_initial_loadout(datum_index unit_index); // saber/hf2p function
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index);
+void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camo_decay, real regrowth_seconds);
