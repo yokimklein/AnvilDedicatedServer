@@ -411,7 +411,10 @@ __declspec(safebuffers) void __fastcall unit_active_camouflage_ding_hook()
 __declspec(safebuffers) void __fastcall throw_release_hook2()
 {
     datum_index unit_index;
-    __asm mov unit_index, edi;
+    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(unit_index));
+    __asm mov eax, original_esp;
+    __asm mov eax, [eax + 0x58 - 0x44];
+    __asm mov unit_index, eax;
 
     unit_active_camouflage_ding(unit_index, 0.6f, 0.0f);
 }
@@ -652,7 +655,7 @@ void anvil_hooks_object_updates_apply()
 
     // camo decreasing on weapon fire/grenade throw/damage
     hook_function(0x42AAE0, 0x9C, unit_active_camouflage_ding_hook);
-    insert_hook(0x47D18D, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
+    insert_hook(0x47D185, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
 
     // camo disable
     hook_function(0x42AA80, 0x56, unit_active_camouflage_disable_hook);
