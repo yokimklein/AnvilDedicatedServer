@@ -507,6 +507,36 @@ __declspec(safebuffers) void __fastcall actor_set_active_camo_hook()
 
     unit_active_camouflage_set_level(actor->meta.unit_index, regrowth_seconds, NONE);
 }
+
+__declspec(safebuffers) void __fastcall unit_active_camouflage_set_maximum_hook()
+{
+    datum_index unit_index;
+    real camouflage_maximum;
+    __asm mov unit_index, ecx;
+    __asm movss camouflage_maximum, xmm1;
+
+    unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
+}
+
+__declspec(safebuffers) void __fastcall biped_new_hook()
+{
+    datum_index unit_index;
+    real camouflage_maximum;
+    __asm mov unit_index, edi;
+    __asm movss camouflage_maximum, xmm0;
+
+    unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
+}
+
+__declspec(safebuffers) void __fastcall vehicle_new_hook()
+{
+    datum_index vehicle_index;
+    real camouflage_maximum;
+    __asm mov vehicle_index, ebx;
+    __asm movss camouflage_maximum, xmm0;
+
+    unit_active_camouflage_set_maximum(vehicle_index, camouflage_maximum);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -636,4 +666,10 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0x5A137, 0x5A1B2, c_simulation_unit_entity_definition__apply_object_update_hook2, _hook_replace); // UNTESTED!! // replace inlined unit_active_camouflage_set_level & unit_active_camouflage_disable
     insert_hook(0x7280D, 0x72888, c_simulation_vehicle_entity_definition__apply_object_update_hook, _hook_replace); // UNTESTED!! // replace inline
     insert_hook(0x69BD37, 0x69BD85, actor_set_active_camo_hook, _hook_replace); // UNTESTED!! // replace inline
+    
+    // camo set maximum
+    hook_function(0x42A9D0, 0x4A, unit_active_camouflage_set_maximum_hook);
+    // INLINE IN player_update_invisibility handled above
+    insert_hook(0x43CEDD, 0x43CF07, biped_new_hook, _hook_replace); // replace inline
+    insert_hook(0x4524B7, 0x4524E9, vehicle_new_hook, _hook_replace); // replace inline
 }

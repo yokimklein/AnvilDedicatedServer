@@ -158,6 +158,20 @@ struct s_game_engine_globals
 	byte __data1584C[0xC];
 };
 static_assert(sizeof(s_game_engine_globals) == 0x15858);
+static_assert(0x2C == OFFSETOF(s_game_engine_globals, gamestate_index));
+static_assert(0x30 == OFFSETOF(s_game_engine_globals, statborg_gamestate_index));
+static_assert(0x34 == OFFSETOF(s_game_engine_globals, player_simulation_gamestate_indices));
+static_assert(0x78 == OFFSETOF(s_game_engine_globals, map_variant));
+static_assert(0xE108 == OFFSETOF(s_game_engine_globals, current_state));
+static_assert(0xE10C == OFFSETOF(s_game_engine_globals, round_timer));
+static_assert(0xE110 == OFFSETOF(s_game_engine_globals, round_condition_flags));
+static_assert(0xF994 == OFFSETOF(s_game_engine_globals, game_variant_round_time_limit_ticks_per_second));
+static_assert(0xF998 == OFFSETOF(s_game_engine_globals, fade_to_black_amount));
+static_assert(0xF9A8 == OFFSETOF(s_game_engine_globals, fade_to_black_active_user_mask));
+static_assert(0xF9AA == OFFSETOF(s_game_engine_globals, game_over_timer));
+static_assert(0xFEB0 == OFFSETOF(s_game_engine_globals, statborg));
+static_assert(0x13DA0 == OFFSETOF(s_game_engine_globals, desired_state));
+static_assert(0x13DB0 == OFFSETOF(s_game_engine_globals, game_engine_index));
 
 void game_engine_attach_to_simulation();
 void game_engine_detach_from_simulation_gracefully();
