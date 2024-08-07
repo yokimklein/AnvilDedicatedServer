@@ -62,6 +62,7 @@ struct c_simulation_object_index_state_data
 };
 static_assert(sizeof(c_simulation_object_index_state_data) == 0x8);
 
+// CAREFUL USING THIS IN HOOKS - constructor is called by default and will immediately use a register!
 class c_simulation_object_update_flags
 {
 public:

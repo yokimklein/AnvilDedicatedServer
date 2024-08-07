@@ -540,6 +540,32 @@ __declspec(safebuffers) void __fastcall vehicle_new_hook()
 
     unit_active_camouflage_set_maximum(vehicle_index, camouflage_maximum);
 }
+
+// preserve unit_index variable
+__declspec(naked) void unit_update_active_camouflage_hook0()
+{
+    __asm mov [ebp + 4], ecx;
+    __asm retn;
+}
+
+__declspec(safebuffers) void __fastcall unit_update_active_camouflage_hook1()
+{
+    s_unit_data* unit;
+    datum_index unit_index;
+    c_simulation_object_update_flags update_flags;
+    DEFINE_ORIGINAL_EBP_ESP(0x48, sizeof(unit_index) + sizeof(unit) + sizeof(update_flags) + 4); // where's this extra 4 bytes coming from? alignment?
+
+    __asm mov unit, esi;
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 4];
+    __asm mov unit_index, eax;
+
+    if (unit->object_identifier.m_type == _object_type_vehicle)
+        update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    else
+        update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    simulation_action_object_update_internal(unit_index, update_flags);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -675,4 +701,12 @@ void anvil_hooks_object_updates_apply()
     // INLINE IN player_update_invisibility handled above
     insert_hook(0x43CEDD, 0x43CF07, biped_new_hook, _hook_replace); // replace inline
     insert_hook(0x4524B7, 0x4524E9, vehicle_new_hook, _hook_replace); // replace inline
+
+    // unit camo update
+    add_variable_space_to_stack_frame(0x41AF50, 0x41B1D7, 4); // Add 4 bytes of variable space to the stack frame
+    insert_hook(0x41AF6C, 0x41AF73, unit_update_active_camouflage_hook0, _hook_execute_replaced_first);
+    insert_hook(0x41B1B9, 0x41B1D0, unit_update_active_camouflage_hook1, _hook_execute_replaced_first, true);
+    insert_hook(0x41B17F, 0x41B185, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+    insert_hook(0x41B193, 0x41B199, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+    insert_hook(0x41B1D0, 0x41B1D6, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 }
