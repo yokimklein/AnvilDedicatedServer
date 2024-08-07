@@ -220,8 +220,8 @@ struct s_object_ai_properties_definition
 {
 	c_flags<e_object_ai_properties_flags, long, k_number_of_object_ai_properties_flags> flags;
 	string_id ai_type_name;
-	c_enum<e_object_ai_size, short, k_number_of_object_ai_sizes> size;
-	c_enum<e_object_ai_distance, short, k_number_of_object_ai_distances> leap_jump_speed;
+	c_enum<e_object_ai_size, short, _object_ai_size_default, k_number_of_object_ai_sizes> size;
+	c_enum<e_object_ai_distance, short, _object_ai_distance_none, k_number_of_object_ai_distances> leap_jump_speed;
 };
 static_assert(sizeof(s_object_ai_properties_definition) == 0xC);
 
@@ -242,7 +242,7 @@ struct s_object_attachment_definition
 	c_flags<e_object_attachment_atlas_flags, long, k_number_of_object_attachment_atlas_flags> atlas_flags;
 	s_tag_reference type;
 	string_id marker;
-	c_enum<e_object_attachment_change_color, short, k_number_of_object_attachment_change_colors> change_color;
+	c_enum<e_object_attachment_change_color, short, _object_attachment_change_color_none, k_number_of_object_attachment_change_colors> change_color;
 	c_flags<e_object_attachment_flags, word, k_number_of_object_attachment_flags> flags;
 	string_id primary_scale;
 	string_id secondary_scale;
@@ -296,7 +296,7 @@ static_assert(sizeof(s_object_reviving_equipment_definition) == 0x10);
 
 struct s_object_model_data_definition
 {
-	c_enum<e_object_model_data_type, short, k_number_of_object_model_data_types> type;
+	c_enum<e_object_model_data_type, short, _object_model_data_not_set, k_number_of_object_model_data_types> type;
 	short : 16;
 	real_point3d offset;
 	real radius;
@@ -305,15 +305,15 @@ static_assert(sizeof(s_object_model_data_definition) == 0x14);
 
 struct s_object_definition
 {
-	c_enum<e_object_type, short, k_object_type_count> type;
+	c_enum<e_object_type, short, _object_type_biped, k_object_type_count> type;
 	c_flags<e_object_definition_flags, short, k_number_of_object_definition_flags> object_flags;
 	real bounding_radius;
 	real_point3d bounding_offset;
 	real acceleration_scale;
-	c_enum<e_object_lightmap_shadow_mode, short, k_number_of_object_lightmap_shadow_modes> lightmap_shadow_mode;
-	c_enum<e_object_sweetener_size, byte, k_number_of_object_sweetener_sizes> sweetener_size;
-	c_enum<e_object_water_density, byte, k_number_of_object_water_densities> water_density;
-	c_enum<e_object_definition_runtime_flags, long, k_number_of_object_definition_runtime_flags> runtime_flags;
+	c_enum<e_object_lightmap_shadow_mode, short, _object_lightmap_shadow_mode_default, k_number_of_object_lightmap_shadow_modes> lightmap_shadow_mode;
+	c_enum<e_object_sweetener_size, byte, _object_sweetener_size_small, k_number_of_object_sweetener_sizes> sweetener_size;
+	c_enum<e_object_water_density, byte, _object_water_density_default, k_number_of_object_water_densities> water_density;
+	c_enum<e_object_definition_runtime_flags, long, _object_definition_runtime_unknown0_bit, k_number_of_object_definition_runtime_flags> runtime_flags;
 	real dynamic_light_sphere_radius;
 	real_point3d dynamic_light_sphere_offset;
 	string_id default_model_variant;

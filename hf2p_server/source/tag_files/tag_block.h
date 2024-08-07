@@ -40,8 +40,7 @@ static_assert(sizeof(s_tag_block) == 0xC);
 
 template<typename t_element_type, dword ...t_extra>
 //using c_typed_tag_block = s_tag_block;
-struct c_typed_tag_block :
-	s_tag_block
+struct c_typed_tag_block : s_tag_block
 {
 public:
 	long count() const

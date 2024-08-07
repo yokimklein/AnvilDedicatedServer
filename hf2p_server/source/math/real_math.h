@@ -2,11 +2,32 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/real_math.hpp
 
+#define PI 3.14159265359f
+#define TWO_PI real(PI * 2)
+#define RAD real(180 / PI)
+#define DEG real(PI / 180)
+
 typedef float real;
 static_assert(sizeof(real) == 0x4);
 
 typedef real real_fraction;
 static_assert(sizeof(real_fraction) == 0x4);
+
+#define DEFINE_REAL_CONSTANT(NAME) real const k##NAME = NAME
+
+#define _pi PI
+#define _test_real_epsilon  0.001f
+#define _real_epsilon       0.0001f
+#define _real_tiny_epsilon  0.000001f
+#define _real_max           3.4028235e38f
+#define _real_min          -3.4028235e38f
+
+DEFINE_REAL_CONSTANT(_test_real_epsilon);
+DEFINE_REAL_CONSTANT(_real_epsilon);
+DEFINE_REAL_CONSTANT(_real_tiny_epsilon);
+DEFINE_REAL_CONSTANT(_real_max);
+DEFINE_REAL_CONSTANT(_real_min);
+
 
 union real_bounds
 {

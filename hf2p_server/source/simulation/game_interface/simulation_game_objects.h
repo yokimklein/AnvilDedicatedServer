@@ -54,6 +54,7 @@ struct s_simulation_object_state_data
 	short map_variant_index;
 };
 static_assert(sizeof(s_simulation_object_state_data) == 0xA0);
+
 struct c_simulation_object_index_state_data
 {
 	long m_entity_index;
@@ -64,6 +65,11 @@ static_assert(sizeof(c_simulation_object_index_state_data) == 0x8);
 class c_simulation_object_update_flags
 {
 public:
+	c_simulation_object_update_flags()
+	{
+		m_flags.clear();
+	}
+
 	template<typename t_update_type>
 	void set_flag(datum_index object_index, t_update_type update_flag)
 	{
@@ -72,7 +78,7 @@ public:
 	};
 	void set_raw(ulong64 raw_bits)
 	{
-		m_flags.set_raw_bits(raw_bits);
+		m_flags.set_unsafe(raw_bits);
 	}
 
 	c_flags<long, ulong64, 64> m_flags;
@@ -83,7 +89,7 @@ void simulation_action_object_update_internal(datum_index object_index, c_simula
 template <typename t_update_type>
 void __fastcall simulation_action_object_update(datum_index object_index, t_update_type update_type)
 {
-	c_simulation_object_update_flags update_flags{};
+	c_simulation_object_update_flags update_flags;
 	update_flags.set_flag(object_index, update_type);
 	simulation_action_object_update_internal(object_index, update_flags);
 }

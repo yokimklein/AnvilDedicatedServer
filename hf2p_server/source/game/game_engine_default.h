@@ -1,9 +1,9 @@
 #pragma once
-
 #include <cseries\cseries.h>
 #include <tag_files\files.h>
 #include <game\game_engine_traits.h>
 #include <saved_games\saved_game_files.h>
+#include <text\unicode.h>
 
 enum e_multiplayer_team;
 enum e_team_scoring_method;
@@ -19,52 +19,68 @@ struct s_netgame_goal_influencer;
 struct s_game_engine_state_data;
 struct s_game_engine_event_data;
 struct s_multiplayer_runtime_globals_definition;
+struct s_game_engine_base_variant_definition;
 
 #pragma pack(push, 4)
 class c_game_engine_base_variant
 {
 public:
-	c_game_engine_base_variant() :
-		m_checksum(),
-		m_name(),
-		m_metadata(),
-		m_miscellaneous_options(),
-		m_respawn_options(),
-		m_social_options(),
-		m_map_override_options(),
-		m_flags(),
-		m_team_scoring_method()
-	{
-	};
+	c_game_engine_base_variant* constructor();
 
-	virtual long __cdecl get_game_engine_name_string_id();
-	virtual long __thiscall get_game_engine_default_description_string_id();
+	virtual string_id __cdecl get_game_engine_name_string_id() const;
+	virtual long __thiscall get_game_engine_default_description_string_id() const;
 	virtual void __thiscall initialize();
 	virtual void __thiscall validate();
-	virtual void __thiscall encode(c_bitstream*);
-	virtual void __thiscall decode(c_bitstream*);
-	virtual bool __cdecl can_add_to_recent_list();
-	virtual long __thiscall get_score_to_win_round();
-	virtual long __thiscall get_score_unknown(); // halo online specific
-	virtual bool __stdcall can_be_cast_to(enum e_game_engine_type, void const**);
-	virtual void __stdcall custom_team_score_stats(long, long, long);
+	virtual void __thiscall encode(class c_bitstream*) const;
+	virtual void __thiscall decode(class c_bitstream*);
+	virtual bool __cdecl can_add_to_recent_list() const;
+	virtual long __thiscall get_score_to_win_round() const;
+	virtual long __thiscall get_score_unknown() const; // halo online specific
+	virtual bool __stdcall can_be_cast_to(enum e_game_engine_type, void const**) const;
+	virtual void __stdcall custom_team_score_stats(long, long, long) const;
 
-	c_game_engine_miscellaneous_options* get_miscellaneous_options();
-	c_game_engine_respawn_options* get_respawn_options();
-	c_game_engine_social_options* get_social_options();
+	void set(c_game_engine_base_variant const* variant, bool force);
+	void set(s_game_engine_base_variant_definition const* definition, e_game_engine_type engine_index);
 
+	void get_game_engine_name(c_static_wchar_string<1024>* game_engine_name) const;
+	void get_game_engine_description(c_static_wchar_string<1024>* game_engine_description) const;
+
+	char const* get_name() const;
+	void set_name(char const* name);
+
+	char const* get_description() const;
+	void set_description(char const* description);
+
+	c_game_engine_miscellaneous_options* get_miscellaneous_options_writeable();
+	c_game_engine_miscellaneous_options const* get_miscellaneous_options() const;
+
+	c_game_engine_respawn_options* get_respawn_options_writeable();
+	c_game_engine_respawn_options const* get_respawn_options() const;
+
+	c_game_engine_social_options* get_social_options_writeable();
+	c_game_engine_social_options const* get_social_options() const;
+
+	c_game_engine_map_override_options* get_map_override_options_writeable();
+	c_game_engine_map_override_options const* get_map_override_options() const;
+
+	bool get_built_in() const;
+	void set_built_in(bool built_in);
+
+	short get_team_scoring_method() const;
+	void set_team_scoring_method(short team_scoring_method);
+
+protected:
 	dword m_checksum;
 	string m_name;
-	s_saved_game_item_metadata m_metadata;
+	s_content_item_metadata m_metadata;
 	c_game_engine_miscellaneous_options m_miscellaneous_options;
 	c_game_engine_respawn_options m_respawn_options;
 	c_game_engine_social_options m_social_options;
 	c_game_engine_map_override_options m_map_override_options;
-	word_flags m_flags;
+	c_flags<e_base_variant_flags, word, k_base_variant_flags> m_flags;
 	short m_team_scoring_method;
 };
 static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
-#pragma pack(pop)
 
 class c_game_engine
 {
@@ -132,8 +148,8 @@ public:
 	virtual long get_player_state_index(long, bool*) const;
 	virtual bool should_purge_multiplayer_item(long) const;
 
-	// unknown function, also exists in halo 3 mcc
-	virtual void* function59(void*, ...);
+	// function in the same place as `close_any_custom_ui` from Reach, also exists in h3 mcc
+	virtual void close_any_ui(enum e_output_user_index output_user_index) const;
 
 	virtual e_simulation_entity_type get_simulation_entity_type() const;
 	virtual void promote_to_simulation_authority() const;
@@ -153,6 +169,9 @@ public:
 	virtual bool enable_tied_leader_messages() const;
 	virtual long get_message_chud_reference(s_multiplayer_runtime_globals_definition*) const;
 	virtual long get_message_chud_reference() const;
+private:
 	virtual void dump_settings(s_file_reference*) const;
+public:
 	virtual void emit_game_start_event(long) const;
 };
+#pragma pack(pop)

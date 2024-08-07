@@ -85,8 +85,8 @@ enum e_network_game_countdown_delayed_reason
 
 struct s_network_session_privacy_mode
 {
-	c_enum<e_network_game_privacy, long, k_network_game_privacy_count> privacy_mode;
-	c_enum<e_network_session_closed_status, long, k_network_session_closed_status_count> closed_mode;
+	c_enum<e_network_game_privacy, long, _network_game_privacy_open_to_public, k_network_game_privacy_count> privacy_mode;
+	c_enum<e_network_session_closed_status, long, _network_session_closed_none, k_network_session_closed_status_count> closed_mode;
 	long maximum_player_count;
 	bool is_closed_by_user;
 };
@@ -119,8 +119,8 @@ static_assert(sizeof(c_network_session_parameter_initial_participants) == 0x5650
 
 struct s_network_session_parameter_game_start_status
 {
-	c_enum<e_session_game_start_status, long, k_session_game_start_status_count> game_start_status;
-	c_enum<e_session_game_start_error, long, k_session_game_start_status_count> game_start_error;
+	c_enum<e_session_game_start_status, long, _session_game_start_status_none, k_session_game_start_status_count> game_start_status;
+	c_enum<e_session_game_start_error, long, _session_game_start_error_none, k_session_game_start_error_count> game_start_error;
 	word player_error_mask;
 	short map_load_progress;
 };
@@ -136,7 +136,7 @@ static_assert(sizeof(c_network_session_parameter_game_start_status) == 0x48);
 
 struct s_network_session_parameter_countdown_timer
 {
-	c_enum<e_network_game_countdown_delayed_reason, long, k_network_game_countdown_delayed_reason_count> delayed_reason;
+	c_enum<e_network_game_countdown_delayed_reason, long, _network_game_countdown_delayed_reason_none, k_network_game_countdown_delayed_reason_count> delayed_reason;
 	long countdown_timer;
 };
 static_assert(sizeof(s_network_session_parameter_countdown_timer) == 0x8);

@@ -85,7 +85,7 @@ void network_session_check_properties(c_network_session* session)
         long mulg_index = global_game_globals->multiplayer_globals.index;
         if (mulg_index != -1)
         {
-            s_multiplayer_globals_definition* multiplayer_globals = (s_multiplayer_globals_definition*)tag_get('mulg', mulg_index);
+            s_multiplayer_globals_definition* multiplayer_globals = (s_multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, mulg_index);
             if (multiplayer_globals)
                 mulg_is_valid = multiplayer_globals->universal.count() > 0;
         }
@@ -105,7 +105,7 @@ void network_session_check_properties(c_network_session* session)
             game_variant = parameters->game_variant.get();
         long update_number = session->get_session_membership_update_number();
         long session_index = session->session_index();
-        
+
         if (session_interface_globals.session_connection_update_numbers[session_index] != update_number)
         {
             c_network_session_membership* membership = session->get_session_membership_for_update();
@@ -132,7 +132,7 @@ void network_session_check_properties(c_network_session* session)
             if (game_variant != nullptr)
             {
                 variant_has_teams = game_engine_variant_has_teams(game_variant);
-                sve_teams = game_variant->m_storage.m_base_variant.m_social_options.m_flags.test(_game_engine_social_options_spartans_vs_elites_enabled);
+                sve_teams = game_variant->get_active_variant()->get_social_options()->get_spartans_vs_elites_enabled();
                 observer_allowed = game_engine_variant_is_observer_allowed(game_variant);
                 if (session->get_session_parameters()->map.get_allowed())
                 {
@@ -178,7 +178,12 @@ void network_session_update_team_indices(c_network_session* session, bool varian
         }
         else
         {
-            // TODO: team sorting
+            // TODO: proper team sorting
+            for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
+            {
+                s_network_session_player* player = membership->get_player(player_index);
+                player->configuration.host.user_selected_team_index = player_index % 2;
+            }
         }
         // assign user selected team to team_index
         for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))

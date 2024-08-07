@@ -39,7 +39,7 @@ protected:
 	byte : 8;
 	byte : 8;
 
-	c_enum<e_life_cycle_state, long, k_life_cycle_state_count> m_state;
+	c_enum<e_life_cycle_state, long, _life_cycle_state_none, k_life_cycle_state_count> m_state;
 	c_life_cycle_state_manager* m_manager;
 
 	// Removed since h3/ms23

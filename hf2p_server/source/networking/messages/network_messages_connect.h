@@ -28,6 +28,6 @@ struct s_network_message_connect_closed : s_network_message
 {
 	ulong identifier;
 	ulong remote_identifier;
-	c_enum<e_network_channel_closure_reason, long, k_network_channel_reason_count> closure_reason;
+	c_enum<e_network_channel_closure_reason, long, _network_channel_reason_none, k_network_channel_reason_count> closure_reason;
 };
 static_assert(sizeof(s_network_message_connect_closed) == 0xC);

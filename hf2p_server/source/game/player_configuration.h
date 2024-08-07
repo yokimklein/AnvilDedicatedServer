@@ -90,8 +90,8 @@ struct s_player_configuration_from_client
 	};
 
 	wchar_t name[16];
-	c_enum<e_game_team, byte, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
-	c_enum<e_player_vote_selection, byte, k_player_vote_selection_count> vote_selection_index;
+	c_enum<e_game_team, byte, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
+	c_enum<e_player_vote_selection, byte, _player_vote_none, k_player_vote_selection_count> vote_selection_index;
 	byte active_loadout;
 	char unknown; // previously active_weapon_loadout, this might now be unused or something under a different name?
 	bool player_is_griefer;
@@ -118,8 +118,8 @@ struct s_player_configuration_from_host
 
 	qword user_xuid;
 	c_static_wchar_string<16> player_name;
-	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> team_index;
-	c_enum<e_game_team, long, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
+	c_enum<e_game_team, long, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> team_index;
+	c_enum<e_game_team, long, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
 	s_player_appearance player_appearance;
 	s_s3d_player_container s3d_player_container;
 	s_s3d_player_customization s3d_player_customization;

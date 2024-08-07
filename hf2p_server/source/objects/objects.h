@@ -98,7 +98,7 @@ public:
 
 	datum_index m_unique_id;
 	short m_origin_bsp_index;
-	c_enum<e_object_type, byte, k_object_type_count> m_type;
+	c_enum<e_object_type, byte, _object_type_biped, k_object_type_count> m_type;
 	byte m_source;
 };
 static_assert(sizeof(c_object_identifier) == 0x8);
@@ -223,7 +223,7 @@ static_assert(0x11C == OFFSETOF(s_object_data, shield_stun_ticks));
 struct s_object_header : s_datum_header
 {
 	c_flags<e_object_header_flags, byte, k_number_of_object_header_flags> flags;
-	c_enum<e_object_type, byte, k_object_type_count> type;
+	c_enum<e_object_type, byte, _object_type_biped, k_object_type_count> type;
 	short cluster_reference;
 	word data_size;
 	long pool_handle;

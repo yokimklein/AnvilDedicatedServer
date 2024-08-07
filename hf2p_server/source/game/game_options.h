@@ -45,13 +45,13 @@ static_assert(sizeof(game_player_options) == 0xB90);
 
 struct game_options
 {
-	c_enum<e_game_mode, long, k_game_mode_count> game_mode;
-	c_enum<e_game_simulation_type, byte, k_game_simulation_count> game_simulation_type;
+	c_enum<e_game_mode, long, _game_mode_none, k_game_mode_count> game_mode;
+	c_enum<e_game_simulation_type, byte, _game_simulation_none, k_game_simulation_count> game_simulation_type;
 	byte game_network_type;
 	short game_tick_rate;
 	qword game_instance;
 	dword random_seed;
-	c_enum<e_language, long, k_language_count> language;
+	c_enum<e_language, long, _language_invalid, k_language_count> language;
 	long determinism_version;
 	long campaign_id;
 	long map_id;
@@ -63,12 +63,12 @@ struct game_options
 	bool dump_random_seeds;
 	bool playtest_mode;
 	byte : 8;
-	c_enum<e_game_playback_type, short, k_game_playback_count> game_playback;
+	c_enum<e_game_playback_type, short, _game_playback_none, k_game_playback_count> game_playback;
 	bool record_saved_film;
 	byte : 8;
 	long playback_start_in_ticks;
 	long playback_length_in_ticks;
-	c_enum<e_campaign_difficulty_level, short, k_number_of_campaign_difficulty_levels> campaign_difficulty;
+	c_enum<e_campaign_difficulty_level, short, _campaign_difficulty_level_easy, k_number_of_campaign_difficulty_levels> campaign_difficulty;
 	short campaign_insertion_index;
 	short campaign_metagame_scoring;
 	bool campaign_metagame_enabled;

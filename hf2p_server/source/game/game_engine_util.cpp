@@ -3,6 +3,12 @@
 #include <game\game.h>
 #include <game\game_engine.h>
 #include "assert.h"
+#include <tag_files\string_ids.h>
+#include <scenario\scenario.h>
+#include <cache\cache_files.h>
+#include <game\game_globals.h>
+#include <game\multiplayer_definitions.h>
+#include <tag_files\tag_groups.h>
 
 // TODO
 bool game_engine_is_sandbox()
@@ -33,4 +39,24 @@ c_game_variant* current_game_variant()
 void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
 {
 	INVOKE(0x11C0C0, game_engine_send_event, event_data);
+}
+
+short __fastcall game_engine_get_multiplayer_weapon_selection_absolute_index(long name)
+{
+	return INVOKE(0x11C250, game_engine_get_multiplayer_weapon_selection_absolute_index, name);
+}
+
+string_id __fastcall game_engine_get_multiplayer_weapon_selection_name(short absolute_index)
+{
+	switch (absolute_index)
+	{
+		case -3:
+			return STRING_ID(game_engine, random);
+		case -1:
+			return STRING_ID(global, default);
+		case -2:
+			return STRING_ID(gui, unchanged);
+	}
+
+	return multiplayer_universal_data_get_weapon_selection_name_from_absolute_index(absolute_index);
 }

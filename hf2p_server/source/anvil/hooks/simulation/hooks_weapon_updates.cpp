@@ -110,7 +110,7 @@ __declspec(safebuffers) void __fastcall weapon_handle_potential_inventory_item_h
 {
     datum_index weapon_index;
     datum_index item_index;
-    c_enum<e_object_type, byte, k_object_type_count>* object_type;
+    c_enum<e_object_type, byte, _object_type_biped, k_object_type_count>* object_type;
     DEFINE_ORIGINAL_EBP_ESP(0x44, sizeof(weapon_index) + sizeof(item_index) + sizeof(object_type));
     
     __asm mov ecx, original_ebp;
@@ -150,7 +150,6 @@ __declspec(safebuffers) void __fastcall unit_inventory_set_weapon_index_hook1()
     __asm mov ax, [eax - 2];
     __asm mov inventory_index, ax;
 
-    update_flags.m_flags.clear();
     update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_type);
     update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_state);
     simulation_action_object_update_internal(unit_index, update_flags);

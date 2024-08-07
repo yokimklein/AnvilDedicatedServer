@@ -128,7 +128,7 @@ static_assert(sizeof(s_simulation_update_playback_event) == 0x10);
 // unknown struct name using `s_simulation_update_node` for now
 struct s_simulation_update_node
 {
-	c_enum<e_update_queue_node, long, k_update_queue_node_count> node_type;
+	c_enum<e_update_queue_node, long, _update_queue_node_update, k_update_queue_node_count> node_type;
 
 	byte __data0[0x4];
 
@@ -149,7 +149,7 @@ struct s_simulation_globals
 	bool saved_film_revert;
 	bool aborted;
 	dword network_time_since_abort;
-	c_enum<e_simulation_abort_reason, long, k_simulation_abort_reason_count> abort_reason;
+	c_enum<e_simulation_abort_reason, long, _simulation_abort_reason_exiting_in_game, k_simulation_abort_reason_count> abort_reason;
 	bool reset;
 	bool reset_in_progress;
 	bool in_online_networked_session;

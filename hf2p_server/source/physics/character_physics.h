@@ -24,7 +24,7 @@ public:
 
 protected:
 	short __unknown0;
-	c_enum<e_mode, byte, k_mode_count> m_mode;
+	c_enum<e_mode, byte, _mode_none, k_mode_count> m_mode;
 	byte m_collision_damage_immunity_duration;
 	long m_object_index;
 	byte __data8[0x78];

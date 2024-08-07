@@ -77,7 +77,7 @@ static_assert(sizeof(c_destination_orders) == 0x68);
 
 struct actor_meta_data
 {
-	c_enum<e_actor_type, short, k_number_of_actor_types> type;
+	c_enum<e_actor_type, short, _actor_elite, k_number_of_actor_types> type;
 	bool update; // actor_update
 	bool swarm;
 	bool frozen;

@@ -19,7 +19,7 @@ enum e_podium_action
 
 struct s_player_podium
 {
-	c_enum<e_podium_action, long, k_podium_action_count> current_action;
+	c_enum<e_podium_action, long, _podium_action_base, k_podium_action_count> current_action;
 	long ticks;
 	long player_index;
 	long player_model_index;

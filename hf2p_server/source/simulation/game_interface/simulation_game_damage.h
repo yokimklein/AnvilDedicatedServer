@@ -15,7 +15,7 @@ struct s_simulation_damage_section_response_data
 {
 	long damage_section_index;
 	long response_index; // max of 16
-	c_enum<e_damage_section_response_type, long, k_damage_section_response_type_count> damage_section_response_type;
+	c_enum<e_damage_section_response_type, long, _damage_section_receives_all_damage, k_damage_section_response_type_count> damage_section_response_type;
 };
 static_assert(sizeof(s_simulation_damage_section_response_data) == 0xC);
 

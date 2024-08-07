@@ -23,7 +23,7 @@ enum e_replication_entity_view_data_entity_flags
 struct s_replication_entity_view_data
 {
 	c_flags<e_replication_entity_view_data_entity_flags, short, k_number_of_replication_entity_view_data_entity_flags> flags;
-	c_enum<e_replication_entity_view_state, short, k_number_of_replication_entity_view_states> state;
+	c_enum<e_replication_entity_view_state, short, _replication_entity_view_state_none, k_number_of_replication_entity_view_states> state;
 	long entity_index;
 	c_flags<long, ulong64, 64> entity_mask;
 	byte __data[0x8];

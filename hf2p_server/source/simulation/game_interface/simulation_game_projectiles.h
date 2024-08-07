@@ -8,3 +8,11 @@ enum e_simulation_projectile_update_flag
 
 	k_simulation_projectile_update_flag_count
 };
+
+struct s_simulation_projectile_state_data
+{
+	s_simulation_object_state_data object;
+
+	bool at_rest;
+};
+static_assert(sizeof(s_simulation_projectile_state_data) == sizeof(s_simulation_object_state_data) + 0x4);

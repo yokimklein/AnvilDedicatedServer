@@ -9,6 +9,7 @@
 #include <simulation\simulation_gamestate_entities.h>
 #include <simulation\simulation_type_collection.h>
 #include <simulation\simulation_world.h>
+#include <tag_files\tag_groups.h>
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index)
 {
@@ -54,7 +55,7 @@ void simulation_entity_update(long entity_index, datum_index object_index, c_fla
 
 e_simulation_entity_type simulation_entity_type_from_object_creation(long object_tag_index, datum_index object_index, bool recycling)
 {
-	s_object_definition* object_tag = (s_object_definition*)tag_get('obje', object_tag_index);
+	s_object_definition* object_tag = (s_object_definition*)tag_get(OBJECT_TAG, object_tag_index);
 	switch (object_tag->type.get())
 	{
 		case _object_type_biped:
@@ -83,7 +84,7 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 			}
 			else if (object_tag->model.index != NONE)
 			{
-				s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
+				s_model_definition* model_tag = (s_model_definition*)tag_get(MODEL_TAG, object_tag->model.index);
 				if (model_tag->damage_info.count() > 0)
 				{
 					s_global_damage_info_block* damage_info = model_tag->damage_info.begin();
@@ -99,8 +100,8 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 		{
 			if (object_tag->model.index == NONE)
 				return k_simulation_entity_type_none;
-			s_model_definition* model_tag = (s_model_definition*)tag_get('hlmt', object_tag->model.index);
-			s_physics_model_definition* physics_model_tag = (s_physics_model_definition*)tag_get('phmo', model_tag->physics_model.index);
+			s_model_definition* model_tag = (s_model_definition*)tag_get(MODEL_TAG, object_tag->model.index);
+			s_physics_model_definition* physics_model_tag = (s_physics_model_definition*)tag_get(PHYSICS_MODEL_TAG, model_tag->physics_model.index);
 			if (model_tag->physics_model.index != NONE && physics_model_tag->flags.test(_physics_model_flags_make_physical_children_keyframed_bit))
 				return k_simulation_entity_type_none;
 			return recycling ? _simulation_entity_type_generic_garbage : _simulation_entity_type_generic;

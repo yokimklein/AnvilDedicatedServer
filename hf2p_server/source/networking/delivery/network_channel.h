@@ -175,7 +175,7 @@ public:
 	ulong m_local_identifier; // 0xA08 // 0xA14 in H3debug
 	ulong m_remote_identifier; // 0xA0C
 	e_network_channel_state m_channel_state; // 0xA10
-	c_enum<e_network_channel_closure_reason, long, k_network_channel_reason_count> m_closure_reason;
+	c_enum<e_network_channel_closure_reason, long, _network_channel_reason_none, k_network_channel_reason_count> m_closure_reason;
 	s_transport_address m_local_address;
 	s_transport_address m_remote_address;
 	bool m_send_connect_packets;

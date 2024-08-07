@@ -13,7 +13,7 @@ struct s_network_session_interface_user
     s_player_identifier identifier;
     long controller_index;
     s_player_configuration player_data;
-    c_enum<e_output_user_index, long, k_number_of_output_users> output_user_index;
+    c_enum<e_output_user_index, long, _output_user_index0, k_number_of_output_users> output_user_index;
     c_static_string<64> override_hopper_directory;
     long player_voice_settings;
     byte __data78[0x20];
@@ -42,7 +42,7 @@ struct s_network_session_interface_globals
     //byte : 8;
     //byte : 8;
     long map_id;
-    c_enum<e_network_session_map_status, long, k_network_session_map_status_count> current_map;
+    c_enum<e_network_session_map_status, long, _network_session_map_status_none, k_network_session_map_status_count> current_map;
     long current_map_progress_percentage;
     s_network_session_interface_user users[k_number_of_output_users];
     qword game_instance;

@@ -107,7 +107,7 @@ struct s_game_engine_globals
 	c_static_array<datum_index, 16> player_simulation_gamestate_indices;
 	byte __data74[0x4];
 	c_map_variant map_variant;
-	c_enum<e_game_engine_state, short, k_game_engine_state_count> current_state;
+	c_enum<e_game_engine_state, short, _game_engine_state_game_over, k_game_engine_state_count> current_state;
 	short round_index;
 	dword round_timer;
 	c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> round_condition_flags;
@@ -145,11 +145,11 @@ struct s_game_engine_globals
 	long __unknown10598;
 	c_multiplayer_candy_monitor_manager candy_monitor_manager;
 	dword __unknown13D9C;
-	c_enum<e_game_engine_state, long, k_game_engine_state_count> desired_state;
+	c_enum<e_game_engine_state, long, _game_engine_state_game_over, k_game_engine_state_count> desired_state;
 	bool game_finished;
 	dword __unknown13DA8;
 	dword __unknown13DAC;
-	c_enum<e_game_engine_type, long, k_game_engine_type_count> game_engine_index;
+	c_enum<e_game_engine_type, long, _game_engine_type_none, k_game_engine_type_count> game_engine_index;
 	long multiplayer_weapon_count;
 	c_static_array<s_multiplayer_weapon_tracker, 8> multiplayer_weapons;
 	c_area_set<c_teleporter_area, 32> teleporters;
@@ -169,5 +169,6 @@ void game_engine_update_time();
 bool game_engine_in_round();
 bool __fastcall game_engine_player_is_playing(datum_index player_index);
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);
+void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_string<1024>* out_multiplayer_string);
 
 extern c_game_engine* (&game_engines)[k_game_engine_type_count];

@@ -125,11 +125,11 @@ static_assert(sizeof(s_multiplayer_object_boundary_shader_definition) == 0x20);
 struct s_multiplayer_object_definition
 {
 	c_flags<e_game_engine_flags, word, k_number_of_game_engine_flags> engine_flags;
-	c_enum<e_multiplayer_object_type, char, k_number_of_multiplayer_object_types> type;
+	c_enum<e_multiplayer_object_type, char, _object_multiplayer_type_ordinary, k_number_of_multiplayer_object_types> type;
 	c_flags<e_multiplayer_object_teleporter_flags, byte, k_number_of_multiplayer_object_teleporter_flags> teleporter_passability;
 	c_flags<e_multiplayer_object_flags, word, k_number_of_multiplayer_object_flags> flags;
-	c_enum<e_multiplayer_object_boundary_shape, char, k_number_of_multiplayer_object_boundary_shapes> boundary_shape;
-	c_enum<e_multiplayer_object_spawn_timer_type, char, k_number_of_multiplayer_object_spawn_timer_types> spawn_timer_type;
+	c_enum<e_multiplayer_object_boundary_shape, char, _multiplayer_object_boundary_shape_none, k_number_of_multiplayer_object_boundary_shapes> boundary_shape;
+	c_enum<e_multiplayer_object_spawn_timer_type, char, _multiplayer_object_spawn_timer_starts_on_death, k_number_of_multiplayer_object_spawn_timer_types> spawn_timer_type;
 	short default_spawn_time;
 	short default_abandon_time;
 	real boundary_width;

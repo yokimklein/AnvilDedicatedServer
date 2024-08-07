@@ -128,7 +128,7 @@ struct s_variant_quota
 };
 static_assert(sizeof(s_variant_quota) == 0xC);
 
-class c_map_variant : public s_saved_game_item_metadata
+class c_map_variant
 {
 public:
 	c_map_variant();
@@ -136,13 +136,14 @@ public:
 	datum_index get_chunk_gamestate_index(long chunk_index);
 	void place_new_object(long map_variant_index, long unknown, bool do_not_force);
 
+	s_content_item_metadata m_metadata;
 	short version; // 12 in HO
 	ushort scenario_object_count;
 	ushort variant_object_count;
 	ushort placeable_object_quota_count;
 	long map_id;
 	real_rectangle3d world_bounds;
-	c_enum<e_content_item, long, k_content_item_count> content_type;
+	c_enum<e_content_item, long, _content_item_usermap, k_content_item_count> content_type;
 	real maximum_budget;
 	real current_budget;
 	bool showing_helpers;

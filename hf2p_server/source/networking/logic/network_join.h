@@ -143,7 +143,7 @@ struct s_networking_join_data
     ulong unknown1; // maybe bool created_session_for_remote_join
     ulong unknown2;
     s_network_session_remote_session_join_data join_data;
-    c_enum<e_network_join_queue_mode, long, k_network_join_queue_mode_count> join_queue_mode; // 0x1039B60
+    c_enum<e_network_join_queue_mode, long, _network_join_closed_to_all_joins, k_network_join_queue_mode_count> join_queue_mode; // 0x1039B60
     long join_queue_entry_count; // 0x1039B64
     s_join_queue_entry join_queue[32]; // 32 - queue for channels?
 };

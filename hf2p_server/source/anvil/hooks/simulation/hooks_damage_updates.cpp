@@ -177,7 +177,6 @@ __declspec(safebuffers) void __fastcall damage_section_response_fire_hook()
     if (!game_is_predicted() && object->gamestate_index != -1)
     {
         simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
-        update_flags.m_flags.clear();
         update_flags.set_flag(object_index, _simulation_object_update_region_state);
         update_flags.set_flag(object_index, _simulation_object_update_constraint_state);
         simulation_action_object_update_internal(object_index, update_flags);

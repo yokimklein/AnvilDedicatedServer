@@ -1,70 +1,67 @@
 #pragma once
-
 #include <cseries\cseries.h>
 #include <game\game_engine_default.h>
 #include <game\game_engine_koth_traits.h>
+#include <game\game_engine_area_set.h>
 
-class c_game_engine_king_variant : c_game_engine_base_variant
+struct s_game_engine_king_variant_definition;
+class c_game_engine_king_variant : public c_game_engine_base_variant
 {
 public:
-	c_game_engine_king_variant() :
-		m_variant_flags(),
-		m_score_to_win(),
-		m_score_unknown(),
-		m_moving_hill(),
-		m_moving_hill_order(),
-		m_uncontested_hill_bonus_points(),
-		m_points_per_kill(),
-		m_inside_hill_points(),
-		m_outside_hill_points(),
-		m_inside_hill_traits_name(),
-		pad(),
-		unused()
-	{
-	};
+	c_game_engine_king_variant* constructor();
 
-	// `c_game_engine_base_variant::m_team_scoring` override
-	// c_enum<e_king_team_scoring_settings, short, k_king_team_scoring_settings> m_team_scoring
+	void set(c_game_engine_king_variant const* variant, bool force);
+	void set(s_game_engine_king_variant_definition const* definition);
 
-	c_flags<e_king_variant_flags, dword_flags, k_king_variant_flags> m_variant_flags;
+	bool get_opaque_hill() const;
+	void set_opaque_hill(bool opaque_hill);
 
-	// default: 100
-	// maximum: 1000
-	short m_score_to_win;
+	short get_score_to_win() const;
+	void set_score_to_win(short score_to_win);
 
-	// halo online specific
-	// default: 90
-	// maximum: 1000
-	short m_score_unknown;
+	e_king_moving_hill_settings get_moving_hill() const;
+	short get_hill_move_in_seconds() const;
+	void set_moving_hill(e_king_moving_hill_settings moving_hill);
 
-	c_enum<e_king_moving_hill_settings, char, k_king_moving_hill_settings> m_moving_hill;
-	c_enum<e_king_moving_hill_order_settings, char, k_king_moving_hill_order_settings> m_moving_hill_order;
+	e_king_moving_hill_order_settings get_moving_hill_order() const;
+	void set_moving_hill_order(e_king_moving_hill_order_settings moving_hill_order);
 
-	// default: 0
-	// maximum: 20
-	char m_uncontested_hill_bonus_points;
+	char get_uncontested_hill_bonus() const;
+	void set_uncontested_hill_bonus(char uncontested_hill_bonus);
 
-	// default: 0
-	// maximum: 20
-	char m_points_per_kill;
+	char get_kill_points() const;
+	void set_kill_points(char kill_points);
 
-	// default: 0
-	// maximum: 20
-	char m_inside_hill_points;
+	char get_inside_hill_points() const;
+	void set_inside_hill_points(char inside_hill_points);
 
-	// default: 0
-	// maximum: 20
-	char m_outside_hill_points;
+	char get_outside_hill_points() const;
+	void set_outside_hill_points(char outside_hill_points);
 
-	c_player_traits m_inside_hill_traits_name;
+	c_player_traits* get_inside_hill_traits_writeable();
+	c_player_traits const* get_inside_hill_traits() const;
+	void set_inside_hill_traits(c_player_traits const* traits, bool force);
 
-	byte pad[6];
-	byte unused[0x60];
+protected:
+	c_flags<e_king_flags_settings, dword_flags, k_king_flags_settings> m_variant_flags;
+	c_enum<long, short, 0, 1000> m_score_to_win;          // default: 100
+	c_enum<long, short, 0, 1000> m_score_unknown;         // default: 90, halo online specific
+	c_enum<e_king_moving_hill_settings, char, _king_moving_hill_settings_off, k_king_moving_hill_settings> m_moving_hill;
+	c_enum<e_king_moving_hill_order_settings, char, _king_moving_hill_order_settings_random, k_king_moving_hill_order_settings> m_moving_hill_order;
+	c_enum<long, char, -10, 10> m_uncontested_hill_bonus; // default: 0
+	c_enum<long, char, -10, 10> m_kill_points;            // default: 0
+	c_enum<long, char, -10, 10> m_inside_hill_points;     // default: 0
+	c_enum<long, char, -10, 10> m_outside_hill_points;    // default: 0
+	c_player_traits m_inside_hill_traits;
+
+	byte m_pad1[6];
 };
-static_assert(sizeof(c_game_engine_king_variant) == 0x260);
+static_assert(sizeof(c_game_engine_king_variant) == 0x200);
 
 struct c_king_engine : c_game_engine
 {
+public:
+	//void dump_settings(s_file_reference* file) const;
 };
 
 struct s_king_globals

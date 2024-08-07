@@ -102,7 +102,7 @@ public:
 protected:
 	c_flags<e_game_engine_symmetric_placement, word, k_game_engine_symmetric_placement_count> symmetry_placement_flags;
 	c_flags<e_scenario_game_engine, byte, k_scenario_game_engine_count> game_engine_flags;
-	c_enum<e_multiplayer_team_designator, byte, k_multiplayer_team_designator_count> owner_team;
+	c_enum<e_multiplayer_team_designator, byte, _multiplayer_team_designator_defender, k_multiplayer_team_designator_count> owner_team;
 
 	union
 	{
@@ -114,9 +114,9 @@ protected:
 	// seconds
 	char spawn_rate;
 
-	c_enum<e_teleporter_channel, byte, k_teleporter_channel_count> teleporter_channel;
+	c_enum<e_teleporter_channel, byte, _teleporter_channel_alpha, k_teleporter_channel_count> teleporter_channel;
 
-	c_enum<e_multiplayer_object_boundary_shape, char, k_number_of_multiplayer_object_boundary_shapes> boundary_shape;
+	c_enum<e_multiplayer_object_boundary_shape, char, _multiplayer_object_boundary_shape_none, k_number_of_multiplayer_object_boundary_shapes> boundary_shape;
 
 	union
 	{

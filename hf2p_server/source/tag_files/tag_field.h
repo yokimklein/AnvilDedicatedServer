@@ -67,7 +67,7 @@ enum e_tag_field_type
 
 struct s_tag_field_definition
 {
-	c_enum<e_tag_field_type, long, k_number_of_tag_field_types> type;
+	c_enum<e_tag_field_type, long, _field_tag, k_number_of_tag_field_types> type;
 	const char* name;
 	void* definition;
 };

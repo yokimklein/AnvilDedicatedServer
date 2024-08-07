@@ -261,7 +261,7 @@ struct s_model_permutation_state
 	string_id permutation_name;
 	char runtime_permutation_index;
 	c_flags<e_model_permutation_state_flags, byte, k_number_of_model_permutation_state_flags> property_flags;
-	c_enum<e_model_damage_state, short, k_number_of_model_damage_states> state;
+	c_enum<e_model_damage_state, short, _model_damage_state_default, k_number_of_model_damage_states> state;
 	s_tag_reference looping_effect;
 	string_id looping_effect_marker_name;
 	real initial_probability;
@@ -287,7 +287,7 @@ struct s_model_variant_region
 	char runtime_flags;
 	short parent_variant;
 	c_typed_tag_block<s_model_variant_permutation> permutations;
-	c_enum<e_model_region_sort_order, long, k_number_of_model_region_sort_orders> sort_order;
+	c_enum<e_model_region_sort_order, long, _model_region_no_sorting, k_number_of_model_region_sort_orders> sort_order;
 };
 static_assert(sizeof(s_model_variant_region) == 0x18);
 
@@ -305,7 +305,7 @@ struct s_model_variant
 	string_id name;
 	s_tag_reference voice;
 	string_id dialog_effect;
-	c_enum<e_model_ai_character, byte, k_number_of_model_ai_characters> ai_character;
+	c_enum<e_model_ai_character, byte, _model_ai_character_none, k_number_of_model_ai_characters> ai_character;
 	char : 8;
 	char : 8;
 	char : 8;
@@ -339,7 +339,7 @@ static_assert(sizeof(s_model_instance_member) == 0x1C);
 struct s_model_instance_group
 {
 	string_id name;
-	c_enum<e_model_instance_group_choice, long, k_number_of_model_instance_group_choices> choice;
+	c_enum<e_model_instance_group_choice, long, _model_instance_group_choose_one_member, k_number_of_model_instance_group_choices> choice;
 	c_typed_tag_block<s_model_instance_member> member_list;
 	real total_probability;
 };
@@ -348,7 +348,7 @@ static_assert(sizeof(s_model_instance_group) == 0x18);
 struct s_model_material
 {
 	string_id name;
-	c_enum<e_model_material_type, short, k_number_of_model_material_types> material_type; // unused?
+	c_enum<e_model_material_type, short, _model_material_dirt, k_number_of_model_material_types> material_type; // unused?
 	short damage_section;
 	short runtime_collision_material_index;
 	short runtime_damager_material_index;
@@ -411,7 +411,7 @@ static_assert(sizeof(s_runtime_node) == 0x5C);
 
 struct s_model_object_data_block
 {
-	c_enum<e_model_object_data_type, short, k_number_of_model_object_data_types> type;
+	c_enum<e_model_object_data_type, short, _model_object_data_not_set, k_number_of_model_object_data_types> type;
 	short : 16;
 	real_point3d offset;
 	real radius;
@@ -443,7 +443,7 @@ static_assert(sizeof(s_shadow_cast_override) == 0x8);
 struct s_shadow_receive_override
 {
 	string_id region;
-	c_enum<e_model_shadow_override_type, long, k_number_of_model_shadow_override_types> shadow_type;
+	c_enum<e_model_shadow_override_type, long, _model_shadow_override_prt_shadows_from_all_regions, k_number_of_model_shadow_override_types> shadow_type;
 };
 static_assert(sizeof(s_shadow_receive_override) == 0x8);
 

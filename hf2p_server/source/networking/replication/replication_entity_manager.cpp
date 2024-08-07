@@ -45,7 +45,7 @@ long c_replication_entity_manager::preallocate_entity()
 	}
 	if (entity_index != -1)
 	{
-		this->m_entity_data[entity_index].flags.set_raw_bits(_replication_entity_marked_for_deletion_flag);
+		this->m_entity_data[entity_index].flags.set_unsafe(_replication_entity_marked_for_deletion_flag);
 		this->unknown_count = (entity_index + 1) % NUMBEROF(this->m_entity_data);
 	}
 	return entity_index;

@@ -23,7 +23,7 @@ enum e_game_engine_event_type
 
 struct s_game_engine_event_data
 {
-	c_enum<e_game_engine_event_type, long, k_number_of_game_engine_event_types> event_type;
+	c_enum<e_game_engine_event_type, long, _game_engine_event_type_general, k_number_of_game_engine_event_types> event_type;
 	string_id type;
 	long identifier;
 	long audience_player_index;

@@ -74,7 +74,7 @@ enum e_damage_reporting_type
 
 struct s_damage_reporting_info
 {
-	c_enum<e_damage_reporting_type, short, k_damage_reporting_type_count> type;
+	c_enum<e_damage_reporting_type, short, _damage_reporting_type_guardians_unknown, k_damage_reporting_type_count> type;
 	char variant; // weapon variant
 	char modifier;
 };

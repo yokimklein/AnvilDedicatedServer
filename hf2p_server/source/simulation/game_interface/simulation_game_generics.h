@@ -7,3 +7,12 @@ enum e_simulation_generic_update_flag
 
 	k_simulation_generic_update_flag_count
 };
+
+struct s_simulation_generic_state_data
+{
+    s_simulation_object_state_data object;
+
+    dword rigid_body_mask;
+    real_matrix4x3 rigid_body_transforms[8];
+};
+static_assert(sizeof(s_simulation_generic_state_data) == sizeof(s_simulation_object_state_data) + 0x1A4);

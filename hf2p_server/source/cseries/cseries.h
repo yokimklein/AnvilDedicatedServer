@@ -191,6 +191,12 @@ extern char* strncpy_debug(char* s1, dword size1, char const* s2, dword size2);
 extern long strlen_debug(char const* s);
 
 template<typename t_type, long k_count>
+void zero_array(t_type(&data)[k_count])
+{
+	csmemset(data, 0, sizeof(t_type) * k_count);
+}
+
+template<typename t_type, long k_count>
 struct c_static_array
 {
 public:
@@ -275,18 +281,38 @@ protected:
 	t_type m_storage[k_count];
 };
 
-template<typename t_type, typename t_storage_type, size_t k_count>
-struct c_flags
+template<typename t_type, typename t_storage_type, long k_count>
+struct c_flags //: public c_flags_no_init<t_type, t_storage_type, k_count>
 {
+	static t_type const k_maximum_count = (t_type)k_count;
+	//static_assert(k_maximum_count <= SIZEOF_BITS(t_storage_type));
+
 public:
-	void set_raw_bits(t_storage_type raw_bits)
+	c_flags() :
+		m_storage(0)
+	{
+
+	}
+
+	c_flags(t_storage_type raw_bits) :
+		m_storage(raw_bits)
+	{
+
+	}
+
+	t_storage_type get_unsafe() const
+	{
+		return m_storage;
+	}
+
+	void set_unsafe(t_storage_type raw_bits)
 	{
 		m_storage = raw_bits;
 	}
 
 	void set(t_type bit, bool enable)
 	{
-		if (bit < k_count)
+		if (bit < k_maximum_count)
 		{
 			if (enable)
 				m_storage |= (1LL << bit);
@@ -295,20 +321,9 @@ public:
 		}
 	}
 
-	bool valid_bit(t_type bit)
+	void clear()
 	{
-		return VALID_INDEX(0, k_count);
-	}
-
-	bool test(t_type bit)
-	{
-		//assert(valid_bit(bit));
-		return TEST_BIT(m_storage, bit);
-	}
-
-	t_storage_type get_unsafe()
-	{
-		return m_storage;
+		m_storage = 0;
 	}
 
 	bool is_clear()
@@ -316,14 +331,56 @@ public:
 		return m_storage == 0;
 	}
 
-	void clear()
+	bool is_empty() const
 	{
-		m_storage = 0;
+#pragma warning(push)
+#pragma warning(disable : 4293)
+		return (m_storage & (MASK(SIZEOF_BITS(t_storage_type)) >> (SIZEOF_BITS(t_storage_type) - k_maximum_count))) == 0;
+#pragma warning(pop)
+	}
+
+	bool valid_bit(t_type bit)
+	{
+		return VALID_INDEX(0, k_maximum_count);
+	}
+
+	bool valid_bit(t_type bit) const
+	{
+		return VALID_INDEX(0, k_maximum_count);
+	}
+
+	bool valid() const
+	{
+		return (m_storage & MASK(k_maximum_count)) == 0;
+	}
+
+	bool test(t_type bit)
+	{
+		assert(valid_bit(bit));
+
+		return TEST_BIT(m_storage, static_cast<t_storage_type>(bit));
+	}
+
+	bool test(t_type bit) const
+	{
+		assert(valid_bit(bit));
+
+		return TEST_BIT(m_storage, static_cast<t_storage_type>(bit));
+	}
+
+	bool operator==(c_flags<t_type, t_storage_type, k_maximum_count>& value)
+	{
+		return m_storage == value.m_storage;
 	}
 
 	bool operator==(t_type value)
 	{
 		return !!(m_storage & (1 << value));
+	}
+
+	bool operator!=(t_type value)
+	{
+		return m_storage != value;
 	}
 
 	void operator|=(t_storage_type raw_bits)
@@ -336,13 +393,13 @@ public:
 		m_storage &= raw_bits;
 	}
 
-	bool operator!=(t_type value)
+	c_flags<t_type, t_storage_type, k_maximum_count> operator|(c_flags<t_type, t_storage_type, k_maximum_count> const& other) const
 	{
-		return m_storage != value;
+		return c_flags(m_storage | other.m_storage);
 	}
 
 	template <class T>
-	void operator= (T value)
+	void operator=(T value)
 	{
 		m_storage = static_cast<t_storage_type>(value);
 	}
@@ -518,38 +575,71 @@ struct c_static_flags : public c_static_flags_no_init<k_maximum_count>
 {
 };
 
-template<typename t_type, typename t_storage_type, size_t k_count>
+template<typename t_type, typename t_storage_type, t_type k_minimum_value, t_type k_maximum_value_plus_one>
 struct c_enum
 {
 public:
+	c_enum() :
+		m_storage(k_minimum_value)
+	{
+	}
+
+	c_enum(t_type value) :
+		m_storage(static_cast<t_storage_type>(value))
+	{
+	}
+
+	c_enum(t_storage_type value) :
+		m_storage(value)
+	{
+	}
+
 	template<typename T>
 	bool operator==(T value) const
 	{
 		return m_storage == static_cast<t_storage_type>(value);
 	}
 
-	template<typename T>
-	bool operator!=(T value)
+	template<typename T> const
+		bool operator!=(T value)
 	{
 		return m_storage != static_cast<t_storage_type>(value);
 	}
 
 	template<typename T>
-	bool operator<(T value)
+	bool operator<(T value) const
 	{
 		return m_storage < static_cast<t_storage_type>(value);
 	}
 
 	template<typename T>
-	bool operator>(T value)
+	bool operator>(T value) const
 	{
 		return m_storage > static_cast<t_storage_type>(value);
 	}
 
 	template<typename T>
-	bool operator>=(T value)
+	bool operator>=(T value) const
 	{
 		return m_storage >= static_cast<t_storage_type>(value);
+	}
+
+	template<typename T>
+	bool operator<=(T value) const
+	{
+		return m_storage <= static_cast<t_storage_type>(value);
+	}
+
+	template<typename T>
+	void operator+=(T value)
+	{
+		m_storage += static_cast<t_storage_type>(value);
+	}
+
+	template<typename T>
+	void operator-=(T value)
+	{
+		m_storage -= static_cast<t_storage_type>(value);
 	}
 
 	template<typename T>
@@ -570,7 +660,12 @@ public:
 		return static_cast<T>(m_storage);
 	}
 
-	t_type get() const
+	t_type get()
+	{
+		return static_cast<t_type>(m_storage);
+	}
+
+	t_type const get() const
 	{
 		return static_cast<t_type>(m_storage);
 	}

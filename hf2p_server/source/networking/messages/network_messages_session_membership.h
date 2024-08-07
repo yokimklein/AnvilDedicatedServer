@@ -36,7 +36,7 @@ struct s_network_message_membership_update_peer_properties
 	bool peer_map_id_updated;
 	ulong peer_map_id;
 	bool peer_map_updated;
-	c_enum<e_network_session_map_status, long, k_network_session_map_status_count> peer_map_status;
+	c_enum<e_network_session_map_status, long, _network_session_map_status_none, k_network_session_map_status_count> peer_map_status;
 	ulong peer_map_progress_percentage; // 0-100
 	bool peer_game_instance_exists;
 	long64 peer_game_instance;

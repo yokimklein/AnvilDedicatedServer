@@ -8,9 +8,7 @@
 bool game_engine_variant_has_teams(c_game_variant* variant)
 {
 	assert(variant != NULL);
-	c_game_engine_base_variant* active_variant = variant->get_active_variant();
-	c_game_engine_miscellaneous_options* miscellaneous_options = active_variant->get_miscellaneous_options();
-	return miscellaneous_options->get_teams_enabled();
+	return variant->get_active_variant()->get_miscellaneous_options()->get_teams_enabled();
 }
 
 void __cdecl game_engine_recompute_active_teams()

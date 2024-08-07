@@ -38,18 +38,18 @@ void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_ind
 		{
 			if (!view_entity->entity_mask.is_clear())
 			{
-				--this->m_statistics.updates_pending;
+				this->m_statistics.updates_pending--;
 				assert(this->m_statistics.updates_pending >= 0);
 				this->clear_entity_mask(absolute_index);
 			}
-			++this->m_statistics.deletions_pending;
+			this->m_statistics.deletions_pending++;
 			this->set_entity_mask(absolute_index);
 		}
 	}
 	else
 	{
 		this->set_state(entity_index, _replication_entity_view_state_none);
-		++this->m_statistics.deletions_unknown;
+		this->m_statistics.deletions_unknown++;
 		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager_view::mark_entity_for_deletion: [%d] entity deleted from ready state 0x%08X\n",
 			this->m_view_index,
 			entity_index);

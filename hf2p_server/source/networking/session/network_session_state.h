@@ -37,7 +37,7 @@ enum e_dedicated_server_session_state
 
 struct s_network_session_state_peer_creating
 {
-	c_enum<e_transport_platform, long, k_transport_platform_count> platform;
+	c_enum<e_transport_platform, long, _transport_platform_xnet, k_transport_platform_count> platform;
 	bool __unknown4;
 	qword join_nonce;
 	s_network_session_join_request join_request;

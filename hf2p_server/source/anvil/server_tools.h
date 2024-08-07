@@ -17,7 +17,7 @@ void anvil_initialize();
 bool anvil_create_session();
 void anvil_session_update();
 bool anvil_session_set_map(e_map_id map_id);
-bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_variant);
+bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_index, long variant_index);
 void anvil_session_set_test_player_data(c_network_session_membership* membership);
 void anvil_launch_scenario(const char* scenario_path);
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration);

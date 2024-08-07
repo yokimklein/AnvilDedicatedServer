@@ -18,6 +18,8 @@
 #include <networking\logic\network_life_cycle.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <simulation\game_interface\simulation_game_engine_globals.h>
+#include <scenario\scenario.h>
+#include <game\multiplayer_definitions.h>
 
 REFERENCE_DECLARE_ARRAY(0xF01EC0, c_game_engine*, game_engines, k_game_engine_type_count);
 
@@ -72,11 +74,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		if (game_is_authoritative())
 		{
 			s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
-			c_game_variant* game_variant = current_game_variant();
-			c_game_engine_base_variant* active_variant = game_variant->get_active_variant();
-			c_game_engine_respawn_options* respawn_options = active_variant->get_respawn_options();
-			byte lives_per_round = respawn_options->get_lives_per_round();
-			player_data->lives = lives_per_round;
+			player_data->lives = current_game_variant()->get_active_variant()->get_respawn_options()->get_lives_per_round();
 			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives);
 		}
 
@@ -188,4 +186,9 @@ void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, lon
 
 	player->respawn_timer_countdown_seconds = PIN(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
+}
+
+void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_string<1024>* out_multiplayer_string)
+{
+	INVOKE(0xCD1F0, game_engine_get_multiplayer_string, id, out_multiplayer_string);
 }

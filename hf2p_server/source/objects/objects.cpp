@@ -7,6 +7,7 @@
 #include <physics\havok_component.h>
 #include <simulation\game_interface\simulation_game_projectiles.h>
 #include <simulation\game_interface\simulation_game_items.h>
+#include <tag_files\tag_groups.h>
 
 s_object_data* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
@@ -81,7 +82,7 @@ e_object_type c_object_identifier::get_type()
 void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
 {
 	s_object_data* object = object_get(object_index);
-	c_simulation_object_update_flags update_flags{};
+	c_simulation_object_update_flags update_flags;
 	if (transitional_velocity)
 	{
 		object->transitional_velocity = *transitional_velocity;
@@ -95,7 +96,9 @@ void __cdecl object_set_velocities_internal(datum_index object_index, real_vecto
 	if (!skip_update)
 	{
 		if (!update_flags.m_flags.is_clear())
+		{
 			simulation_action_object_update_internal(object_index, update_flags);
+		}
 	}
 }
 
@@ -134,7 +137,7 @@ const char* object_describe(datum_index object_index)
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
 {
 	s_object_data* object = object_get(object_index);
-	s_object_definition* object_definition = (s_object_definition*)tag_get('obje', object->definition_index);
+	s_object_definition* object_definition = (s_object_definition*)tag_get(OBJECT_TAG, object->definition_index);
 	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
 	{
 		object->damage_owner = *damage_owner;

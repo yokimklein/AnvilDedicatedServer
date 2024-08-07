@@ -1,35 +1,51 @@
 #pragma once
-
 #include <cseries\cseries.h>
 #include <game\game_engine_default.h>
 #include <game\game_engine_territories_traits.h>
+#include <game\game_engine_area_set.h>
 
-class c_game_engine_territories_variant : c_game_engine_base_variant
+struct s_game_engine_territories_variant_definition;
+class c_game_engine_territories_variant : public c_game_engine_base_variant
 {
 public:
-	c_game_engine_territories_variant() :
-		m_variant_flags(),
-		m_respawn_on_capture(),
-		m_capture_time(),
-		m_sudden_death_time(),
-		m_defender_traits(),
-		m_attacker_traits(),
-		unused()
-	{
-	};
+	c_game_engine_territories_variant* constructor();
 
+	void set(c_game_engine_territories_variant const* variant, bool force);
+	void set(s_game_engine_territories_variant_definition const* definition);
+
+	bool get_one_sided() const;
+	void set_one_sided(bool one_sided);
+
+	bool get_lock_after_first_capture() const;
+	void set_lock_after_first_capture(bool lock_after_first_capture);
+
+	e_territories_respawn_on_capture_settings get_respawn_on_capture() const;
+	void set_respawn_on_capture(e_territories_respawn_on_capture_settings respawn_on_capture);
+
+	short get_capture_time() const;
+	void set_capture_time(short capture_time);
+
+	short get_sudden_death_time() const;
+	bool get_sudden_death_enabled() const;
+	void set_sudden_death_time(short sudden_death_time);
+
+	c_player_traits* get_defender_traits_writeable();
+	c_player_traits const* get_defender_traits() const;
+	void set_defender_traits(c_player_traits const* traits, bool force);
+
+	c_player_traits* get_attacker_traits_writeable();
+	c_player_traits const* get_attacker_traits() const;
+	void set_attacker_traits(c_player_traits const* traits, bool force);
+
+protected:
 	c_flags<e_territories_variant_flags, word_flags, k_territories_variant_flags> m_variant_flags;
-
-	c_enum<e_territories_respawn_on_capture_settings, short, k_territories_respawn_on_capture_settings> m_respawn_on_capture;
-	c_enum<e_territories_capture_time_settings, short, k_territories_capture_time_settings> m_capture_time;
-	c_enum<e_territories_sudden_death_settings, short, k_territories_sudden_death_settings> m_sudden_death_time;
-
+	c_enum<e_territories_respawn_on_capture_settings, short, _territories_respawn_on_capture_settings_disabled, k_territories_respawn_on_capture_settings> m_respawn_on_capture;
+	c_enum<e_territories_capture_time_settings, short, _territories_capture_time_settings_instant, k_territories_capture_time_settings> m_capture_time;
+	c_enum<e_territories_sudden_death_settings, short, _territories_sudden_death_settings_indefinite, k_territories_sudden_death_settings> m_sudden_death_time;
 	c_player_traits m_defender_traits;
 	c_player_traits m_attacker_traits;
-
-	byte unused[0x50];
 };
-static_assert(sizeof(c_game_engine_territories_variant) == 0x260);
+static_assert(sizeof(c_game_engine_territories_variant) == 0x210);
 
 struct c_territories_engine : c_game_engine
 {

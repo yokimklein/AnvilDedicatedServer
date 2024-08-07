@@ -11,3 +11,14 @@ enum e_simulation_item_update_flag
 
 	k_simulation_item_update_flag_count
 };
+
+struct s_simulation_item_state_data
+{
+	s_simulation_object_state_data object;
+
+	bool at_rest;
+	bool equipment_deployed;
+	bool equipment_activated;
+	short equipment_creator;
+};
+static_assert(sizeof(s_simulation_item_state_data) == sizeof(s_simulation_object_state_data) + 0x8);

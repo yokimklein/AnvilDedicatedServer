@@ -26,7 +26,7 @@ public:
 
 	struct s_link_packet
 	{
-		c_enum<e_network_packet_mode, long, k_network_packet_mode_count> mode;
+		c_enum<e_network_packet_mode, long, _network_packet_mode_none, k_network_packet_mode_count> mode;
 		bool __unknown4;
 		byte __pad5[0x3];
 		s_transport_address address;

@@ -166,12 +166,12 @@ static_assert(sizeof(s_global_damage_info_shield) == 0x48);
 
 struct s_instant_response
 {
-    c_enum<e_damage_response_type, short, k_number_of_damage_response_types> response_type;
+    c_enum<e_damage_response_type, short, _damage_response_recieves_all_damage, k_number_of_damage_response_types> response_type;
     // Constraint damage type
     // * if you specify a constraint group name (see lower section of this block) you can specify a contraint damage
     // * loosening a constraint takes it out of the rigid state - activates it
     // * destroying a constraint sets the attached body free
-    c_enum<e_damage_constraint_type, short, k_number_of_damage_constraint_types> constraint_damage_type;
+    c_enum<e_damage_constraint_type, short, _damage_response_none, k_number_of_damage_constraint_types> constraint_damage_type;
     // Constraint destruction
     // - a response can destroy a single constraint by naming it explicitly.
     // - alternatively it can randomly destroy a single constraint from a specified group if the "destroy one group constraint" flag is set
@@ -189,13 +189,13 @@ struct s_instant_response
     s_tag_reference transition_effect_specific;
     s_tag_reference transition_effect_damage;
     string_id region;
-    c_enum<e_instant_response_state, short, k_number_of_instant_response_states> new_state;
+    c_enum<e_instant_response_state, short, _instant_response_state_default, k_number_of_instant_response_states> new_state;
     short runtime_region_index;
     string_id region_secondary;
-    c_enum<e_instant_response_state, short, k_number_of_instant_response_states> new_state_secondary;
+    c_enum<e_instant_response_state, short, _instant_response_state_default, k_number_of_instant_response_states> new_state_secondary;
     short runtime_region_index_secondary;
     short destroy_instance_group;
-    c_enum<e_custom_response_behavior, short, k_number_of_custom_response_behaviors> custom_response_behavior;
+    c_enum<e_custom_response_behavior, short, _custom_response_plays_always, k_number_of_custom_response_behaviors> custom_response_behavior;
     string_id custom_response_label;
     string_id effect_marker_name;
     string_id damage_effect_marker_name;
@@ -284,7 +284,7 @@ struct s_damage_constraint
     string_id damage_constraint_name;
     string_id damage_constraint_group_name;
     real group_probability_scale;
-    c_enum<e_runtime_constraint_type, short, k_number_of_runtime_constraint_types> runtime_constraint_type;
+    c_enum<e_runtime_constraint_type, short, _runtime_constraint_none, k_number_of_runtime_constraint_types> runtime_constraint_type;
     short runtime_constraint_index;
 };
 static_assert(sizeof(s_damage_constraint) == 0x14);
@@ -296,8 +296,8 @@ struct s_global_damage_info_block
     short indirect_damage_section;
     short : 16;
     long : 32;
-    c_enum<e_damage_reporting_type, char, k_damage_reporting_type_count> collision_damage_reporting_type;
-    c_enum<e_damage_reporting_type, char, k_damage_reporting_type_count> response_damage_reporting_type;
+    c_enum<e_damage_reporting_type, char, _damage_reporting_type_guardians_unknown, k_damage_reporting_type_count> collision_damage_reporting_type;
+    c_enum<e_damage_reporting_type, char, _damage_reporting_type_guardians_unknown, k_damage_reporting_type_count> response_damage_reporting_type;
     short : 16;
     long : 32;
     long : 32;

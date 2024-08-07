@@ -471,15 +471,40 @@ constexpr real k_motion_tracker_range_values[k_motion_tracker_range_settings - _
 class c_player_trait_shield_vitality
 {
 public:
+	void set(c_player_trait_shield_vitality const* traits, bool force);
+
+	e_damage_resistance_percentage_setting get_damage_resistance_percentage_setting() const;
+	void set_damage_resistance_percentage_setting(e_damage_resistance_percentage_setting damage_resistance_percentage_setting, bool force);
+	real get_damage_resistance_percentage() const;
+	void set_damage_resistance_percentage(real damage_resistance_percentage, bool force);
+
 	e_shield_recharge_rate_percentage_setting get_shield_recharge_rate_percentage_setting() const;
+	void set_shield_recharge_rate_percentage_setting(e_shield_recharge_rate_percentage_setting shield_recharge_rate_percentage_setting, bool force);
 	real get_shield_recharge_rate_percentage() const;
+	void set_shield_recharge_rate_percentage(real shield_recharge_rate_percentage, bool force);
+
+	e_vampirism_percentage_setting get_vampirism_percentage_setting() const;
+	void set_vampirism_percentage_setting(e_vampirism_percentage_setting vampirism_percentage_setting, bool force);
+	real get_vampirism_percentage() const;
+	void set_vampirism_percentage(real vampirism_percentage, bool force);
+
+	e_headshot_immunity_setting get_headshot_immunity_setting() const;
+	void set_headshot_immunity_setting(e_headshot_immunity_setting headshot_immunity_setting, bool force);
+	bool get_headshot_immunity() const;
+	void set_headshot_immunity(bool headshot_immunity, bool force);
+
+	e_shield_multiplier_setting get_shield_multiplier_setting() const;
+	void set_shield_multiplier_setting(e_shield_multiplier_setting shield_multiplier_setting, bool force);
+	long get_shield_multiplier() const;
+	void set_shield_multiplier(long shield_multiplier, bool force);
+	real get_maximum_shield_vitality();
 
 protected:
-	c_enum<e_damage_resistance_percentage_setting, char, k_damage_resistance_percentage_settings> m_damage_resistance_percentage_setting;
-	c_enum<e_shield_recharge_rate_percentage_setting, char, k_shield_recharge_rate_percentage_settings> m_shield_recharge_rate_percentage_setting;
-	c_enum<e_vampirism_percentage_setting, char, k_vampirism_percentage_settings> m_vampirism_percentage_setting;
-	c_enum<e_headshot_immunity_setting, char, k_headshot_immunity_settings> m_headshot_immunity_setting;
-	c_enum<e_shield_multiplier_setting, char, k_shield_multiplier_settings> m_shield_multiplier_setting;
+	c_enum<e_damage_resistance_percentage_setting, char, _damage_resistance_percentage_setting_unchanged, k_damage_resistance_percentage_settings> m_damage_resistance_percentage_setting;
+	c_enum<e_shield_recharge_rate_percentage_setting, char, _shield_recharge_rate_percentage_setting_unchanged, k_shield_recharge_rate_percentage_settings> m_shield_recharge_rate_percentage_setting;
+	c_enum<e_vampirism_percentage_setting, char, _vampirism_percentage_setting_unchanged, k_vampirism_percentage_settings> m_vampirism_percentage_setting;
+	c_enum<e_headshot_immunity_setting, char, _headshot_immunity_setting_unchanged, k_headshot_immunity_settings> m_headshot_immunity_setting;
+	c_enum<e_shield_multiplier_setting, char, _shield_multiplier_setting_unchanged, k_shield_multiplier_settings> m_shield_multiplier_setting;
 
 	// elephant
 	byte pad[3];
@@ -488,21 +513,77 @@ static_assert(sizeof(c_player_trait_shield_vitality) == 0x8);
 
 class c_player_trait_weapons
 {
-	c_enum<e_grenade_count_setting, word, k_grenade_count_settings> m_initial_grenade_count;
-	char m_initial_primary_weapon;
-	char m_initial_secondary_weapon;
-	c_enum<e_damage_modifier_percentage_setting, char, k_damage_modifier_percentage_settings>  m_damage_modifier;
-	c_enum<e_recharging_grenades_setting, char, k_recharging_grenades_settings>  m_recharging_grenades;
-	c_enum<e_infinite_ammo_setting, char, k_infinite_ammo_settings>  m_infinite_ammo;
-	c_enum<e_weapon_pickup_setting, char, k_weapon_pickup_settings> m_weapon_pickup;
+public:
+	void set(c_player_trait_weapons const* traits, bool force);
+
+	e_grenade_count_setting get_initial_grenade_count_setting() const;
+	void set_initial_grenade_count_setting(e_grenade_count_setting initial_grenade_count_setting, bool force);
+	char get_initial_grenade_count() const;
+	void set_initial_grenade_count(long initial_grenade_count, bool force);
+
+	char get_initial_primary_weapon_absolute_index() const;
+	void set_initial_primary_weapon_absolute_index(char initial_primary_weapon_absolute_index, bool force);
+	long get_initial_primary_weapon() const;
+	void set_initial_primary_weapon(long initial_primary_weapon, bool force);
+
+	char get_initial_secondary_weapon_absolute_index() const;
+	void set_initial_secondary_weapon_absolute_index(char initial_secondary_weapon_absolute_index, bool force);
+	long get_initial_secondary_weapon() const;
+	void set_initial_secondary_weapon(long initial_secondary_weapon, bool force);
+
+	e_damage_modifier_percentage_setting get_damage_modifier_percentage_setting() const;
+	void set_damage_modifier_percentage_setting(e_damage_modifier_percentage_setting damage_modifier_percentage_setting, bool force);
+	real get_damage_modifier_percentage() const;
+	void set_damage_modifier_percentage(real damage_modifier_percentage, bool force);
+
+	e_recharging_grenades_setting get_recharging_grenades_setting() const;
+	void set_recharging_grenades_setting(e_recharging_grenades_setting recharging_grenades_setting, bool force);
+	bool get_recharging_grenades() const;
+	void set_recharging_grenades(bool recharging_grenades, bool force);
+
+	e_infinite_ammo_setting get_infinite_ammo_setting() const;
+	void set_infinite_ammo_setting(e_infinite_ammo_setting infinite_ammo_setting, bool force);
+	bool infinite_ammo_enabled() const;
+	void set_infinite_ammo(bool infinite_ammo, bool force);
+
+	e_weapon_pickup_setting get_weapon_pickup_setting() const;
+	void set_weapon_pickup_allowed_setting(e_weapon_pickup_setting weapon_pickup_setting, bool force);
+	bool get_weapon_pickup_allowed() const;
+	void set_weapon_pickup_allowed(bool weapon_pickup_allowed, bool force);
+
+protected:
+	c_enum<e_grenade_count_setting, word, _grenade_count_setting_unchanged, k_grenade_count_settings> m_initial_grenade_count_setting;
+	char m_initial_primary_weapon_absolute_index;
+	char m_initial_secondary_weapon_absolute_index;
+	c_enum<e_damage_modifier_percentage_setting, char, _damage_modifier_percentage_setting_unchanged, k_damage_modifier_percentage_settings> m_damage_modifier_percentage_setting;
+	c_enum<e_recharging_grenades_setting, char, _recharging_grenades_setting_unchanged, k_recharging_grenades_settings> m_recharging_grenades_setting;
+	c_enum<e_infinite_ammo_setting, char, _infinite_ammo_setting_unchanged, k_infinite_ammo_settings> m_infinite_ammo_setting;
+	c_enum<e_weapon_pickup_setting, char, _weapon_pickup_setting_unchanged, k_weapon_pickup_settings> m_weapon_pickup_setting;
 };
 static_assert(sizeof(c_player_trait_weapons) == 0x8);
 
 class c_player_trait_movement
 {
-	c_enum<e_player_speed_setting, char, k_player_speed_settings> m_speed_multiplier;
-	c_enum<e_player_gravity_setting, char, k_player_gravity_settings> m_gravity_multiplier;
-	c_enum<e_vehicle_usage_setting, char, k_vehicle_usage_settings> m_vehicle_usage;
+public:
+	void set(c_player_trait_movement const* traits, bool force);
+
+	e_player_speed_setting get_speed_setting() const;
+	void set_speed_setting(e_player_speed_setting speed_setting, bool force);
+	real get_speed() const;
+	void set_speed(real speed, bool force);
+
+	e_player_gravity_setting get_gravity_setting() const;
+	void set_gravity_setting(e_player_gravity_setting gravity_setting, bool force);
+	real get_gravity() const;
+	void set_gravity(real gravity, bool force);
+
+	e_vehicle_usage_setting get_vehicle_usage_setting() const;
+	void set_vehicle_usage_setting(e_vehicle_usage_setting vehicle_usage_setting, bool force);
+
+protected:
+	c_enum<e_player_speed_setting, char, _player_speed_setting_unchanged, k_player_speed_settings> m_speed_setting;
+	c_enum<e_player_gravity_setting, char, _player_gravity_setting_unchanged, k_player_gravity_settings> m_gravity_setting;
+	c_enum<e_vehicle_usage_setting, char, _vehicle_usage_setting_unchanged, k_vehicle_usage_settings> m_vehicle_usage_setting;
 
 	// shark
 	byte pad;
@@ -512,25 +593,72 @@ static_assert(sizeof(c_player_trait_movement) == 0x4);
 // Traits that affect the player's appearance
 class c_player_trait_appearance
 {
-	c_enum<e_active_camo_setting, char, k_active_camo_settings> m_active_camo_setting;
-	c_enum<e_waypoint_setting, char, k_waypoint_settings> m_waypoint_setting;
-	c_enum<e_aura_setting, char, k_aura_settings> m_aura_setting;
-	c_enum<e_forced_change_color_setting, char, k_forced_change_color_settings> m_forced_change_color_setting;
+public:
+	void set(c_player_trait_appearance const* traits, bool force);
+
+	e_active_camo_setting get_active_camo_setting() const;
+	void set_active_camo_setting(e_active_camo_setting active_camo_setting, bool force);
+
+	e_waypoint_setting get_waypoint_setting() const;
+	void set_waypoint_setting(e_waypoint_setting waypoint_setting, bool force);
+
+	e_aura_setting get_aura_setting() const;
+	void set_aura_setting(e_aura_setting aura_setting, bool force);
+
+	e_forced_change_color_setting get_forced_change_color_setting() const;
+	void set_forced_change_color_setting(e_forced_change_color_setting forced_change_color_setting, bool force);
+
+protected:
+	c_enum<e_active_camo_setting, char, _active_camo_setting_unchanged, k_active_camo_settings> m_active_camo_setting;
+	c_enum<e_waypoint_setting, char, _waypoint_setting_unchanged, k_waypoint_settings> m_waypoint_setting;
+	c_enum<e_aura_setting, char, _aura_setting_unchanged, k_aura_settings> m_aura_setting;
+	c_enum<e_forced_change_color_setting, char, _forced_change_color_setting_unchanged, k_forced_change_color_settings> m_forced_change_color_setting;
 };
 static_assert(sizeof(c_player_trait_appearance) == 0x4);
 
 // Traits that affect the HUD motion sensor behavior
 class c_player_trait_sensors
 {
-	c_enum<e_motion_tracker_setting, short, k_motion_tracker_settings> m_motion_tracker_settings;
-	c_enum<e_motion_tracker_range_setting, short, k_motion_tracker_range_settings> m_motion_tracker_range;
+public:
+	void set(c_player_trait_sensors const* traits, bool force);
+
+	e_motion_tracker_setting get_motion_tracker_setting() const;
+	void set_motion_tracker_setting(e_motion_tracker_setting motion_tracker_setting, bool force);
+
+	e_motion_tracker_range_setting get_motion_tracker_range_setting() const;
+	void set_motion_tracker_range_setting(e_motion_tracker_range_setting motion_tracker_range_setting, bool force);
+	real get_motion_tracker_range_meters() const;
+
+protected:
+	c_enum<e_motion_tracker_setting, short, _motion_tracker_setting_unchanged, k_motion_tracker_settings> m_motion_tracker_setting;
+	c_enum<e_motion_tracker_range_setting, short, _motion_tracker_range_setting_unchanged, k_motion_tracker_range_settings> m_motion_tracker_range_setting;
 };
 static_assert(sizeof(c_player_trait_sensors) == 0x4);
 
 class c_player_traits
 {
 public:
+	void set(c_player_traits const* traits, bool force);
+
+	c_player_trait_shield_vitality* get_shield_vitality_traits_writeable();
 	c_player_trait_shield_vitality const* get_shield_vitality_traits() const;
+	void set_shield_vitality_traits(c_player_trait_shield_vitality const* traits, bool force);
+
+	c_player_trait_weapons* get_weapons_traits_writeable();
+	c_player_trait_weapons const* get_weapons_traits() const;
+	void set_weapons_traits(c_player_trait_weapons const* traits, bool force);
+
+	c_player_trait_movement* get_movement_traits_writeable();
+	c_player_trait_movement const* get_movement_traits() const;
+	void set_movement_traits(c_player_trait_movement const* traits, bool force);
+
+	c_player_trait_appearance* get_appearance_traits_writeable();
+	c_player_trait_appearance const* get_appearance_traits() const;
+	void set_appearance_traits(c_player_trait_appearance const* traits, bool force);
+
+	c_player_trait_sensors* get_sensor_traits_writeable();
+	c_player_trait_sensors const* get_sensor_traits() const;
+	void set_sensor_traits(c_player_trait_sensors const* traits, bool force);
 
 protected:
 	c_player_trait_shield_vitality m_shield_vitality_traits;

@@ -10,3 +10,14 @@ enum e_simulation_device_update_flag
 
 	k_simulation_device_update_flag_count
 };
+
+struct s_simulation_device_state_data
+{
+	s_simulation_object_state_data object;
+
+	real position;
+	real position_group_position;
+	real power;
+	real power_group_power;
+};
+static_assert(sizeof(s_simulation_device_state_data) == sizeof(s_simulation_object_state_data) + 0x10);

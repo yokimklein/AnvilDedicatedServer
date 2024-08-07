@@ -49,7 +49,7 @@ class c_network_observer
 
 		struct s_channel_observer : c_network_channel
 		{
-			c_enum<e_observer_state, long, k_observer_state_count> state;
+			c_enum<e_observer_state, long, _observer_state_none, k_observer_state_count> state;
 			long m_allocated_timestamp1;
 			byte flags;
 			byte owner_flags;

@@ -75,7 +75,7 @@ public:
 	void set_view_establishment(e_simulation_view_establishment_mode establishment_mode, long establishment_identifier);
 
 	long unknown1;
-	c_enum<e_simulation_view_type, long, k_simulation_view_type_count> m_view_type;
+	c_enum<e_simulation_view_type, long, _simulation_view_type_none, k_simulation_view_type_count> m_view_type;
 	long m_view_datum_index;
 	c_simulation_distributed_view* m_distributed_view;
 	c_simulation_world* m_world;

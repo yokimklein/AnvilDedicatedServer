@@ -68,7 +68,7 @@ static_assert(sizeof(s_network_session_local_player) == 0x1C);
 struct s_local_player_add_queue_entry
 {
 	s_player_identifier identifier;
-	c_enum<e_network_join_refuse_reason, long, k_network_join_refuse_reason_count> refuse_reason;
+	c_enum<e_network_join_refuse_reason, long, _network_join_refuse_reason_none, k_network_join_refuse_reason_count> refuse_reason;
 	dword add_time;
 };
 static_assert(sizeof(s_local_player_add_queue_entry) == 0x10);
@@ -149,13 +149,13 @@ public:
 	c_network_observer* m_observer;
 	c_network_session_manager* m_session_manager;
 	long m_session_index; // TODO: different enum max of 3 here
-	c_enum<e_network_session_type, long, k_network_session_type_count> m_session_type;
-	c_enum<e_network_session_class, long, k_network_session_class_count> m_session_class;
+	c_enum<e_network_session_type, long, _network_session_type_none, k_network_session_type_count> m_session_type;
+	c_enum<e_network_session_class, long, _network_session_class_offline, k_network_session_class_count> m_session_class;
 	long : 32;
 	c_network_session_membership m_session_membership;
 	c_network_session_parameters m_session_parameters;
 	long : 32;
-	c_enum<e_network_session_state, long, k_network_session_state_count> m_local_state;
+	c_enum<e_network_session_state, long, _network_session_state_none, k_network_session_state_count> m_local_state;
 	long : 32;
 	union
 	{
@@ -172,10 +172,10 @@ public:
 	ulong m_time;
 	long unknown; // recevied packet pointer?
 	long m_managed_session_index;
-	c_enum<e_network_join_refuse_reason, long, k_network_join_refuse_reason_count> m_join_refuse_reason;
+	c_enum<e_network_join_refuse_reason, long, _network_join_refuse_reason_none, k_network_join_refuse_reason_count> m_join_refuse_reason;
 	qword m_host_join_nonce;
 	long : 32;
-	c_enum<e_network_session_disconnection_policy, long, k_network_session_disconnection_policy_count> m_disconnection_policy;
+	c_enum<e_network_session_disconnection_policy, long, _network_session_disconnection_waiting_for_establishment, k_network_session_disconnection_policy_count> m_disconnection_policy;
 	s_network_session_local_player m_player_we_are_adding;
 	long : 32;
 	s_local_player_add_queue_entry m_local_user_player_add;

@@ -211,7 +211,9 @@ void c_simulation_entity_database::entity_update(long entity_index, c_flags<long
 	}
 	entity->pending_update_mask |= update_flags->get_unsafe();
 	if (force_mask_update)
+	{
 		entity->force_update_mask |= update_flags->get_unsafe();
+	}
 }
 
 void c_simulation_entity_database::entity_delete(long entity_index)

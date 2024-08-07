@@ -103,8 +103,8 @@ static_assert(sizeof(s_online_context) == 0x8);
 
 struct c_managed_session
 {
-	c_enum<e_network_session_class, long, k_network_session_class_count> session_class;
-	c_enum<e_transport_platform, long, k_transport_platform_count> platform;
+	c_enum<e_network_session_class, long, _network_session_class_offline, k_network_session_class_count> session_class;
+	c_enum<e_transport_platform, long, _transport_platform_xnet, k_transport_platform_count> platform;
 	c_flags<e_online_managed_session_flags, ulong, k_online_managed_session_flags> flags;
 	c_flags<e_online_managed_session_operation_flags, ushort, k_online_managed_session_operation_flags> current_operation_flags;
 	c_flags<e_online_managed_session_operation_flags, ushort, k_online_managed_session_operation_flags> pending_operation_flags;

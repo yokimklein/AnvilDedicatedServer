@@ -1,106 +1,87 @@
 #pragma once
-
 #include <cseries\cseries.h>
 #include <game\game_engine_default.h>
 #include <game\game_engine_slayer_traits.h>
 
-class c_game_engine_slayer_variant : c_game_engine_base_variant
+struct s_game_engine_slayer_variant_definition;
+class c_game_engine_slayer_variant : public c_game_engine_base_variant
 {
 public:
-	c_game_engine_slayer_variant() :
-		m_score_to_win(),
-		m_score_unknown(),
-		m_kill_points(),
-		m_assist_points(),
-		m_death_points(),
-		m_suicide_points(),
-		m_betrayal_points(),
-		m_leader_killed_points(),
-		m_elimination_points(),
-		m_assassination_points(),
-		m_headshot_points(),
-		m_melee_points(),
-		m_sticky_points(),
-		m_splatter_points(),
-		m_killing_spree_points(),
-		m_leader_traits(),
-		pad(),
-		unused()
-	{
-	};
+	c_game_engine_slayer_variant* constructor();
 
-	// `c_game_engine_base_variant::m_team_scoring_method` override
-	// c_enum<e_slayer_team_scoring_settings, short, k_slayer_team_scoring_settings> m_team_scoring
+	void set(c_game_engine_slayer_variant const* variant, bool force);
+	void set(s_game_engine_slayer_variant_definition const* definition);
 
-	// default: 25
-	// maximum: 251
-	short m_score_to_win;
+	short get_score_to_win() const;
+	void set_score_to_win(short score_to_win);
 
-	// halo online specific
-	// default: 20
-	// maximum: 250
-	short m_score_unknown;
+	char get_kill_points() const;
+	void set_kill_points(char kill_points);
 
-	// default: 1
-	// maximum: 20
-	short m_kill_points;
+	char get_assist_points() const;
+	void set_assist_points(char assist_points);
 
-	// default: 0
-	// maximum: 20
-	char m_assist_points;
+	char get_death_points() const;
+	void set_death_points(char death_points);
 
-	// default: 0
-	// maximum: 20
-	char m_death_points;
+	char get_suicide_points() const;
+	void set_suicide_points(char suicide_points);
 
-	// default: -1
-	// maximum: 20
-	char m_suicide_points;
+	char get_betrayal_points() const;
+	void set_betrayal_points(char betrayal_points);
 
-	// default: -1
-	// maximum: 20
-	char m_betrayal_points;
+	char get_leader_killed_points() const;
+	void set_leader_killed_points(char leader_killed_points);
 
-	// default: 0
-	// maximum: 20
-	char m_leader_killed_points;
+	char get_elimination_points() const;
+	void set_elimination_points(char elimination_points);
 
-	// default: 0
-	// maximum: 20
-	char m_elimination_points;
+	char get_assassination_points() const;
+	void set_assassination_points(char assassination_points);
 
-	// default: 0
-	// maximum: 20
-	char m_assassination_points;
+	char get_headshot_points() const;
+	void set_headshot_points(char headshot_points);
 
-	// default: 0
-	// maximum: 20
-	char m_headshot_points;
+	char get_melee_points() const;
+	void set_melee_points(char melee_points);
 
-	// default: 0
-	// maximum: 20
-	char m_melee_points;
+	char get_sticky_points() const;
+	void set_sticky_points(char sticky_points);
 
-	// default: 0
-	// maximum: 20
-	char m_sticky_points;
+	char get_splatter_points() const;
+	void set_splatter_points(char splatter_points);
 
-	// default: 0
-	// maximum: 20
-	char m_splatter_points;
+	char get_killing_spree_points() const;
+	void set_killing_spree_points(char killing_spree_points);
 
-	// default: 0
-	// maximum: 20
-	char m_killing_spree_points;
+	c_player_traits* get_leader_traits_writeable();
+	c_player_traits const* get_leader_traits() const;
+	void set_leader_traits(c_player_traits const* traits, bool force);
 
-	// leader team traits if teams enabled
+protected:
+	c_enum<long, short, -1, 250> m_score_to_win;        // default: 25
+	c_enum<long, short, 0, 250> m_score_unknown;        // default: 20, halo online specific
+	c_enum<long, short, -10, 10> m_kill_points;         // default: 1
+	c_enum<long, char, -10, 10> m_assist_points;        // default: 0
+	c_enum<long, char, -10, 10> m_death_points;         // default: 0
+	c_enum<long, char, -10, 10> m_suicide_points;       // default: -1
+	c_enum<long, char, -10, 10> m_betrayal_points;      // default: -1
+	c_enum<long, char, -10, 10> m_leader_killed_points; // default: 0
+	c_enum<long, char, -10, 10> m_elimination_points;   // default: 0
+	c_enum<long, char, -10, 10> m_assassination_points; // default: 0
+	c_enum<long, char, -10, 10> m_headshot_points;      // default: 0
+	c_enum<long, char, -10, 10> m_melee_points;         // default: 0
+	c_enum<long, char, -10, 10> m_sticky_points;        // default: 0
+	c_enum<long, char, -10, 10> m_splatter_points;      // default: 0
+	c_enum<long, char, -10, 10> m_killing_spree_points; // default: 0
 	c_player_traits m_leader_traits;
 
-	byte pad[2];
-	byte unused[0x60];
+	byte m_pad1[2];
 };
-static_assert(sizeof(c_game_engine_slayer_variant) == 0x260);
+static_assert(sizeof(c_game_engine_slayer_variant) == 0x200);
 
 struct c_slayer_engine : c_game_engine
 {
+public:
+	//void dump_settings(s_file_reference* file) const;
 };
