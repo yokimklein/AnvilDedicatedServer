@@ -110,18 +110,18 @@ void game_engine_update_round_conditions()
 		long round_time = game_engine_round_time_get();
 		long game_over_timer = game_engine_globals->game_over_timer;
 		c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> condition;
-		condition.clear();
-		condition.set(_game_engine_round_condition_unknown0, round_time < 1); // 5
+		condition.set(_game_engine_round_condition_unknown0, round_time < 5); // 5
 		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1)); // 1
-		condition.set(_game_engine_round_condition_unknown2, round_time < game_seconds_integer_to_ticks(1)); // 3
-		condition.set(_game_engine_round_condition_unknown3, round_time < game_seconds_integer_to_ticks(1)); // team voice announcer 4
-		condition.set(_game_engine_round_condition_unknown5, round_time < game_seconds_integer_to_ticks(1)); // player control 11
-		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(1)); // team intro widget 5
-		condition.set(_game_engine_round_condition_unknown4, round_time <= game_seconds_integer_to_ticks(1)); // camera position 18
-		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(1)); // 4
+		condition.set(_game_engine_round_condition_welcome, round_time < game_seconds_integer_to_ticks(k_pre_round_seconds + 3)); // 3
+		condition.set(_game_engine_round_condition_waiting_for_players, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 14, 0))); // 4
+		condition.set(_game_engine_round_condition_match_introduction, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 7, 0))); // 11
+		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // 5
+		condition.set(_game_engine_round_condition_spawn_players, round_time <= game_seconds_integer_to_ticks(k_pre_round_seconds)); // 18
+		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4)); // 4
 		if (game_engine_globals->round_condition_flags != condition)
 		{
-			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_unknown3) && !condition.test(_game_engine_round_condition_unknown3))
+			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_waiting_for_players) &&
+				!condition.test(_game_engine_round_condition_waiting_for_players))
 			{
 				TLS_DATA_GET_VALUE_REFERENCE(players);
 				c_player_in_game_iterator player_iterator(*players);
@@ -183,7 +183,7 @@ void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, lon
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
 	s_player_datum* player = (s_player_datum*)datum_get(*players, player_index);
-
+	
 	player->respawn_timer_countdown_seconds = PIN(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }

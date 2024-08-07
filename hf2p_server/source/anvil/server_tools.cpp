@@ -290,10 +290,10 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
         return false;
     }
 
-    game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(1);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(1);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(1);
+    //game_variant.get_slayer_variant_writeable()->set_score_to_win(1);
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(1);
-    game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(1);
-    game_variant.get_slayer_variant_writeable()->set_score_to_win(25);
     //game_variant.get_slayer_variant_writeable()->set_suicide_points(1);
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_poor, false);
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->get_respawn_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_invisible, false);

@@ -1,6 +1,5 @@
 #include "hooks_simulation_globals.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
 #include <game\game_engine.h>
 #include <simulation\game_interface\simulation_game_engine_globals.h>
 
@@ -18,15 +17,10 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_hook2()
 }
 #pragma runtime_checks("", restore)
 
-void __cdecl game_engine_update_round_conditions_hook()
-{
-    game_engine_update_round_conditions();
-}
-
 void anvil_hooks_simulation_globals_apply()
 {
     // pre-game camera countdown
-    Hook(0xC6C00, game_engine_update_round_conditions_hook).Apply();
+    hook_function(0xC6C00, 0x111, game_engine_update_round_conditions);
 
     // round timer
     insert_hook(0xC98CB, 0xC98D1, game_engine_update_time_hook, _hook_execute_replaced_last);
