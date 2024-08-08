@@ -598,6 +598,20 @@ __declspec(safebuffers) void __fastcall unit_action_assassinate_interrupted_hook
     __asm mov mover_index, edi;
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
+
+__declspec(safebuffers) void __fastcall motor_task_enter_seat_internal_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, edi;
+    simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
+}
+
+__declspec(safebuffers) void __fastcall motor_animation_exit_seat_immediate_internal_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, esi;
+    simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -751,4 +765,10 @@ void anvil_hooks_object_updates_apply()
 
     // assassination interrupted
     insert_hook(0x44DFCD, 0x44DFD2, unit_action_assassinate_interrupted_hook, _hook_execute_replaced_first);
+
+    // enter vehicle seats
+    insert_hook(0x45666E, 0x456675, motor_task_enter_seat_internal_hook, _hook_execute_replaced_first);
+
+    // exit vehicle seats
+    insert_hook(0x457053, 0x457058, motor_animation_exit_seat_immediate_internal_hook, _hook_execute_replaced_last);
 }
