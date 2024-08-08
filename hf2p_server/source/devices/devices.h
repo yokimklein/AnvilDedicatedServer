@@ -2,14 +2,15 @@
 #include <cseries\cseries.h>
 #include <memory\data.h>
 #include <objects\objects.h>
+#include <animations\mixing_board\channels\animation_channel.h>
 
 struct s_device_animation_control
 {
     float __unknown0;
     float __unknown4;
-    int __unknown8;
-    int __unknownC;
-    int __unknown10;
+    float __unknown8;
+    float __unknownC;
+    float __unknown10;
     float __unknown14;
     float __unknown18;
     float __unknown1C;
@@ -28,8 +29,8 @@ struct _device_datum
     short __unknown19A;
     s_device_animation_control position_track;
     s_device_animation_control overlay_track;
-    char position_animation_channel[0x3C];
-    char power_animation_channel[0x3C];
+    c_animation_channel position_channel;
+    c_animation_channel power_and_overlay_track_channel;
 };
 static_assert(sizeof(_device_datum) == 0xD8);
 

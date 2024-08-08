@@ -179,7 +179,7 @@ void anvil_session_update()
         {
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
-            anvil_session_set_map(_riverworld);
+            anvil_session_set_map(_s3d_reactor);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             
@@ -290,7 +290,7 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
         return false;
     }
 
-    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(1);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(3);
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(1);
     //game_variant.get_slayer_variant_writeable()->set_score_to_win(1);
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(1);
@@ -368,7 +368,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _invisibility_vehicle;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _auto_turret;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;

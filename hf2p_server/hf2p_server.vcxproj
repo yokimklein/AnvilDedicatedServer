@@ -166,6 +166,7 @@
     <ClInclude Include="source\ai\joint_behavior.h" />
     <ClInclude Include="source\ai\sector.h" />
     <ClInclude Include="source\animations\animation_data.h" />
+    <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_events.h" />
@@ -183,6 +184,7 @@
     <ClInclude Include="source\cache\cache_files.h" />
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
+    <ClInclude Include="source\devices\devices.h" />
     <ClInclude Include="source\game\aim_target.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\game\game_allegiance.h" />

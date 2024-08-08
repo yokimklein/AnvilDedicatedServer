@@ -11,6 +11,7 @@
 #include <simulation\game_interface\simulation_game_vehicles.h>
 #include <simulation\game_interface\simulation_game_items.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <simulation\game_interface\simulation_game_device_machines.h>
 #include <units\bipeds.h>
 #include <units\units.h>
 #include <motor\action_system.h>
@@ -612,6 +613,52 @@ __declspec(safebuffers) void __fastcall motor_animation_exit_seat_immediate_inte
     __asm mov unit_index, esi;
     simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
 }
+
+__declspec(safebuffers) void __fastcall device_group_set_actual_value_hook1()
+{
+    datum_index device_index;
+    __asm mov device_index, esi;
+
+    object_wake(device_index);
+    simulation_action_object_update(device_index, _simulation_device_update_power);
+}
+
+__declspec(safebuffers) void __fastcall device_group_set_actual_value_hook2()
+{
+    datum_index device_index;
+    __asm mov device_index, esi;
+
+    object_wake(device_index);
+    simulation_action_object_update(device_index, _simulation_device_update_position);
+}
+
+__declspec(safebuffers) void __fastcall device_group_set_desired_value_hook1()
+{
+    datum_index device_index;
+    __asm mov device_index, esi;
+    simulation_action_object_update(device_index, _simulation_device_update_power_group);
+}
+
+__declspec(safebuffers) void __fastcall device_group_set_desired_value_hook2()
+{
+    datum_index device_index;
+    __asm mov device_index, esi;
+    simulation_action_object_update(device_index, _simulation_device_update_position_group);
+}
+
+__declspec(safebuffers) void __fastcall device_set_power_hook()
+{
+    datum_index device_index;
+    __asm mov device_index, edi;
+    simulation_action_object_update(device_index, _simulation_device_update_power);
+}
+
+__declspec(safebuffers) void __fastcall machine_update_hook()
+{
+    datum_index device_index;
+    __asm mov device_index, esi;
+    simulation_action_object_update(device_index, _simulation_device_update_position);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -771,4 +818,16 @@ void anvil_hooks_object_updates_apply()
 
     // exit vehicle seats
     insert_hook(0x457053, 0x457058, motor_animation_exit_seat_immediate_internal_hook, _hook_execute_replaced_last);
+
+    // device group values
+    insert_hook(0x45D9F9, 0x45DA2E, device_group_set_actual_value_hook1, _hook_replace); // UNTESTED!!
+    insert_hook(0x45DA53, 0x45DA8C, device_group_set_actual_value_hook2, _hook_replace); // UNTESTED!!
+    insert_hook(0x45D6E1, 0x45D6F4, device_group_set_desired_value_hook1, _hook_execute_replaced_last, true); // UNTESTED!!
+    insert_hook(0x45D745, 0x45D74B, device_group_set_desired_value_hook2, _hook_execute_replaced_last);
+
+    // device power
+    insert_hook(0x45D5BE, 0x45D5C3, device_set_power_hook, _hook_execute_replaced_first); // UNTESTED!!
+
+    // device position
+    insert_hook(0x48D398, 0x48D39F, machine_update_hook, _hook_execute_replaced_last);
 }
