@@ -13,6 +13,7 @@
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <units\bipeds.h>
 #include <units\units.h>
+#include <motor\action_system.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -566,6 +567,37 @@ __declspec(safebuffers) void __fastcall unit_update_active_camouflage_hook1()
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
     simulation_action_object_update_internal(unit_index, update_flags);
 }
+
+__declspec(safebuffers) void __fastcall unit_action_assassinate_finished_hook()
+{
+    datum_index mover_index;
+    __asm mov mover_index, edx;
+    simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
+}
+
+__declspec(safebuffers) void __fastcall unit_action_assassinate_submit_hook1()
+{
+    datum_index mover_index;
+    __asm mov mover_index, esi;
+    simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
+}
+
+__declspec(safebuffers) void __fastcall unit_action_assassinate_submit_hook2()
+{
+    s_action_request* request;
+    DEFINE_ORIGINAL_EBP_ESP(0x3C, sizeof(request));
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 0x0C];
+    __asm mov request, eax;
+    simulation_action_object_update(request->assassination.victim_unit_index, _simulation_unit_update_assassination_data);
+}
+
+__declspec(safebuffers) void __fastcall unit_action_assassinate_interrupted_hook()
+{
+    datum_index mover_index;
+    __asm mov mover_index, edi;
+    simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -709,4 +741,14 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0x41B17F, 0x41B185, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
     insert_hook(0x41B193, 0x41B199, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
     insert_hook(0x41B1D0, 0x41B1D6, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+
+    // assassination finish
+    insert_hook(0x44DF23, 0x44DF28, unit_action_assassinate_finished_hook, _hook_execute_replaced_first);
+
+    // assassination submit
+    insert_hook(0x44D7EF, 0x44D7F6, unit_action_assassinate_submit_hook1, _hook_execute_replaced_first);
+    insert_hook(0x44D852, 0x44D859, unit_action_assassinate_submit_hook2, _hook_execute_replaced_first);
+
+    // assassination interrupted
+    insert_hook(0x44DFCD, 0x44DFD2, unit_action_assassinate_interrupted_hook, _hook_execute_replaced_first);
 }

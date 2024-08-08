@@ -732,6 +732,9 @@
     <ClInclude Include="source\game\game_engine_group.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\motor\action_system.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">

@@ -6,6 +6,14 @@
 #include <game\player_configuration.h>
 #include <game\game_engine_player_traits.h>
 
+struct s_player_shot_info
+{
+	word __unknown0;
+	s_damage_reporting_info damage_reporting_info;
+	char __data6[0x6];
+};
+static_assert(sizeof(s_player_shot_info) == 0xC);
+
 struct s_player_datum : s_datum_header
 {
 	short unknown;
@@ -79,22 +87,25 @@ struct s_player_datum : s_datum_header
 	ushort respawn_duration_seconds;
 	bool first_spawn;
 	uchar respawn_failed_reason;
-	struct {
-		long LastUsedTick;
-		long Duration;
-		long DamageAccelerationScale;
-		long field_C;
-		real field_10;
-		real field_14;
-	} tank_mode_state;
-	struct {
-		long last_used_game_time;
-		real duration;
-		real damage_acceleration_scale;
-		long field_C;
-	} reactive_armor_state;
+	struct // tank_mode
+	{
+		long tank_mode_last_used_tick;
+		real tank_mode_duration;
+		real tank_mode_damage_acceleration_scale;
+		real tank_mode_damage_absorption_scale;
+		real tank_mode_field_10;
+		real tank_mode_field_14;
+	};
+	struct // reactive armor
+	{
+		long reactive_armor_last_used_tick;
+		real reactive_armor_duration;
+		real reactive_armor_damage_reflection_scale;
+		real reactive_armor_field_0C;
+	};
 	long stamina_restore_near_death_timer;
-	bool grenade_scavenger_ability_used;
+	bool grenade_scavenger_modifier_used;
+	byte : 3;
 	long last_aim_assist_target_player_index;
 	short unused;
 	char game_engine_vehicle_use_timer;
@@ -102,62 +113,65 @@ struct s_player_datum : s_datum_header
 	char game_engine_simulation_update_timer2;
 	bool was_sneaking;
 	bool is_sneaking;
+	byte : 8;
 	ushort aim_assist_update_timer;
 	ushort lives;
-	long game_grief_player_index;
+	long griefer_player_index;
 	ulong last_killed_game_time;
 	c_player_traits traits;
-	long powerup_pickup_times[3];
+	c_static_array<dword, 3> powerup_pickup_time;
 	long spectating_player_index;
-	bool sandbox_rotating;
-	real sandbox_extend_distance;
-	real_vector3d sandbox_rotation_throttle;
+	bool map_editor_rotating;
+	real_point2d map_editor_throttle;
+	real_euler_angles2d map_editor_rotation;
 	ushort time_in_hill;
 	ushort time_outside_Hill;
 	ushort time_hill_Left;
 	short : 16;
-	short nemesis_totals[16];
-	char field_2E14;
-	char field_2E15;
+	union // nemesis mechanics
+	{
+		c_static_array<short, 16> nemesis_mechanics_nemesis_counts; // killing_player, nemesis medal
+		c_static_array<short, 16> nemesis_mechanics_avenger_counts; // dead_player, avenger medal
+	};
+	char revenge_shield_boost_unknown80;
+	char field_18B5;
 	char revenge_shield_boost_multiplier;
-	char field_2E17;
+	char field_18B7;
 	ulong last_hit_marker_game_time;
-	long revenge_player_Index;
-	s_damage_reporting_info revenge_event_type;
+	long revenge_shield_boost_player_index;
+	s_damage_reporting_info revenge_shield_boost_damage;
 	bool revenge_taken;
 	char : 8;
 	char : 8;
 	char : 8;
-	uchar unknown_damage_reporting_timer;
-	char unknown_damage_reporting_timer2;
-	s_damage_reporting_info unknown_damagereportinginfo;
-	s_damage_reporting_info unknown_damagereportinginfo2;
-	s_damage_reporting_info unknown_damagereportinginfo3;
-	char field_2E38;
-	char field_2E39;
-	short field_2E3A;
-	short field_2E3C;
-	short field_2E3E;
-	long last_ejected_from_vehicle_index;
-	ulong last_ejected_from_vehicle_game_time;
-	long assassination_victim_unit_index;
-	bool is_assassination_victim;
-	real_point3d assasination_authorative_position;
-	real_vector3d assasination_authorative_froward;
-	uchar assassination_state[60];
-	struct {
-		ushort field_0;
-		s_damage_reporting_info damage_reporting_info;
-		ulong time;
-	} damage_history[8];
-	long field_2F04;
-
-	byte unknown_data[8];
+	byte __unknown_data[0x24];
+	struct // assassination info
+	{
+		long assassination_victim_unit_index;
+		bool is_assassination_victim;
+		real_point3d assasination_authorative_position;
+		real_vector3d assasination_authorative_forward;
+		uchar assassination_state[60];
+	};
+	c_static_array<s_player_shot_info, 8> shot_info;
+	short spawn_count;
+	short : 16;
 };
 static_assert(sizeof(s_player_datum) == 0x19B0);
+static_assert(0x04 == OFFSETOF(s_player_datum, player_flags));
 static_assert(0x30 == OFFSETOF(s_player_datum, unit_index));
 static_assert(0x49 == OFFSETOF(s_player_datum, next_spawn_control_context));
 static_assert(0x4C == OFFSETOF(s_player_datum, character_type_index));
+static_assert(0x70 == OFFSETOF(s_player_datum, configuration));
+static_assert(0x1842 == OFFSETOF(s_player_datum, lives));
+static_assert(0x1848 == OFFSETOF(s_player_datum, last_killed_game_time));
+static_assert(0x1874 == OFFSETOF(s_player_datum, spectating_player_index));
+static_assert(0x18B4 == OFFSETOF(s_player_datum, revenge_shield_boost_unknown80));
+static_assert(0x18B6 == OFFSETOF(s_player_datum, revenge_shield_boost_multiplier));
+static_assert(0x18EC == OFFSETOF(s_player_datum, assassination_victim_unit_index));
+static_assert(0x18F0 == OFFSETOF(s_player_datum, is_assassination_victim));
+static_assert(0x18F4 == OFFSETOF(s_player_datum, assasination_authorative_position));
+static_assert(0x1900 == OFFSETOF(s_player_datum, assasination_authorative_forward));
 
 class c_player_in_game_iterator : public c_data_iterator<s_player_datum>
 {
