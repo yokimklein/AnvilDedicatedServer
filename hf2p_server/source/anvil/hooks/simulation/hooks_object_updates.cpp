@@ -659,6 +659,33 @@ __declspec(safebuffers) void __fastcall machine_update_hook()
     __asm mov device_index, esi;
     simulation_action_object_update(device_index, _simulation_device_update_position);
 }
+
+// preserve vehicle_index variable
+__declspec(naked) void c_vehicle_auto_turret__track_auto_target_hook0()
+{
+    __asm mov [ebp + 4], ecx;
+    __asm retn;
+}
+
+__declspec(safebuffers) void __fastcall c_vehicle_auto_turret__track_auto_target_hook1()
+{
+    datum_index vehicle_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x5C, sizeof(vehicle_index));
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 4];
+    __asm mov vehicle_index, eax;
+    simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret_tracking);
+}
+
+__declspec(safebuffers) void __fastcall c_vehicle_auto_turret__track_auto_target_hook2()
+{
+    datum_index vehicle_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x5C, sizeof(vehicle_index));
+    __asm mov eax, original_ebp;
+    __asm mov eax, [eax + 4];
+    __asm mov vehicle_index, eax;
+    simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -712,7 +739,7 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0xFB6F1, 0xFB6F6, unit_add_initial_loadout_hook0, _hook_execute_replaced_last); // preserve player_object_index in a new variable
     insert_hook(0xFBA34, 0xFBA3A, unit_add_initial_loadout_hook1, _hook_execute_replaced_last); // syncs grenade counts
     insert_hook(0xFBAD9, 0xFBAE0, unit_add_initial_loadout_hook2, _hook_execute_replaced_last); // used to sync the revenge_shield_boost modifier shield bonus
-    insert_hook(0xFBAE1, 0xFBAE6, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+    insert_hook(0xFBAE0, 0xFBAE6, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
     insert_hook(0xFBAF2, 0xFBAFC, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
     // projectile_attach - prevents plasma nades from appearing like they can be picked up when stuck to a player
@@ -750,7 +777,7 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0x42D2A4, 0x42D2A9, equipment_handle_energy_cost_hook0, _hook_execute_replaced_last); // preserve unit_index
     insert_hook(0x42D392, 0x42D398, equipment_handle_energy_cost_hook1, _hook_execute_replaced_first); // unit energy
     insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first); // TODO: move to player updates
-    insert_hook(0x42D3F3, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+    insert_hook(0x42D3F2, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
     // sync hologram camo
     insert_hook(0x42C56E, 0x42C578, unit_set_hologram_hook, _hook_execute_replaced_first);
@@ -774,7 +801,7 @@ void anvil_hooks_object_updates_apply()
 
     // camo decreasing on weapon fire/grenade throw/damage
     hook_function(0x42AAE0, 0x9C, unit_active_camouflage_ding_hook);
-    insert_hook(0x47D185, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
+    insert_hook(0x47D18D, 0x47D20F, throw_release_hook2, _hook_replace); // replace inlined unit_active_camouflage_ding
 
     // camo disable
     hook_function(0x42AA80, 0x56, unit_active_camouflage_disable_hook);
@@ -830,4 +857,13 @@ void anvil_hooks_object_updates_apply()
 
     // device position
     insert_hook(0x48D398, 0x48D39F, machine_update_hook, _hook_execute_replaced_last);
+
+    // auto turret tracking
+    add_variable_space_to_stack_frame(0x4A0BA0, 0x4A0EE4, 4); // Add 4 bytes of variable space to the stack frame
+    insert_hook(0x4A0BB6, 0x4A0BBC, c_vehicle_auto_turret__track_auto_target_hook0, _hook_execute_replaced_last);
+    insert_hook(0x4A0E3E, 0x4A0E44, c_vehicle_auto_turret__track_auto_target_hook1, _hook_execute_replaced_first);
+    insert_hook(0x4A0EBF, 0x4A0EC6, c_vehicle_auto_turret__track_auto_target_hook2, _hook_execute_replaced_first);
+    insert_hook(0x4A0ED4, 0x4A0EDB, c_vehicle_auto_turret__track_auto_target_hook2, _hook_execute_replaced_first);
+    insert_hook(0x4A0EC6, 0x4A0ECC, (void*)4, _hook_stack_frame_cleanup);
+    insert_hook(0x4A0EDB, 0x4A0EE1, (void*)4, _hook_stack_frame_cleanup);
 }

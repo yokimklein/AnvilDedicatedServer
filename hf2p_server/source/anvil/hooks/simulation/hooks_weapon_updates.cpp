@@ -208,7 +208,7 @@ void anvil_hooks_weapon_updates_apply()
 	add_variable_space_to_stack_frame(0x426D10, 0x426DD6, 4); // Add 4 bytes of variable space to the stack frame
 	insert_hook(0x426D16, 0x426D1C, unit_inventory_set_weapon_index_hook0, _hook_execute_replaced_last); // preserve unit_index in a new variable
 	insert_hook(0x426D8E, 0x426DCF, unit_inventory_set_weapon_index_hook1, _hook_replace);
-	insert_hook(0x426DD0, 0x426DD5, (void*)4, _hook_stack_frame_cleanup); // cleanup new variable from stack on return
+	insert_hook(0x426DCF, 0x426DD5, (void*)4, _hook_stack_frame_cleanup); // cleanup new variable from stack on return
 
 	// weapon set identifier updates
 	Hook(0x426CC0, unit_inventory_cycle_weapon_set_identifier, HookFlags::IsCall).Apply();

@@ -18,7 +18,7 @@ enum e_hook_type
     _hook_execute_replaced_last, // executes replaced section after inserted code
     _hook_replace_no_nop, // don't nop code section & don't run original code section, useful for if original section still needs to be accessed
     _hook_stack_frame_increase,
-    _hook_stack_frame_cleanup
+    _hook_stack_frame_cleanup // NOTE: ensure you cleanup after the function epilogue but before the return - best practice is to hook the entire epilogue region
 };
 
 void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);
@@ -26,6 +26,7 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
 void nop_region(size_t address, size_t length);
 void hook_function(size_t function_address, size_t length, void* hook_function);
 // TODO: hook_call
+//void patch_bytes(size_t address, char* bytes, size_t length);
 
 void anvil_patches_apply();
 void anvil_hooks_apply();

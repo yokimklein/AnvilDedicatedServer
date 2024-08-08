@@ -417,6 +417,15 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                 //    printf("EBP instruction(%p) w/ disp: %lld, new disp: %lld\n", instruction_address, displacement, new_displacement);
                 //}
             }
+            // handle fstp using non standard ebp value - TODO: what is going on here?
+            else if (instruction.opcode == 0xD9 && instruction.modrm.modrm == 0x5D) // 0xD9 - fstp opcode, 0xD9 - ebp register (normal register values + 0x38)
+            {
+                char offset = ((char*)instruction_address)[2];
+                if (offset > 0)
+                {
+                    ((char*)instruction_address)[2] = offset + offset_increase;
+                }
+            }
         }
 
         i += instruction_length;
@@ -424,7 +433,7 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
 }
 
 // ALWAYS compare a function's instructions *before* AND *after* this has been called to ensure it has worked properly.
-// NOTE: You have to manually clean up the stack after calling this, it does not handle it for you! There isn't always 5 bytes worth of space at the return to replace. You may have to cleanup after the function call.
+// NOTE: You have to manually clean up the stack after calling this, it does not handle it for you! There isn't always 5 bytes worth of space at the return to replace. Cleanup must occur at the start of the function epilogue so the pops return the correct values
 void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes)
 {
     size_t bytes_to_overwrite = 0;
@@ -439,11 +448,11 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
     while (bytes_to_overwrite < 5);
     assert(bytes_to_overwrite < length); // ensure the space we want to overwrite hasn't exceeded the bounds of the function
 
+    // correct positive ebp offsets (typically function arguments) to account for the extra space we've pushed to the stack
+    increase_positive_ebp_offsets(function_start, function_end, space_in_bytes);
+
     // make new hook flag to jump to raw assembly shellcode?
     insert_hook(function_start, function_start + bytes_to_overwrite, (void*)space_in_bytes, _hook_stack_frame_increase);
-
-    // correct positive ebp offsets (usually function arguments) to account for the extra space we've pushed to the stack
-    increase_positive_ebp_offsets(function_start, function_end, space_in_bytes);
 }
 
 void nop_region(size_t address, size_t length)
@@ -466,6 +475,11 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
     memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
 }
+
+//void patch_bytes(size_t address, char* bytes, size_t length)
+//{
+//    memcpy((void*)BASE_ADDRESS(address), bytes, length);
+//}
 
 void anvil_patches_apply()
 {
