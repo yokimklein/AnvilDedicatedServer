@@ -15,7 +15,7 @@ struct s_thread_local_storage
 	byte* __unknown0;
 	c_smart_data_array<actor_datum> actor_data;
 	c_smart_data_array<s_player_datum> players;
-	c_smart_data_array<s_object_header> object_headers; // object
+	c_smart_data_array<object_header_datum> object_headers; // object
 	s_game_engine_globals* game_engine_globals;
 	byte* __unknown14; // prop_ref
 	byte* hs_thread_deterministic_data;

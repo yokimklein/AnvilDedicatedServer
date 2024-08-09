@@ -36,7 +36,8 @@ static_assert(sizeof(_device_datum) == 0xD8);
 
 struct device_datum
 {
-    s_object_data object;
+    long definition_index;
+    _object_datum object;
     _device_datum device;
 };
 static_assert(sizeof(device_datum) == 0x254);

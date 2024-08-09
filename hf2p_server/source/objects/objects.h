@@ -24,7 +24,7 @@ enum e_object_data_flags
 	_object_hidden_bit,
 	_object_always_active_bit,
 	_object_being_created_bit,
-	_object_unknown3_bit, // _object_is_submerged_bit, // when set, the object can't be a simulation multiplayer item
+	_object_underwater_bit, // semi confirmed
 	_object_has_attached_lights_bit,
 	_object_has_attached_looping_sounds_bit,
 	_object_has_unattached_lights_bit,
@@ -103,24 +103,23 @@ public:
 };
 static_assert(sizeof(c_object_identifier) == 0x8);
 
-struct s_object_header_block_reference
+struct object_header_block_reference
 {
 	short size;
 	short offset;
 };
-static_assert(sizeof(s_object_header_block_reference) == 0x4);
+static_assert(sizeof(object_header_block_reference) == 0x4);
 
-struct s_object_damage_section
+struct object_damage_section
 {
 	long unknown1;
 	long unknown2;
 	long unknown3;
 };
-static_assert(sizeof(s_object_damage_section) == 0xC);
+static_assert(sizeof(object_damage_section) == 0xC);
 
-struct s_object_data
+struct _object_datum
 {
-	long definition_index;
 	c_flags<e_object_data_flags, long, k_object_data_flags> flags;
 	ulong extra_object_state;
 	datum_index next_object_index;
@@ -167,7 +166,7 @@ struct s_object_data
 	short bsp2E4_datum_index;
 	char created_at_rest;
 	uchar clusters_touched_on_connection;
-	datum_index gamestate_index; // object.gamestate_index
+	datum_index gamestate_index;
 	short simulation_unknown_team_index;
 	c_flags<e_object_simulation_flags, byte, k_number_of_object_simulation_flags> simulation_flags;
 	char child_variant_index;
@@ -199,40 +198,58 @@ struct s_object_data
 	long parent_recycling_group;
 	long next_recycling_group_member;
 	long next_sync_action_participant_index;
-	long sync_action_name; // 0x13C
+	long sync_action_name;
 	long sync_animation_id;
 	long ai_sync_action_arranger_index;
 	short render_flags;
-	s_object_header_block_reference original_node_orientations;
-	s_object_header_block_reference node_orientations;
-	s_object_header_block_reference node_matrices;
-	s_object_header_block_reference region_information;
-	s_object_header_block_reference attachments;
-	s_object_header_block_reference damage_sections;
-	s_object_header_block_reference change_colors;
-	s_object_header_block_reference animation;
-	s_object_header_block_reference multiplayer;
-	long air_probe_index;
-	long air_probe_index2;
+	object_header_block_reference original_node_orientations;
+	object_header_block_reference node_orientations;
+	object_header_block_reference node_matrices;
+	object_header_block_reference region_information;
+	object_header_block_reference attachments;
+	object_header_block_reference damage_sections;
+	object_header_block_reference change_colors;
+	object_header_block_reference animation;
+	object_header_block_reference multiplayer;
+	short : 16;
+	// (bsp_index << 24) | probe_index & 0xFFFFFF
+	long air_probe_index; // airprobes block
+
+	// (bsp_index << 24) | typed_probe_index & 0xFFFFFF
+	union
+	{
+		// scenery probes block
+		long scenery_air_probe_index;
+
+		// device machine probes block
+		long device_machine_air_probe_index;
+	};
 	long unknown; // TODO: verify where this new field goes!
 };
-static_assert(sizeof(s_object_data) == 0x17C);
-static_assert(0x13C == OFFSETOF(s_object_data, sync_action_name));
-static_assert(0x11C == OFFSETOF(s_object_data, shield_stun_ticks));
+static_assert(sizeof(_object_datum) == 0x178);
+static_assert(0x138 == OFFSETOF(_object_datum, sync_action_name));
+static_assert(0x118 == OFFSETOF(_object_datum, shield_stun_ticks));
 
-struct s_object_header : s_datum_header
+struct object_datum
+{
+	long definition_index;
+	_object_datum object;
+};
+static_assert(sizeof(object_datum) == 0x17C);
+
+struct object_header_datum : s_datum_header
 {
 	c_flags<e_object_header_flags, byte, k_number_of_object_header_flags> flags;
 	c_enum<e_object_type, byte, _object_type_biped, k_object_type_count> type;
-	short cluster_reference;
+	short cluster_index;
 	word data_size;
-	long pool_handle;
-	s_object_data* data;
+	long datum_handle;
+	object_datum* datum;
 };
-static_assert(sizeof(s_object_header) == 0x10);
+static_assert(sizeof(object_header_datum) == 0x10);
 
-s_object_data* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask);
-s_object_data* object_get(datum_index object_index);
+object_datum* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask);
+object_datum* object_get(datum_index object_index);
 e_object_type object_get_type(datum_index object_index);
 bool object_is_multiplayer_cinematic_object(datum_index object_index);
 datum_index object_get_ultimate_parent(datum_index object_index);
@@ -250,5 +267,5 @@ void __fastcall object_compute_node_matrices(datum_index object_index);
 datum_index __fastcall object_new(s_object_placement_data* placement_data);
 void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, long collection_ticks);
 bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected);
-s_object_header const* object_header_get(datum_index object_index);
-s_object_data* object_get_and_verify_type(datum_index object_index, dword object_type_mask);
+object_header_datum const* object_header_get(datum_index object_index);
+void* object_get_and_verify_type(datum_index object_index, dword object_type_mask);

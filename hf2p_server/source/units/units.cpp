@@ -13,20 +13,21 @@ void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_inde
 {
     if (!game_is_predicted())
     {
-        s_unit_data* unit = (s_unit_data*)object_get(unit_index);
-        word cycled_identifier = (unit->current_weapon_set.set_identifier + 1) & 0xF;
-        unit->current_weapon_set.set_identifier = cycled_identifier;
-        unit->desired_weapon_set.set_identifier = cycled_identifier;
+        unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+        word new_identifier = (unit->unit.current_weapon_set.set_identifier + 1) & 0xF;
+        assert(new_identifier != NONE);
+        unit->unit.current_weapon_set.set_identifier = new_identifier;
+        unit->unit.desired_weapon_set.set_identifier = new_identifier;
         simulation_action_object_update(unit_index, _simulation_unit_update_desired_weapon_set);
     }
 }
 
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 {
-    s_unit_data* unit = (s_unit_data*)object_get(unit_index);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     for (long i = 0; i < 4; i++)
     {
-        if (unit->weapon_object_indices[i] != NONE)
+        if (unit->unit.weapon_object_indices[i] != NONE)
         {
             unit_inventory_set_weapon_index(unit_index, i, NONE, _unit_drop_type_delete);
         }
@@ -61,10 +62,9 @@ void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
 
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector)
 {
-    s_unit_data* unit = (s_unit_data*)object_get(unit_index);
-
-    unit->aiming_vector = *aiming_vector;
-    unit->looking_vector = *looking_vector;
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit->unit.aiming_vector = *aiming_vector;
+    unit->unit.looking_vector = *looking_vector;
     simulation_action_object_update(unit_index, _simulation_unit_update_desired_aiming_vector);
 }
 
@@ -76,19 +76,19 @@ void __fastcall unit_add_initial_loadout(datum_index unit_index)
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 {
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     if (slot_index < 4)
     {
-        datum_index equipment_index = unit->equipment_object_indices[slot_index];
+        datum_index equipment_index = unit->unit.equipment_object_indices[slot_index];
         if (equipment_index != NONE)
         {
             unit_drop_item(unit_index, equipment_index, _unit_drop_type_delete);
-            unit->equipment_object_indices[slot_index] = NONE;
-            unit->equipment_pickup_time = NONE;
+            unit->unit.equipment_object_indices[slot_index] = NONE;
+            unit->unit.equipment_pickup_time = NONE;
             simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
-            if (unit->actor_index != NONE)
+            if (unit->unit.actor_index != NONE)
             {
-                actor_handle_equipment_delete(unit->actor_index);
+                actor_handle_equipment_delete(unit->unit.actor_index);
             }
         }
     }
@@ -97,7 +97,7 @@ void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camouflage_decay, real regrowth_seconds)
 {
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     
     real camo_regrowth = regrowth_seconds;
     if (camo_regrowth == 0.0f)
@@ -106,16 +106,16 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
     }
     camo_regrowth = FLOOR(camo_regrowth, game_tick_length());
     camo_regrowth = 1.0f / camo_regrowth;
-    unit->active_camouflage_regrowth = MIN(camo_regrowth, unit->active_camouflage_regrowth);
-    real camo_delta = unit->active_camouflage - camouflage_decay;
-    unit->active_camouflage = camo_delta;
-    if (unit->unit_flags.test(_unit_flags_camo) && camo_delta < 0.05f)
+    unit->unit.active_camouflage_regrowth = MIN(camo_regrowth, unit->unit.active_camouflage_regrowth);
+    real camo_delta = unit->unit.active_camouflage - camouflage_decay;
+    unit->unit.active_camouflage = camo_delta;
+    if (unit->unit.flags.test(_unit_flags_camo) && camo_delta < 0.05f)
     {
-        unit->active_camouflage = 0.05f;
+        unit->unit.active_camouflage = 0.05f;
     }
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -125,14 +125,14 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
 void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds)
 {
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
-    unit->unit_flags.set(_unit_flags_camo, false);
-    unit->active_camouflage_end_time = NONE;
-    unit->active_camouflage_regrowth = 1.0f / FLOOR(regrowth_seconds, game_tick_length());
+    unit->unit.flags.set(_unit_flags_camo, false);
+    unit->unit.active_camouflage_end_time = NONE;
+    unit->unit.active_camouflage_regrowth = 1.0f / FLOOR(regrowth_seconds, game_tick_length());
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -142,17 +142,17 @@ void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regr
 void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real regrowth_seconds, long camouflage_end_time)
 {
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
-    unit->unit_flags.set(_unit_flags_camo, true);
-    unit->active_camouflage_regrowth = 1.0f / FLOOR(regrowth_seconds, game_tick_length());
+    unit->unit.flags.set(_unit_flags_camo, true);
+    unit->unit.active_camouflage_regrowth = 1.0f / FLOOR(regrowth_seconds, game_tick_length());
     if (game_is_authoritative())
     {
-        unit->active_camouflage_end_time = camouflage_end_time;
+        unit->unit.active_camouflage_end_time = camouflage_end_time;
     }
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -162,12 +162,12 @@ void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real re
 void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real camouflage_maximum)
 {
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_unit_data* unit = (s_unit_data*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
-    unit->active_camouflage_maximum = PIN(camouflage_maximum, 0.0f, 1.0f);
+    unit->unit.active_camouflage_maximum = PIN(camouflage_maximum, 0.0f, 1.0f);
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);

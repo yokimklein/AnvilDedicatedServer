@@ -25,7 +25,7 @@ __declspec(safebuffers) void __fastcall object_update_hook()
     __asm mov object_index, edi;
 
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
+    object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
     
     // we've left the scope of this if check where we've hooked, so we need to check it again
     if (!object_header->flags.test(_object_header_do_not_update_bit))
@@ -83,13 +83,13 @@ __declspec(safebuffers) void __fastcall player_set_unit_index_hook2()
 
 __declspec(safebuffers) void __fastcall unit_died_hook()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     datum_index unit_index;
     __asm mov unit_index, esi;
     __asm mov unit, eax;
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -285,21 +285,21 @@ __declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook1()
 
 __declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     __asm mov unit, ebx;
 
-    simulation_action_game_engine_player_update(unit->player_index, _simulation_player_update_equipment_charges);
+    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_equipment_charges);
 }
 
 __declspec(safebuffers) void __fastcall unit_set_hologram_hook()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     datum_index unit_index;
     __asm mov unit_index, ebx;
     __asm mov unit, esi;
 
     c_simulation_object_update_flags update_flags;
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
@@ -308,17 +308,17 @@ __declspec(safebuffers) void __fastcall unit_set_hologram_hook()
 
 __declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     __asm mov unit, esi;
     TLS_DATA_GET_VALUE_REFERENCE(players);
 
-    s_player_datum* player_data = &players[unit->player_index];
+    s_player_datum* player_data = &players[unit->unit.player_index];
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
 __declspec(safebuffers) void __fastcall unit_update_damage_hook()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     datum_index unit_index;
     DEFINE_ORIGINAL_EBP_ESP(0x70, sizeof(unit) + sizeof(unit_index));
 
@@ -327,7 +327,7 @@ __declspec(safebuffers) void __fastcall unit_update_damage_hook()
     __asm mov eax, [eax + 0x70 - 0x64];
     __asm mov unit_index, eax;
 
-    if (unit->object_identifier.m_type.get() == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type.get() == _object_type_vehicle)
     {
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
@@ -335,13 +335,13 @@ __declspec(safebuffers) void __fastcall unit_update_damage_hook()
 
 __declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     datum_index unit_index;
 
     __asm mov unit, edi;
     __asm mov unit_index, esi;
 
-    if (unit->object_identifier.m_type.get() == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type.get() == _object_type_vehicle)
     {
         simulation_action_object_update(unit_index, _simulation_vehicle_update_seat_power);
     }
@@ -552,7 +552,7 @@ __declspec(naked) void unit_update_active_camouflage_hook0()
 
 __declspec(safebuffers) void __fastcall unit_update_active_camouflage_hook1()
 {
-    s_unit_data* unit;
+    unit_datum* unit;
     datum_index unit_index;
     c_simulation_object_update_flags update_flags;
     DEFINE_ORIGINAL_EBP_ESP(0x48, sizeof(unit_index) + sizeof(unit) + sizeof(update_flags) + 4); // where's this extra 4 bytes coming from? alignment?
@@ -562,7 +562,7 @@ __declspec(safebuffers) void __fastcall unit_update_active_camouflage_hook1()
     __asm mov eax, [eax + 4];
     __asm mov unit_index, eax;
 
-    if (unit->object_identifier.m_type == _object_type_vehicle)
+    if (unit->object.object_identifier.m_type == _object_type_vehicle)
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);

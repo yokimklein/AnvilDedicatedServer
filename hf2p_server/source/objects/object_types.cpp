@@ -6,9 +6,9 @@ REFERENCE_DECLARE_ARRAY(0xEB2448, object_type_definition*, object_type_definitio
 
 void object_type_detach_gamestate_entity(datum_index object_index)
 {
-	s_object_data* object = object_get(object_index);
-	object_type_definition* object_type_definition = object_type_definition_get(object->object_identifier.get_type());
-	assert(object->gamestate_index != NONE);
+	object_datum* object = object_get(object_index);
+	object_type_definition* object_type_definition = object_type_definition_get(object->object.object_identifier.get_type());
+	assert(object->object.gamestate_index != NONE);
 	for (long i = 0; i < 16; i++)
 	{
 		if (object_type_definition->child_types[i] == nullptr)

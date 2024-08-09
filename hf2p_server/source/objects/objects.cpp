@@ -9,22 +9,14 @@
 #include <simulation\game_interface\simulation_game_items.h>
 #include <tag_files\tag_groups.h>
 
-s_object_data* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
+object_datum* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
 	return INVOKE(0x403000, object_try_and_get_and_verify_type, object_index, object_type_mask);
 }
 
-s_object_data* object_get(datum_index object_index)
+object_datum* object_get(datum_index object_index)
 {
-	// TOOD asserts for object_get_and_verify_type
-	if (object_index == NONE)
-		return nullptr;
-	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
-	if (!object_header)
-		return nullptr;
-
-	return object_header->data;
+	return (object_datum*)object_get_and_verify_type(object_index, _object_mask_object);
 }
 
 e_object_type object_get_type(datum_index object_index)
@@ -36,8 +28,8 @@ e_object_type object_get_type(datum_index object_index)
 bool object_is_multiplayer_cinematic_object(datum_index object_index)
 {
 	assert(object_index != NONE);
-	s_object_data* object = object_get(object_index);
-	return object->simulation_flags.test(_object_simulation_is_multiplayer_cinematic_object);
+	object_datum* object = object_get(object_index);
+	return object->object.simulation_flags.test(_object_simulation_is_multiplayer_cinematic_object);
 }
 
 datum_index object_get_ultimate_parent(datum_index object_index)
@@ -46,32 +38,32 @@ datum_index object_get_ultimate_parent(datum_index object_index)
 	while (object_index != -1)
 	{
 		parent_index = object_index;
-		object_index = object_get(object_index)->parent_object_index;
+		object_index = object_get(object_index)->object.parent_object_index;
 	}
 	return parent_index;
 }
 
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index)
 {
-	s_object_data* object = object_get(object_index);
+	object_datum* object = object_get(object_index);
 	assert(gamestate_index != NONE);
-	assert(object->gamestate_index == NONE); // originally object->object.gamestate_index==NONE
+	assert(object->object.gamestate_index == NONE);
 	datum_index ultimate_parent_index = object_get_ultimate_parent(object_index);
 	if (object_is_multiplayer_cinematic_object(object_index))
 		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object [0x%08lX]\n", object_index);
 	else if (object_is_multiplayer_cinematic_object(ultimate_parent_index))
 		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object (parent) [0x%08lX]\n", ultimate_parent_index);
-	object->gamestate_index = gamestate_index;
+	object->object.gamestate_index = gamestate_index;
 }
 
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index)
 {
-	s_object_data* object = object_get(object_index);
+	object_datum* object = object_get(object_index);
 	assert(gamestate_index != NONE);
-	assert(object->gamestate_index == gamestate_index); // originally object->object.gamestate_index==gamestate_index
+	assert(object->object.gamestate_index == gamestate_index);
 	object_type_detach_gamestate_entity(object_index);
-	object->gamestate_index = -1;
-	object->simulation_flags = 0;
+	object->object.gamestate_index = -1;
+	object->object.simulation_flags = 0;
 }
 
 e_object_type c_object_identifier::get_type()
@@ -81,16 +73,16 @@ e_object_type c_object_identifier::get_type()
 
 void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
 {
-	s_object_data* object = object_get(object_index);
+	object_datum* object = object_get(object_index);
 	c_simulation_object_update_flags update_flags;
 	if (transitional_velocity)
 	{
-		object->transitional_velocity = *transitional_velocity;
+		object->object.transitional_velocity = *transitional_velocity;
 		update_flags.set_flag(object_index, _simulation_object_update_translational_velocity);
 	}
 	if (angular_velocity)
 	{
-		object->angular_velocity = *angular_velocity;
+		object->object.angular_velocity = *angular_velocity;
 		update_flags.set_flag(object_index, _simulation_object_update_angular_velocity);
 	}
 	if (!skip_update)
@@ -104,21 +96,21 @@ void __cdecl object_set_velocities_internal(datum_index object_index, real_vecto
 
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate)
 {
-	s_object_data* object = object_get(object_index);
-	if (TEST_BIT(_object_mask_physics, object_get_type(object_index)) && object->physics_flags.test(_object_connected_to_physics_bit) && object->havok_component_index != -1)
+	object_datum* object = object_get(object_index);
+	if (TEST_BIT(_object_mask_physics, object_get_type(object_index)) && object->object.physics_flags.test(_object_connected_to_physics_bit) && object->object.havok_component_index != -1)
 	{
 		if (force_activate)
 			goto simulation_update;
 
-		c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->havok_component_index);
+		c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->object.havok_component_index);
 		havok_component->force_activate(false);
 	}
 	else if (force_activate)
 	{
-		object->physics_flags.set(_object_physics_unknown_9_bit, true);
+		object->object.physics_flags.set(_object_physics_unknown_9_bit, true);
 		return;
 	}
-	object->physics_flags.set(_object_physics_unknown_9_bit, false);
+	object->object.physics_flags.set(_object_physics_unknown_9_bit, false);
 	object_wake(object_index);
 	// update here
 simulation_update:
@@ -136,11 +128,11 @@ const char* object_describe(datum_index object_index)
 
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
 {
-	s_object_data* object = object_get(object_index);
+	object_datum* object = object_get(object_index);
 	s_object_definition* object_definition = (s_object_definition*)tag_get(OBJECT_TAG, object->definition_index);
 	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
 	{
-		object->damage_owner = *damage_owner;
+		object->object.damage_owner = *damage_owner;
 		if (!skip_update)
 			simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 	}
@@ -160,10 +152,10 @@ bool __fastcall object_needs_rigid_body_update(datum_index object_index)
 {
 	return INVOKE(0x3FE620, object_needs_rigid_body_update, object_index);
 
-	//s_object_data* object = object_try_and_get_and_verify_type(object_index, -1);
-	//if (object->gamestate_index == NONE)
+	//object_datum* object = object_try_and_get_and_verify_type(object_index, -1);
+	//if (object->object.gamestate_index == NONE)
 	//	return false;
-	//if (object->havok_component_index == NONE || object->object_identifier.type.get() != _object_type_crate)
+	//if (object->object.havok_component_index == NONE || object->object.object_identifier.type.get() != _object_type_crate)
 	//	return false;
 	//c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->havok_component_index);
 	//for (long i = 0; i < havok_component->m_havok_rigid_bodies.m_size; i++)
@@ -203,31 +195,31 @@ bool __fastcall object_set_position_internal(datum_index object_index, real_poin
 }
 #pragma runtime_checks("", restore)
 
-s_object_header const* object_header_get(datum_index object_index)
+object_header_datum const* object_header_get(datum_index object_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-	return static_cast<s_object_header*>(datum_try_and_get(*object_headers, object_index));
+	return static_cast<object_header_datum*>(datum_try_and_get(*object_headers, object_index));
 }
 
-s_object_data* object_get_and_verify_type(datum_index object_index, dword object_type_mask)
+void* object_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
 	//ASSERT(game_state_is_locked(), "someone is calling object_get when the game state is locked");
 
-	s_object_header const* object_header = object_header_get(object_index);
+	object_header_datum const* object_header = object_header_get(object_index);
 	if (!object_header)
 		return NULL;
 
-	s_object_data* object = object_header->data;
+	object_datum* object = object_header->datum;
 
-	//if (!_bittest((long*)&object_type_mask, object->object_identifier.m_type.get()))
-	//{
+	if (!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get()))
+	{
 	//	c_static_string<256> string_builder;
 	//	string_builder.print_line("got an object type we didn't expect (expected one of 0x%08x but got #%d).",
 	//		object_type_mask,
 	//		object->object_identifier.m_type.get());
 	//
-	//	assert(!_bittest((long*)&object_type_mask, object->object_identifier.m_type.get()), string_builder.get_string());
-	//}
+		assert(!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get())/*, string_builder.get_string()*/);
+	}
 
 	return object;
 }

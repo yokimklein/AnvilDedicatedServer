@@ -40,7 +40,7 @@ struct s_weapon_trigger
 	char field_3;
 	short charge_up_timer;
 	ushort flags;
-	int charing_effect_index;
+	long charing_effect_index;
 };
 static_assert(sizeof(s_weapon_trigger) == 0xC);
 
@@ -74,10 +74,10 @@ struct s_weapon_first_person_emulation
 };
 static_assert(sizeof(s_weapon_first_person_emulation) == 0x1C);
 
-struct s_weapon_data : s_item_data
+struct _weapon_datum
 {
-	ushort weapon_flags;
-	char weapon_control_flags;
+	ushort flags;
+	char control_flags;
 	char primary_trigger;
 	char last_primary_trigger;
 	char last_hill_or_valley;
@@ -92,7 +92,8 @@ struct s_weapon_data : s_item_data
 	short weapon_disabled_by_reload_timer;
 	short multiplayer_weapon_identifier;
 	short simulation_weapon_identifier;
-	short : 16;
+	byte turn_on_timer;
+	byte ready_for_use_timer;
 	real heat;
 	real age;
 	real overcharged;
@@ -107,11 +108,20 @@ struct s_weapon_data : s_item_data
 	s_weapon_barrel barrels[2];
 	s_weapon_trigger triggers[2];
 	s_weapon_magazine magazines[2];
-	int overheated_effect_index;
-	int game_time_last_fired;
+	long overheated_effect_index;
+	long game_time_last_fired;
 	s_weapon_first_person_emulation first_person_emulation;
 };
-static_assert(sizeof(s_weapon_data) == 0x2E0);
+static_assert(sizeof(_weapon_datum) == 0x150);
+
+struct weapon_datum
+{
+	long definition_index;
+	_object_datum object;
+	_item_datum item;
+	_weapon_datum weapon;
+};
+static_assert(sizeof(weapon_datum) == 0x2E0);
 
 datum_index weapon_get_owner_unit_index(datum_index weapon_index);
 void __fastcall weapon_delay_predicted_state(datum_index weapon_index);

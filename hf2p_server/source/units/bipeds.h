@@ -11,10 +11,9 @@ enum e_biped_flag
 	k_biped_flag_count
 };
 
-struct s_biped_data : s_unit_data
+struct _biped_datum
 {
-	c_flags<e_biped_flag, word, k_biped_flag_count> biped_flags; // TODO: just flags in biped, refactor object structs
-
+	c_flags<e_biped_flag, word, k_biped_flag_count> flags;
 	short pathfinding_structure_index;
 	long pathfinding_time;
 	long pathfinding_surface_index;
@@ -45,8 +44,8 @@ struct s_biped_data : s_unit_data
 	byte __data6C[0x28];
 
 	c_character_physics_component physics;
-	s_object_header_block_reference simulation_interpolation;
-	s_object_header_block_reference last_node_matrices_storage;
+	object_header_block_reference simulation_interpolation;
+	object_header_block_reference last_node_matrices_storage;
 	real_vector3d root_offset;
 	real_vector3d ground_fit_normal;
 	real pivot_on_foot_scale;
@@ -64,18 +63,26 @@ struct s_biped_data : s_unit_data
 	real pendulum_scale;
 	real_vector3d pendulum_vector;
 	real gravity_scale;
-
 	// linked, armor related
 	long customized_area; // previously a pair of 10 member long arrays, one long & one short
-
 	// linked
 	long __unknown2C0;
 	short __unknown2C4;
 	byte __data2C6[0x1];
 	bool __unknown2C7;
 };
-static_assert(sizeof(s_biped_data) == 0x828);
-static_assert(0x598 == OFFSETOF(s_biped_data, biped_flags));
+static_assert(sizeof(_biped_datum) == 0x290);
+static_assert(0x0 == OFFSETOF(_biped_datum, flags));
+
+struct biped_datum
+{
+	long definition_index;
+	_object_datum object;
+	_motor_datum motor;
+	_unit_datum unit;
+	_biped_datum biped;
+};
+static_assert(sizeof(biped_datum) == 0x828);
 
 bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vector3d* melee_aiming_vector);
 bool __fastcall biped_update_melee_turning(datum_index biped_index);

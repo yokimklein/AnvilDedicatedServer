@@ -8,6 +8,7 @@
 #include <game\player_configuration.h>
 #include <objects\objects.h>
 #include <objects\target_tracking.h>
+#include <motor\mover.h>
 
 enum e_weapon_set
 {
@@ -86,20 +87,12 @@ struct s_unit_attacker
 };
 static_assert(sizeof(s_unit_attacker) == 0x10);
 
-struct s_motor_data : s_object_data
-{
-	s_object_header_block_reference motor_tasks;
-	s_object_header_block_reference motor_state;
-	s_object_header_block_reference action_state_storage;
-};
-static_assert(sizeof(s_motor_data) == 0x188);
-
-struct s_unit_data : s_motor_data
+struct _unit_datum
 {
 	//long awake_tick_count; // seems to have been removed since ms23
 	long actor_index;
 	long simulation_actor_index;
-	c_flags<e_unit_flags, ulong, k_unit_flags_count> unit_flags;
+	c_flags<e_unit_flags, ulong, k_unit_flags_count> flags;
 	c_enum<e_game_team, long, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
 	long player_index;
 	long last_weak_player_index;
@@ -224,8 +217,8 @@ struct s_unit_data : s_motor_data
 	long unknown_tick;
 	long unknown_team_index;
 	long unknown_object_index;
-	s_object_header_block_reference animation_storage;
-	s_object_header_block_reference speech_storage; // seat storage?
+	object_header_block_reference animation_storage;
+	object_header_block_reference speech_storage; // seat storage?
 	ulong unit_ai_flags;
 	c_sector_ref pathfinding_sector;
 	long : 32;
@@ -249,45 +242,54 @@ struct s_unit_data : s_motor_data
 	long emblem_unknown_index2; // used in unit_delete & unit_disconnect_from_structure_bsp - accesses global array with size 0xCD
 	long : 32;
 };
-static_assert(sizeof(s_unit_data) == 0x598);
-static_assert(0x188 == OFFSETOF(s_unit_data, actor_index));
-static_assert(0x18C == OFFSETOF(s_unit_data, simulation_actor_index));
-static_assert(0x198 == OFFSETOF(s_unit_data, player_index));
-static_assert(0x1B8 == OFFSETOF(s_unit_data, aiming_vector));
-static_assert(0x1DC == OFFSETOF(s_unit_data, looking_vector));
-static_assert(0x224 == OFFSETOF(s_unit_data, next_spawn_control_context));
-static_assert(0x2C8 == OFFSETOF(s_unit_data, current_weapon_set));
-static_assert(0x2CC == OFFSETOF(s_unit_data, desired_weapon_set));
-static_assert(0x2D0 == OFFSETOF(s_unit_data, weapon_object_indices));
-static_assert(0x2F0 == OFFSETOF(s_unit_data, equipment_object_indices));
-static_assert(0x300 == OFFSETOF(s_unit_data, active_equipment_object_indices));
-static_assert(0x310 == OFFSETOF(s_unit_data, active_equipment_slots));
-static_assert(0x314 == OFFSETOF(s_unit_data, equipment_pickup_time));
-static_assert(0x318 == OFFSETOF(s_unit_data, consumable_energy_level));
-static_assert(0x31C == OFFSETOF(s_unit_data, consumable_energy_restored_game_time));
-static_assert(0x344 == OFFSETOF(s_unit_data, seat_power));
-static_assert(0x3C8 == OFFSETOF(s_unit_data, predicted_player_index));
-static_assert(0x3CC == OFFSETOF(s_unit_data, predicted_simulation_actor_index));
-static_assert(0x3FC == OFFSETOF(s_unit_data, active_camouflage));
-static_assert(0x400 == OFFSETOF(s_unit_data, active_camouflage_maximum));
-static_assert(0x404 == OFFSETOF(s_unit_data, active_camouflage_regrowth));
-static_assert(0x408 == OFFSETOF(s_unit_data, active_camouflage_end_time));
-static_assert(0x41A == OFFSETOF(s_unit_data, emp_timer));
-static_assert(0x41C == OFFSETOF(s_unit_data, emp_campaign_metagame_timer));
-static_assert(0x424 == OFFSETOF(s_unit_data, delayed_damage_category));
-static_assert(0x428 == OFFSETOF(s_unit_data, delayed_damage_peak));
-static_assert(0x42C == OFFSETOF(s_unit_data, delayed_damage_owner_weak_object_index));
-static_assert(0x43C == OFFSETOF(s_unit_data, hologram_creator_weak_unit_index));
-static_assert(0x440 == OFFSETOF(s_unit_data, hologram_creation_time));
-static_assert(0x444 == OFFSETOF(s_unit_data, hologram_ticks_left));
-static_assert(0x448 == OFFSETOF(s_unit_data, hologram_definition_index));
-static_assert(0x44C == OFFSETOF(s_unit_data, hologram_shimmer_value));
-static_assert(0x450 == OFFSETOF(s_unit_data, hologram_destination));
-static_assert(0x4C0 == OFFSETOF(s_unit_data, melee_inhibit_time));
+static_assert(sizeof(_unit_datum) == 0x410);
+static_assert(0x00 == OFFSETOF(_unit_datum, actor_index));
+static_assert(0x04 == OFFSETOF(_unit_datum, simulation_actor_index));
+static_assert(0x10 == OFFSETOF(_unit_datum, player_index));
+static_assert(0x30 == OFFSETOF(_unit_datum, aiming_vector));
+static_assert(0x54 == OFFSETOF(_unit_datum, looking_vector));
+static_assert(0x9C == OFFSETOF(_unit_datum, next_spawn_control_context));
+static_assert(0x140 == OFFSETOF(_unit_datum, current_weapon_set));
+static_assert(0x144 == OFFSETOF(_unit_datum, desired_weapon_set));
+static_assert(0x148 == OFFSETOF(_unit_datum, weapon_object_indices));
+static_assert(0x168 == OFFSETOF(_unit_datum, equipment_object_indices));
+static_assert(0x178 == OFFSETOF(_unit_datum, active_equipment_object_indices));
+static_assert(0x188 == OFFSETOF(_unit_datum, active_equipment_slots));
+static_assert(0x18C == OFFSETOF(_unit_datum, equipment_pickup_time));
+static_assert(0x190 == OFFSETOF(_unit_datum, consumable_energy_level));
+static_assert(0x194 == OFFSETOF(_unit_datum, consumable_energy_restored_game_time));
+static_assert(0x1BC == OFFSETOF(_unit_datum, seat_power));
+static_assert(0x240 == OFFSETOF(_unit_datum, predicted_player_index));
+static_assert(0x244 == OFFSETOF(_unit_datum, predicted_simulation_actor_index));
+static_assert(0x274 == OFFSETOF(_unit_datum, active_camouflage));
+static_assert(0x278 == OFFSETOF(_unit_datum, active_camouflage_maximum));
+static_assert(0x27C == OFFSETOF(_unit_datum, active_camouflage_regrowth));
+static_assert(0x280 == OFFSETOF(_unit_datum, active_camouflage_end_time));
+static_assert(0x292 == OFFSETOF(_unit_datum, emp_timer));
+static_assert(0x294 == OFFSETOF(_unit_datum, emp_campaign_metagame_timer));
+static_assert(0x29C == OFFSETOF(_unit_datum, delayed_damage_category));
+static_assert(0x2A0 == OFFSETOF(_unit_datum, delayed_damage_peak));
+static_assert(0x2A4 == OFFSETOF(_unit_datum, delayed_damage_owner_weak_object_index));
+static_assert(0x2B4 == OFFSETOF(_unit_datum, hologram_creator_weak_unit_index));
+static_assert(0x2B8 == OFFSETOF(_unit_datum, hologram_creation_time));
+static_assert(0x2BC == OFFSETOF(_unit_datum, hologram_ticks_left));
+static_assert(0x2C0 == OFFSETOF(_unit_datum, hologram_definition_index));
+static_assert(0x2C4 == OFFSETOF(_unit_datum, hologram_shimmer_value));
+static_assert(0x2C8 == OFFSETOF(_unit_datum, hologram_destination));
+static_assert(0x338 == OFFSETOF(_unit_datum, melee_inhibit_time));
+
+struct unit_datum
+{
+	long definition_index;
+	_object_datum object;
+	_motor_datum motor;
+	_unit_datum unit;
+};
+static_assert(sizeof(unit_datum) == 0x598);
 
 struct s_new_unit_action_grenade
 {
-	int unk1;
+	long unk1;
 	byte unk2_1;
 	byte unk2_2;
 	byte unk_type;
@@ -296,8 +298,8 @@ struct s_new_unit_action_grenade
 	char unk3_2;
 	byte unk3_3;
 	byte unk3_4;
-	int throw_type_index;
-	int projectile_index;
+	long throw_type_index;
+	long projectile_index;
 };
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled);

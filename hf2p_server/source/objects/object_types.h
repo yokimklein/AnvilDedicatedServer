@@ -26,6 +26,7 @@ enum e_object_type
 
 enum e_object_mask
 {
+	_object_mask_object = NONE,
 	_object_mask_biped = FLAG(_object_type_biped),
 	_object_mask_vehicle = FLAG(_object_type_vehicle),
 	_object_mask_weapon = FLAG(_object_type_weapon),

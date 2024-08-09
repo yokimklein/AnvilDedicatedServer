@@ -36,20 +36,21 @@ void __fastcall player_set_facing(datum_index player_index, real_vector3d* forwa
 	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
 	if (game_is_authoritative())
 	{
-		if (player_data->unit_index != -1)
+		if (player_data->unit_index != NONE)
 		{
 			TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-			s_object_header* unit_object_header = (s_object_header*)datum_get(*object_headers, player_data->unit_index);
-			s_unit_data* unit_data = (s_unit_data*)unit_object_header->data;
-			unit_data->facing_vector = *forward;
-			unit_data->aiming_vector = *forward;
-			unit_data->looking_vector = *forward;
+			unit_datum* unit = (unit_datum*)object_get_and_verify_type(player_data->unit_index, _object_mask_unit);
+			unit->unit.facing_vector = *forward;
+			unit->unit.aiming_vector = *forward;
+			unit->unit.looking_vector = *forward;
 			simulation_action_object_update(player_data->unit_index, _simulation_unit_update_desired_aiming_vector);
 		}
 	}
 	long input_user_index = player_mapping_get_input_user((word)player_index);
-	if (input_user_index != -1)
+	if (input_user_index != NONE)
+	{
 		player_control_set_facing(input_user_index, forward);
+	}
 }
 
 void __fastcall player_control_set_facing(long input_user_index, real_vector3d* forward)
@@ -71,9 +72,8 @@ void __fastcall player_increment_control_context(datum_index player_index)
 	if (unit_index != -1)
 	{
 		TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-		s_object_header* unit_header = (s_object_header*)datum_get(*object_headers, unit_index);
-		s_unit_data* unit = (s_unit_data*)unit_header->data;
-		unit->next_spawn_control_context = player->next_spawn_control_context;
+		unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+		unit->unit.next_spawn_control_context = player->next_spawn_control_context;
 		simulation_action_object_update(unit_index, _simulation_unit_update_control_context);
 	}
 	player->next_spawn_control_context++;

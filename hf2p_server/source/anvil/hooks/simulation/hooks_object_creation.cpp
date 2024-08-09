@@ -16,7 +16,7 @@ __declspec(safebuffers) void __fastcall event_generate_part_hook()
 	__asm mov object_index, esi;
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 
-	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
+	object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
 	if (!TEST_BIT(_object_mask_crate, object_header->type.get()) || !crate_will_self_destruct(object_index))
 	{
 		object_set_garbage(object_index, true, 0);

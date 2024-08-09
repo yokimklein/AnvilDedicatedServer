@@ -127,7 +127,7 @@ struct c_managed_session
 	//byte pad3[2];
 	s_online_context creation_contexts[4];
 	ulong creation_context_count;
-	//int unknown2;
+	//long unknown2;
 };
 static_assert(sizeof(c_managed_session) == 0x5D0); // 0x608 in ms23
 

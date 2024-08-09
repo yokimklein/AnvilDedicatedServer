@@ -741,6 +741,9 @@
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\motor\mover.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">

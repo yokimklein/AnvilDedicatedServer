@@ -9,16 +9,16 @@ bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vecto
 
 bool __fastcall biped_update_melee_turning(datum_index biped_index)
 {
-	s_biped_data* biped = (s_biped_data*)object_get(biped_index);
+	biped_datum* biped = (biped_datum*)object_get_and_verify_type(biped_index, _object_mask_biped);
 
-	if (!biped_calculate_melee_aiming(biped_index, &biped->melee_aiming_vector))
+	if (!biped_calculate_melee_aiming(biped_index, &biped->unit.melee_aiming_vector))
 		return false;
 
-	biped->facing_vector = biped->melee_aiming_vector;
-	biped->aiming_vector = biped->melee_aiming_vector;
-	biped->looking_vector = biped->melee_aiming_vector;
-	biped->previous_looking_vector = biped->melee_aiming_vector;
+	biped->unit.facing_vector = biped->unit.melee_aiming_vector;
+	biped->unit.aiming_vector = biped->unit.melee_aiming_vector;
+	biped->unit.looking_vector = biped->unit.melee_aiming_vector;
+	biped->unit.previous_looking_vector = biped->unit.melee_aiming_vector;
 	simulation_action_object_update(biped_index, _simulation_unit_update_desired_aiming_vector);
-	biped->biped_flags.set(_biped_flag0, true);
+	biped->biped.flags.set(_biped_flag0, true);
 	return true;
 }

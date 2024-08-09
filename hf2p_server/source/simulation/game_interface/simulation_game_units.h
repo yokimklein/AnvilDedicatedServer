@@ -62,8 +62,8 @@ struct s_simulation_unit_state_data
 	long equipment_definition_indices[4]; // is this this?
 
 	byte __unknown12C[4];
-	int __unknown130;
-	int __unknown134;
+	long __unknown130;
+	long __unknown134;
 	byte __data138[0x1];
 	byte __unknown139;
 	byte __data13A[0x2];

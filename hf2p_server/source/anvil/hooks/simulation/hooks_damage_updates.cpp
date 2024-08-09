@@ -42,7 +42,7 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
     __asm push eax;
 
     datum_index object_index;
-    s_unit_data* unit;
+    unit_datum* unit;
     bool unit_updated;
     real unknown_ticks;
     real new_body_vitality;
@@ -67,11 +67,11 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
         movss unknown_vitality, xmm1;
     }
 
-    if (unit->body_stun_ticks != 0)
+    if (unit->object.body_stun_ticks != 0)
     {
         if (!game_is_predicted())
         {
-            unit->body_stun_ticks--;
+            unit->object.body_stun_ticks--;
             unit_updated = true;
         }
     }
@@ -79,20 +79,20 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
     {
         TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
         real vitality_delta = game_time_globals->tick_length * unknown_ticks;
-        if (TEST_BIT(_object_mask_unit, unit->object_identifier.m_type.get()))
+        if (TEST_BIT(_object_mask_unit, unit->object.object_identifier.m_type.get()))
         {
             // TODO: see if this gets called and works now I'm not using a broken version of the call
-            real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->team.get());
+            real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->unit.team.get());
             new_body_vitality = unknown_vitality;
             vitality_delta = vitality_delta * vitality_multiplier;
         }
-        unit->damage_flags |= FLAG(9); // enable _model_shield_depletion_is_permanent_bit?
-        real vitality_result = unit->body_vitality + vitality_delta;
-        unit->body_vitality = vitality_result;
+        unit->object.damage_flags |= FLAG(9); // enable _model_shield_depletion_is_permanent_bit?
+        real vitality_result = unit->object.body_vitality + vitality_delta;
+        unit->object.body_vitality = vitality_result;
         if (vitality_result > new_body_vitality)
         {
-            unit->body_vitality = new_body_vitality;
-            unit->damage_flags &= ~FLAG(9); // disable _model_shield_depletion_is_permanent_bit?
+            unit->object.body_vitality = new_body_vitality;
+            unit->object.damage_flags &= ~FLAG(9); // disable _model_shield_depletion_is_permanent_bit?
         }
         else
         {
@@ -152,7 +152,7 @@ __declspec(safebuffers) void __fastcall object_deplete_body_internal_hook1()
 
 __declspec(safebuffers) void __fastcall damage_section_response_fire_hook()
 {
-    s_object_data* object;
+    object_datum* object;
     datum_index object_index;
     long damage_section_index;
     long response_index;
@@ -174,7 +174,7 @@ __declspec(safebuffers) void __fastcall damage_section_response_fire_hook()
         mov response_index, eax;
     }
 
-    if (!game_is_predicted() && object->gamestate_index != -1)
+    if (!game_is_predicted() && object->object.gamestate_index != NONE)
     {
         simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
         update_flags.set_flag(object_index, _simulation_object_update_region_state);
@@ -183,31 +183,14 @@ __declspec(safebuffers) void __fastcall damage_section_response_fire_hook()
     }
 }
 
-// Wrapper for usercall
-__declspec(naked) void object_set_damage_owner_hook(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
+// wrapper for usercall (caller cleanup fastcall)
+__declspec(naked) void object_set_damage_owner_hook1()
 {
-    // prologue
     __asm
     {
-        push        ebp
-        mov         ebp, esp
-        sub         esp, 0x48
-        push        ebx
-        push        esi
-        push        edi
-        mov         edx, [ebp - 0x8]
-        mov         ecx, [ebp - 0x4]
-    }
-    object_set_damage_owner(object_index, damage_owner, skip_update);
-    // epilogue
-    __asm
-    {
-        pop        edi
-        pop        esi
-        pop        ebx
-        mov        esp, ebp
-        pop        ebp
-        ret // usercall - let caller cleanup 4 bytes pushed to the stack
+        push [esp + 0x04] // skip update argument
+        call object_set_damage_owner;
+        ret; // return w/o cleaning up original argument push
     }
 }
 
@@ -281,7 +264,7 @@ void anvil_hooks_damage_updates_apply()
     insert_hook(0x413D47, 0x413D4F, damage_section_response_fire_hook, _hook_execute_replaced_first); // includes simulation_action_damage_section_response
     
     // object_set_damage_owner
-    hook_function(0x404320, 0x75, object_set_damage_owner_hook);
+    hook_function(0x404320, 0x75, object_set_damage_owner_hook1);
     insert_hook(0x113B0F, 0x113B15, object_set_damage_owner_hook2, _hook_execute_replaced_first); // inlined in event_generate_accelerations
     insert_hook(0x20CF07, 0x20CF0D, object_set_damage_owner_hook3, _hook_execute_replaced_first); // inlined in havok_collision_damage_update
     insert_hook(0x40F00C, 0x40F012, object_set_damage_owner_hook4, _hook_execute_replaced_first); // inlined in object_cause_damage

@@ -215,6 +215,7 @@
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
     <ClInclude Include="source\motor\action_system.h" />
+    <ClInclude Include="source\motor\mover.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_in_game.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_joining.h" />

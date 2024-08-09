@@ -60,7 +60,7 @@ struct s_network_session_interface_globals
     bool session_variant_has_sve_teams[3];
     bool session_variant_observers_allowed[3];
     byte __data5EF1[3];
-    int session_variant_maximum_team_count[3];
+    long session_variant_maximum_team_count[3];
     c_network_session_manager* session_manager;
     byte : 8;
     byte : 8;

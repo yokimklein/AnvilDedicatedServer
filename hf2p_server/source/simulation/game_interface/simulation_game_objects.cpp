@@ -21,7 +21,7 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 			{
 				long entity_object_index = entity_object_indices[i];
 				assert(entity_object_index != NONE);
-				assert(object_get(entity_object_index)->gamestate_index == NONE); // originally object_get(entity_object_index)->object.gamestate_index
+				assert(object_get(entity_object_index)->object.gamestate_index == NONE);
 				datum_index gamestate_index = simulation_gamestate_entity_create();
 				object_attach_gamestate_entity(entity_object_index, gamestate_index);
 				simulation_gamestate_entity_set_object_index(gamestate_index, entity_object_index);
@@ -36,8 +36,8 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 					{
 						TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 						c_simulation_entity_database* entity_database = simulation_get_world()->get_entity_database();
-						s_object_data* object = object_get(entity_object_index);
-						s_object_header* object_header = (s_object_header*)datum_get(*object_headers, entity_object_index);
+						object_datum* object = object_get(entity_object_index);
+						object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, entity_object_index);
 						s_simulation_entity* entity = entity_database->entity_get(entity_index);
 						assert(!object_header->flags.test(_object_header_being_deleted_bit));
 						assert(entity->gamestate_index != NONE);
@@ -60,22 +60,22 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 void simulation_action_object_create_build_entity_types(datum_index object_index, datum_index last_object_index, long maximum_entity_count, long* out_entity_count, e_simulation_entity_type* entity_types, long* entity_object_indices)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-	s_object_data* object = object_get(object_index);
-	s_object_header* object_header = (s_object_header*)datum_get(*object_headers, object_index);
+	object_datum* object = object_get(object_index);
+	object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
 	datum_index object_ultimate_parent = object_get_ultimate_parent(object_index);
-	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->gamestate_index == NONE && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
+	if (!object_header->flags.test(_object_header_being_deleted_bit) && object->object.gamestate_index == NONE && !object_is_multiplayer_cinematic_object(object_index) && !object_is_multiplayer_cinematic_object(object_ultimate_parent))
 	{
-		e_simulation_entity_type entity_type = simulation_entity_type_from_object_creation(object->definition_index, last_object_index, object->recycling_flags.test(_object_recycling_candidate));
+		e_simulation_entity_type entity_type = simulation_entity_type_from_object_creation(object->definition_index, last_object_index, object->object.recycling_flags.test(_object_recycling_candidate));
 		if (entity_type != k_simulation_entity_type_none && *out_entity_count < maximum_entity_count)
 		{
 			assert(VALID_INDEX(*out_entity_count, maximum_entity_count));
 			entity_types[*out_entity_count] = entity_type;
 			entity_object_indices[(*out_entity_count)++] = object_index;
-			s_object_data* current_object = object;
-			for (datum_index i = object->first_child_object_index; i != NONE; i = current_object->next_object_index)
+			object_datum* current_object = object;
+			for (datum_index i = object->object.first_child_object_index; i != NONE; i = current_object->object.next_object_index)
 			{
 				current_object = object_get(i);
-				if (current_object->flags.test(_object_created_with_parent_bit))
+				if (current_object->object.flags.test(_object_created_with_parent_bit))
 					simulation_action_object_create_build_entity_types(i, object_index, maximum_entity_count, out_entity_count, entity_types, entity_object_indices);
 			}
 		}
@@ -88,19 +88,19 @@ void simulation_action_object_delete(datum_index object_index)
 	{
 		if (game_is_distributed())
 		{
-			s_object_data* object = object_get(object_index);
-			if (object->gamestate_index != -1)
+			object_datum* object = object_get(object_index);
+			if (object->object.gamestate_index != -1)
 			{
 				if (!game_is_playback())
 				{
-					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
+					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 					if (entity_index == -1)
-						printf("MP/NET/SIMULATION,ACTION: simulation_action_object_delete: object 0x%8X gamestate index 0x%8X not attached to entity (can't delete entity)\n", object_index, object->gamestate_index);
+						printf("MP/NET/SIMULATION,ACTION: simulation_action_object_delete: object 0x%8X gamestate index 0x%8X not attached to entity (can't delete entity)\n", object_index, object->object.gamestate_index);
 					else
-						simulation_entity_delete(entity_index, object_index, object->gamestate_index);
+						simulation_entity_delete(entity_index, object_index, object->object.gamestate_index);
 				}
-				simulation_gamestate_entity_delete(object->gamestate_index);
-				object_detach_gamestate_entity(object_index, object->gamestate_index);
+				simulation_gamestate_entity_delete(object->object.gamestate_index);
+				object_detach_gamestate_entity(object_index, object->object.gamestate_index);
 			}
 		}
 	}
@@ -114,10 +114,10 @@ void simulation_action_object_update_internal(datum_index object_index, c_simula
 		{
 			if (!game_is_playback())
 			{
-				s_object_data* object = object_get(object_index);
-				if (object->gamestate_index != -1)
+				object_datum* object = object_get(object_index);
+				if (object->object.gamestate_index != -1)
 				{
-					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
+					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 					if (entity_index != -1)
 						simulation_entity_update(entity_index, object_index, &update_flags.m_flags);
 				}
@@ -140,14 +140,14 @@ long simulation_object_get_entity_internal(datum_index object_index, bool safe)
 		{
 			c_simulation_world* world = simulation_get_world();
 			c_simulation_entity_database* entity_database = world->get_entity_database();
-			s_object_data* object = object_get(object_index);
-			if (object->gamestate_index != -1)
+			object_datum* object = object_get(object_index);
+			if (object->object.gamestate_index != -1)
 			{
-				long simulation_entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->gamestate_index);
+				long simulation_entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 				if (simulation_entity_index == -1)
 				{
 					printf("networking:simulation:objects: failed to get entity index for gamestate 0x%8X (object %s) during simulation_object_get_authoritative_entity_internal()\n",
-						object->gamestate_index,
+						object->object.gamestate_index,
 						object_describe(object_index));
 				}
 				else
