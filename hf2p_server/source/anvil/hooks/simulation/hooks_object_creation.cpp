@@ -6,6 +6,7 @@
 #include <objects\crates.h>
 #include <Patch.hpp>
 #include <simulation\game_interface\simulation_game_units.h>
+#include <simulation\game_interface\simulation_game_action.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -121,6 +122,20 @@ __declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
 
 	simulation_action_object_create(object_index);
 }
+
+//__declspec(safebuffers) void __fastcall actor_place_hook() // TODO: UNTESTED!!
+//{
+//	datum_index unit_index;
+//	DEFINE_ORIGINAL_EBP_ESP(0x24C, sizeof(unit_index));
+//	__asm mov eax, original_ebp;
+//	__asm mov eax, [eax - 0x24];
+//	__asm mov unit_index, eax;
+//
+//	if (unit_index != NONE)
+//	{
+//		simulation_action_actor_create(unit_index);
+//	}
+//}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
@@ -177,4 +192,11 @@ void anvil_hooks_object_creation_apply()
 
 	// item inventory
 	insert_hook(0x484337, 0x48433D, item_in_unit_inventory_hook, _hook_execute_replaced_last);
+
+	// actor place
+	//Patch(0x6989CB, { 0x0F, 0x84, 0x6D, 0x00, 0x00, 0x00 }).Apply(); // redirect jump to hook instead of return
+	//Patch(0x6989E0, { 0x0F, 0x86, 0x58, 0x00, 0x00, 0x00 }).Apply(); // redirect jump to hook instead of return
+	//Patch(0x6989F5, { 0x74, 0x47 }).Apply(); // redirect jump to hook instead of return
+	//Patch(0x698A35, { 0x74, 07 }).Apply(); // redirect jump to hook instead of return
+	//insert_hook(0x698A3E, 0x698A47, actor_place_hook, _hook_execute_replaced_last);
 }

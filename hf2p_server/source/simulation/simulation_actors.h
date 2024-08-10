@@ -5,8 +5,8 @@
 class c_simulation_world;
 struct c_simulation_actor
 {
-	long __unknown0;
-	long __unknown4;
+	datum_index simulation_actor_index;
+	datum_index unit_index;
 	c_simulation_world* m_world;
 	long __unknownC;
 	dword m_time;

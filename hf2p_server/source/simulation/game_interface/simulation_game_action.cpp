@@ -4,6 +4,8 @@
 #include <simulation\simulation_gamestate_entities.h>
 #include <simulation\simulation_entity_database.h>
 #include <simulation\simulation_world.h>
+#include <simulation\game_interface\simulation_game_objects.h>
+#include <simulation\game_interface\simulation_game_units.h>
 
 
 void simulation_action_game_engine_globals_create()
@@ -180,3 +182,17 @@ void simulation_action_breakable_surfaces_create()
 	// there is code for this in ms23, but it doesn't seem like it would function?
 	// TODO: revisit this
 }
+
+//void simulation_action_actor_create(datum_index unit_index)
+//{
+//	if (game_is_server() && game_is_distributed())
+//	{
+//		unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+//		assert(unit->object.gamestate_index == NONE);
+//		simulation_action_object_create(unit_index);
+//		assert(unit->unit.simulation_actor_index == NONE);
+//		unit->unit.simulation_actor_index = simulation_get_world()->create_actor(NONE, unit_index); // TODO
+//		unit_set_actively_controlled(unit_index, true);
+//		simulation_action_object_update(unit_index, _simulation_unit_update_control);
+//	}
+//}
