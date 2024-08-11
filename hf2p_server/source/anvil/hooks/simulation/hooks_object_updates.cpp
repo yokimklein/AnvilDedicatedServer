@@ -686,6 +686,14 @@ __declspec(safebuffers) void __fastcall c_vehicle_auto_turret__track_auto_target
     __asm mov vehicle_index, eax;
     simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret);
 }
+
+__declspec(safebuffers) void __fastcall object_move_position_hook()
+{
+    datum_index object_index;
+    __asm mov object_index, edi;
+
+    simulation_action_object_update(object_index, _simulation_object_update_position);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -866,4 +874,7 @@ void anvil_hooks_object_updates_apply()
     insert_hook(0x4A0ED4, 0x4A0EDB, c_vehicle_auto_turret__track_auto_target_hook2, _hook_execute_replaced_first);
     insert_hook(0x4A0EC6, 0x4A0ECC, (void*)4, _hook_stack_frame_cleanup);
     insert_hook(0x4A0EDB, 0x4A0EE1, (void*)4, _hook_stack_frame_cleanup);
+
+    // character & biped physics position
+    insert_hook(0x3FC276, 0x3FC27C, object_move_position_hook, _hook_execute_replaced_first); // object_move_position > object_set_position_internal inlined
 }
