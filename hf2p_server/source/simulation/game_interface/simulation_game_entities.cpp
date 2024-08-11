@@ -55,7 +55,7 @@ void simulation_entity_update(long entity_index, datum_index object_index, c_fla
 
 e_simulation_entity_type simulation_entity_type_from_object_creation(long object_tag_index, datum_index object_index, bool recycling)
 {
-	s_object_definition* object_tag = (s_object_definition*)tag_get(OBJECT_TAG, object_tag_index);
+	object_definition* object_tag = (object_definition*)tag_get(OBJECT_TAG, object_tag_index);
 	switch (object_tag->type.get())
 	{
 		case _object_type_biped:

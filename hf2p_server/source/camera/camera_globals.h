@@ -1,0 +1,33 @@
+#pragma once
+
+enum e_global_transition_function
+{
+	_global_transition_function_linear = 0,
+	_global_transition_function_early,
+	_global_transition_function_very_early,
+	_global_transition_function_late,
+	_global_transition_function_very_late,
+	_global_transition_function_cosine,
+	_global_transition_function_one,
+	_global_transition_function_zero,
+
+	k_global_transition_function_count
+};
+
+enum e_global_periodic_function
+{
+	_global_periodic_function_one = 0,
+	_global_periodic_function_zero,
+	_global_periodic_function_cosine,
+	_global_periodic_function_cosine_variable_period,
+	_global_periodic_function_diagonal_wave,
+	_global_periodic_function_diagonal_wave_variable_period,
+	_global_periodic_function_slide,
+	_global_periodic_function_slide_variable_period,
+	_global_periodic_function_noise,
+	_global_periodic_function_jitter,
+	_global_periodic_function_wander,
+	_global_periodic_function_spark,
+
+	k_global_periodic_function_count
+};

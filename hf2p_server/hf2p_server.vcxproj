@@ -182,6 +182,7 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
     <ClInclude Include="source\cache\cache_files.h" />
+    <ClInclude Include="source\camera\camera_globals.h" />
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
     <ClInclude Include="source\devices\devices.h" />
@@ -465,6 +466,7 @@
     <ClCompile Include="source\items\weapons.cpp" />
     <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />
+    <ClCompile Include="source\math\real_math.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />

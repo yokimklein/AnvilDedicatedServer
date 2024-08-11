@@ -58,5 +58,5 @@ struct s_simulation_player_taunt_request_data
 static_assert(sizeof(s_simulation_player_taunt_request_data) == 0x4);
 
 bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload);
-void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, long* object_references, long ignore_player_index, long payload_size, void const* payload_data);
-void simulation_event_generate_for_clients(e_simulation_event_type event_type, long object_references_count, long* object_references, long ignore_player_index, long payload_size, void const* payload_data);
+void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data);
+void simulation_event_generate_for_clients(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data);

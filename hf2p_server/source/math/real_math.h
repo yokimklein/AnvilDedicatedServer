@@ -76,6 +76,14 @@ static_assert(sizeof(real_vector2d) == 0x8);
 
 union real_vector3d
 {
+	real_vector3d() {};
+	real_vector3d(real i, real j, real k)
+	{
+		this->i = i;
+		this->j = j;
+		this->k = k;
+	}
+
 	struct
 	{
 		real i;
@@ -83,6 +91,11 @@ union real_vector3d
 		real k;
 	};
 	real n[3];
+
+	real_vector3d operator-(const real_vector3d& other) const
+	{
+		return real_vector3d(this->i - other.i, this->j - other.j, this->k - other.k);
+	}
 };
 static_assert(sizeof(real_vector3d) == 0xC);
 
@@ -244,3 +257,28 @@ struct real_rectangle3d
 	real z1;
 };
 static_assert(sizeof(real_rectangle3d) == 0x18);
+
+// These are supposed to be pointers, but the pointers were compiled out in MS29
+extern real_vector3d const& global_up3d;
+extern real_vector3d const& global_down3d;
+extern real_point3d const& global_origin3d;
+
+extern real_vector3d* __cdecl cross_product3d(real_vector3d const* a, real_vector3d const* b, real_vector3d* out);
+extern real __cdecl dot_product3d(real_vector3d const* a, real_vector3d const* b);
+extern real_vector3d* __cdecl vector_from_points3d(real_point3d const* a, real_point3d const* b, real_vector3d* out);
+extern real_point3d* __cdecl point_from_line3d(real_point3d const* in_point, real_vector3d const* in_vector, real scale, real_point3d* out_point);
+extern real __cdecl magnitude_squared3d(real_vector3d const* a);
+extern real __cdecl distance_squared3d(real_point3d const* a, real_point3d const* b);
+extern real __cdecl distance3d(real_point3d const* a, real_point3d const* b);
+extern real __cdecl square_root(real value);
+extern real __cdecl magnitude3d(real_vector3d const* vector);
+extern real_vector3d* __cdecl perpendicular3d(real_vector3d const* vector, real_vector3d* out_vector);
+extern real __cdecl normalize3d(real_vector3d* vector);
+extern real_vector2d* __cdecl rotate_vector2d(real_vector2d const* vector, real a2, real a3, real_vector2d* out_vector);
+extern real_vector3d* __cdecl scale_vector3d(real_vector3d const* in_vector, real scale, real_vector3d* out_vector);
+extern real_vector3d* __cdecl add_vectors3d(real_vector3d const* in_vector_a, real_vector3d const* in_vector_b, real_vector3d* out_vector);
+extern real_vector3d* __cdecl negate_vector3d(real_vector3d const* in_vector, real_vector3d* out_vector);
+extern real_point2d* __cdecl set_real_point2d(real_point2d* point, real x, real y);
+extern real_point3d* __cdecl set_real_point3d(real_point3d* point, real x, real y, real z);
+extern real_point2d* __cdecl point_from_line2d(real_point2d const* point, real_vector2d const* vector, real scale, real_point2d* out_point);
+extern real_vector2d* __cdecl vector_from_points2d(real_point2d const* point0, real_point2d const* point1, real_vector2d* out_vector);

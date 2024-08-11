@@ -159,7 +159,7 @@ void anvil_session_update()
         {
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
-            anvil_session_set_map(_s3d_reactor);
+            anvil_session_set_map(_s3d_edge);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             
@@ -348,7 +348,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _auto_turret;
+        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
@@ -366,7 +366,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
             configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
             configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
-            configuration->s3d_player_container.loadouts[0].secondary_weapon = _energy_sword;
+            configuration->s3d_player_container.loadouts[0].secondary_weapon = _gravity_hammer;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_player_cdt] = 1.0f;
             //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_vehicle_cdt] = 1.0f;
             configuration->s3d_player_customization.override_api_data = true;

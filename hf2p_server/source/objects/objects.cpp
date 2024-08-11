@@ -129,7 +129,7 @@ const char* object_describe(datum_index object_index)
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
 {
 	object_datum* object = object_get(object_index);
-	object_definition* object_definition = (object_definition*)tag_get(OBJECT_TAG, object->definition_index);
+	struct object_definition* object_definition = (struct object_definition*)tag_get(OBJECT_TAG, object->definition_index);
 	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
 	{
 		object->object.damage_owner = *damage_owner;
@@ -222,4 +222,26 @@ void* object_get_and_verify_type(datum_index object_index, dword object_type_mas
 	}
 
 	return object;
+}
+
+void __fastcall object_get_origin_interpolated(datum_index object_index, real_point3d* out_origin)
+{
+	INVOKE(0x401390, object_get_origin_interpolated, object_index, out_origin);
+	/*
+	object_datum* object = object_get(object_index);
+	if (object->object.gamestate_index != NONE
+		&& object->object.simulation_flags.test(_object_simulation_requires_interpolation_bit)
+		&& simulation_get_object_interpolated_position(object_index, out_origin))
+	{
+		if (object->object.parent_object_index != NONE)
+		{
+			real_matrix4x3* node_matrix = object_get_node_matrix(object->object.parent_object_index, object->object.parent_node_index);
+			matrix4x3_transform_point(node_matrix, out_origin, out_origin);
+		}
+	}
+	else
+	{
+		object_get_origin(object_index, out_origin);
+	}
+	*/
 }

@@ -91,6 +91,17 @@ enum e_object_physics_flags
 	k_number_of_object_physics_flags
 };
 
+enum e_object_damage_flags
+{
+	_object_damage_flag_bit0,
+	_object_damage_flag_bit1,
+	_object_damage_flag_bit2,
+	_object_damage_flag_bit3,
+	_object_damage_flag_bit4,
+
+	k_object_damage_flags_count
+};
+
 class c_object_identifier
 {
 public:
@@ -188,7 +199,7 @@ struct _object_datum
 	real shield_impact_current_shield_damage;
 	short shield_stun_ticks;
 	short body_stun_ticks;
-	ulong damage_flags;
+	c_flags<e_object_damage_flags, long, k_object_damage_flags_count> damage_flags;
 	char damaged_explosion_timer;
 	char body_damage_delay_ticks;
 	char shield_impact_decay_timer;
@@ -269,3 +280,4 @@ void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, 
 bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected);
 object_header_datum const* object_header_get(datum_index object_index);
 void* object_get_and_verify_type(datum_index object_index, dword object_type_mask);
+void __fastcall object_get_origin_interpolated(datum_index object_index, real_point3d* out_origin);

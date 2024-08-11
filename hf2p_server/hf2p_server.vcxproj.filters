@@ -744,6 +744,9 @@
     <ClInclude Include="source\motor\mover.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\camera\camera_globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1164,6 +1167,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_group.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\math\real_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
