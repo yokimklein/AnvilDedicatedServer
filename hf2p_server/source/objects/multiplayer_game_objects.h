@@ -1,6 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <tag_files\tag_field.h>
+#include <tag_files\tag_groups.h>
 
 enum e_multiplayer_object_type
 {
@@ -117,8 +118,8 @@ static_assert(sizeof(s_multiplayer_object_boundary_geometry_data) == 0x50);
 
 struct s_multiplayer_object_boundary_shader_definition
 {
-	s_tag_reference standard_shader;
-	s_tag_reference opaque_shader;
+	c_typed_tag_reference<RENDER_METHOD_TAG> standard_shader;
+	c_typed_tag_reference<RENDER_METHOD_TAG> opaque_shader;
 };
 static_assert(sizeof(s_multiplayer_object_boundary_shader_definition) == 0x20);
 
@@ -141,7 +142,7 @@ struct s_multiplayer_object_definition
 	real unknown3;
 	string_id boundary_center_marker;
 	string_id spawned_object_marker_name;
-	s_tag_reference spawned_object;
+	c_typed_tag_reference<OBJECT_TAG> spawned_object;
 	string_id nyi_boundary_material;
 	s_multiplayer_object_boundary_shader_definition boundary_shaders[k_number_of_multiplayer_object_boundary_shapes];
 };

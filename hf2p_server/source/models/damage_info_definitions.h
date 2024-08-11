@@ -158,9 +158,9 @@ struct s_global_damage_info_shield
     real stun_time;
     real recharge_time;
     real shield_damaged_threshold;
-    s_tag_reference shield_damaged_effect;
-    s_tag_reference shield_depleted_effect;
-    s_tag_reference shield_recharging_effect;
+    c_typed_tag_reference<EFFECT_TAG> shield_damaged_effect;
+    c_typed_tag_reference<EFFECT_TAG> shield_depleted_effect;
+    c_typed_tag_reference<EFFECT_TAG> shield_recharging_effect;
 };
 static_assert(sizeof(s_global_damage_info_shield) == 0x48);
 
@@ -185,9 +185,9 @@ struct s_instant_response
     // * destroys object: when the response fires the object is destroyed
     c_flags<e_damage_response_flags, long, k_number_of_damage_response_flags> flags;
     real damage_threshold;
-    s_tag_reference transition_effect_generic;
-    s_tag_reference transition_effect_specific;
-    s_tag_reference transition_effect_damage;
+    c_typed_tag_reference<EFFECT_TAG, DAMAGE_EFFECT_TAG> transition_effect_generic;
+    c_typed_tag_reference<EFFECT_TAG, DAMAGE_EFFECT_TAG> transition_effect_specific;
+    c_typed_tag_reference<EFFECT_TAG, DAMAGE_EFFECT_TAG> transition_effect_damage;
     string_id region;
     c_enum<e_instant_response_state, short, _instant_response_state_default, k_number_of_instant_response_states> new_state;
     short runtime_region_index;
@@ -203,7 +203,7 @@ struct s_instant_response
     // If desired, you can specify a delay until the response fires. This delay is pre-empted if another timed response for
     // the same section fires. The delay effect plays while the timer is counting down
     real response_delay;
-    s_tag_reference delay_effect;
+    c_typed_tag_reference<EFFECT_TAG> delay_effect;
     string_id delay_effect_marker_name;
     // seat ejaculation
     string_id ejecting_seat_label;

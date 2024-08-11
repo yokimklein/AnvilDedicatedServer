@@ -129,7 +129,7 @@ const char* object_describe(datum_index object_index)
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update)
 {
 	object_datum* object = object_get(object_index);
-	s_object_definition* object_definition = (s_object_definition*)tag_get(OBJECT_TAG, object->definition_index);
+	object_definition* object_definition = (object_definition*)tag_get(OBJECT_TAG, object->definition_index);
 	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
 	{
 		object->object.damage_owner = *damage_owner;

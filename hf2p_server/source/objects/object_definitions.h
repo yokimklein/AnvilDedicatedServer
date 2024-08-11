@@ -240,7 +240,7 @@ static_assert(sizeof(s_object_function_definition) == 0x2C);
 struct s_object_attachment_definition
 {
 	c_flags<e_object_attachment_atlas_flags, long, k_number_of_object_attachment_atlas_flags> atlas_flags;
-	s_tag_reference type;
+	c_typed_tag_reference<LIGHT_TAG, EFFECT_TAG, SOUND_LOOPING_TAG, LENS_FLARE_TAG> type;
 	string_id marker;
 	c_enum<e_object_attachment_change_color, short, _object_attachment_change_color_none, k_number_of_object_attachment_change_colors> change_color;
 	c_flags<e_object_attachment_flags, word, k_number_of_object_attachment_flags> flags;
@@ -251,7 +251,7 @@ static_assert(sizeof(s_object_attachment_definition) == 0x24);
 
 struct s_object_widget_definition
 {
-	s_tag_reference type;
+	c_typed_tag_reference<ANTENNA_TAG, CLOTH_TAG, LEAF_SYSTEM_TAG, CELLULAR_AUTOMATA_TAG, CELLULAR_AUTOMATA2D_TAG> type;
 };
 static_assert(sizeof(s_object_widget_definition) == 0x10);
 
@@ -288,11 +288,11 @@ struct s_object_node_map_definition
 };
 static_assert(sizeof(s_object_node_map_definition) == 0x1);
 
-struct s_object_reviving_equipment_definition
+struct s_object_health_pack_definition
 {
-	s_tag_reference equipment;
+	c_typed_tag_reference<EQUIPMENT_TAG> equipment;
 };
-static_assert(sizeof(s_object_reviving_equipment_definition) == 0x10);
+static_assert(sizeof(s_object_health_pack_definition) == 0x10);
 
 struct s_object_model_data_definition
 {
@@ -303,7 +303,7 @@ struct s_object_model_data_definition
 };
 static_assert(sizeof(s_object_model_data_definition) == 0x14);
 
-struct s_object_definition
+struct object_definition
 {
 	c_enum<e_object_type, short, _object_type_biped, k_object_type_count> type;
 	c_flags<e_object_definition_flags, short, k_number_of_object_definition_flags> object_flags;
@@ -317,14 +317,14 @@ struct s_object_definition
 	real dynamic_light_sphere_radius;
 	real_point3d dynamic_light_sphere_offset;
 	string_id default_model_variant;
-	s_tag_reference model;
-	s_tag_reference crate_object;
-	s_tag_reference collision_damage;
+	c_typed_tag_reference<MODEL_TAG> model;
+	c_typed_tag_reference<CRATE_TAG> crate_object;
+	c_typed_tag_reference<COLLISION_DAMAGE_TAG> collision_damage;
 	c_typed_tag_block<s_object_early_mover_obb_definition> early_mover_obb;
-	s_tag_reference creation_effect;
-	s_tag_reference material_effects;
-	s_tag_reference armor_sounds;
-	s_tag_reference melee_impact;
+	c_typed_tag_reference<EFFECT_TAG> creation_effect;
+	c_typed_tag_reference<MATERIAL_EFFECTS_TAG> material_effects;
+	c_typed_tag_reference<ARMOR_SOUNDS_TAG> armor_sounds;
+	c_typed_tag_reference<SOUND_TAG> melee_sound;
 	c_typed_tag_block<s_object_ai_properties_definition> ai_properties;
 	c_typed_tag_block<s_object_function_definition> functions;
 	short hud_text_message_index;
@@ -334,7 +334,7 @@ struct s_object_definition
 	c_typed_tag_block<s_object_change_color_definition> change_colors;
 	c_typed_tag_block<s_object_node_map_definition> node_maps;
 	c_typed_tag_block<s_multiplayer_object_definition> multiplayer_object;
-	c_typed_tag_block<s_object_reviving_equipment_definition> reviving_equipment;
+	c_typed_tag_block<s_object_health_pack_definition> health_packs;
 	c_typed_tag_block<s_object_model_data_definition> model_data;
 };
-static_assert(sizeof(s_object_definition) == 0x120);
+static_assert(sizeof(object_definition) == 0x120);

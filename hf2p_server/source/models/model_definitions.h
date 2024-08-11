@@ -3,6 +3,7 @@
 #include <tag_files\tag_block.h>
 #include <models\damage_info_definitions.h>
 #include <math\real_math.h>
+#include <tag_files\tag_groups.h>
 
 constexpr long k_maximum_number_of_model_regions = 16;
 constexpr long k_maximum_number_of_model_region_permutations = 12;
@@ -262,7 +263,7 @@ struct s_model_permutation_state
 	char runtime_permutation_index;
 	c_flags<e_model_permutation_state_flags, byte, k_number_of_model_permutation_state_flags> property_flags;
 	c_enum<e_model_damage_state, short, _model_damage_state_default, k_number_of_model_damage_states> state;
-	s_tag_reference looping_effect;
+	c_typed_tag_reference<EFFECT_TAG> looping_effect;
 	string_id looping_effect_marker_name;
 	real initial_probability;
 };
@@ -296,14 +297,14 @@ struct s_model_variant_object
 	string_id parent_marker;
 	string_id child_marker;
 	string_id child_variant_name;
-	s_tag_reference child_object;
+	c_typed_tag_reference<OBJECT_TAG> child_object;
 };
 static_assert(sizeof(s_model_variant_object) == 0x1C);
 
 struct s_model_variant
 {
 	string_id name;
-	s_tag_reference voice;
+	c_typed_tag_reference<DIALOGUE_TAG> voice;
 	string_id dialog_effect;
 	c_enum<e_model_ai_character, byte, _model_ai_character_none, k_number_of_model_ai_characters> ai_character;
 	char : 8;
@@ -420,7 +421,7 @@ static_assert(sizeof(s_model_object_data_block) == 0x14);
 
 struct s_scenario_load_parameter
 {
-	s_tag_reference scenario;
+	c_typed_tag_reference<SCENARIO_TAG> scenario;
 	s_tag_data parameters;
 	long : 32;
 	long : 32;
@@ -459,12 +460,12 @@ static_assert(sizeof(s_occlusion_sphere) == 0x14);
 
 struct s_model_definition
 {
-	s_tag_reference render_model;
-	s_tag_reference collision_model;
-	s_tag_reference animation;
-	s_tag_reference physics_model;
+	c_typed_tag_reference<RENDER_MODEL_TAG> render_model;
+	c_typed_tag_reference<COLLISION_MODEL_TAG> collision_model;
+	c_typed_tag_reference<MODEL_ANIMATION_GRAPH_TAG> animation;
+	c_typed_tag_reference<PHYSICS_MODEL_TAG> physics_model;
 	real reduce_to_lod_distances[k_number_of_model_lods];
-	s_tag_reference lod_model;
+	c_typed_tag_reference<RENDER_MODEL_TAG> lod_model;
 	c_typed_tag_block<s_model_variant> variants;
 	c_typed_tag_block<s_model_region_sort> region_sort;
 	c_typed_tag_block<s_model_instance_group> instance_groups;
@@ -475,8 +476,8 @@ struct s_model_definition
 	c_typed_tag_block<s_runtime_node> runtime_nodes;
 	ulong runtime_nodes_checksum;
 	c_typed_tag_block<s_model_object_data_block> mode_object_data;
-	s_tag_reference primary_dialog;
-	s_tag_reference secondary_dialog;
+	c_typed_tag_reference<DIALOGUE_TAG> primary_dialog;
+	c_typed_tag_reference<DIALOGUE_TAG> secondary_dialog;
 	ulong flags;
 	string_id default_dialog_effect;
 	ulong render_only_node_flags[8]; // bit vector
@@ -489,9 +490,9 @@ struct s_model_definition
 	c_typed_tag_block<s_shadow_cast_override> shadow_cast_overrides;
 	c_typed_tag_block<s_shadow_receive_override> shadow_receive_overrides;
 	c_typed_tag_block<s_occlusion_sphere> occlusion_spheres;
-	s_tag_reference override_3p_shield_impact;
-	s_tag_reference override_fp_shield_impact;
-	s_tag_reference overshield_3p_shield_impact;
-	s_tag_reference overshield_fp_shield_impact;
+	c_typed_tag_reference<SHIELD_IMPACT_TAG> override_3p_shield_impact;
+	c_typed_tag_reference<SHIELD_IMPACT_TAG> override_fp_shield_impact;
+	c_typed_tag_reference<SHIELD_IMPACT_TAG> overshield_3p_shield_impact;
+	c_typed_tag_reference<SHIELD_IMPACT_TAG> overshield_fp_shield_impact;
 };
 static_assert(sizeof(s_model_definition) == 0x1B8);

@@ -3,6 +3,7 @@
 #include <game\game_progression.h>
 #include <render\render_visibility_collection.h>
 #include <tag_files\tag_block.h>
+#include <tag_files\tag_groups.h>
 
 // Non-official enum
 enum e_game_difficulty_value_type
@@ -195,7 +196,7 @@ struct s_game_globals
 	byte data[0x120];
 	c_typed_tag_block<s_game_globals_difficulty_information> difficulty;
 	byte data2[0x84];
-	s_tag_reference multiplayer_globals;
+	c_typed_tag_reference<MULTIPLAYER_GLOBALS_TAG> multiplayer_globals;
 	byte data3[0x454];
 };
 static_assert(sizeof(s_game_globals) == 0x614);
