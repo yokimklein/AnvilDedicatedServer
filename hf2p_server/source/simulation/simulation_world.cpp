@@ -1,30 +1,38 @@
 #include "simulation_world.h"
 #include "assert.h"
 
-void c_simulation_world::update_establishing_view(c_simulation_view* simulation_view)
+void c_simulation_world::update_establishing_view(c_simulation_view* view)
 {
-    long view_establishment_mode = simulation_view->m_view_establishment_mode;
-    if (view_establishment_mode != _simulation_view_establishment_mode_established)
+    assert(exists());
+    assert(is_authority());
+    assert(view);
+    assert(!view->established());
+    if (view->get_view_establishment_mode() != _simulation_view_establishment_mode_established)
     {
-        if (view_establishment_mode == _simulation_view_establishment_mode_connect)
+        if (view->ready_to_establish())
         {
-            if (simulation_view->m_valid_view_establishment_identifier == 1)
-            {
-                long establishment_identifier = this->m_view_establishment_identifier;
-                this->m_view_establishment_identifier = establishment_identifier + 1;
-                simulation_view->set_view_establishment(_simulation_view_establishment_mode_established, establishment_identifier);
-            }
+            long establishment_identifier = m_view_establishment_identifier++;
+            printf("MP/NET/SIMULATION: c_simulation_world::update_establishing_view: simulation connected, go established - advancing remote client view %s (mode %d -> %d, new identifier %d)\n",
+                view->get_view_description(),
+                view->get_view_establishment_mode(),
+                _simulation_view_establishment_mode_established,
+                establishment_identifier);
+            view->set_view_establishment(_simulation_view_establishment_mode_established, establishment_identifier);
         }
-        else
+        else if (view->get_view_establishment_mode() != _simulation_view_establishment_mode_connect)
         {
-            simulation_view->set_view_establishment(_simulation_view_establishment_mode_connect, -1);
+            printf("MP/NET/SIMULATION: c_simulation_world::update_establishing_view: view ready to connect, advancing remote client view %s (mode %d -> %d)\n",
+                view->get_view_description(),
+                view->get_view_establishment_mode(),
+                _simulation_view_establishment_mode_connect);
+            view->set_view_establishment(_simulation_view_establishment_mode_connect, NONE);
         }
     }
 }
 
 bool c_simulation_world::exists()
 {
-    return this->m_world_type > _simulation_world_type_none;
+    return m_world_type > _simulation_world_type_none;
 }
 
 c_simulation_world* simulation_get_world()
@@ -37,26 +45,41 @@ c_simulation_world* simulation_get_world()
 
 bool c_simulation_world::is_distributed()
 {
-    assert(this->exists());
-    return this->m_world_type == _simulation_world_type_distributed_game_authority || this->m_world_state == _simulation_world_type_distributed_game_client;
+    assert(exists());
+    return m_world_type == _simulation_world_type_distributed_game_authority || m_world_state == _simulation_world_type_distributed_game_client;
 }
 
 bool c_simulation_world::is_authority()
 {
-    assert(this->exists());
-    return this->m_world_type != _simulation_world_type_synchronous_game_client && this->m_world_state != _simulation_world_type_synchronous_playback_client && this->m_world_state != _simulation_world_type_distributed_game_client;
+    assert(exists());
+    return m_world_type != _simulation_world_type_synchronous_game_client && m_world_state != _simulation_world_type_synchronous_playback_client && m_world_state != _simulation_world_type_distributed_game_client;
 }
 
 bool c_simulation_world::is_active()
 {
-    assert(this->exists());
+    assert(exists());
     return m_world_state == _simulation_world_state_active;
 }
 
 c_simulation_entity_database* c_simulation_world::get_entity_database()
 {
-    assert(this->exists());
-    assert(this->is_distributed());
-    assert(this->m_distributed_world);
-    return &this->m_distributed_world->m_entity_database;
+    assert(exists());
+    assert(is_distributed());
+    assert(m_distributed_world);
+    return &m_distributed_world->m_entity_database;
+}
+
+c_simulation_event_handler* c_simulation_world::get_event_handler()
+{
+    assert(exists());
+    assert(is_distributed());
+    assert(m_distributed_world);
+    return &m_distributed_world->m_entity_database.m_event_handler;
+}
+
+long c_simulation_world::get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier)
+{
+    assert(exists());
+    assert(m_watcher);
+    return m_watcher->get_machine_index_by_identifier(remote_machine_identifier);
 }

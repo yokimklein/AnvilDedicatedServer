@@ -9,7 +9,9 @@ class c_simulation_type_collection
 {
 public:
 	c_simulation_entity_definition* get_entity_definition(e_simulation_entity_type entity_type);
+	c_simulation_event_definition* get_event_definition(e_simulation_event_type event_type);
 	const char* get_entity_type_name(e_simulation_entity_type entity_type);
+	const char* get_event_type_name(e_simulation_event_type event_type);
 
 	long m_entity_type_count;
 	c_static_array<c_simulation_entity_definition*, k_simulation_entity_type_maximum_count> m_entity_definitions;

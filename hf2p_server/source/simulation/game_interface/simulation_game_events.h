@@ -1,6 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <memory\data.h>
+#include <game\game_engine_simulation.h>
 
 enum e_simulation_event_type
 {
@@ -57,6 +58,10 @@ struct s_simulation_player_taunt_request_data
 };
 static_assert(sizeof(s_simulation_player_taunt_request_data) == 0x4);
 
-bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload);
-void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data);
-void simulation_event_generate_for_clients(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data);
+bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long event_payload_size, const long* event_payload);
+void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload);
+void simulation_event_generate_for_clients(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload);
+void simulation_event_generate_for_client_player_list(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long const* player_indices, long player_count, long event_payload_size, void const* event_payload);
+void simulation_event_generate_for_client_player_mask(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, c_flags<long, ulong, k_maximum_multiplayer_players> player_mask, long event_payload_size, void const* event_payload);
+void event_handler_send_event(c_flags<long, ulong, k_maximum_machines> machine_mask, e_simulation_event_type event_type, long entity_reference_count, datum_index const* object_reference_indices, long event_payload_size, void const* event_payload);
+void __fastcall simulation_event_build_entity_reference_indices(long entity_reference_count, datum_index const* object_reference_indices, long const* entity_reference_indices);

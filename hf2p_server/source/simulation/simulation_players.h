@@ -3,6 +3,7 @@
 #include <game\players.h>
 #include <game\player_control.h>
 #include <game\player_configuration.h>
+#include <game\game_engine_simulation.h>
 
 #pragma pack(push, 1)
 class c_simulation_world;
@@ -37,6 +38,6 @@ struct s_player_collection
 {
 	long valid_player_mask;
 	long player_count;
-	s_player_collection_player players[k_network_maximum_players_per_session];
+	s_player_collection_player players[k_maximum_players];
 };
 static_assert(sizeof(s_player_collection) == 0xB908);

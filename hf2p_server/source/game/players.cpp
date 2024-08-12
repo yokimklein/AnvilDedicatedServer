@@ -99,3 +99,11 @@ long get_player_action_control_context_identifier_bits()
 	//	return 4;
 	//return 2;
 }
+
+s_machine_identifier* players_get_machine_identifier(long machine_index)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players_globals);
+	assert(machine_index >= 0 && machine_index < k_maximum_machines);
+	assert(TEST_BIT(players_globals->machine_valid_mask, machine_index));
+	return &players_globals->machine_identifiers[machine_index];
+}

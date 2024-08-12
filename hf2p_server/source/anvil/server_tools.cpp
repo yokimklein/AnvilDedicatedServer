@@ -159,7 +159,7 @@ void anvil_session_update()
         {
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
-            anvil_session_set_map(_s3d_edge);
+            anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             

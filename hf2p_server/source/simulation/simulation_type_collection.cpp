@@ -11,6 +11,15 @@ c_simulation_entity_definition* c_simulation_type_collection::get_entity_definit
 	return entity_definition;
 }
 
+c_simulation_event_definition* c_simulation_type_collection::get_event_definition(e_simulation_event_type event_type)
+{
+	assert(event_type >= 0 && event_type < m_event_type_count);
+	c_simulation_event_definition* event_definition = this->m_event_definitions[event_type];
+	assert(event_definition != NULL);
+	assert(event_definition->event_type() == event_type);
+	return event_definition;
+}
+
 const char* simulation_entity_type_get_name(e_simulation_entity_type entity_type)
 {
 	c_simulation_world* simulation_world = simulation_get_world();
@@ -22,6 +31,14 @@ const char* c_simulation_type_collection::get_entity_type_name(e_simulation_enti
 {
 	if (entity_type >= 0 && entity_type < this->m_entity_type_count)
 		return this->get_entity_definition(entity_type)->entity_type_name();
+	else
+		return "unknown";
+}
+
+const char* c_simulation_type_collection::get_event_type_name(e_simulation_event_type event_type)
+{
+	if (event_type >= 0 && event_type < this->m_event_type_count)
+		return this->get_event_definition(event_type)->event_type_name();
 	else
 		return "unknown";
 }

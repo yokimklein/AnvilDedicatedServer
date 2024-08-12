@@ -260,8 +260,8 @@ void anvil_hooks_damage_updates_apply()
     // object_deplete_body_internal
     insert_hook(0x40D9D3, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last); // sync object death
     
-    // damage_response_fire
-    insert_hook(0x413D47, 0x413D4F, damage_section_response_fire_hook, _hook_execute_replaced_first); // includes simulation_action_damage_section_response
+    // damage_section_response_fire
+    insert_hook(0x413D3F, 0x413D47, damage_section_response_fire_hook, _hook_execute_replaced_last); // includes simulation_action_damage_section_response
     
     // object_set_damage_owner
     hook_function(0x404320, 0x75, object_set_damage_owner_hook1);

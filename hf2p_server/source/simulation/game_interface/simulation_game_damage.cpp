@@ -23,7 +23,7 @@ void simulation_action_damage_section_response(datum_index object_index, long da
 		}
 		else
 		{
-			s_simulation_damage_section_response_data response_data = {};
+			s_simulation_damage_section_response_data response_data;
 			response_data.damage_section_index = damage_section_index;
 			response_data.response_index = response_index;
 			response_data.damage_section_response_type = damage_section_response_type;
@@ -33,7 +33,7 @@ void simulation_action_damage_section_response(datum_index object_index, long da
 	}
 }
 
-void simulation_action_damage_aftermath(datum_index object_index, s_damage_aftermath_result_data* result_data)
+void simulation_action_damage_aftermath(datum_index object_index, s_damage_aftermath_result_data const* result_data)
 {
 	if (should_send_damage_aftermath_event(object_index, result_data))
 	{
@@ -44,7 +44,7 @@ void simulation_action_damage_aftermath(datum_index object_index, s_damage_after
 	}
 }
 
-bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data* result_data)
+bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data const* result_data)
 {
 	if (game_is_distributed() && game_is_server() && !game_is_playback()
 		&& simulation_object_get_authoritative_entity(object_index) != NONE
@@ -55,7 +55,7 @@ bool should_send_damage_aftermath_event(datum_index object_index, s_damage_after
 	return false;
 }
 
-bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_result_data* result_data)
+bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_result_data const* result_data)
 {
 	object_datum* object = object_get(object_index);
 	struct object_definition* object_definition = (struct object_definition*)tag_get(OBJECT_TAG, object->definition_index);
@@ -104,23 +104,23 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	out_event_data->damage_definition_index = result_data->damage_definition_index;
 	out_event_data->damage_owner_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(result_data->damage_owner_player_index);
 	out_event_data->direction = result_data->direction;
-	if (normalize3d(&out_event_data->direction) <= k_real_epsilon)
-	{
-		out_event_data->direction = *(real_vector3d*)&global_up3d;
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: event damage_aftermath has bad direction vector - who generated this nonsense?\n");
-	}
-	else
+	if (normalize3d(&out_event_data->direction) > k_real_epsilon)
 	{
 		// Match parity with H3/ODST and set direction to be valid when above the epsilon
 		// HO uses reach's build_damage_aftermath_event_data which does not set this bool, causing damage physics to not sync
 		out_event_data->direction_valid = true;
 	}
+	else
+	{
+		out_event_data->direction = *(real_vector3d*)&global_up3d;
+		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: event damage_aftermath has bad direction vector - who generated this nonsense?\n");
+	}
 	if (result_data->epicenter_valid)
 	{
 		out_event_data->epicenter_valid = true;
-		real_vector3d object_origin;
-		object_get_origin_interpolated(object_index, (real_point3d*)&object_origin);
-		out_event_data->epicenter_direction_vector = (result_data->epicenter_direction_vector - object_origin);
+		real_point3d object_origin;
+		object_get_origin_interpolated(object_index, &object_origin);
+		vector_from_points3d(&object_origin, (real_point3d*)&result_data->epicenter_direction_vector, &out_event_data->epicenter_direction_vector);
 		out_event_data->epicenter_direction = normalize3d(&out_event_data->epicenter_direction_vector);
 		if (fabsf(out_event_data->epicenter_direction) < k_real_epsilon)
 		{
@@ -165,4 +165,15 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	out_event_data->node_index = static_cast<short>(result_data->node_index);
 	out_event_data->damage_reporting_info = result_data->damage_reporting_info;
 	out_event_data->special_death_type = result_data->special_death_type;
+}
+
+void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, long const* player_indices, long player_count)
+{
+	if (should_send_damage_aftermath_event(object_index, result_data))
+	{
+		datum_index object_references[2];
+		s_simulation_damage_aftermath_event_data aftermath_event_data;
+		build_damage_aftermath_event_data(object_index, result_data, &aftermath_event_data, object_references);
+		simulation_event_generate_for_client_player_list(_simulation_event_type_damage_aftermath, NUMBEROF(object_references), object_references, player_indices, player_count, sizeof(s_simulation_damage_aftermath_event_data), &aftermath_event_data);
+	}
 }

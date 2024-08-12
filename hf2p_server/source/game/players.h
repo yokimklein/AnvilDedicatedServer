@@ -5,6 +5,25 @@
 #include <memory\data.h>
 #include <game\player_configuration.h>
 #include <game\game_engine_player_traits.h>
+#include <game\game_engine_simulation.h>
+
+enum e_player_respawn_failure
+{
+	_player_respawn_failure_none = 0,
+	_player_respawn_failure_in_editor,
+	_player_respawn_failure_cinematic_playing,
+	_player_respawn_failure_scripting_says_it_isnt_safe,
+	_player_respawn_failure_waiting_on_respawn_timer,
+	_player_respawn_failure_friend_in_combat,
+	_player_respawn_failure_nearby_enemies_pursuing_friend,
+	_player_respawn_failure_friend_airborne_or_moving,
+	_player_respawn_failure_friend_in_vehicle,
+	_player_respawn_failure_everybody_is_dead,
+	_player_respawn_failure_waiting_for_checkpoint,
+	_player_respawn_failure_can_not_find_valid_location,
+
+	k_player_respawn_failure_count
+};
 
 struct s_player_shot_info
 {
@@ -189,6 +208,87 @@ public:
 	}
 };
 
+#pragma pack(push, 1)
+struct s_players_global_data
+{
+	long players_in_game_count;
+
+	bool input_disabled;
+	bool mostly_inhibited;
+
+	bool weapon_pickup_disabled;
+	bool __unknown7;
+	bool equipment_use_disabled;
+
+	byte __data9[3];
+
+	long unknown_todo; // TODO: additional 4 byte field added somewhere above here since ms23
+
+	dword machine_valid_mask;
+	c_static_array<s_machine_identifier, k_maximum_machines> machine_identifiers;
+
+	bool local_machine_exists;
+	s_machine_identifier local_machine_identifier;
+	byte __pad131[0x3];
+
+	long local_machine_index;
+	bool scripted_dont_allow_respawning;
+
+	byte __data139;
+
+	c_enum<e_player_respawn_failure, short, _player_respawn_failure_none, k_player_respawn_failure_count> respawn_failure;
+
+	// player_positions_initialize_for_new_structure_bsp
+	// players_update_after_game
+	bool __unknown13C;
+
+	byte __data13D[0x3];
+
+	real_point3d switching_player_position;
+	real_vector3d switching_player_forward;
+
+	// player_positions_initialize_for_new_structure_bsp
+	// players_update_after_game
+	long begin_zone_set_switch_trigger_volume_index;
+	long commit_zone_set_switch_trigger_volume_index;
+
+	// players_update_after_game
+	// if (player_index != -1 && ++__unknown160 > 12)
+	//    __unknown160 = 0
+	short __unknown160;
+
+	short __unknown162;
+
+	// players_update_after_game
+	long player_index;
+
+	// players_update_after_game
+	long zoneset_index;
+
+	// memset in `players_initialize_for_new_map`
+	// zone_set_trigger_volume_index
+	c_static_flags<1024> zone_set_switch_flags;
+
+	// `terminal_was_completed`
+	// - returns whether or not the given terminal was read to completion
+	word terminal_completed_flags;
+
+	// `terminal_was_accessed`
+	// - returns whether or not the given terminal was accessed
+	word terminal_accessed_flags;
+
+	// `terminal_is_being_read`
+	// - returns whether or not a terminal is currently being read
+	bool terminal_being_read;
+
+	byte __data1F1[0x3];
+
+	byte __data1F4[0x40];
+};
+static_assert(sizeof(s_players_global_data) == 0x238);
+static_assert(0x14 == OFFSETOF(s_players_global_data, machine_identifiers));
+#pragma pack(pop)
+
 bool player_identifier_is_valid(s_player_identifier const* identifier);
 const char* player_identifier_get_string(s_player_identifier const* identifier);
 long player_mapping_get_input_user(datum_index player_index);
@@ -199,3 +299,4 @@ void __fastcall player_increment_control_context(datum_index player_index);
 bool __fastcall player_is_local(datum_index player_index);
 void __fastcall player_clear_assassination_state(datum_index player_index);
 long get_player_action_control_context_identifier_bits();
+s_machine_identifier* players_get_machine_identifier(long machine_index);

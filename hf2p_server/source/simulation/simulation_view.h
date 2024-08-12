@@ -73,7 +73,13 @@ class c_simulation_view
 {
 public:
 	void set_view_establishment(e_simulation_view_establishment_mode establishment_mode, long establishment_identifier);
+	bool established();
+	bool exists();
+	e_simulation_view_establishment_mode get_view_establishment_mode();
+	bool ready_to_establish();
+	const char* get_view_description();
 
+protected:
 	long unknown1;
 	c_enum<e_simulation_view_type, long, _simulation_view_type_none, k_simulation_view_type_count> m_view_type;
 	long m_view_datum_index;
@@ -84,15 +90,27 @@ public:
 	long m_remote_machine_index;
 	c_network_observer* m_observer;
 	long m_observer_channel_index;
-	long m_view_death_reason;
-	long m_view_establishment_mode;
+	c_enum<e_simulation_view_reason, long, _simulation_view_reason_none, k_simulation_view_reason_count> m_view_death_reason;
+	c_enum<e_simulation_view_establishment_mode, long, _simulation_view_establishment_mode_none, k_simulation_view_establishment_mode_count> m_view_establishment_mode;
 	long m_view_establishment_identifier;
-	long m_valid_view_establishment_identifier;
-	long unknown2;
+	long m_valid_view_establishment_mode;
+	dword m_valid_view_establishment_identifier;
 	c_network_channel* m_channel;
 	long m_channel_connection_identifier;
 	c_network_channel_simulation_interface m_simulation_interface;
+	bool m_simulation_active;
+	dword_flags m_acknowledged_player_mask;
+	long m_action_number;
+	long m_update_number;
+
 	// synchronous catchup data
-	byte __data84[0x3C];
+	dword m_synchronous_catchup_attempt_count;
+	dword m_synchronous_catchup_update_number;
+	dword m_synchronous_catchup_finish_time;
+	dword m_synchronous_catchup_unknownA0;
+	dword m_synchronous_catchup_progress;
+	long m_synchronous_catchup_stage;
+	byte __dataAC[0x10];
+	dword __unknownBC;
 };
 static_assert(sizeof(c_simulation_view) == 0xC0);

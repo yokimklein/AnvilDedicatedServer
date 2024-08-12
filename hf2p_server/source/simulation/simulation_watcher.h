@@ -12,6 +12,7 @@ class c_simulation_watcher : public c_network_channel_owner
 public:
 	//void describe_status(char* buffer, long buffer_size) const;
 	//bool need_to_generate_updates() const;
+	long get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier);
 
 protected:
 	c_simulation_world* m_world;

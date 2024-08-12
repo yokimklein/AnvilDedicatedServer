@@ -55,6 +55,8 @@ public:
 	bool is_authority();
 	bool is_active();
 	c_simulation_entity_database* get_entity_database();
+	c_simulation_event_handler* get_event_handler();
+	long get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier);
 
 	c_simulation_watcher* m_watcher;
 	c_simulation_distributed_world* m_distributed_world;

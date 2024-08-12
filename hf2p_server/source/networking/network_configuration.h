@@ -7,7 +7,7 @@
 struct s_simulation_event_configuration
 {
 	real __unknown0;
-	dword __unknown4;
+	dword cancel_timer; // milliseconds
 	real __unknown8;
 	real __unknownC;
 	real __unknown10;
@@ -107,6 +107,7 @@ struct s_simulation_configuration
 	dword __unknownA5C;
 };
 static_assert(sizeof(s_simulation_configuration) == 0xA9C);
+static_assert(0xA0 == OFFSETOF(s_simulation_configuration, simulation_event_configurations));
 
 struct s_map_information
 {
@@ -565,7 +566,10 @@ struct s_network_configuration
 	long determinism_compatible_version;
 };
 static_assert(sizeof(s_network_configuration) == 0x1700);
+static_assert(0x24C == OFFSETOF(s_network_configuration, squad_peer_pending_join_timeout));
+static_assert(0x25C == OFFSETOF(s_network_configuration, group_peer_pending_join_timeout));
 static_assert(0x390 == OFFSETOF(s_network_configuration, peer_properties_update_timeout));
+static_assert(0x3E4 == OFFSETOF(s_network_configuration, simulation_configuration));
 static_assert(0x16F8 == OFFSETOF(s_network_configuration, determinism_version));
 static_assert(0x16FC == OFFSETOF(s_network_configuration, determinism_compatible_version));
 

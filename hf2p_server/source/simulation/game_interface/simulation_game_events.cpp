@@ -3,11 +3,13 @@
 #include <game\game.h>
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <simulation\simulation_world.h>
+#include <networking\network_configuration.h>
 
-bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long payload_size, const long* payload)
+bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long event_payload_size, const long* event_payload)
 {
-	short player_absolute_index = *payload;
-	short spectating_player_absolute_index = *(payload + 1);
+	short player_absolute_index = *event_payload;
+	short spectating_player_absolute_index = *(event_payload + 1);
 
 	if (player_absolute_index < 0 || player_absolute_index >= 16)
 		return false;
@@ -26,24 +28,122 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 	return true;
 }
 
-void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data)
+void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
 	static void* simulation_event_generate_for_remote_peers_call = (void*)BASE_ADDRESS(0x7E490);
 	__asm
 	{
-		push payload_data
-		push payload_size
+		push event_payload
+		push event_payload_size
 		push ignore_player_index
-		push object_references
-		mov edx, object_references_count
+		push object_reference_indices
+		mov edx, entity_reference_count
 		mov ecx, event_type
 		call simulation_event_generate_for_remote_peers_call
 		add esp, 16
 	}
 }
 
-void simulation_event_generate_for_clients(e_simulation_event_type event_type, long object_references_count, datum_index* object_references, long ignore_player_index, long payload_size, void const* payload_data)
+void simulation_event_generate_for_clients(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
 	assert(game_is_authoritative());
-	simulation_event_generate_for_remote_peers(event_type, object_references_count, object_references, ignore_player_index, payload_size, payload_data);
+	simulation_event_generate_for_remote_peers(event_type, entity_reference_count, object_reference_indices, ignore_player_index, event_payload_size, event_payload);
 }
+
+void simulation_event_generate_for_client_player_list(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long const* player_indices, long player_count, long event_payload_size, void const* event_payload)
+{
+	c_simulation_world* world = simulation_get_world();
+	if (world->is_distributed())
+	{
+		c_simulation_event_handler* event_handler = world->get_event_handler();
+		c_flags<long, ulong, k_maximum_players> player_mask;
+		if (player_indices != nullptr && player_count >= 1 && player_count <= k_maximum_players)
+		{
+			for (long i = 0; i < player_count; i++)
+			{
+				if (player_indices[i] == NONE)
+				{
+					printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: exclusive player list has bad player index %d/%s\n", event_type, event_handler->get_event_type_name(event_type));
+				}
+				else
+				{
+					player_mask.set(player_indices[i], true);
+				}
+			}
+			simulation_event_generate_for_client_player_mask(event_type, entity_reference_count, object_reference_indices, player_mask, event_payload_size, event_payload);
+		}
+		else
+		{
+			printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: not sending exclusive list event %d/%s for invalid player list [count %d]\n", event_type, event_handler->get_event_type_name(event_type), player_count);
+		}
+	}
+}
+
+void simulation_event_generate_for_client_player_mask(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, c_flags<long, ulong, k_maximum_multiplayer_players> player_mask, long event_payload_size, void const* event_payload)
+{
+	c_simulation_world* world = simulation_get_world();
+	if (world->is_distributed())
+	{
+		c_simulation_event_handler* event_handler = world->get_event_handler();
+		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: generating exclusive list event %d/%s\n", event_type, event_handler->get_event_type_name(event_type));
+		if (world->is_authority())
+		{
+			TLS_DATA_GET_VALUE_REFERENCE(players);
+			c_flags<long, ulong, k_maximum_machines> machine_mask;
+			for (long i = 0; i < k_maximum_players; i++)
+			{
+				if (player_mask.test(i))
+				{
+					s_player_datum* player = (s_player_datum*)datum_try_and_get_absolute(*players, i);
+					if (player != nullptr)
+					{
+						short machine_index = player->machine_index;
+						if (machine_index != NONE)
+						{
+							s_machine_identifier* machine_identifier = players_get_machine_identifier(machine_index);
+							long machine_index = world->get_machine_index_by_identifier(machine_identifier);
+							if (machine_index != NONE)
+							{
+								machine_mask.set(machine_index, true);
+							}
+						}
+					}
+					else
+					{
+						printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: Failed to get a player for index %d for event %d/%s\n", i, event_type, event_handler->get_event_type_name(event_type));
+					}
+				}
+			}
+
+			if (!machine_mask.is_clear())
+			{
+				event_handler_send_event(machine_mask, event_type, entity_reference_count, object_reference_indices, event_payload_size, event_payload);
+			}
+			else
+			{
+				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: exclusive player list for event %d/%s generated an invalid send machine mask\n", event_type, event_handler->get_event_type_name(event_type));
+			}
+		}
+	}
+}
+
+void event_handler_send_event(c_flags<long, ulong, k_maximum_machines> machine_mask, e_simulation_event_type event_type, long entity_reference_count, datum_index const* object_reference_indices, long event_payload_size, void const* event_payload)
+{
+	c_simulation_world* world = simulation_get_world();
+	c_simulation_event_handler* event_handler = world->get_event_handler();
+	long entity_reference_indices[2];
+	simulation_event_build_entity_reference_indices(entity_reference_count, object_reference_indices, entity_reference_indices);
+	if (entity_reference_count <= 0)
+		entity_reference_indices[0] = 0;
+	long cancel_timer = get_network_configuration()->simulation_configuration.simulation_event_configurations[event_type].cancel_timer;
+	world->m_distributed_world->m_entity_database.m_event_handler.send_event(event_type, entity_reference_count, entity_reference_indices, machine_mask, event_payload_size, event_payload, cancel_timer);
+}
+
+// Had to disable RTC here otherwise it'll throw an exception before add esp 4 corrects the stack
+#pragma runtime_checks("", off)
+void __fastcall simulation_event_build_entity_reference_indices(long entity_reference_count, datum_index const* object_reference_indices, long const* entity_reference_indices)
+{
+	INVOKE(0x7E610, simulation_event_build_entity_reference_indices, entity_reference_count, object_reference_indices, entity_reference_indices);
+	__asm add esp, 4; // Fix usercall & cleanup stack
+}
+#pragma runtime_checks("", restore)

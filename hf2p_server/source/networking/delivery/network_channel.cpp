@@ -165,3 +165,9 @@ bool c_network_channel::allocated()
 {
 	return this->get_state() != _network_channel_state_none;
 }
+
+bool c_network_channel_simulation_interface::established()
+{
+	assert(m_initialized);
+	return m_established;
+}

@@ -112,13 +112,16 @@ struct s_network_channel_client_info
 
 class c_network_channel_simulation_interface
 {
+public:
+	bool established();
+
 	bool m_initialized;
 	void* m_simulation_context;
 	void(__cdecl* m_closure_callback)(void*);
 	long m_client_count;
 	s_network_channel_client_info m_clients[k_network_channel_maximum_simulation_clients];
-	bool is_authority;
-	bool established;
+	bool m_is_authority;
+	bool m_established;
 	byte : 8;
 	byte : 8;
 };

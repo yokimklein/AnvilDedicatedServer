@@ -24,7 +24,7 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
     ulong time_since_last_update = network_time_since(session_update_time);
 
     // wait for network_configuration peer properties update rate
-    if (time_since_last_update < 0 || time_since_last_update >= g_network_configuration.peer_properties_update_timeout)
+    if (time_since_last_update < 0 || time_since_last_update >= get_network_configuration()->peer_properties_update_timeout)
     {
         c_network_observer* observer = nullptr;
         network_life_cycle_get_observer(&observer);

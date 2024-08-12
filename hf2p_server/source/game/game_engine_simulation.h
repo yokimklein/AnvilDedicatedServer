@@ -4,6 +4,8 @@
 #include <simulation\game_interface\simulation_game_entities.h>
 
 constexpr short k_maximum_multiplayer_players = 16;
+constexpr short k_maximum_players = 16;
+constexpr short k_maximum_machines = 17;
 
 struct s_game_engine_queued_event
 {

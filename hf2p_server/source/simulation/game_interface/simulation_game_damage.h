@@ -87,7 +87,8 @@ struct s_damage_aftermath_result_data
 static_assert(sizeof(s_damage_aftermath_result_data) == 0x58);
 
 void simulation_action_damage_section_response(datum_index object_index, long damage_section_index, long response_index, e_damage_section_response_type damage_section_response_type);
-void simulation_action_damage_aftermath(datum_index object_index, s_damage_aftermath_result_data* result_data);
-bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data* result_data);
-bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_result_data* result_data);
+void simulation_action_damage_aftermath(datum_index object_index, s_damage_aftermath_result_data const* result_data);
+bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data const* result_data);
+bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_result_data const* result_data);
 void build_damage_aftermath_event_data(datum_index object_index, s_damage_aftermath_result_data const* result_data, s_simulation_damage_aftermath_event_data* out_event_data, datum_index out_object_references[2]);
+void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, long const* player_indices, long player_count);

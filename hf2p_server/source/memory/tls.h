@@ -24,7 +24,7 @@ struct s_thread_local_storage
 	game_globals_storage* game_globals;
 	byte* __unknown28; // squad
 	struct s_scripted_camera_globals* scripted_camera_globals;
-	struct players_global_data* players_globals;
+	s_players_global_data* players_globals;
 	byte* __unknown34; // effect (survival_mode_globals?)
 	byte* __unknown38; // prop
 	byte* __unknown3C; // command scripts
@@ -226,6 +226,7 @@ struct s_thread_local_storage
 	byte* __unknown34C;
 };
 static_assert(sizeof(s_thread_local_storage) == 0x350);
+static_assert(0x30 == OFFSETOF(s_thread_local_storage, players_globals));
 
 #define TLS_DATA_GET_VALUE_REFERENCE(NAME) decltype(get_tls()->NAME)& NAME = get_tls()->NAME
 
