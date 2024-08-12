@@ -281,3 +281,6 @@ bool __fastcall object_set_position_internal(datum_index object_index, real_poin
 object_header_datum const* object_header_get(datum_index object_index);
 void* object_get_and_verify_type(datum_index object_index, dword object_type_mask);
 void __fastcall object_get_origin_interpolated(datum_index object_index, real_point3d* out_origin);
+void* __cdecl object_header_block_get(long object_index, object_header_block_reference const* reference);
+void* __cdecl object_header_block_get_with_count(long object_index, object_header_block_reference const* reference, unsigned int element_size, long* element_count);
+real_matrix4x3* object_get_node_matrices(datum_index object_index, long* out_node_count);

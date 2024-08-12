@@ -2,6 +2,7 @@
 #include <anvil\hooks\hooks.h>
 #include <memory\data.h>
 #include <simulation\game_interface\simulation_game_damage.h>
+#include <simulation\game_interface\simulation_game_projectiles.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -114,6 +115,38 @@ __declspec(safebuffers) void __fastcall object_cause_damage_hook()
         simulation_action_damage_aftermath_exclusive_list(object_index, aftermath_result, player_indices, player_count);
     }
 }
+
+__declspec(safebuffers) void __fastcall projectile_attach_hook2()
+{
+    datum_index projectile_index;
+    datum_index object_index;
+    short node_index;
+    real_point3d const* position;
+    s_location const* location;
+    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(projectile_index) + sizeof(object_index) + (sizeof(node_index) + 2) + sizeof(position) + sizeof(location));
+
+    __asm
+    {
+        mov ecx, original_esp;
+        mov eax, [ecx + 0x58 - 0x48];
+        mov projectile_index, eax;
+
+        mov eax, [ecx + 0x58 - 0x38];
+        mov object_index, eax;
+
+        mov ecx, original_ebp;
+        mov eax, [ecx + 0x08];
+        mov node_index, ax;
+
+        mov eax, [ecx + 0x0C];
+        mov position, eax;
+
+        mov eax, [ecx + 0x10];
+        mov location, eax;
+    }
+
+    simulation_action_projectile_attached(projectile_index, object_index, node_index, position, location);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_damage_events_apply()
@@ -130,4 +163,7 @@ void anvil_hooks_damage_events_apply()
     // This ends up causing duplicate events to be sent to clients, making physics impulses way stronger than they should be
     //insert_hook(0x41320A, 0x413210, object_apply_damage_aftermath_hook2, _hook_execute_replaced_last);
     insert_hook(0x40FB0E, 0x40FB13, object_cause_damage_hook, _hook_execute_replaced_first);
+
+    // simulation_action_projectile_attached
+    insert_hook(0x468045, 0x46804B, projectile_attach_hook2, _hook_execute_replaced_last);
 }

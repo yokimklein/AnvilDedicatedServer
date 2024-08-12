@@ -209,9 +209,11 @@
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
     <ClInclude Include="source\items\items.h" />
+    <ClInclude Include="source\items\projectiles.h" />
     <ClInclude Include="source\items\weapons.h" />
     <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
+    <ClInclude Include="source\math\matrix_math.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
@@ -466,6 +468,7 @@
     <ClCompile Include="source\items\weapons.cpp" />
     <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />
+    <ClCompile Include="source\math\matrix_math.cpp" />
     <ClCompile Include="source\math\real_math.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
@@ -505,6 +508,7 @@
     <ClCompile Include="source\simulation\game_interface\simulation_game_entities.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_objects.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_projectiles.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_statborg.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_weapons.cpp" />
     <ClCompile Include="source\simulation\simulation_entity_database.cpp" />

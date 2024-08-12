@@ -245,3 +245,41 @@ void __fastcall object_get_origin_interpolated(datum_index object_index, real_po
 	}
 	*/
 }
+
+void* __cdecl object_header_block_get(long object_index, object_header_block_reference const* reference)
+{
+	object_header_datum const* object_header = object_header_get(object_index);
+	object_datum* object = object_get(object_index);
+
+	assert(reference->offset > 0);
+	assert(reference->size > 0);
+	assert(reference->offset + reference->size <= object_header->data_size);
+
+	return (byte*)object + reference->offset;
+}
+
+void* __cdecl object_header_block_get_with_count(long object_index, object_header_block_reference const* reference, unsigned int element_size, long* element_count)
+{
+	assert(element_count);
+
+	if (reference->offset == NONE)
+	{
+		*element_count = 0;
+		return NULL;
+	}
+
+	void* block = object_header_block_get(object_index, reference);
+
+	assert(reference->size % element_size == 0);
+
+	*element_count = reference->size / element_size;
+
+	return block;
+}
+
+real_matrix4x3* object_get_node_matrices(datum_index object_index, long* out_node_count)
+{
+	object_datum* object = object_get(object_index);
+	assert(out_node_count);
+	return (real_matrix4x3*)object_header_block_get_with_count(object_index, &object->object.node_matrices, 0x34, out_node_count);
+}

@@ -28,6 +28,21 @@ DEFINE_REAL_CONSTANT(_real_tiny_epsilon);
 DEFINE_REAL_CONSTANT(_real_max);
 DEFINE_REAL_CONSTANT(_real_min);
 
+enum
+{
+	_x = 0,
+	_y,
+	_z,
+	_w,
+
+	k_2d_count = 2,
+	k_3d_count = 3,
+	k_4d_count = 4,
+
+	k_faces_per_cube_count = 6,
+	k_vertices_per_cube_count = 8,
+	k_edges_per_cube_count = 12,
+};
 
 union real_bounds
 {
@@ -123,14 +138,10 @@ union real_plane2d
 };
 static_assert(sizeof(real_plane2d) == 0xC);
 
-union real_plane3d
+struct real_plane3d
 {
-	struct
-	{
-		real_vector3d normal;
-		real distance;
-	};
-	real n[4];
+	real_vector3d n;
+	real d;
 };
 static_assert(sizeof(real_plane3d) == 0x10);
 
@@ -233,17 +244,24 @@ union real_matrix3x3
 };
 static_assert(sizeof(real_matrix3x3) == 0x24);
 
-union real_matrix4x3
+struct real_matrix4x3
 {
-	struct
+	real_matrix4x3() {};
+
+	real scale;
+
+	union
 	{
-		real scale;
-		real_vector3d forward;
-		real_vector3d left;
-		real_vector3d up;
-		real_vector3d position;
+		struct
+		{
+			real_vector3d forward;
+			real_vector3d left;
+			real_vector3d up;
+			real_point3d position;
+		};
+
+		real n[k_3d_count][k_4d_count];
 	};
-	real n[13];
 };
 static_assert(sizeof(real_matrix4x3) == 0x34);
 
