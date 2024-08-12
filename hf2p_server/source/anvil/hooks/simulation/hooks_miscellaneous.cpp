@@ -9,6 +9,8 @@
 #include <networking\messages\network_message_type_collection.h>
 #include <networking\session\network_session.h>
 #include <hf2p\podium.h>
+#include <game\game.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -16,8 +18,18 @@
 __declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
 {
     long player_index;
-    __asm mov player_index, esi
+    __asm mov player_index, esi;
     hf2p_trigger_player_podium_taunt(player_index);
+}
+
+__declspec(safebuffers) void __fastcall c_simulation_player_taunt_request_event_definition__apply_game_event_hook()
+{
+    long player_index;
+    __asm mov player_index, esi;
+    if (game_is_authoritative())
+    {
+        simulation_action_player_taunt_request((word)player_index);
+    }
 }
 #pragma runtime_checks("", restore)
 
@@ -151,7 +163,8 @@ void anvil_hooks_miscellaneous_apply()
     Hook(0x2E8750, hf2p_player_podium_initialize).Apply();
 
     // podium taunt triggering & syncing
-    insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook);
+    insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
+    insert_hook(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, true);
 
     // disable build watermark text
     //hook_function(0x1B0AB0, 0x5CF, game_engine_render_frame_watermarks_hook);

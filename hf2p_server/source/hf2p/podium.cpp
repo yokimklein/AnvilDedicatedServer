@@ -3,6 +3,7 @@
 #include <game\game.h>
 #include <simulation\game_interface\simulation_game_events.h>
 #include <anvil\server_tools.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
 
 REFERENCE_DECLARE(0x4A2973C, long, g_player_podium_count);
 REFERENCE_DECLARE_ARRAY(0x4A29740, s_player_podium, g_player_podiums, k_maximum_multiplayer_players);
@@ -27,21 +28,30 @@ void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long play
 	player_podium.move_index = 0;
 }
 
+// taken from ms30
 void hf2p_trigger_player_podium_taunt(long player_podium_index)
 {
+	// TODO: ms30 has some check at the top I don't understand which presumably is for triggering the taunt via keypress
 	s_player_podium* player_podium = &g_player_podiums[player_podium_index];
 	static bool key_held_delete = false;
 	if (player_is_local(player_podium->player_index) && player_podium->loop_count <= 0 && anvil_key_pressed(VK_DELETE, &key_held_delete)) // TODO: wtf are the byte checks in this statement in ms30?
 	{
 		hf2p_player_podium_increment_loop_count(player_podium->player_index);
-		if (game_is_multiplayer() && !game_is_playback())
+		if (game_is_multiplayer())
 		{
-			s_simulation_player_taunt_request_data payload_data = {};
-			payload_data.player_index = (word)player_podium->player_index;
-			if (game_is_predicted())
-				simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
-			else if (game_is_server()) // TODO: i'm pretty sure this call goes in apply_event_update
-				simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, nullptr, -1, sizeof(s_simulation_player_taunt_request_data), &payload_data);
+			if (!game_is_playback())
+			{
+				if (game_is_predicted())
+				{
+					s_simulation_player_taunt_request_data payload_data = {};
+					payload_data.player_index = (word)player_podium->player_index;
+					simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, NONE, sizeof(s_simulation_player_taunt_request_data), &payload_data);
+				}
+				else
+				{
+					simulation_action_player_taunt_request((word)player_podium->player_index);
+				}
+			}
 		}
 	}
 }

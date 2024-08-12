@@ -5,6 +5,7 @@
 #include <simulation\simulation_world.h>
 #include <simulation\game_interface\simulation_game_action.h>
 #include <networking\replication\replication_entity_manager.h>
+#include <simulation\game_interface\simulation_game_events.h>
 
 void simulation_action_game_engine_player_create(short player_absolute_index)
 {
@@ -81,4 +82,15 @@ void simulation_action_game_engine_player_update(datum_index player_index, long 
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_engine_player_update((word)player_index, &update_flags);
+}
+
+void simulation_action_player_taunt_request(short player_index)
+{
+	assert(player_index != NONE);
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		s_simulation_player_taunt_request_data payload_data = {};
+		payload_data.player_index = player_index;
+		simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, 0, NONE, sizeof(payload_data), &payload_data);
+	}
 }
