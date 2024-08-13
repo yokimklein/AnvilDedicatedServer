@@ -717,7 +717,7 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_player_updates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_events.h">
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\ai\actors.h">
@@ -1136,7 +1136,7 @@
     <ClCompile Include="source\anvil\hooks\simulation\hooks_player_updates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_events.cpp">
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\ai\actors.cpp">
@@ -1203,6 +1203,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\physics\collision_bsp_references.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\simulation\game_interface\simulation_game_units.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

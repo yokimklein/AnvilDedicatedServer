@@ -169,7 +169,7 @@
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
-    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_events.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_miscellaneous.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
@@ -416,7 +416,7 @@
     <ClCompile Include="source\ai\actors.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
-    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_events.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_miscellaneous.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
@@ -515,6 +515,7 @@
     <ClCompile Include="source\simulation\game_interface\simulation_game_objects.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_projectiles.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_statborg.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_units.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_weapons.cpp" />
     <ClCompile Include="source\simulation\simulation_entity_database.cpp" />
     <ClCompile Include="source\simulation\simulation_event_handler.cpp" />

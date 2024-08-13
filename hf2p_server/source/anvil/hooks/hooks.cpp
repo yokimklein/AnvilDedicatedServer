@@ -12,7 +12,7 @@
 #include <anvil\hooks\simulation\hooks_damage_updates.h>
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
 #include <anvil\hooks\simulation\hooks_player_updates.h>
-#include <anvil\hooks\simulation\hooks_damage_events.h>
+#include <anvil\hooks\simulation\hooks_simulation_events.h>
 #include <anvil\hooks\simulation\hooks_miscellaneous.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
@@ -515,6 +515,6 @@ void anvil_hooks_apply()
     anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
     anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
     anvil_hooks_player_updates_apply(); // PLAYER UPDATES
-    anvil_hooks_damage_events_apply(); // OBJECT DAMAGE EVENTS
+    anvil_hooks_simulation_events_apply(); // SIMULATION EVENTS
     anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS                                                   
 }

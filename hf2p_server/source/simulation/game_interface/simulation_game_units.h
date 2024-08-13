@@ -75,3 +75,11 @@ struct s_simulation_unit_state_data
 	bool assassination_is_victim;
 };
 static_assert(sizeof(s_simulation_unit_state_data) == sizeof(s_simulation_object_state_data) + 0xC4);
+
+struct s_simulation_unit_board_vehicle_event_data
+{
+	long boarding_seat_index;
+};
+static_assert(sizeof(s_simulation_unit_board_vehicle_event_data) == 0x4);
+
+void simulation_action_unit_board_vehicle(datum_index unit_index);

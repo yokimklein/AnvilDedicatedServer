@@ -1,4 +1,4 @@
-#include "hooks_damage_events.h"
+#include "hooks_simulation_events.h"
 #include <anvil\hooks\hooks.h>
 #include <memory\data.h>
 #include <simulation\game_interface\simulation_game_damage.h>
@@ -7,6 +7,7 @@
 #include <items\projectiles.h>
 #include <memory\tls.h>
 #include <objects\damage.h>
+#include <simulation/game_interface\simulation_game_units.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -276,9 +277,22 @@ __declspec(safebuffers) void __fastcall projectile_collision_hook3()
             from_impact);
     }
 }
+
+__declspec(safebuffers) void __fastcall unit_action_vehicle_board_submit_hook()
+{
+    datum_index unit_index;
+    DEFINE_ORIGINAL_EBP_ESP(0xDC, sizeof(unit_index));
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx + 0x08];
+        mov unit_index, eax;
+    }
+    simulation_action_unit_board_vehicle(unit_index);
+}
 #pragma runtime_checks("", restore)
 
-void anvil_hooks_damage_events_apply()
+void anvil_hooks_simulation_events_apply()
 {
     // simulation_action_damage_section_response
     insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook, _hook_execute_replaced_first);
@@ -313,4 +327,7 @@ void anvil_hooks_damage_events_apply()
     insert_hook(0x4655F1, 0x4655F6, (void*)12, _hook_stack_frame_cleanup); // cleanup
     insert_hook(0x465657, 0x46565C, (void*)12, _hook_stack_frame_cleanup); // cleanup
     insert_hook(0x46565F, 0x465666, (void*)12, _hook_stack_frame_cleanup); // cleanup
+
+    // simulation_action_unit_board_vehicle - esi unit index
+    insert_hook(0x4479F3, 0x4479FA, unit_action_vehicle_board_submit_hook, _hook_execute_replaced_first);
 }
