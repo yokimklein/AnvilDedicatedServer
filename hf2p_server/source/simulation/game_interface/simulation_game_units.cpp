@@ -17,9 +17,33 @@ void simulation_action_unit_board_vehicle(datum_index unit_index)
 		else
 		{
 			s_simulation_unit_board_vehicle_event_data event_data;
+			csmemset(&event_data, 0, sizeof(s_simulation_unit_board_vehicle_event_data));
 			event_data.boarding_seat_index = seat_index;
 			datum_index object_references[] = { unit_index, parent_object_index };
 			simulation_event_generate_for_clients(_simulation_event_type_unit_board_vehicle, NUMBEROF(object_references), object_references, NONE, sizeof(event_data), &event_data);
+		}
+	}
+}
+
+void simulation_action_unit_exit_vehicle(datum_index unit_index)
+{
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+		long seat_index = unit->unit.seat_index;
+		datum_index parent_object_index = unit->object.parent_object_index;
+		if (parent_object_index == NONE || seat_index == NONE)
+		{
+			printf("MP/NET/SIMULATION,EVENT: simulation_action_unit_board_vehicle: attempting to generate an exit-vehicle event for unit not in a vehicle or bad seat index\n");
+		}
+		else
+		{
+			s_simulation_unit_exit_vehicle_event_data event_data;
+			csmemset(&event_data, 0, sizeof(s_simulation_unit_exit_vehicle_event_data));
+			event_data.parent_seat_index = seat_index;
+			event_data.detach_on_exit = false;
+			datum_index object_references[] = { unit_index, parent_object_index };
+			simulation_event_generate_for_clients(_simulation_event_type_unit_exit_vehicle, NUMBEROF(object_references), object_references, NONE, sizeof(event_data), &event_data);
 		}
 	}
 }

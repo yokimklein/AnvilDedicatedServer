@@ -82,4 +82,12 @@ struct s_simulation_unit_board_vehicle_event_data
 };
 static_assert(sizeof(s_simulation_unit_board_vehicle_event_data) == 0x4);
 
+struct s_simulation_unit_exit_vehicle_event_data
+{
+	long parent_seat_index;
+	bool detach_on_exit;
+};
+static_assert(sizeof(s_simulation_unit_exit_vehicle_event_data) == 0x8);
+
 void simulation_action_unit_board_vehicle(datum_index unit_index);
+void simulation_action_unit_exit_vehicle(datum_index unit_index);

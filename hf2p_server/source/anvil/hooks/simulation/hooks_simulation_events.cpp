@@ -290,6 +290,13 @@ __declspec(safebuffers) void __fastcall unit_action_vehicle_board_submit_hook()
     }
     simulation_action_unit_board_vehicle(unit_index);
 }
+
+__declspec(safebuffers) void __fastcall motor_animation_exit_seat_internal_hook()
+{
+    datum_index unit_index;
+    __asm mov unit_index, esi;
+    simulation_action_unit_exit_vehicle(unit_index);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_events_apply()
@@ -330,4 +337,7 @@ void anvil_hooks_simulation_events_apply()
 
     // simulation_action_unit_board_vehicle - esi unit index
     insert_hook(0x4479F3, 0x4479FA, unit_action_vehicle_board_submit_hook, _hook_execute_replaced_first);
+
+    // simulation_action_unit_exit_vehicle
+    insert_hook(0x456CC6, 0x456CCF, motor_animation_exit_seat_internal_hook, _hook_execute_replaced_last);
 }
