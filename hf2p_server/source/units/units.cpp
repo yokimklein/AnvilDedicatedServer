@@ -75,7 +75,6 @@ void __fastcall unit_add_initial_loadout(datum_index unit_index)
 
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 {
-    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     if (slot_index < 4)
     {
@@ -96,7 +95,6 @@ void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 
 void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camouflage_decay, real regrowth_seconds)
 {
-    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     
     real camo_regrowth = regrowth_seconds;
@@ -124,7 +122,6 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
 
 void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds)
 {
-    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
     unit->unit.flags.set(_unit_flags_camo, false);
@@ -141,7 +138,6 @@ void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regr
 
 void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real regrowth_seconds, long camouflage_end_time)
 {
-    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
     unit->unit.flags.set(_unit_flags_camo, true);
@@ -161,7 +157,6 @@ void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real re
 
 void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real camouflage_maximum)
 {
-    TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
     unit->unit.active_camouflage_maximum = PIN(camouflage_maximum, 0.0f, 1.0f);
@@ -172,4 +167,12 @@ void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real 
     else
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
     simulation_action_object_update_internal(unit_index, update_flags);
+}
+
+long unit_get_current_or_last_weak_player_index(datum_index unit_index)
+{
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    if (unit->unit.player_index != NONE)
+        return unit->unit.player_index;
+    return unit->unit.last_weak_player_index;
 }

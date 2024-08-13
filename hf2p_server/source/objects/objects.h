@@ -284,3 +284,4 @@ void __fastcall object_get_origin_interpolated(datum_index object_index, real_po
 void* __cdecl object_header_block_get(long object_index, object_header_block_reference const* reference);
 void* __cdecl object_header_block_get_with_count(long object_index, object_header_block_reference const* reference, unsigned int element_size, long* element_count);
 real_matrix4x3* object_get_node_matrices(datum_index object_index, long* out_node_count);
+void object_get_damage_owner(datum_index object_index, s_damage_owner* out_owner);

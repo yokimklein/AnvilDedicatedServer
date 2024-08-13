@@ -283,3 +283,9 @@ real_matrix4x3* object_get_node_matrices(datum_index object_index, long* out_nod
 	assert(out_node_count);
 	return (real_matrix4x3*)object_header_block_get_with_count(object_index, &object->object.node_matrices, 0x34, out_node_count);
 }
+
+void object_get_damage_owner(datum_index object_index, s_damage_owner* out_owner)
+{
+	object_datum* object = object_get(object_index);
+	*out_owner = object->object.damage_owner;
+}

@@ -61,6 +61,18 @@ enum e_update_queue_node
 	k_update_queue_node_invalid = -1
 };
 
+enum e_predictability // TODO: where does this belong?
+{
+	_predictability0,
+	_predictability1,
+	_predictability2,
+	_predictability3,
+	_predictability4,
+	_predictability5,
+
+	k_predictability_count
+};
+
 struct simulation_machine_update
 {
 	dword machine_valid_mask;

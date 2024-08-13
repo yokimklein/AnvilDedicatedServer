@@ -3,6 +3,10 @@
 #include <memory\data.h>
 #include <simulation\game_interface\simulation_game_damage.h>
 #include <simulation\game_interface\simulation_game_projectiles.h>
+#include <game\game.h>
+#include <items\projectiles.h>
+#include <memory\tls.h>
+#include <objects\damage.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -166,4 +170,8 @@ void anvil_hooks_damage_events_apply()
 
     // simulation_action_projectile_attached
     insert_hook(0x468045, 0x46804B, projectile_attach_hook2, _hook_execute_replaced_last);
+
+    // simulation_action_projectile_detonate
+    hook_function(0x4667D0, 0x86, projectile_detonate_effects_and_damage);
+    memset((void*)BASE_ADDRESS(0x467250), 0x08, 1); // remove unnecessary cleanup bytes handled by fastcall
 }

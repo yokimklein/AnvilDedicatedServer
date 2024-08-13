@@ -186,6 +186,7 @@
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
     <ClInclude Include="source\devices\devices.h" />
+    <ClInclude Include="source\effects\effects.h" />
     <ClInclude Include="source\game\aim_target.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\game\game_allegiance.h" />
@@ -465,6 +466,7 @@
     <ClCompile Include="source\hf2p\podium.cpp" />
     <ClCompile Include="source\hf2p\loadouts.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
+    <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
     <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />

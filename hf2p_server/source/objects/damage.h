@@ -3,6 +3,7 @@
 #include <memory\data.h>
 #include <tag_files\tag_groups.h>
 #include <camera\camera_globals.h>
+#include <game\materials.h>
 
 enum e_damage_reporting_type
 {
@@ -216,3 +217,49 @@ struct s_damage_effect_definition
 	breaking_effect breaking_effect;
 };
 static_assert(sizeof(s_damage_effect_definition) == 0xF4);
+
+struct c_aoe_damage_batchifier;
+struct s_damage_data
+{
+	long damage_effect_definition_index;
+	dword_flags flags;
+	s_damage_owner damage_owner;
+
+	long __unknown14;
+	long __unknown18;
+
+	long damage_unique_identifier;
+	s_location location;
+
+	byte __data22[2];
+
+	real_point3d origin;
+	real_point3d center;
+	real_vector3d attacker_direction;
+
+	real_vector3d __vector48;
+
+	real damage_amount_scale;
+	real shake_scale;
+	real damage_amount;
+	real damage_aoe_size;
+
+	real __unknown64;
+	real __unknown68;
+	bool __unknown6C;
+	bool __unknown6D;
+	byte __data6E[0x2];
+	real_vector3d __vector70;
+	long __unknown7C;
+
+	real vitality;
+	c_global_material_type material_type;
+
+	short __unknown86;
+	byte __data88[0x4];
+
+	s_damage_reporting_info damage_reporting_info;
+	c_aoe_damage_batchifier* aoe_damage_batchifier;
+	long damage_material_index; // model_definition->materials[damage_material_index]
+};
+static_assert(sizeof(s_damage_data) == 0x98);
