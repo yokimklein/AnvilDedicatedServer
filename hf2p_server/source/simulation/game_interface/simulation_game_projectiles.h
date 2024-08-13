@@ -1,6 +1,7 @@
 #pragma once
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <game\materials.h>
+#include <physics\collisions.h>
 
 enum e_simulation_projectile_update_flag
 {
@@ -61,5 +62,27 @@ struct s_simulation_projectile_detonate_event_data
 };
 static_assert(sizeof(s_simulation_projectile_detonate_event_data) == 0x40);
 
+struct s_simulation_projectile_impact_effect_event_data
+{
+	long projectile_definition_index;
+	real material_effect_scale;
+	real material_effect_error;
+	real_vector3d impact_direction_normal;
+	real_point3d position;
+	real_vector3d collision_plane_normal;
+	long material_index;
+	bool from_impact;
+};
+static_assert(sizeof(s_simulation_projectile_impact_effect_event_data) == 0x38);
+
+struct s_simulation_projectile_object_impact_effect_event_data : s_simulation_projectile_impact_effect_event_data
+{
+	bool detonation_timer_started;
+	long collision_node_index;
+	long position_encoding_type;
+};
+static_assert(sizeof(s_simulation_projectile_object_impact_effect_event_data) == 0x44);
+
 void simulation_action_projectile_attached(datum_index projectile_index, datum_index object_index, short node_index, real_point3d const* position, s_location const* location);
 void simulation_action_projectile_detonate(long projectile_definition_index, real_point3d const* position, real_vector3d const* forward, real_vector3d const* hit_normal, float damage_scale, c_flags<e_simulation_projectile_effect_flag, uchar, k_simulation_projectile_effect_flag_count> projectile_effect_flag, c_global_material_type material_type, s_location const* location, long player_index0, long player_index1, bool projectile_gamestate_is_valid, bool valid_material_type, bool collided_with_invalid_material);
+void simulation_action_projectile_impact_raw(bool detonation_timer_started, datum_index projectile_index, float material_effect_scale, float material_effect_error, real_vector3d const* impact_direction_normal, collision_result const* collision_result, bool from_impact);

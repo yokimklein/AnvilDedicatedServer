@@ -151,6 +151,131 @@ __declspec(safebuffers) void __fastcall projectile_attach_hook2()
 
     simulation_action_projectile_attached(projectile_index, object_index, node_index, position, location);
 }
+
+// add back missing variables from_impact & detonation_timer_started
+__declspec(safebuffers) void __fastcall projectile_collision_hook0()
+{
+    c_enum<e_predictability, long, _predictability0, k_predictability_count> predictability;
+    projectile_datum* projectile;
+    bool from_impact;
+    bool detonation_timer_started;
+    // 4 bytes for each bool or 4 bytes to share?
+    DEFINE_ORIGINAL_EBP_ESP(0x258, sizeof(predictability) + sizeof(projectile) + (sizeof(from_impact) + 3) + (sizeof(detonation_timer_started) + 3) + 8);
+    __asm
+    {
+        mov ecx, original_esp;
+        mov eax, [ecx + 0x258 - 0x240];
+        mov predictability, eax;
+
+        mov eax, [ecx + 0x258 - 0x218];
+        mov projectile, eax;
+    }
+
+    from_impact = predictability == 0;
+    // NOT flag 5, IS flag 4
+    detonation_timer_started = !projectile->projectile.flags.test(_projectile_flags5)
+        && (projectile->projectile.flags.test(_projectile_flags4)
+            || predictability.get() == _predictability3);
+
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov al, from_impact;
+        mov [ecx + 4], al;
+
+        mov al, detonation_timer_started;
+        mov [ecx + 8], al;
+    }
+}
+
+// initialise new_effect variable as false
+__declspec(naked) void projectile_collision_hook1()
+{
+    __asm
+    {
+        mov[ebp + 12], eax; // xor eax, eax just ran to zero two other variables
+        retn;
+    }
+}
+
+// set new_effect variable to true
+__declspec(naked) void projectile_collision_hook2()
+{
+    __asm
+    {
+        mov [ebp + 12], 1;
+        retn;
+    }
+}
+
+__declspec(safebuffers) void __fastcall projectile_collision_hook3()
+{
+    bool detonation_timer_started;
+    bool new_effect;
+    bool from_impact;
+    projectile_datum* projectile;
+    c_enum<e_predictability, long, _predictability0, k_predictability_count> predictability;
+    bool not_affected_by_object_collision;
+    datum_index projectile_index;
+    float material_effect_scale;
+    float material_effect_error;
+    real_vector3d const* impact_direction_normal;
+    collision_result const* collision;
+    DEFINE_ORIGINAL_EBP_ESP(0x258, 0x3C);
+
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx + 8];
+        mov detonation_timer_started, al;
+
+        mov eax, [ecx + 12];
+        mov new_effect, al;
+
+        mov eax, [ecx + 4];
+        mov from_impact, al;
+
+        mov ecx, original_esp;
+        mov eax, [ecx + 0x258 - 0x218];
+        mov projectile, eax;
+
+        mov eax, [ecx + 0x258 - 0x240];
+        mov predictability, eax;
+
+        mov eax, [ecx + 0x258 - 0x249];
+        mov not_affected_by_object_collision, al;
+
+        mov eax, [ecx + 0x258 - 0x210];
+        mov projectile_index, eax;
+
+        movss xmm0, [ecx + 0x258 - 0x208];
+        movss material_effect_scale, xmm0;
+
+        movss xmm0, [ecx + 0x258 - 0x1F4];
+        movss material_effect_error, xmm0;
+
+        lea eax, [ecx + 0x258 - 0x1D0];
+        mov impact_direction_normal, eax;
+
+        mov collision, edi;
+    }
+
+    if ((detonation_timer_started || new_effect)
+        && game_is_authoritative()
+        && projectile->object.gamestate_index != NONE
+        && (from_impact || predictability.get() == _predictability3)
+        && !not_affected_by_object_collision)
+    {
+        simulation_action_projectile_impact_raw(
+            detonation_timer_started,
+            projectile_index,
+            material_effect_scale,
+            material_effect_error,
+            impact_direction_normal,
+            collision,
+            from_impact);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_damage_events_apply()
@@ -174,4 +299,18 @@ void anvil_hooks_damage_events_apply()
     // simulation_action_projectile_detonate
     hook_function(0x4667D0, 0x86, projectile_detonate_effects_and_damage);
     memset((void*)BASE_ADDRESS(0x467250), 0x08, 1); // remove unnecessary cleanup bytes handled by fastcall
+
+    // simulation_action_projectile_impact_raw
+    add_variable_space_to_stack_frame(0x463930, 0x465667, 12); // add extra 12 bytes of variable space to projectile_collision
+    insert_hook(0x464FD4, 0x464FDC, projectile_collision_hook0, _hook_execute_replaced_last);
+    insert_hook(0x46528B, 0x465291, projectile_collision_hook1, _hook_execute_replaced_first);
+    insert_hook(0x46530B, 0x465313, projectile_collision_hook2, _hook_execute_replaced_first);
+    insert_hook(0x4653D3, 0x4653D8, projectile_collision_hook2, _hook_execute_replaced_first);
+    insert_hook(0x465454, 0x46545D, projectile_collision_hook2, _hook_execute_replaced_first);
+    insert_hook(0x465472, 0x46547A, projectile_collision_hook3, _hook_execute_replaced_first);
+    insert_hook(0x465591, 0x465596, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    insert_hook(0x4655C3, 0x4655C8, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    insert_hook(0x4655F1, 0x4655F6, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    insert_hook(0x465657, 0x46565C, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    insert_hook(0x46565F, 0x465666, (void*)12, _hook_stack_frame_cleanup); // cleanup
 }

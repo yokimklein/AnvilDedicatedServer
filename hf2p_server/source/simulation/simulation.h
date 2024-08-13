@@ -196,3 +196,4 @@ extern s_simulation_globals& simulation_globals;
 
 //extern bool __cdecl simulation_starting_up(); // 0x004420E0 in ms23
 bool simulation_reset_in_progress();
+bool simulation_get_node_space_encoding_type(datum_index object_index);

@@ -85,3 +85,55 @@ void simulation_action_projectile_detonate(long projectile_definition_index, rea
 		simulation_event_generate_for_clients(_simulation_event_type_projectile_detonate, 0, nullptr, NONE, sizeof(event_data), &event_data);
 	}
 }
+
+// syncs explosion sounds for non-predicted projectiles
+void simulation_action_projectile_impact_raw(bool detonation_timer_started, datum_index projectile_index, float material_effect_scale, float material_effect_error, real_vector3d const* impact_direction_normal, collision_result const* collision, bool from_impact)
+{
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		projectile_datum* projectile = (projectile_datum*)object_get_and_verify_type(projectile_index, _object_mask_projectile);
+		if (projectile->object.gamestate_index != NONE)
+		{
+			object_datum* collision_object = object_get(collision->object_index);
+			if (collision->type.get() != _collision_result_object
+				|| collision->object_index == NONE
+				|| collision_object->object.gamestate_index == NONE)
+			{
+				s_simulation_projectile_impact_effect_event_data event_data;
+				csmemset(&event_data, 0, sizeof(s_simulation_projectile_impact_effect_event_data));
+				event_data.projectile_definition_index = projectile->definition_index;
+				event_data.material_effect_scale = material_effect_scale;
+				event_data.material_effect_error = material_effect_error;
+				event_data.impact_direction_normal = *impact_direction_normal;
+				event_data.collision_plane_normal = collision->plane.n;
+				event_data.position = collision->position;
+				event_data.material_index = collision->material_type.m_index;
+				event_data.from_impact = from_impact;
+				simulation_event_generate_for_clients(_simulation_event_type_projectile_impact_effect, 0, nullptr, NONE, sizeof(event_data), &event_data);
+			}
+			else
+			{
+				s_simulation_projectile_object_impact_effect_event_data event_data;
+				csmemset(&event_data, 0, sizeof(s_simulation_projectile_object_impact_effect_event_data));
+				event_data.projectile_definition_index = projectile->definition_index;
+				event_data.material_effect_scale = material_effect_scale;
+				event_data.material_effect_error = material_effect_error;
+				event_data.impact_direction_normal = *impact_direction_normal;
+				event_data.collision_plane_normal = collision->plane.n;
+				event_data.material_index = collision->material_type.m_index;
+				event_data.from_impact = from_impact;
+				event_data.collision_node_index = collision->node_index;
+				datum_index object_references[] = { collision->object_index };
+				event_data.detonation_timer_started = detonation_timer_started;
+				event_data.position_encoding_type = simulation_get_node_space_encoding_type(collision->object_index);
+				long object_node_matrices_count = 0;
+				real_matrix4x3* node_matrices = object_get_node_matrices(collision->object_index, &object_node_matrices_count);
+				VALID_INDEX(collision->node_index, object_node_matrices_count);
+				real_matrix4x3 inverse_matrix;
+				matrix4x3_inverse(&node_matrices[collision->node_index], &inverse_matrix);
+				matrix4x3_transform_point(&inverse_matrix, &collision->position, &event_data.position);
+				simulation_event_generate_for_clients(_simulation_event_type_projectile_object_impact_effect, NUMBEROF(object_references), object_references, NONE, sizeof(event_data), &event_data);
+			}
+		}
+	}
+}
