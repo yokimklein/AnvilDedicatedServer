@@ -45,6 +45,11 @@ __declspec(safebuffers) void __fastcall game_engine_recompute_active_teams_hook(
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_teams_use_one_shared_life_hook()
+{
+    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_team_lives_per_round);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_globals_apply()
@@ -71,4 +76,5 @@ void anvil_hooks_simulation_globals_apply()
 
     // sync team lives per round
     insert_hook(0xDCA19, 0xDCA1F, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
+    insert_hook(0xDC847, 0xDC84C, game_engine_teams_use_one_shared_life_hook, _hook_execute_replaced_first);
 }
