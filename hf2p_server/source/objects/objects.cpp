@@ -130,7 +130,7 @@ void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner
 {
 	object_datum* object = object_get(object_index);
 	struct object_definition* object_definition = (struct object_definition*)tag_get(OBJECT_TAG, object->definition_index);
-	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object_flags.test(_object_preserves_initial_damage_owner_bit))
+	if (skip_update || !TEST_BIT(_object_mask_projectile, object_get_type(object_index)) && !object_definition->object.object_flags.test(_object_preserves_initial_damage_owner_bit))
 	{
 		object->object.damage_owner = *damage_owner;
 		if (!skip_update)

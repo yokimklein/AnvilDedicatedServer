@@ -298,7 +298,7 @@ c_game_variant* __fastcall build_default_game_variant(c_game_variant* game_varia
 
 bool game_engine_tag_defined_variant_get_built_in_variant(e_game_engine_type game_engine_index, long variant_index, c_game_variant* output_variant)
 {
-	s_game_engine_settings_definition* game_engine_settings = game_engine_settings_try_and_get();
+	game_engine_settings_definition* game_engine_settings = game_engine_settings_try_and_get();
 	if (game_engine_settings == nullptr)
 	{
 		return false;

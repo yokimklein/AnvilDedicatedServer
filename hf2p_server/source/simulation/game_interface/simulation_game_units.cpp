@@ -47,3 +47,16 @@ void simulation_action_unit_exit_vehicle(datum_index unit_index)
 		}
 	}
 }
+
+void simulation_action_unit_melee_clang(long clang_effect_index, real_point3d const* position, real_vector3d const* forward)
+{
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		s_simulation_unit_melee_clang_event_data event_data;
+		csmemset(&event_data, 0, sizeof(s_simulation_unit_melee_clang_event_data));
+		event_data.clang_effect_index = clang_effect_index;
+		event_data.position = *position;
+		event_data.forward = *forward;
+		simulation_event_generate_for_clients(_simulation_event_type_unit_melee_clang, 0, nullptr, NONE, sizeof(event_data), &event_data);
+	}
+}

@@ -14,8 +14,10 @@ enum e_physics_model_flags
 };
 
 // TODO: finish block defs
-struct s_physics_model_definition
+struct physics_model_definition
 {
+	static tag const k_group_tag = PHYSICS_MODEL_TAG;
+
 	c_flags<e_physics_model_flags, long, k_number_of_physics_model_flags> flags;
 	real mass;
 	real low_frequency_deactivation_scale;
@@ -59,4 +61,4 @@ struct s_physics_model_definition
 	c_typed_tag_block<s_tag_block_stub> prismatic_constraints;
 	c_typed_tag_block<s_tag_block_stub> phantoms;
 };
-static_assert(sizeof(s_physics_model_definition) == 0x198);
+static_assert(sizeof(physics_model_definition) == 0x198);

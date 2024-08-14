@@ -7,7 +7,7 @@
 
 enum e_damage_reporting_type
 {
-	_damage_reporting_type_guardians_unknown,
+	_damage_reporting_type_unknown,
 	_damage_reporting_type_guardians,
 	_damage_reporting_type_falling_damage,
 	_damage_reporting_type_generic_collision,
@@ -117,7 +117,7 @@ enum e_damage_flags
 
 struct s_damage_reporting_info
 {
-	c_enum<e_damage_reporting_type, short, _damage_reporting_type_guardians_unknown, k_damage_reporting_type_count> type;
+	c_enum<e_damage_reporting_type, short, _damage_reporting_type_unknown, k_damage_reporting_type_count> type;
 	byte modifier;
 	byte_flags recycling_flag;
 };
@@ -203,8 +203,10 @@ struct breaking_effect
 };
 static_assert(sizeof(breaking_effect) == 0x18);
 
-struct s_damage_effect_definition
+struct damage_effect_definition
 {
+	static tag const k_group_tag = DAMAGE_EFFECT_TAG;
+
 	real_bounds radius;
 	real cutoff_scale;
 	c_flags<e_damage_effect_flags, long, k_damage_effect_flags_count> effect_flags;
@@ -216,7 +218,7 @@ struct s_damage_effect_definition
 	c_typed_tag_reference<SOUND_TAG> sound;
 	breaking_effect breaking_effect;
 };
-static_assert(sizeof(s_damage_effect_definition) == 0xF4);
+static_assert(sizeof(damage_effect_definition) == 0xF4);
 
 struct c_aoe_damage_batchifier;
 struct s_damage_data

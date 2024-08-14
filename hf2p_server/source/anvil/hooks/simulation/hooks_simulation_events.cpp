@@ -8,6 +8,7 @@
 #include <memory\tls.h>
 #include <objects\damage.h>
 #include <simulation/game_interface\simulation_game_units.h>
+#include <items\weapon_definitions.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -297,6 +298,26 @@ __declspec(safebuffers) void __fastcall motor_animation_exit_seat_internal_hook(
     __asm mov unit_index, esi;
     simulation_action_unit_exit_vehicle(unit_index);
 }
+
+__declspec(safebuffers) void __fastcall unit_resolve_melee_attack_hook()
+{
+    weapon_definition const* weapon_tag;
+    real_point3d const* position;
+    unit_datum const* unit;
+    DEFINE_ORIGINAL_EBP_ESP(0xAC, sizeof(weapon_tag) + sizeof(position) + sizeof(unit));
+    __asm
+    {
+        mov weapon_tag, edi;
+
+        mov ecx, original_ebp;
+        lea eax, [ecx - 0x3C];
+        mov position, eax;
+
+        mov eax, [ecx - 0x14];
+        mov unit, eax;
+    }
+    simulation_action_unit_melee_clang(weapon_tag->weapon.clash_effect.index, position, &unit->unit.melee_aiming_vector);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_events_apply()
@@ -340,4 +361,7 @@ void anvil_hooks_simulation_events_apply()
 
     // simulation_action_unit_exit_vehicle
     insert_hook(0x456CC6, 0x456CCF, motor_animation_exit_seat_internal_hook, _hook_execute_replaced_last);
+
+    // simulation_action_unit_melee_clang
+    insert_hook(0x42C270, 0x42C276, unit_resolve_melee_attack_hook, _hook_execute_replaced_last);
 }

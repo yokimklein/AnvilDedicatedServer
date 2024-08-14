@@ -59,7 +59,7 @@ bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_
 {
 	object_datum* object = object_get(object_index);
 	struct object_definition* object_definition = (struct object_definition*)tag_get(OBJECT_TAG, object->definition_index);
-	s_damage_effect_definition* damage_effect_definition = (s_damage_effect_definition*)tag_get(DAMAGE_EFFECT_TAG, result_data->damage_definition_index);
+	struct damage_effect_definition* damage_effect_definition = (struct damage_effect_definition*)tag_get(DAMAGE_EFFECT_TAG, result_data->damage_definition_index);
 	datum_index player_index = NONE;
 	if (TEST_BIT(_object_mask_unit, object->object.object_identifier.m_type.get()))
 	{
@@ -70,7 +70,7 @@ bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_
 	{
 		return false;
 	}
-	if (damage_effect_definition->damage.intantaneous_acceleration * object_definition->acceleration_scale > k_real_epsilon
+	if (damage_effect_definition->damage.intantaneous_acceleration * object_definition->object.acceleration_scale > k_real_epsilon
 		&& (!result_data->flags.test(_damage_aftermath_flag_outside_aoe_dmg_range_bit))
 		|| TEST_BIT(_object_mask_unit, object->object.object_identifier.m_type.get())
 		&& (!object->object.damage_flags.test(_object_damage_flag_bit2) || result_data->flags.test(_damage_aftermath_flag_unused_bit0))

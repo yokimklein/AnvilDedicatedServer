@@ -210,8 +210,10 @@
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
     <ClInclude Include="source\items\items.h" />
+    <ClInclude Include="source\items\item_definitions.h" />
     <ClInclude Include="source\items\projectiles.h" />
     <ClInclude Include="source\items\weapons.h" />
+    <ClInclude Include="source\items\weapon_definitions.h" />
     <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
     <ClInclude Include="source\math\matrix_math.h" />

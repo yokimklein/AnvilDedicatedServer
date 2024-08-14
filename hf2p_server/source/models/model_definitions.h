@@ -458,8 +458,10 @@ struct s_occlusion_sphere
 };
 static_assert(sizeof(s_occlusion_sphere) == 0x14);
 
-struct s_model_definition
+struct model_definition
 {
+	static tag const k_group_tag = MODEL_TAG;
+
 	c_typed_tag_reference<RENDER_MODEL_TAG> render_model;
 	c_typed_tag_reference<COLLISION_MODEL_TAG> collision_model;
 	c_typed_tag_reference<MODEL_ANIMATION_GRAPH_TAG> animation;
@@ -495,4 +497,4 @@ struct s_model_definition
 	c_typed_tag_reference<SHIELD_IMPACT_TAG> overshield_3p_shield_impact;
 	c_typed_tag_reference<SHIELD_IMPACT_TAG> overshield_fp_shield_impact;
 };
-static_assert(sizeof(s_model_definition) == 0x1B8);
+static_assert(sizeof(model_definition) == 0x1B8);

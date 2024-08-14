@@ -85,7 +85,7 @@ void network_session_check_properties(c_network_session* session)
         long mulg_index = global_game_globals->multiplayer_globals.index;
         if (mulg_index != -1)
         {
-            s_multiplayer_globals_definition* multiplayer_globals = (s_multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, mulg_index);
+            multiplayer_globals_definition* multiplayer_globals = (multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, mulg_index);
             if (multiplayer_globals)
                 mulg_is_valid = multiplayer_globals->universal.count() > 0;
         }

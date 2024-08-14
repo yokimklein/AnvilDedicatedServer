@@ -4,14 +4,14 @@
 
 struct s_multiplayer_universal_globals_definition;
 struct s_multiplayer_runtime_globals_definition;
-struct s_multiplayer_globals_definition
+struct multiplayer_globals_definition
 {
 	static tag const k_group_tag = MULTIPLAYER_GLOBALS_TAG;
 
 	c_typed_tag_block<s_multiplayer_universal_globals_definition> universal;
 	c_typed_tag_block<s_multiplayer_runtime_globals_definition> runtime;
 };
-static_assert(sizeof(s_multiplayer_globals_definition) == 0x18);
+static_assert(sizeof(multiplayer_globals_definition) == 0x18);
 
 struct s_multiplayer_customized_model_character;
 struct s_multiplayer_equipment;
@@ -104,7 +104,7 @@ struct s_multiplayer_vehicle_set
 };
 static_assert(sizeof(s_multiplayer_vehicle_set) == 0x10);
 
-s_multiplayer_universal_globals_definition* multiplayer_globals_try_and_get_universal_data(s_multiplayer_globals_definition* multiplayer_globals);
+s_multiplayer_universal_globals_definition* multiplayer_globals_try_and_get_universal_data(multiplayer_globals_definition* multiplayer_globals);
 string_id multiplayer_universal_data_get_weapon_selection_name_from_absolute_index(short absolute_index);
 const s_multiplayer_weapon_set* multiplayer_universal_data_weapon_set_try_and_get(short absolute_index);
 const s_multiplayer_vehicle_set* multiplayer_universal_data_vehicle_set_try_and_get(short absolute_index);

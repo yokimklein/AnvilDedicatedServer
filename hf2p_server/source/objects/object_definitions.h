@@ -303,7 +303,7 @@ struct s_object_model_data_definition
 };
 static_assert(sizeof(s_object_model_data_definition) == 0x14);
 
-struct object_definition
+struct _object_definition
 {
 	c_enum<e_object_type, short, _object_type_biped, k_object_type_count> type;
 	c_flags<e_object_definition_flags, short, k_number_of_object_definition_flags> object_flags;
@@ -336,5 +336,13 @@ struct object_definition
 	c_typed_tag_block<s_multiplayer_object_definition> multiplayer_object;
 	c_typed_tag_block<s_object_health_pack_definition> health_packs;
 	c_typed_tag_block<s_object_model_data_definition> model_data;
+};
+static_assert(sizeof(_object_definition) == 0x120);
+
+struct object_definition
+{
+	static tag const k_group_tag = OBJECT_TAG;
+
+	_object_definition object;
 };
 static_assert(sizeof(object_definition) == 0x120);

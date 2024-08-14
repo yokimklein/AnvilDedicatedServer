@@ -20,10 +20,10 @@ s_game_globals* scenario_try_and_get_game_globals()
 s_multiplayer_universal_globals_definition* scenario_multiplayer_globals_try_and_get_universal_data()
 {
 	s_game_globals* game_globals = scenario_try_and_get_game_globals();
-	s_multiplayer_globals_definition* multiplayer_globals = nullptr;
+	multiplayer_globals_definition* multiplayer_globals = nullptr;
 	if (game_globals != nullptr)
 	{
-		multiplayer_globals = (s_multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, game_globals->multiplayer_globals.index);
+		multiplayer_globals = (multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, game_globals->multiplayer_globals.index);
 	}
 	if (multiplayer_globals != nullptr)
 	{

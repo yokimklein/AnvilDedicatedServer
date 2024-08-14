@@ -89,5 +89,14 @@ struct s_simulation_unit_exit_vehicle_event_data
 };
 static_assert(sizeof(s_simulation_unit_exit_vehicle_event_data) == 0x8);
 
+struct s_simulation_unit_melee_clang_event_data
+{
+	long clang_effect_index;
+	real_point3d position;
+	real_vector3d forward;
+};
+static_assert(sizeof(s_simulation_unit_melee_clang_event_data) == 0x1C);
+
 void simulation_action_unit_board_vehicle(datum_index unit_index);
 void simulation_action_unit_exit_vehicle(datum_index unit_index);
+void simulation_action_unit_melee_clang(long clang_effect_index, real_point3d const* position, real_vector3d const* forward);

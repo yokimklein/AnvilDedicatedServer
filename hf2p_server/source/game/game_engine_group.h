@@ -73,8 +73,10 @@ struct s_game_engine_infection_variant_definition : s_game_engine_base_variant_d
 };
 static_assert(sizeof(s_game_engine_infection_variant_definition) == 0x7C);
 
-struct s_game_engine_settings_definition
+struct game_engine_settings_definition
 {
+	static tag const k_group_tag = GAME_ENGINE_SETTINGS_DEFINITION_TAG;
+
 	dword_flags flags;
 	c_typed_tag_block<s_game_engine_player_traits> player_traits;
 	c_typed_tag_block<s_game_engine_slayer_variant_definition> slayer_variants;
@@ -89,6 +91,6 @@ struct s_game_engine_settings_definition
 	c_typed_tag_block<s_game_engine_sandbox_variant_definition> sandbox_variants;
 	long : 32;
 };
-static_assert(sizeof(s_game_engine_settings_definition) == 0x8C);
+static_assert(sizeof(game_engine_settings_definition) == 0x8C);
 
-struct s_game_engine_settings_definition* game_engine_settings_try_and_get();
+struct game_engine_settings_definition* game_engine_settings_try_and_get();
