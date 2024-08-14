@@ -82,14 +82,14 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		for (long i = -1; ; game_engine_globals->fade_to_black_active_user_mask |= 1 << i)
 		{
 			if (player_index != -1)
-				i = player_mapping_get_next_output_user((word)player_index, i);
+				i = player_mapping_get_next_output_user(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), i);
 			if (i == -1)
 				break;
 			game_engine_globals->fade_to_black_amount[i] = 1.0;
 		}
 
 		game_results_notify_player_indices_changed();
-		game_results_statistic_set((word)player_index, _game_team_none, 0, 1);
+		game_results_statistic_set(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), _game_team_none, 0, 1);
 	}
 }
 

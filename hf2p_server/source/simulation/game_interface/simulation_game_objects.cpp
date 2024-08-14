@@ -108,19 +108,37 @@ void simulation_action_object_delete(datum_index object_index)
 
 void simulation_action_object_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags)
 {
-	if (game_is_distributed())
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
 	{
-		if (game_is_server())
+		object_datum* object = object_get(object_index);
+		if (object->object.gamestate_index != NONE)
 		{
-			if (!game_is_playback())
+			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
+			if (entity_index != NONE)
 			{
-				object_datum* object = object_get(object_index);
-				if (object->object.gamestate_index != -1)
-				{
-					long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
-					if (entity_index != -1)
-						simulation_entity_update(entity_index, object_index, &update_flags.m_flags);
-				}
+				simulation_entity_update(entity_index, object_index, &update_flags.m_flags);
+			}
+		}
+	}
+}
+
+void simulation_action_object_force_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags)
+{
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		object_datum* object = object_get(object_index);
+		if (object->object.gamestate_index != NONE)
+		{
+			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
+			if (entity_index == NONE)
+			{
+				printf("MP/NET/SIMULATION,ACTION: simulation_action_object_force_update_internal: failed to get entity index for gamestate 0x%8X (object %s)\n",
+					object->object.gamestate_index,
+					object_describe(object_index));
+			}
+			else
+			{
+				simulation_entity_force_update(entity_index, object_index, &update_flags.m_flags);
 			}
 		}
 	}
@@ -146,7 +164,7 @@ long simulation_object_get_entity_internal(datum_index object_index, bool safe)
 				long simulation_entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 				if (simulation_entity_index == -1)
 				{
-					printf("networking:simulation:objects: failed to get entity index for gamestate 0x%8X (object %s) during simulation_object_get_authoritative_entity_internal()\n",
+					printf("MP/NET/SIMULATION,OBJECTS: simulation_object_get_entity_internal: failed to get entity index for gamestate 0x%8X (object %s) during simulation_object_get_authoritative_entity_internal()\n",
 						object->object.gamestate_index,
 						object_describe(object_index));
 				}

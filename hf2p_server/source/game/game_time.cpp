@@ -48,3 +48,11 @@ real game_tick_length()
 	assert(game_time_globals->initialized);
 	return game_time_globals->tick_length;
 }
+
+long game_tick_rate()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+	assert(game_time_globals);
+	assert(game_time_globals->initialized);
+	return game_time_globals->tick_rate;
+}

@@ -15,6 +15,7 @@
 #include <units\bipeds.h>
 #include <units\units.h>
 #include <motor\action_system.h>
+#include <game\game_results.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -694,6 +695,30 @@ __declspec(safebuffers) void __fastcall object_move_position_hook()
 
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_update_player_hook()
+{
+    long absolute_player_index;
+    player_datum* player;
+    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(absolute_player_index) + sizeof(player));
+
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx - 0x0C];
+        mov absolute_player_index, eax;
+        mov player, edi;
+    }
+
+    if (!(game_time_get() % game_tick_rate()))
+    {
+        game_results_statistic_increment(absolute_player_index, _game_team_none, _game_results_statistic_seconds_alive, 1);
+    }
+    if (!(game_time_get() % game_seconds_integer_to_ticks(5)))
+    {
+        simulation_action_object_force_update(player->unit_index, _simulation_object_update_position);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
@@ -877,4 +902,7 @@ void anvil_hooks_object_updates_apply()
 
     // character & biped physics position
     insert_hook(0x3FC276, 0x3FC27C, object_move_position_hook, _hook_execute_replaced_first); // object_move_position > object_set_position_internal inlined
+
+    // force update player position
+    insert_hook(0xC95EE, 0xC9611, game_engine_update_player_hook, _hook_replace);
 }

@@ -56,8 +56,8 @@ void c_game_statborg::adjust_team_stat(e_game_team team_index, long statistic, s
 	this->team[team_index].statistics[statistic] = new_team_statistic;
 	long update_flag = _simulation_statborg_update_team0 + team_index;
 	simulation_action_game_statborg_update(update_flag);
-	if (value != -1)
-		game_results_statistic_set(-1, team_index, value, this->team[team_index].statistics[statistic]);
+	if (value != NONE)
+		game_results_statistic_set(NONE, team_index, value, this->team[team_index].statistics[statistic]);
 }
 
 void c_game_statborg::stats_reset_for_round_switch()
@@ -99,7 +99,7 @@ void c_game_statborg::stats_reset_for_round_switch()
 		if (in_round_score != 0 && team_stats->finalised)
 		{
 			team_stats->statistics[1] += in_round_score;
-			game_results_statistic_set(-1, (e_game_team)i, _statborg_entry_rounds_won, team_stats->statistics[1]);
+			game_results_statistic_set(NONE, (e_game_team)i, _statborg_entry_rounds_won, team_stats->statistics[1]);
 			if (game_is_finished())
 				team_stats->finalised = true;
 			else
