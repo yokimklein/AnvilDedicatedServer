@@ -40,6 +40,11 @@ __declspec(safebuffers) void __fastcall game_engine_build_valid_team_mapping_hoo
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_recompute_active_teams_hook()
+{
+    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_globals_apply()
@@ -62,6 +67,7 @@ void anvil_hooks_simulation_globals_apply()
     // sync initial teams
     insert_hook(0xDC9F2, 0xDC9F9, game_engine_build_initial_teams_hook1, _hook_execute_replaced_first);
     insert_hook(0xDC51D, 0xDC522, game_engine_build_valid_team_mapping_hook, _hook_execute_replaced_first);
+    insert_hook(0xDC661, 0xDC666, game_engine_recompute_active_teams_hook, _hook_execute_replaced_first);
 
     // sync team lives per round
     insert_hook(0xDCA19, 0xDCA1F, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
