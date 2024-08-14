@@ -153,6 +153,8 @@ enum e_player_flags
 	// halo 3:     count unknown
 	// halo reach: count 20
 	// halo 4:     count 31
+
+	k_player_flags_count // unconfirmed size
 };
 
 struct s_player_shot_info
@@ -166,7 +168,7 @@ static_assert(sizeof(s_player_shot_info) == 0xC);
 struct player_datum : s_datum_header
 {
 	short unknown;
-	dword_flags flags;
+	c_flags<e_player_flags, long, k_player_flags_count> flags;
 	s_player_identifier player_identifier;
 	ulong left_game_time;
 	s_machine_identifier machine_identifier; // secure_address / xnaddr

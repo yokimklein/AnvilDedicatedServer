@@ -183,5 +183,6 @@ bool game_engine_in_round();
 bool __fastcall game_engine_player_is_playing(datum_index player_index);
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);
 void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_string<1024>* out_multiplayer_string);
+void game_engine_player_activated(datum_index player_index);
 
 extern c_game_engine* (&game_engines)[k_game_engine_type_count];

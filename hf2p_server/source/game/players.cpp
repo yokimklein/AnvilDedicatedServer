@@ -117,7 +117,7 @@ void c_player_in_game_iterator::begin()
 bool c_player_in_game_iterator::next()
 {
 	for (m_iterator.m_datum = (player_datum*)data_iterator_next(&m_iterator.m_iterator);
-		m_iterator.m_datum && TEST_BIT(m_iterator.m_datum->flags, _player_left_game_bit);
+		m_iterator.m_datum && m_iterator.m_datum->flags.test(_player_left_game_bit);
 		m_iterator.m_datum = (player_datum*)data_iterator_next(&m_iterator.m_iterator))
 	{
 	}

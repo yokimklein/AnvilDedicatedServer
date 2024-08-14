@@ -348,6 +348,7 @@
     <ClInclude Include="source\simulation\simulation_players.h" />
     <ClInclude Include="source\simulation\simulation_queue.h" />
     <ClInclude Include="source\simulation\simulation_queue_entities.h" />
+    <ClInclude Include="source\simulation\simulation_queue_global_events.h" />
     <ClInclude Include="source\simulation\simulation_type_collection.h" />
     <ClInclude Include="source\simulation\simulation_watcher.h" />
     <ClInclude Include="source\simulation\simulation_world.h" />
@@ -525,6 +526,7 @@
     <ClCompile Include="source\simulation\simulation_event_handler.cpp" />
     <ClCompile Include="source\simulation\simulation_gamestate_entities.cpp" />
     <ClCompile Include="source\simulation\simulation_queue_entities.cpp" />
+    <ClCompile Include="source\simulation\simulation_queue_global_events.cpp" />
     <ClCompile Include="source\simulation\simulation_type_collection.cpp" />
     <ClCompile Include="source\simulation\simulation_watcher.cpp" />
     <ClCompile Include="source\simulation\simulation_world.cpp" />

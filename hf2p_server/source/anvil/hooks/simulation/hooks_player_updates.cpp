@@ -7,6 +7,7 @@
 #include <hf2p\loadouts.h>
 #include <game\player_mapping.h>
 #include <units\units.h>
+#include <simulation\simulation_queue_global_events.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -18,7 +19,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook1()
     __asm mov player_data, ebx;
     __asm mov player_index, esi;
 
-    if (TEST_BIT(player_data->flags, _player_initial_spawn_bit))
+    if (player_data->flags.test(_player_initial_spawn_bit))
     {
         simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_cooldown);
     }
@@ -111,4 +112,6 @@ void anvil_hooks_player_updates_apply()
     // sync player netdebug data
     insert_hook(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);
 
+    // sync player active in game flag
+    hook_function(0x54A70, 0x68, simulation_queue_player_event_apply_set_activation);
 }

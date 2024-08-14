@@ -158,7 +158,7 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
             printf("Setting test mode...\n");
-            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
+            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 1);
             anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
@@ -279,6 +279,8 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->get_respawn_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_invisible, false);
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_respawn_growth_seconds(15);
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_respawn_player_traits_duration_seconds(60);
+    //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_team_lives_per_round(2);
+    //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_lives_per_round(2);
 
     if (!session->get_session_parameters()->ui_game_mode.request_change(_gui_game_mode_multiplayer))
     {

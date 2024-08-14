@@ -169,3 +169,11 @@ void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_
 {
 	INVOKE(0xCD1F0, game_engine_get_multiplayer_string, id, out_multiplayer_string);
 }
+
+void game_engine_player_activated(datum_index player_index)
+{
+	if (current_game_engine())
+	{
+		current_game_engine()->player_activated(player_index);
+	}
+}
