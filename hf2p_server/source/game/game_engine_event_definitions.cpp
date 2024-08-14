@@ -1,6 +1,6 @@
 #include "game_engine_event_definitions.h"
 
-void game_engine_initialize_event(e_game_engine_event_type event_type, string_id type, s_game_engine_event_data* event_data)
+void game_engine_initialize_event(e_multiplayer_event_type event_type, string_id type, s_game_engine_event_data* event_data)
 {
 	event_data->event_type = event_type;
 	event_data->type = type;
@@ -11,5 +11,5 @@ void game_engine_initialize_event(e_game_engine_event_type event_type, string_id
 	event_data->effect_player_index = -1;
 	event_data->effect_team_index = -1;
 	event_data->event_quantity = 0;
-	event_data->dummy_or_territories = -1;
+	event_data->dummy = -1;
 }

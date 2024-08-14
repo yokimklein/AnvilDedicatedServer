@@ -12,12 +12,12 @@
 #pragma runtime_checks("", off)
 __declspec(safebuffers) void __fastcall player_spawn_hook1()
 {
-    s_player_datum* player_data;
+    player_datum* player_data;
     datum_index player_index;
     __asm mov player_data, ebx;
     __asm mov player_index, esi;
 
-    if (TEST_BIT(player_data->player_flags, 3))
+    if (TEST_BIT(player_data->flags, _player_initial_spawn_bit))
     {
         simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_charges);
     }
@@ -50,7 +50,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook3()
 __declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook1()
 {
     datum_index player_index;
-    s_player_datum* player_data;
+    player_datum* player_data;
 
     __asm mov player_index, esi;
     __asm mov player_data, ebx;
@@ -60,7 +60,7 @@ __declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook1()
 
 __declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook2()
 {
-    s_player_datum* player_data;
+    player_datum* player_data;
     __asm mov player_data, esi;
 
     datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);

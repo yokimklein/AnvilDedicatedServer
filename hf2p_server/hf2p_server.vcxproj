@@ -192,6 +192,7 @@
     <ClInclude Include="source\game\game_allegiance.h" />
     <ClInclude Include="source\game\game_engine_area_set.h" />
     <ClInclude Include="source\game\game_engine_candy_monitor.h" />
+    <ClInclude Include="source\game\game_engine_events.h" />
     <ClInclude Include="source\game\game_engine_event_definitions.h" />
     <ClInclude Include="source\game\game_engine_group.h" />
     <ClInclude Include="source\game\game_engine_scoring.h" />
@@ -439,6 +440,7 @@
     <ClCompile Include="source\game\game_engine_candy_monitor.cpp" />
     <ClCompile Include="source\game\game_engine_ctf.cpp" />
     <ClCompile Include="source\game\game_engine_default.cpp" />
+    <ClCompile Include="source\game\game_engine_events.cpp" />
     <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
     <ClCompile Include="source\game\game_engine_group.cpp" />
     <ClCompile Include="source\game\game_engine_infection.cpp" />

@@ -23,3 +23,4 @@ datum_index game_engine_globals_get_gamestate_index();
 e_simulation_entity_type game_engine_globals_get_simulation_entity_type();
 datum_index game_engine_globals_get_player_gamestate_index(short absolute_player_index);
 void game_engine_globals_set_player_gamestate_index(short absolute_player_index, datum_index index);
+void game_engine_event_build_player_response_list(struct s_game_engine_event_data const* game_engine_event, datum_index* player_response_list, long player_response_list_max_count, long* player_response_list_count_out);

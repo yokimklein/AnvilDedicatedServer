@@ -167,7 +167,7 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	out_event_data->special_death_type = result_data->special_death_type;
 }
 
-void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, long const* player_indices, long player_count)
+void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, datum_index const* player_indices, long player_count)
 {
 	if (should_send_damage_aftermath_event(object_index, result_data))
 	{

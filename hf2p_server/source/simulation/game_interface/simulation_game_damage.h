@@ -91,4 +91,4 @@ void simulation_action_damage_aftermath(datum_index object_index, s_damage_after
 bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data const* result_data);
 bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_result_data const* result_data);
 void build_damage_aftermath_event_data(datum_index object_index, s_damage_aftermath_result_data const* result_data, s_simulation_damage_aftermath_event_data* out_event_data, datum_index out_object_references[2]);
-void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, long const* player_indices, long player_count);
+void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, datum_index const* player_indices, long player_count);

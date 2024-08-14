@@ -141,7 +141,7 @@ __declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 	simulation_action_object_create(player_data->unit_index);
 	simulation_action_object_update(player_data->unit_index, _simulation_unit_update_control);
 

@@ -13,7 +13,7 @@ void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long play
 	TLS_DATA_GET_VALUE_REFERENCE(players);
 	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
 
-	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 	s_player_podium& player_podium = g_player_podiums[g_player_podium_count++];
 	player_podium.current_action = _podium_action_base;
 	player_podium.ticks = game_time_globals->elapsed_ticks;

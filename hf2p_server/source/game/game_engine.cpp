@@ -55,7 +55,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		TLS_DATA_GET_VALUE_REFERENCE(players);
 		if (game_is_authoritative() && game_engine_has_teams())
 		{
-			s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+			player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 			game_engine_recompute_active_teams();
 			game_engine_adjust_team_score_for_composition(player_data->configuration.host.team_index);
 		}
@@ -67,13 +67,13 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		if (game_ticks_to_seconds(game_time_get()) > 1.0)
 		{
 			s_game_engine_event_data event_data;
-			game_engine_initialize_event(_game_engine_event_type_general, STRING_ID(game_engine, general_event_player_joined), &event_data);
+			game_engine_initialize_event(_multiplayer_event_type_general, STRING_ID(game_engine, general_event_player_joined), &event_data);
 			game_engine_send_event(&event_data);
 		}
 
 		if (game_is_authoritative())
 		{
-			s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+			player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 			player_data->lives = current_game_variant()->get_active_variant()->get_respawn_options()->get_lives_per_round();
 			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives);
 		}
@@ -123,9 +123,8 @@ void game_engine_update_round_conditions()
 			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_waiting_for_players) &&
 				!condition.test(_game_engine_round_condition_waiting_for_players))
 			{
-				TLS_DATA_GET_VALUE_REFERENCE(players);
-				c_player_in_game_iterator player_iterator(*players);
-				player_iterator.begin(*players);
+				c_player_in_game_iterator player_iterator;
+				player_iterator.begin();
 				while (player_iterator.next())
 				{
 					long player_index = player_iterator.get_index();
@@ -182,7 +181,7 @@ bool __fastcall game_engine_player_is_playing(datum_index player_index)
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player = (s_player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
 	
 	player->respawn_timer_countdown_seconds = PIN(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);

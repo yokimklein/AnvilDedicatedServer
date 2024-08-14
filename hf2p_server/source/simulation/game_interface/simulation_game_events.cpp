@@ -5,6 +5,8 @@
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <simulation\simulation_world.h>
 #include <networking\network_configuration.h>
+#include <game\game_engine_event_definitions.h>
+#include <game\game_engine_simulation.h>
 
 bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long event_payload_size, const long* event_payload)
 {
@@ -19,7 +21,7 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 		return false;
 
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player_data = (s_player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
+	player_datum* player_data = (player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
 	if (!player_data || player_data->unit_index != NONE)
 		return false;
 
@@ -50,7 +52,7 @@ void simulation_event_generate_for_clients(e_simulation_event_type event_type, l
 	simulation_event_generate_for_remote_peers(event_type, entity_reference_count, object_reference_indices, ignore_player_index, event_payload_size, event_payload);
 }
 
-void simulation_event_generate_for_client_player_list(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long const* player_indices, long player_count, long event_payload_size, void const* event_payload)
+void simulation_event_generate_for_client_player_list(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, datum_index const* player_indices, long player_count, long event_payload_size, void const* event_payload)
 {
 	c_simulation_world* world = simulation_get_world();
 	if (world->is_distributed())
@@ -94,7 +96,7 @@ void simulation_event_generate_for_client_player_mask(e_simulation_event_type ev
 			{
 				if (player_mask.test(i))
 				{
-					s_player_datum* player = (s_player_datum*)datum_try_and_get_absolute(*players, i);
+					player_datum* player = (player_datum*)datum_try_and_get_absolute(*players, i);
 					if (player != nullptr)
 					{
 						short machine_index = player->machine_index;
@@ -147,3 +149,24 @@ void __fastcall simulation_event_build_entity_reference_indices(long entity_refe
 	__asm add esp, 4; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
+
+void simulation_action_multiplayer_event(s_game_engine_event_data* game_engine_event)
+{
+	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	{
+		s_game_engine_event_data event_data = *game_engine_event;
+		if (event_data.audience_player_index != NONE)
+			event_data.audience_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.audience_player_index);
+		if (event_data.cause_player_index != NONE)
+			event_data.cause_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.cause_player_index);
+		if (event_data.effect_player_index != NONE)
+			event_data.effect_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.effect_player_index);
+		long player_response_list_count = 0;
+		datum_index player_response_list[k_maximum_multiplayer_players];
+		game_engine_event_build_player_response_list(game_engine_event, player_response_list, NUMBEROF(player_response_list), &player_response_list_count);
+		if (player_response_list_count > 0)
+		{
+			simulation_event_generate_for_client_player_list(_simulation_event_type_game_engine, 0, nullptr, player_response_list, player_response_list_count, sizeof(event_data), &event_data);
+		}
+	}
+}

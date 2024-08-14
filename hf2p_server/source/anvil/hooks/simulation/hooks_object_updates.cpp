@@ -312,7 +312,7 @@ __declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
     __asm mov unit, esi;
     TLS_DATA_GET_VALUE_REFERENCE(players);
 
-    s_player_datum* player_data = &players[unit->unit.player_index];
+    player_datum* player_data = &players[unit->unit.player_index];
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
@@ -457,7 +457,7 @@ __declspec(safebuffers) void __fastcall unit_scripting_set_active_camo_hook()
 
 __declspec(safebuffers) void __fastcall player_update_invisibility_hook()
 {
-    s_player_datum* player;
+    player_datum* player;
     real camouflage_maximum;
     __asm mov player, esi;
     __asm movss camouflage_maximum, xmm1;

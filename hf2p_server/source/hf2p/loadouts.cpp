@@ -8,7 +8,7 @@
 //	INVOKE(0x304390, hf2p_set_ui_loadouts, player_xuid, player_container);
 //}
 
-void __fastcall hf2p_update_active_loadout(datum_index player_index, s_player_datum* player_data)
+void __fastcall hf2p_update_active_loadout(datum_index player_index, player_datum* player_data)
 {
 	byte active_loadout = player_data->configuration.client.active_loadout;
 	long character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;

@@ -25,6 +25,136 @@ enum e_player_respawn_failure
 	k_player_respawn_failure_count
 };
 
+// there's a high likelihood of Halo Online using the Halo Reach player flags enum
+enum e_player_flags
+{
+	// game_engine_player_is_playing
+	// players_update_activation
+	// c_game_engine::apply_player_update
+	// halo reach x360: bit 0
+	// halo 4 x360:     bit 0
+	_player_active_in_game_bit = 0,
+
+	// game_engine_player_is_playing
+	// player_rejoined_game
+	// players_joined_in_progress_allow_spawn
+	// halo 4 x360:     bit 1
+	// halo reach x360: bit 1
+	_player_left_game_bit,
+
+	// player_update_after_game
+	// c_game_engine::apply_player_update
+	// halo reach x360: bit 2
+	// halo 4 x360:     bit 2
+	_player_blocking_teleporter_bit,
+
+	// game_engine_update_after_game_update_state
+	// player_spawn
+	// player_reset
+	// players_detach_from_map
+	// c_game_engine::apply_player_update
+	// halo reach x360: bit 3
+	// halo 4 x360:     bit 3
+	_player_initial_spawn_bit,
+
+	// halo 4 adds 2 new flags here
+	// bit 4, game_engine_display_role_selection_ui
+
+	// player_prepare_action
+	// unit_action_vehicle_exit_finished
+	// player_suppress_action
+	// halo reach x360: bit 4
+	// halo 4 x360:     bit 6
+	_player_unknown_bit4,
+
+	// player_prepare_action
+	// player_suppress_action
+	// halo reach x360: bit 5
+	// halo 4 x360:     bit 7
+	_player_unknown_bit5,
+
+	// player_prepare_action
+	// player_suppress_action
+	// halo reach x360: bit 6
+	// halo 4 x360:     bit 8
+	_player_unknown_bit6,
+
+	// player_suppress_action
+	// halo reach x360: bit 7
+	// halo 4 x360:     bit 9
+	_player_unknown_bit7,
+
+	// teleporter_flag_object_as_having_teleported_recursive
+	//  should pass `_object_mask_unit` test
+	// update_players_before_teleporters
+	// update_players_after_teleporters
+	// c_teleporter_area::update_players
+	// halo reach x360: bit 8
+	// halo 4 x360:     bit 10
+	_player_unknown_bit8,
+
+	// teleporter_flag_object_as_having_teleported_recursive
+	//  should pass `_object_mask_unit` test
+	// update_players_after_teleporters
+	// c_teleporter_area::update_players
+	// halo reach x360: bit 9
+	// halo 4 x360:     bit 11
+	_player_unknown_bit9,
+
+	// player_update_after_game
+	// player_notify_vehicle_ejection_finished
+	// c_game_engine::apply_player_update
+	// halo reach x360: bit 10
+	// halo 4 x360:     bit 12
+	_player_vehicle_entrance_ban_bit,
+
+	// player_spawn
+	// players_coop_update_respawn
+	// halo reach x360: bit 11
+	// halo 4 x360:     bit 13
+	_player_unknown_bit11,
+
+	// game_engine_player_is_playing
+	// game_engine_update_player_sitting_out
+	// c_game_engine::apply_player_update
+	// halo reach x360: bit 12
+	// halo 4 x360:     bit 14
+	_player_sitting_out_bit,
+
+	// player_reset
+	// players_joined_in_progress_allow_spawn
+	// halo reach x360: bit 13
+	// halo 4 x360:     bit 15
+	_player_unknown_bit13,
+
+	// game_engine_update_coop_spawning
+	// halo reach x360: bit 14
+	// halo 4 x360:     bit 16
+	// look_training_hack?
+	_player_unknown_bit14,
+
+	// players_coop_update_respawn
+	// survival_mode_respawn_dead_players
+	// halo reach x360: bit 15
+	// halo 4 x360:     bit 17
+	_player_unknown_bit15,
+
+	// player_prepare_action
+	// unit_action_melee_player_update
+	// player_submit_actions
+	// halo reach x360: bit 16
+	// halo 4 x360:     bit 18
+	_player_unknown_bit16,
+
+	// unit_action_melee_player_update
+	// halo reach x360: bit 19
+	// halo 4 x360:     bit 23
+
+	// halo 3:     count unknown
+	// halo reach: count 20
+	// halo 4:     count 31
+};
+
 struct s_player_shot_info
 {
 	word __unknown0;
@@ -33,10 +163,10 @@ struct s_player_shot_info
 };
 static_assert(sizeof(s_player_shot_info) == 0xC);
 
-struct s_player_datum : s_datum_header
+struct player_datum : s_datum_header
 {
 	short unknown;
-	dword_flags player_flags;
+	dword_flags flags;
 	s_player_identifier player_identifier;
 	ulong left_game_time;
 	s_machine_identifier machine_identifier; // secure_address / xnaddr
@@ -176,36 +306,33 @@ struct s_player_datum : s_datum_header
 	short spawn_count;
 	short : 16;
 };
-static_assert(sizeof(s_player_datum) == 0x19B0);
-static_assert(0x04 == OFFSETOF(s_player_datum, player_flags));
-static_assert(0x30 == OFFSETOF(s_player_datum, unit_index));
-static_assert(0x49 == OFFSETOF(s_player_datum, next_spawn_control_context));
-static_assert(0x4C == OFFSETOF(s_player_datum, character_type_index));
-static_assert(0x70 == OFFSETOF(s_player_datum, configuration));
-static_assert(0x1842 == OFFSETOF(s_player_datum, lives));
-static_assert(0x1848 == OFFSETOF(s_player_datum, last_killed_game_time));
-static_assert(0x1874 == OFFSETOF(s_player_datum, spectating_player_index));
-static_assert(0x18B4 == OFFSETOF(s_player_datum, revenge_shield_boost_unknown80));
-static_assert(0x18B6 == OFFSETOF(s_player_datum, revenge_shield_boost_multiplier));
-static_assert(0x18EC == OFFSETOF(s_player_datum, assassination_victim_unit_index));
-static_assert(0x18F0 == OFFSETOF(s_player_datum, is_assassination_victim));
-static_assert(0x18F4 == OFFSETOF(s_player_datum, assasination_authorative_position));
-static_assert(0x1900 == OFFSETOF(s_player_datum, assasination_authorative_forward));
+static_assert(sizeof(player_datum) == 0x19B0);
+static_assert(0x04 == OFFSETOF(player_datum, flags));
+static_assert(0x30 == OFFSETOF(player_datum, unit_index));
+static_assert(0x49 == OFFSETOF(player_datum, next_spawn_control_context));
+static_assert(0x4C == OFFSETOF(player_datum, character_type_index));
+static_assert(0x70 == OFFSETOF(player_datum, configuration));
+static_assert(0x1842 == OFFSETOF(player_datum, lives));
+static_assert(0x1848 == OFFSETOF(player_datum, last_killed_game_time));
+static_assert(0x1874 == OFFSETOF(player_datum, spectating_player_index));
+static_assert(0x18B4 == OFFSETOF(player_datum, revenge_shield_boost_unknown80));
+static_assert(0x18B6 == OFFSETOF(player_datum, revenge_shield_boost_multiplier));
+static_assert(0x18EC == OFFSETOF(player_datum, assassination_victim_unit_index));
+static_assert(0x18F0 == OFFSETOF(player_datum, is_assassination_victim));
+static_assert(0x18F4 == OFFSETOF(player_datum, assasination_authorative_position));
+static_assert(0x1900 == OFFSETOF(player_datum, assasination_authorative_forward));
 
-class c_player_in_game_iterator : public c_data_iterator<s_player_datum>
+struct c_player_in_game_iterator
 {
 public:
-	using c_data_iterator<s_player_datum>::c_data_iterator;
-	bool next()
-	{
-		for (m_datum = (s_player_datum*)data_iterator_next(&m_iterator);
-			m_datum && TEST_BIT(m_datum->player_flags, 1);
-			m_datum = (s_player_datum*)data_iterator_next(&m_iterator))
-		{
-		}
+	void begin();
+	bool next();
+	player_datum* get_datum();
+	long get_index() const;
+	short get_absolute_index() const;
 
-		return m_datum != nullptr;
-	}
+protected:
+	c_data_iterator<player_datum> m_iterator;
 };
 
 #pragma pack(push, 1)

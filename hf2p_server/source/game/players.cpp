@@ -33,7 +33,7 @@ long player_mapping_get_input_user(datum_index player_index)
 void __fastcall player_set_facing(datum_index player_index, real_vector3d* forward)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player_data = (s_player_datum*)datum_get(*players, player_index);
+	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 	if (game_is_authoritative())
 	{
 		if (player_data->unit_index != NONE)
@@ -67,7 +67,7 @@ long player_index_from_absolute_player_index(short absolute_player_index)
 void __fastcall player_increment_control_context(datum_index player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	s_player_datum* player = (s_player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
 	datum_index unit_index = player->unit_index;
 	if (unit_index != -1)
 	{
@@ -106,4 +106,36 @@ s_machine_identifier* players_get_machine_identifier(long machine_index)
 	assert(machine_index >= 0 && machine_index < k_maximum_machines);
 	assert(TEST_BIT(players_globals->machine_valid_mask, machine_index));
 	return &players_globals->machine_identifiers[machine_index];
+}
+
+void c_player_in_game_iterator::begin()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	m_iterator.begin(*players);
+}
+
+bool c_player_in_game_iterator::next()
+{
+	for (m_iterator.m_datum = (player_datum*)data_iterator_next(&m_iterator.m_iterator);
+		m_iterator.m_datum && TEST_BIT(m_iterator.m_datum->flags, _player_left_game_bit);
+		m_iterator.m_datum = (player_datum*)data_iterator_next(&m_iterator.m_iterator))
+	{
+	}
+
+	return m_iterator.m_datum != NULL;
+}
+
+player_datum* c_player_in_game_iterator::get_datum()
+{
+	return m_iterator.m_datum;
+}
+
+long c_player_in_game_iterator::get_index() const
+{
+	return m_iterator.m_iterator.index;
+}
+
+short c_player_in_game_iterator::get_absolute_index() const
+{
+	return m_iterator.get_absolute_index();
 }

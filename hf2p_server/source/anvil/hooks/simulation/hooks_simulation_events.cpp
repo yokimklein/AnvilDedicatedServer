@@ -9,6 +9,7 @@
 #include <objects\damage.h>
 #include <simulation/game_interface\simulation_game_units.h>
 #include <items\weapon_definitions.h>
+#include <simulation\game_interface\simulation_game_events.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -80,7 +81,7 @@ __declspec(safebuffers) void __fastcall object_cause_damage_hook()
     datum_index object_index;
     s_damage_aftermath_result_data* aftermath_result;
     bool update_sim_aftermath_list;
-    long* player_indices;
+    datum_index* player_indices;
     long player_count;
     DEFINE_ORIGINAL_EBP_ESP(0x178,
         (sizeof(update_sim_aftermath) + 3) + sizeof(object_index) + sizeof(aftermath_result) +
@@ -318,6 +319,13 @@ __declspec(safebuffers) void __fastcall unit_resolve_melee_attack_hook()
     }
     simulation_action_unit_melee_clang(weapon_tag->weapon.clash_effect.index, position, &unit->unit.melee_aiming_vector);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_send_event_hook()
+{
+    s_game_engine_event_data* game_engine_event;
+    __asm mov game_engine_event, ecx;
+    simulation_action_multiplayer_event(game_engine_event);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_events_apply()
@@ -364,4 +372,7 @@ void anvil_hooks_simulation_events_apply()
 
     // simulation_action_unit_melee_clang
     insert_hook(0x42C270, 0x42C276, unit_resolve_melee_attack_hook, _hook_execute_replaced_last);
+
+    // simulation_action_multiplayer_event
+    insert_hook(0x11C0F1, 0x11C0F7, game_engine_send_event_hook, _hook_execute_replaced_first);
 }

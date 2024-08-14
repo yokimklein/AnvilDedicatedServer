@@ -116,7 +116,7 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
 
 __declspec(safebuffers) void __fastcall object_damage_shield_hook1()
 {
-    s_player_datum* player_data;
+    player_datum* player_data;
     __asm mov player_data, esi;
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }

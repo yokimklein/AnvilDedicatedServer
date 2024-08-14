@@ -37,39 +37,39 @@ s_datum_header* s_data_array::get_datum(const datum_index index) const
 	return datum;
 }
 
-long __fastcall data_next_absolute_index(s_data_array const* data, long index)
+long __fastcall data_next_absolute_index(s_data_array const* data, long absolute_index)
 {
-	return INVOKE(0xA8FE0, data_next_absolute_index, data, index);
+	return INVOKE(0xA8FE0, data_next_absolute_index, data, absolute_index);
 }
 
-void data_iterator_begin(s_data_iterator* iterator, s_data_array* data)
+void data_iterator_begin(s_data_iterator* iterator, s_data_array const* data)
 {
 	iterator->data = data;
 	iterator->index = -1;
 	iterator->absolute_index = -1;
 }
 
-void* data_iterator_next(s_data_iterator* iterator)
+void* data_iterator_next(s_data_iterator* data)
 {
-	char* result;
-	const s_data_array* data = iterator->data;
-	long index = data_next_absolute_index(iterator->data, iterator->absolute_index + 1);
-	if (index == -1)
+	void* result;
+	const s_data_array* data_array = data->data;
+	long index = data_next_absolute_index(data->data, data->absolute_index + 1);
+	if (index == NONE)
 	{
-		iterator->absolute_index = data->maximum_count;
-		iterator->index = -1;
+		data->absolute_index = data_array->maximum_count;
+		data->index = NONE;
 		result = nullptr;
 	}
 	else
 	{
-		result = &data->data[index * data->size];
-		iterator->absolute_index = index;
-		iterator->index = index | (*result << 16);
+		result = &data_array->data[index * data_array->size];
+		data->absolute_index = index;
+		data->index = index | (*(word*)result << 16);
 	}
 	return result;
 }
 
-void __fastcall datum_delete(s_data_array* data, long index)
+void __fastcall datum_delete(s_data_array* data, datum_index index)
 {
 	INVOKE(0xA8F20, datum_delete, data, index);
 }

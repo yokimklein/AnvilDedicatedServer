@@ -88,15 +88,8 @@ static_assert(sizeof(s_data_array) == 0x54);
 struct s_data_iterator
 {
 	s_data_array const* data;
-	long index;
+	datum_index index;
 	long absolute_index;
-
-	s_data_iterator(const s_data_array* data) :
-		data(data),
-		index((datum_index)-1),
-		absolute_index(-1)
-	{
-	}
 };
 static_assert(sizeof(s_data_iterator) == 0xC);
 
@@ -105,10 +98,10 @@ class c_data_iterator;
 
 struct c_allocation_base;
 
-void __cdecl data_iterator_begin(s_data_iterator* iterator, s_data_array* data);
-void* __cdecl data_iterator_next(s_data_iterator* iterator);
-long __fastcall data_next_absolute_index(s_data_array const* data, long index);
-void __fastcall datum_delete(s_data_array* data, long index);
+void __cdecl data_iterator_begin(s_data_iterator* iterator, s_data_array const* data);
+void* __cdecl data_iterator_next(s_data_iterator* data);
+long __fastcall data_next_absolute_index(s_data_array const* data, long absolute_index);
+void __fastcall datum_delete(s_data_array* data, datum_index index);
 void datum_initialize(s_data_array* data, s_datum_header* header);
 datum_index datum_new(s_data_array* data);
 void* datum_get(s_data_array* data, datum_index index);
@@ -236,16 +229,21 @@ static_assert(sizeof(c_typed_data_array<void>) == sizeof(s_data_array));
 template<typename t_datum_type>
 class c_data_iterator
 {
-	static_assert(__is_base_of(s_datum_header, t_datum_type));
+	//static_assert(std::is_same<t_datum_type, void>::value || std::is_base_of<s_datum_header, t_datum_type>::value);
 
 public:
-	c_data_iterator(s_data_array* data) :
+	c_data_iterator() :
 		m_datum(),
-		m_iterator(data)
+		m_iterator()
 	{
 	}
 
 	void begin(s_data_array* data)
+	{
+		data_iterator_begin(&m_iterator, data);
+	}
+
+	void begin(s_data_array const* data)
 	{
 		data_iterator_begin(&m_iterator, data);
 	}
@@ -256,22 +254,22 @@ public:
 		return m_datum != nullptr;
 	}
 
-	long get_index()// const
+	long get_index() const
 	{
 		return m_iterator.index;
 	}
 
-	short get_absolute_index()// const
+	short get_absolute_index() const
 	{
 		return static_cast<short>(m_iterator.absolute_index);
 	}
 
-	t_datum_type* get_datum()// const
+	t_datum_type* get_datum() const
 	{
 		return m_datum;
 	}
 
-protected:
+	//protected:
 	t_datum_type* m_datum;
 	s_data_iterator m_iterator;
 };
