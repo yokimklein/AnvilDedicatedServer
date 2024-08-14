@@ -145,28 +145,6 @@ bool game_engine_round_condition_test(e_game_engine_round_condition condition)
 	return game_engine_globals->round_condition_flags.test(condition);
 }
 
-// I started rewriting this before inserting x86 into the existing function to add back the sim update calls
-void game_engine_update_time()
-{
-	/*
-	if (game_engine_in_round() && !game_is_predicted() && !game_engine_round_condition_test(_game_engine_round_condition_unknown4))
-	{
-		if (game_engine_get_round_time_limit_seconds())
-		{
-			TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
-			long round_time_limit_tps = game_engine_globals->game_variant_round_time_limit_ticks_per_second;
-			if (round_time_limit_tps > 0)
-				game_engine_globals->game_variant_round_time_limit_ticks_per_second = round_time_limit_tps - 1;
-			long time_left_in_ticks = game_engine_get_time_left_in_ticks(true);
-			real time_left_in_seconds = game_ticks_to_seconds(time_left_in_ticks);
-			// ??
-
-			simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_timer);
-		}
-	}
-	*/
-}
-
 bool game_engine_in_round()
 {
 	TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);

@@ -826,7 +826,7 @@ void anvil_hooks_object_updates_apply()
 
     // sync equipment deletion
     insert_hook(0x417CE5, 0x417CEF, unit_delete_current_equipment_hook, _hook_execute_replaced_first);
-    hook_function(0x424660, 0x75, unit_delete_equipment); // called by unit_drop_equipment & hf2p_set_local_player_equipment
+    hook_function(0x424660, 0x75, unit_delete_equipment); // called by unit_drop_equipment & equipment_add
     insert_hook(0x4171D5, 0x41725C, unit_place_hook, _hook_replace); // replace inlined function
     insert_hook(0xFB7F4, 0xFB864, unit_add_initial_loadout_hook3, _hook_replace); // replace inlined function
     insert_hook(0xFB864, 0xFB869, unit_add_initial_loadout_hook4, _hook_execute_replaced_last); // add back overwritten variable

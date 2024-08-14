@@ -8,28 +8,6 @@
 #include <game\game_engine_event_definitions.h>
 #include <game\game_engine_simulation.h>
 
-bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const long* gamestate_indicies, long event_payload_size, const long* event_payload)
-{
-	short player_absolute_index = *event_payload;
-	short spectating_player_absolute_index = *(event_payload + 1);
-
-	if (player_absolute_index < 0 || player_absolute_index >= 16)
-		return false;
-	if (spectating_player_absolute_index != 65535 && spectating_player_absolute_index >= 16)
-		return false;
-	if (spectating_player_absolute_index == player_absolute_index)
-		return false;
-
-	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player_data = (player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
-	if (!player_data || player_data->unit_index != NONE)
-		return false;
-
-	player_data->spectating_player_index = player_index_from_absolute_player_index(spectating_player_absolute_index);
-	simulation_action_game_engine_player_update(player_absolute_index, _simulation_player_update_spectating_player);
-	return true;
-}
-
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
 	static void* simulation_event_generate_for_remote_peers_call = (void*)BASE_ADDRESS(0x7E490);

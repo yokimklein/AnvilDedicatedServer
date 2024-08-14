@@ -8,7 +8,7 @@
 //	INVOKE(0x304390, hf2p_set_ui_loadouts, player_xuid, player_container);
 //}
 
-void __fastcall hf2p_update_active_loadout(datum_index player_index, player_datum* player_data)
+void __fastcall player_update_loadout(datum_index player_index, player_datum* player_data)
 {
 	byte active_loadout = player_data->configuration.client.active_loadout;
 	long character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
@@ -27,8 +27,8 @@ void __fastcall hf2p_update_active_loadout(datum_index player_index, player_datu
 	}
 }
 
-bool __fastcall hf2p_set_local_player_equipment(long slot_index, long equipment_index)
+bool __fastcall equipment_add(long slot_index, long equipment_index)
 {
 	assert(VALID_INDEX(slot_index, 4));
-	return INVOKE(0xE0530, hf2p_set_local_player_equipment, slot_index, equipment_index);
+	return INVOKE(0xE0530, equipment_add, slot_index, equipment_index);
 }

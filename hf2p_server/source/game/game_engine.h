@@ -179,7 +179,6 @@ void __fastcall game_engine_player_added(datum_index absolute_player_index);
 long game_engine_round_time_get();
 void game_engine_update_round_conditions();
 bool game_engine_round_condition_test(e_game_engine_round_condition condition);
-void game_engine_update_time();
 bool game_engine_in_round();
 bool __fastcall game_engine_player_is_playing(datum_index player_index);
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks);

@@ -6,6 +6,7 @@
 #include <simulation\game_interface\simulation_game_action.h>
 #include <networking\replication\replication_entity_manager.h>
 #include <simulation\game_interface\simulation_game_events.h>
+#include <memory\tls.h>
 
 void simulation_action_game_engine_player_create(short player_absolute_index)
 {
@@ -93,4 +94,26 @@ void simulation_action_player_taunt_request(short player_index)
 		payload_data.player_index = player_index;
 		simulation_event_generate_for_clients(_simulation_event_type_player_taunt_request, 0, 0, NONE, sizeof(payload_data), &payload_data);
 	}
+}
+
+bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_event(long reference_gamestate_count, const datum_index* gamestate_indicies, long payload_size, const s_player_respawn_target_request_event_data* payload)
+{
+	short player_absolute_index = payload->absolute_player_index;
+	short spectating_player_absolute_index = payload->player_index;
+
+	if (player_absolute_index < 0 || player_absolute_index >= 16)
+		return false;
+	if (spectating_player_absolute_index != 65535 && spectating_player_absolute_index >= 16)
+		return false;
+	if (spectating_player_absolute_index == player_absolute_index)
+		return false;
+
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player_data = (player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
+	if (!player_data || player_data->unit_index != NONE)
+		return false;
+
+	player_data->spectating_player_index = player_index_from_absolute_player_index(spectating_player_absolute_index);
+	simulation_action_game_engine_player_update(player_absolute_index, _simulation_player_update_spectating_player);
+	return true;
 }

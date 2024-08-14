@@ -47,7 +47,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook3()
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook1()
+__declspec(safebuffers) void __fastcall player_update_loadout_hook1()
 {
     datum_index player_index;
     player_datum* player_data;
@@ -55,16 +55,16 @@ __declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook1()
     __asm mov player_index, esi;
     __asm mov player_data, ebx;
 
-    hf2p_update_active_loadout(player_index, player_data);
+    player_update_loadout(player_index, player_data);
 }
 
-__declspec(safebuffers) void __fastcall hf2p_update_active_loadout_hook2()
+__declspec(safebuffers) void __fastcall player_update_loadout_hook2()
 {
     player_datum* player_data;
     __asm mov player_data, esi;
 
     datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);
-    hf2p_update_active_loadout(player_index, player_data);
+    player_update_loadout(player_index, player_data);
 }
 #pragma runtime_checks("", restore)
 
@@ -81,8 +81,8 @@ void anvil_hooks_player_updates_apply()
     // i'm not sure what this request is used for - spectator related
     hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
 
-    // hf2p_update_active_loadout
-    insert_hook(0xBAF22, 0xBAF29, hf2p_update_active_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
-    insert_hook(0xE05A8, 0xE05AF, hf2p_update_active_loadout_hook2, _hook_replace); // add player_index argument back to call in hf2p_set_local_player_equipment
-    hook_function(0xE0660, 0x40, hf2p_update_active_loadout); // sync character type
+    // player_update_loadout
+    insert_hook(0xBAF22, 0xBAF29, player_update_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
+    insert_hook(0xE05A8, 0xE05AF, player_update_loadout_hook2, _hook_replace); // add player_index argument back to call in equipment_add
+    hook_function(0xE0660, 0x40, player_update_loadout); // sync character type
 }
