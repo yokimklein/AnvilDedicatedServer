@@ -25,6 +25,16 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_update_sta
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_engine_state);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_build_initial_teams_hook1()
+{
+    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_build_initial_teams_hook2()
+{
+    simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_team_lives_per_round);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_globals_apply()
@@ -43,4 +53,10 @@ void anvil_hooks_simulation_globals_apply()
 
     // sync game engine state
     insert_hook(0xC9D9B, 0xC9DA2, game_engine_update_after_game_update_state_hook2, _hook_execute_replaced_first);
+
+    // sync initial teams
+    insert_hook(0xDC9F2, 0xDC9F9, game_engine_build_initial_teams_hook1, _hook_execute_replaced_first);
+
+    // sync team lives per round
+    insert_hook(0xDCA19, 0xDCA1F, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
 }
