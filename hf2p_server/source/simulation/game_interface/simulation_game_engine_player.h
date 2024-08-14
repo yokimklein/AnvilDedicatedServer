@@ -21,8 +21,8 @@ enum e_simulation_player_update_flag
 	_simulation_player_update_sitting_out,
 	_simulation_player_update_spectating_player,
 	_simulation_player_update_control,
-	_simulation_player_update_character_type,
-	_simulation_player_update_equipment_charges,
+	_simulation_player_update_loadout_index,
+	_simulation_player_update_equipment_cooldown,
 	_simulation_player_update_revenge,
 
 	k_simulation_player_update_flag_count

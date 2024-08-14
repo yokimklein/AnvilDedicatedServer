@@ -462,7 +462,7 @@ struct s_s3d_player_customization
 {
 	s_s3d_player_customization() :
 		override_api_data(),
-		character_active_index(),
+		active_loadout_index(),
 		account_label(),
 		emblem(),
 		colors(),
@@ -472,7 +472,7 @@ struct s_s3d_player_customization
 
 	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
 	bool override_api_data;
-	byte character_active_index; // loadout index, 0-2
+	byte active_loadout_index; // loadout index, 0-2
 	byte account_label; // nameplate
 	byte emblem;
 	ulong colors[k_armor_colors_count];

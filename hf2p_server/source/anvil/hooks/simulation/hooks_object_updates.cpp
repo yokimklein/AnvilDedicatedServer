@@ -284,14 +284,6 @@ __declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook1()
     simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
 }
 
-__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
-{
-    unit_datum* unit;
-    __asm mov unit, ebx;
-
-    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_equipment_charges);
-}
-
 __declspec(safebuffers) void __fastcall unit_set_hologram_hook()
 {
     unit_datum* unit;
@@ -809,7 +801,6 @@ void anvil_hooks_object_updates_apply()
     add_variable_space_to_stack_frame(0x42D290, 0x42D3F9, 4); // Add 4 bytes of variable space to the stack frame
     insert_hook(0x42D2A4, 0x42D2A9, equipment_handle_energy_cost_hook0, _hook_execute_replaced_last); // preserve unit_index
     insert_hook(0x42D392, 0x42D398, equipment_handle_energy_cost_hook1, _hook_execute_replaced_first); // unit energy
-    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first); // TODO: move to player updates
     insert_hook(0x42D3F2, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
     // sync hologram camo

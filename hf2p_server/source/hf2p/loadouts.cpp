@@ -8,24 +8,32 @@
 //	INVOKE(0x304390, hf2p_set_ui_loadouts, player_xuid, player_container);
 //}
 
-void __fastcall player_update_loadout(datum_index player_index, player_datum* player_data)
+void __fastcall player_update_loadout(datum_index player_index, player_datum* player)
 {
-	byte active_loadout = player_data->configuration.client.active_loadout;
-	long character_active_index = player_data->configuration.host.s3d_player_customization.character_active_index;
-	if (active_loadout < 3)
+	byte client_loadout_index = player->configuration.client.active_loadout_index;
+	long host_loadout_index = player->configuration.host.s3d_player_customization.active_loadout_index;
+	if (client_loadout_index < 3)
 	{
-		character_active_index = active_loadout;
+		host_loadout_index = client_loadout_index;
 	}
 
-	if (character_active_index != player_data->character_type_index)
+	if (host_loadout_index != player->active_loadout_index)
 	{
-		qword user_xuid = player_data->configuration.host.user_xuid;
-		player_data->revenge_shield_boost_multiplier = 0;
-		player_data->character_type_index = character_active_index;
-		DECLFUNC(0xE05E0, void, __cdecl, qword user_xuid)(user_xuid);
-		simulation_action_game_engine_player_update(player_index, _simulation_player_update_character_type);
+		qword user_xuid = player->configuration.host.user_xuid;
+		player->revenge_shield_boost_multiplier = 0;
+		player->active_loadout_index = host_loadout_index;
+		player_update_loadout_internal(host_loadout_index, user_xuid);
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_loadout_index);
 	}
 }
+
+#pragma runtime_checks("", off)
+void __fastcall player_update_loadout_internal(long loadout_index, qword user_xuid)
+{
+	INVOKE(0xE05E0, player_update_loadout_internal, loadout_index, user_xuid);
+	__asm add esp, 8; // Fix usercall & cleanup stack
+}
+#pragma runtime_checks("", restore)
 
 bool __fastcall equipment_add(long slot_index, long equipment_index)
 {

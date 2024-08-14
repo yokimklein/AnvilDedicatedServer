@@ -6,6 +6,7 @@
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <hf2p\loadouts.h>
 #include <game\player_mapping.h>
+#include <units\units.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -19,7 +20,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook1()
 
     if (TEST_BIT(player_data->flags, _player_initial_spawn_bit))
     {
-        simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_charges);
+        simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_cooldown);
     }
 }
 
@@ -45,6 +46,14 @@ __declspec(safebuffers) void __fastcall player_spawn_hook3()
     __asm mov player_index, eax;
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
+}
+
+__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
+{
+    unit_datum* unit;
+    __asm mov unit, ebx;
+
+    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_equipment_cooldown);
 }
 
 __declspec(safebuffers) void __fastcall player_update_loadout_hook1()
@@ -80,6 +89,9 @@ void anvil_hooks_player_updates_apply()
 {
     // sync equipment charges on spawn
     insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
+
+    // sync equipment cooldown reset
+    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first);
 
     // sync spawn timer
     insert_hook(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first);
