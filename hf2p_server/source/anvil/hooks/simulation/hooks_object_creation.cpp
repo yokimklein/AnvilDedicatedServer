@@ -136,6 +136,13 @@ __declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
 //		simulation_action_actor_create(unit_index);
 //	}
 //}
+
+__declspec(safebuffers) void __fastcall unit_drop_plasma_on_death_hook()
+{
+	datum_index projectile_index;
+	__asm mov projectile_index, eax;
+	simulation_action_object_create(projectile_index);
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
@@ -199,4 +206,7 @@ void anvil_hooks_object_creation_apply()
 	//Patch(0x6989F5, { 0x74, 0x47 }).Apply(); // redirect jump to hook instead of return
 	//Patch(0x698A35, { 0x74, 07 }).Apply(); // redirect jump to hook instead of return
 	//insert_hook(0x698A3E, 0x698A47, actor_place_hook, _hook_execute_replaced_last);
+
+	// final gambit modifier plasma grenade
+	insert_hook(0x426F19, 0x426F20, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
 }

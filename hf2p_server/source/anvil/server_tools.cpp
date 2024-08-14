@@ -352,7 +352,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-        configuration->s3d_player_container.modifiers[0].modifier_values[_shield_recharge_on_melee_kill] = true;
+        //configuration->s3d_player_container.modifiers[0].modifier_values[_plant_plasma_on_death] = true;
         player_data_updated = true;
 
         // dedi host loadout
