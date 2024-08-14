@@ -66,23 +66,37 @@ __declspec(safebuffers) void __fastcall player_update_loadout_hook2()
     datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);
     player_update_loadout(player_index, player_data);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_update_hook()
+{
+    for (long i = 0; i < k_maximum_players; i++)
+    {
+        simulation_action_game_engine_player_update(i, _simulation_player_update_netdebug);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
 {
-    // player_spawn
-    insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first); // equipment charges on spawn
-    insert_hook(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first); // spawn timer
-    insert_hook(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first); // early respawn
+    // sync equipment charges on spawn
+    insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
 
-    // update spawn timer
+    // sync spawn timer
+    insert_hook(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first);
     hook_function(0xC7700, 0x62, game_engine_player_set_spawn_timer);
 
-    // i'm not sure what this request is used for - spectator related
+    // sync early respawn
+    insert_hook(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first);
+
+    // update spectating player
     hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
 
-    // player_update_loadout
+    // sync character type
     insert_hook(0xBAF22, 0xBAF29, player_update_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
     insert_hook(0xE05A8, 0xE05AF, player_update_loadout_hook2, _hook_replace); // add player_index argument back to call in equipment_add
-    hook_function(0xE0660, 0x40, player_update_loadout); // sync character type
+    hook_function(0xE0660, 0x40, player_update_loadout);
+
+    // sync player netdebug data
+    insert_hook(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);
+
 }

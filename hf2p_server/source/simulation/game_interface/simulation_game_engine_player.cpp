@@ -79,7 +79,7 @@ void simulation_action_game_engine_player_update(short player_index, c_flags<lon
 void simulation_action_game_engine_player_update(datum_index player_index, long update_flag)
 {
 	assert(update_flag >= 0 && update_flag < k_simulation_player_update_flag_count);
-	assert((word)player_index >= 0 && (word)player_index <= 16);
+	assert((word)player_index >= 0 && (word)player_index <= k_maximum_players);
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_engine_player_update((word)player_index, &update_flags);
@@ -101,9 +101,9 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 	short player_absolute_index = payload->absolute_player_index;
 	short spectating_player_absolute_index = payload->player_index;
 
-	if (player_absolute_index < 0 || player_absolute_index >= 16)
+	if (!VALID_INDEX(player_absolute_index, k_maximum_players))
 		return false;
-	if (spectating_player_absolute_index != 65535 && spectating_player_absolute_index >= 16)
+	if (spectating_player_absolute_index != 65535 && spectating_player_absolute_index >= k_maximum_players)
 		return false;
 	if (spectating_player_absolute_index == player_absolute_index)
 		return false;

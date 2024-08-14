@@ -11,18 +11,18 @@ enum e_simulation_player_update_flag
 	_simulation_player_update_movement_traits,
 	_simulation_player_update_appearance_traits,
 	_simulation_player_update_sensor_traits,
-	_simulation_player_update_player_waypoint_unknown, // TODO: likely a gametype option, research this further
-	_simulation_player_update_unknown_player_flags1, // blocking teleporter?
-	_simulation_player_update_unknown_player_data,
+	_simulation_player_update_waypoint_unknown, // TODO: research
+	_simulation_player_update_telefrag,
+	_simulation_player_update_netdebug,
 	_simulation_player_update_lives,
-	_simulation_player_update_grief, // is this to do with player booting?
-	_simulation_player_update_unknown_player_flags2,
-	_simulation_player_update_unknown_player_flags3, // player quit?
-	_simulation_player_update_unknown_player_flags4, // update called in game_engine_update_player_sitting_out
+	_simulation_player_update_grief,
+	_simulation_player_update_vehicle_entrance_ban,
+	_simulation_player_update_active_in_game, // used in player quit? syncs _player_active_in_game_bit
+	_simulation_player_update_sitting_out,
 	_simulation_player_update_spectating_player,
 	_simulation_player_update_control,
 	_simulation_player_update_character_type,
-	_simulation_player_update_equipment_charges, // called at the same time as _simulation_unit_update_equipment_charges, sets some tick fields in the player datum
+	_simulation_player_update_equipment_charges,
 	_simulation_player_update_revenge,
 
 	k_simulation_player_update_flag_count
