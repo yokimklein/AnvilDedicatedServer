@@ -205,6 +205,19 @@ __declspec(safebuffers) void __fastcall game_engine_update_player_hook2()
     __asm mov player_index, esi;
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_grief_player_index);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_update_player_sitting_out_hook()
+{
+    c_player_in_game_iterator* player_iterator;
+    DEFINE_ORIGINAL_EBP_ESP(0x10, sizeof(player_iterator));
+    __asm
+    {
+        mov ecx, original_ebp;
+        lea eax, [ecx - 0x10];
+        mov player_iterator, eax;
+    }
+    simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_sitting_out);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -268,4 +281,7 @@ void anvil_hooks_player_updates_apply()
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
+
+    // sync player sitting out
+    insert_hook(0xCB1DD, 0xCB1E5, game_engine_update_player_sitting_out_hook, _hook_execute_replaced_first);
 }
