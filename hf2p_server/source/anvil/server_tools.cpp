@@ -353,12 +353,12 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
         configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
-        configuration->s3d_player_container.loadouts[0].secondary_weapon = _energy_sword;
+        configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
         configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
         configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
         configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-        //configuration->s3d_player_container.modifiers[0].modifier_values[_plant_plasma_on_death] = true;
+        configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 1.0f;
         player_data_updated = true;
 
         // dedi host loadout

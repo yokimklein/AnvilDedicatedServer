@@ -8,6 +8,7 @@
 #include <game\player_mapping.h>
 #include <units\units.h>
 #include <simulation\simulation_queue_global_events.h>
+#include <game\game.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -120,6 +121,23 @@ __declspec(safebuffers) void __fastcall players_update_after_game_hook3()
         player->flags.set(_player_vehicle_entrance_ban_bit, false);
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_player_killed_hook1()
+{
+    datum_index dead_player_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x40C0, sizeof(dead_player_index));
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx + 0x08];
+        mov dead_player_index, eax;
+    }
+
+    if (game_is_multiplayer() && game_is_authoritative() && game_engine_in_round())
+    {
+        simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_revenge);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -164,4 +182,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync telefrag
     insert_hook(0xB80A6, 0xB80AD, players_update_after_game_hook1, _hook_execute_replaced_last); // countdown blocking ticks
+
+    // sync revenge
+    insert_hook(0xF8FCB, 0xF8FD2, game_engine_player_killed_hook1, _hook_execute_replaced_first);// inlined player_set_revenge_shield_boost
 }

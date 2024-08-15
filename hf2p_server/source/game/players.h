@@ -276,8 +276,8 @@ struct player_datum : s_datum_header
 	real_point2d map_editor_throttle;
 	real_euler_angles2d map_editor_rotation;
 	ushort time_in_hill;
-	ushort time_outside_Hill;
-	ushort time_hill_Left;
+	ushort time_outside_hill;
+	ushort time_hill_left;
 	short : 16;
 	union // nemesis mechanics
 	{
@@ -285,16 +285,17 @@ struct player_datum : s_datum_header
 		c_static_array<short, 16> nemesis_mechanics_avenger_counts; // dead_player, avenger medal
 	};
 	char revenge_shield_boost_unknown80;
-	char field_18B5;
+	char field_18B5; // padding?
 	short revenge_shield_boost_multiplier;
-	ulong last_hit_marker_game_time;
-	long revenge_shield_boost_player_index;
-	s_damage_reporting_info revenge_shield_boost_damage;
+	long revenge_unknown1; // last_hit_marker_game_time?
+	long revenge_unknown2; // last_hit_marker_game_time?
+	long revenge_killing_player_index;
+	s_damage_reporting_info revenge_damage_reporting_info;
 	bool revenge_taken;
 	char : 8;
 	char : 8;
 	char : 8;
-	byte __unknown_data[0x24];
+	byte __unknown_data[0x20];
 	struct // assassination info
 	{
 		long assassination_victim_unit_index;
@@ -320,6 +321,8 @@ static_assert(0x1848 == OFFSETOF(player_datum, last_killed_game_time));
 static_assert(0x1874 == OFFSETOF(player_datum, spectating_player_index));
 static_assert(0x18B4 == OFFSETOF(player_datum, revenge_shield_boost_unknown80));
 static_assert(0x18B6 == OFFSETOF(player_datum, revenge_shield_boost_multiplier));
+static_assert(0x18C0 == OFFSETOF(player_datum, revenge_killing_player_index));
+static_assert(0x18C4 == OFFSETOF(player_datum, revenge_damage_reporting_info));
 static_assert(0x18EC == OFFSETOF(player_datum, assassination_victim_unit_index));
 static_assert(0x18F0 == OFFSETOF(player_datum, is_assassination_victim));
 static_assert(0x18F4 == OFFSETOF(player_datum, assasination_authorative_position));
