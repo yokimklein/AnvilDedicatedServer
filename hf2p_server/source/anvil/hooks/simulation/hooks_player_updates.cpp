@@ -84,6 +84,42 @@ __declspec(safebuffers) void __fastcall game_engine_update_hook()
         simulation_action_game_engine_player_update(i, _simulation_player_update_netdebug);
     }
 }
+
+__declspec(safebuffers) void __fastcall players_update_after_game_hook1()
+{
+    datum_index player_index;
+    __asm mov player_index, ebx;
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_telefrag);
+}
+
+__declspec(safebuffers) void __fastcall players_update_after_game_hook2()
+{
+    datum_index player_index;
+    player_datum* player;
+    __asm
+    {
+        mov player_index, ebx;
+        mov player, esi;
+    }
+    if (player->equipment_cooldown_ticks > 0)
+        player->equipment_cooldown_ticks--;
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_cooldown);
+}
+
+__declspec(safebuffers) void __fastcall players_update_after_game_hook3()
+{
+    datum_index player_index;
+    player_datum* player;
+    __asm
+    {
+        mov player_index, ebx;
+        mov player, esi;
+    }
+    player->vehicle_entrance_ban_ticks--;
+    if (player->vehicle_entrance_ban_ticks == 0)
+        player->flags.set(_player_vehicle_entrance_ban_bit, false);
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -92,7 +128,8 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
 
     // sync equipment cooldown reset
-    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first);
+    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first); // sets cooldown after use
+    insert_hook(0xB80BA, 0xB80C8, players_update_after_game_hook2, _hook_replace); // updates tick countdown
 
     // sync spawn timer
     insert_hook(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first);
@@ -122,5 +159,9 @@ void anvil_hooks_player_updates_apply()
     hook_function(0xCCB20, 0xF5, game_engine_boot_player);
 
     // sync vehicle entrance ban after hijack
-    hook_function(0xBFB90, 0x79, player_notify_vehicle_ejection_finished);
+    hook_function(0xBFB90, 0x79, player_notify_vehicle_ejection_finished); // set ban time
+    insert_hook(0xB80FE, 0xB8112, players_update_after_game_hook3, _hook_replace); // countdown ban ticks
+
+    // sync telefrag
+    insert_hook(0xB80A6, 0xB80AD, players_update_after_game_hook1, _hook_execute_replaced_last); // countdown blocking ticks
 }

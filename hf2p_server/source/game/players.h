@@ -180,7 +180,7 @@ struct player_datum : s_datum_header
 	datum_index dead_unit_index;
 	datum_index previous_unit_index;
 	ulong unknown_flags2;
-	ushort unknown_simulation_ticks2; // hf2p cooldown?
+	ushort equipment_cooldown_ticks;
 	ushort unknown_simulation_ticks3; // hf2p cooldown?
 	ushort unknown_simulation_ticks4; // hf2p cooldown?
 	ushort unknownflags3;
@@ -310,6 +310,7 @@ struct player_datum : s_datum_header
 static_assert(sizeof(player_datum) == 0x19B0);
 static_assert(0x04 == OFFSETOF(player_datum, flags));
 static_assert(0x30 == OFFSETOF(player_datum, unit_index));
+static_assert(0x40 == OFFSETOF(player_datum, equipment_cooldown_ticks));
 static_assert(0x49 == OFFSETOF(player_datum, next_spawn_control_context));
 static_assert(0x4C == OFFSETOF(player_datum, active_loadout_index));
 static_assert(0x70 == OFFSETOF(player_datum, configuration));
