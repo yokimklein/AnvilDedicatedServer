@@ -22,7 +22,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook1()
 
     if (player_data->flags.test(_player_initial_spawn_bit))
     {
-        simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_cooldown);
+        simulation_action_game_engine_player_update(player_index, _simulation_player_update_consumable_supression);
     }
 }
 
@@ -55,7 +55,7 @@ __declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
     unit_datum* unit;
     __asm mov unit, ebx;
 
-    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_equipment_cooldown);
+    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_consumable_supression);
 }
 
 __declspec(safebuffers) void __fastcall player_update_loadout_hook1()
@@ -90,7 +90,7 @@ __declspec(safebuffers) void __fastcall players_update_after_game_hook1()
 {
     datum_index player_index;
     __asm mov player_index, ebx;
-    simulation_action_game_engine_player_update(player_index, _simulation_player_update_telefrag);
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_blocking_teleporter);
 }
 
 __declspec(safebuffers) void __fastcall players_update_after_game_hook2()
@@ -104,7 +104,7 @@ __declspec(safebuffers) void __fastcall players_update_after_game_hook2()
     }
     if (player->equipment_cooldown_ticks > 0)
         player->equipment_cooldown_ticks--;
-    simulation_action_game_engine_player_update(player_index, _simulation_player_update_equipment_cooldown);
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_consumable_supression);
 }
 
 __declspec(safebuffers) void __fastcall players_update_after_game_hook3()
@@ -135,7 +135,7 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook1()
 
     if (game_is_multiplayer() && game_is_authoritative() && game_engine_in_round())
     {
-        simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_revenge);
+        simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_last_killer);
     }
 }
 
@@ -149,7 +149,27 @@ __declspec(safebuffers) void __fastcall c_game_statborg__record_player_death_hoo
         mov eax, [ecx + 0x08];
         mov dead_player_index, eax;
     }
-    simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_grief);
+    simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_grief_player_index);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_player_fired_weapon_hook()
+{
+    datum_index player_index;
+    __asm mov player_index, ecx;
+    game_engine_set_player_navpoint_action(player_index, _navpoint_action_fired_weapon);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_player_damaged_player_hook()
+{
+    datum_index player_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x0C, sizeof(player_index));
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx + 0x08];
+        mov player_index, eax;
+    }
+    game_engine_set_player_navpoint_action(player_index, _navpoint_action_player_damaged);
 }
 #pragma runtime_checks("", restore)
 
@@ -202,4 +222,8 @@ void anvil_hooks_player_updates_apply()
     // sync betrayal grief
     insert_hook(0x1B0248, 0x1B024E, c_game_statborg__record_player_death_hook1, _hook_execute_replaced_first); // inlined game_engine_respond_to_betrayal
 
+    // sync waypoint actions
+    insert_hook(0xFA0B9, 0xFA1B4, game_engine_player_fired_weapon_hook, _hook_replace); // set weapon fire waypoint
+    insert_hook(0xF8E00, 0xF8EEB, game_engine_player_damaged_player_hook, _hook_replace); // set damaged player waypoint
+    hook_function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
 }

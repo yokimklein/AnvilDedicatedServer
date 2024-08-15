@@ -159,7 +159,7 @@ void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real 
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
-    unit->unit.active_camouflage_maximum = PIN(camouflage_maximum, 0.0f, 1.0f);
+    unit->unit.active_camouflage_maximum = CLAMP(camouflage_maximum, 0.0f, 1.0f);
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)

@@ -75,9 +75,28 @@ enum e_game_engine_state
 
 //.data:0189ECF0 ; char const* k_game_engine_end_conditions[k_game_engine_end_condition_count]
 
+enum e_navpoint_action
+{
+	_navpoint_action_none,
+	_navpoint_action_fired_weapon, // turns waypoint yellow
+	_navpoint_action_speaking, // turns waypoint white w/ speaker icon
+	_navpoint_action_player_damaged, // turns waypoint orange
+
+	k_navpoint_action_count
+};
+
 struct s_player_waypoint_data
 {
-	byte __data[0x1C];
+	bool dead;
+	char pad[3];
+	real_point3d head_position;
+	word respawn_timer1;
+	word respawn_timer2;
+	datum_index dead_unit_index;
+	c_enum<e_navpoint_action, byte, _navpoint_action_none, k_navpoint_action_count> action1;
+	byte ticks;
+	c_enum<e_navpoint_action, byte, _navpoint_action_none, k_navpoint_action_count> action2;
+	byte __data1B;
 };
 static_assert(sizeof(s_player_waypoint_data) == 0x1C);
 
@@ -186,5 +205,8 @@ void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_
 void game_engine_player_activated(datum_index player_index);
 void __fastcall game_engine_boot_player_safe(datum_index player_index, datum_index spectating_player_index);
 void __fastcall game_engine_boot_player(datum_index booted_player_index);
+void __fastcall game_engine_set_player_navpoint_action(datum_index player_index, e_navpoint_action action);
+void __fastcall update_player_navpoint_data(datum_index player_index);
+void __fastcall player_navpoint_data_update(s_player_waypoint_data* waypoint);
 
 extern c_game_engine* (&game_engines)[k_game_engine_type_count];

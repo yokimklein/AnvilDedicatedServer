@@ -1,5 +1,6 @@
 #include "players.h"
 #include <game\game.h>
+#include <game\game_engine.h>
 #include <game\game_engine_util.h>
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
@@ -150,5 +151,40 @@ void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index
 		player->flags.set(_player_vehicle_entrance_ban_bit, true);
 		player->vehicle_entrance_ban_ticks = game_seconds_to_ticks_round(2.0f);
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
+	}
+}
+
+void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoint_action action)
+{
+	if (action == _navpoint_action_none)
+	{
+		waypoint->action2 = _navpoint_action_none;
+		waypoint->action1 = _navpoint_action_none;
+		waypoint->ticks = 0;
+	}
+	else if (waypoint->action1 == _navpoint_action_none)
+	{
+		waypoint->action1 = action;
+		waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+	}
+	else if (action == waypoint->action1.get())
+	{
+		if (action == _navpoint_action_player_damaged || waypoint->action2 != _navpoint_action_player_damaged)
+		{
+			waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+		}
+	}
+	else if (action != waypoint->action2.get())
+	{
+		if (!waypoint->action2 || waypoint->action1 == _navpoint_action_player_damaged)
+		{
+			waypoint->action2 = action;
+		}
+		else
+		{
+			waypoint->action1 = waypoint->action2;
+			waypoint->action2 = action;
+			waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+		}
 	}
 }

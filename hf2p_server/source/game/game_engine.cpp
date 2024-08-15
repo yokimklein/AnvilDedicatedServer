@@ -75,7 +75,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		{
 			player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 			player_data->lives = current_game_variant()->get_active_variant()->get_respawn_options()->get_lives_per_round();
-			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives);
+			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives_remaining);
 		}
 
 		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
@@ -161,7 +161,8 @@ void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, lon
 	TLS_DATA_GET_VALUE_REFERENCE(players);
 	player_datum* player = (player_datum*)datum_get(*players, player_index);
 	
-	player->respawn_timer_countdown_seconds = PIN(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
+	player->respawn_timer_countdown_ticks = timer_ticks;
+	player->respawn_timer_countdown_seconds = CLAMP(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }
 
@@ -197,5 +198,67 @@ void __fastcall game_engine_boot_player(datum_index booted_player_index)
 		game_engine_set_event_effect_player_and_team(booted_player_index, &event_data);
 		game_engine_send_event(&event_data);
 		simulation_boot_machine(&player->machine_identifier, _network_session_boot_reason_player_booted_player);
+	}
+}
+
+void __fastcall game_engine_set_player_navpoint_action(datum_index player_index, e_navpoint_action action)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+	s_player_waypoint_data* waypoint = &game_engine_globals->player_waypoints[DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index)];
+	if (!game_is_predicted())
+	{
+		e_navpoint_action old_action = waypoint->action1;
+		player_navpoint_data_set_action(waypoint, action);
+		if (old_action != waypoint->action1.get())
+		{
+			simulation_action_game_engine_player_update(player_index, _simulation_player_update_waypoint_action);
+		}
+	}
+}
+
+void __fastcall update_player_navpoint_data(datum_index player_index)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+	s_player_waypoint_data* waypoint = &game_engine_globals->player_waypoints[DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index)];
+	if (!game_is_predicted())
+	{
+		e_navpoint_action old_action = waypoint->action1.get();
+		player_navpoint_data_update(waypoint);
+		if (old_action != waypoint->action1.get())
+		{
+			simulation_action_game_engine_player_update(player_index, _simulation_player_update_waypoint_action);
+		}
+	}
+	if (waypoint->respawn_timer1 != 0)
+	{
+		waypoint->respawn_timer2 = MAX(waypoint->respawn_timer2 - 1, 0);
+		if (waypoint->respawn_timer2 == 0)
+		{
+			waypoint->dead = false;
+			waypoint->respawn_timer1 = 0;
+			waypoint->respawn_timer2 = 0;
+		}
+	}
+}
+
+void __fastcall player_navpoint_data_update(s_player_waypoint_data* waypoint)
+{
+	if (waypoint->ticks > 0)
+	{
+		waypoint->ticks--;
+		if (waypoint->ticks == 0)
+		{
+			if (waypoint->action2.get() != _navpoint_action_none)
+			{
+				waypoint->action1 = waypoint->action2;
+				waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+				waypoint->action2 = _navpoint_action_none;
+			}
+			else
+			{
+				waypoint->action1 = _navpoint_action_none;
+				waypoint->ticks = 0;
+			}
+		}
 	}
 }

@@ -133,20 +133,20 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 			{
 				printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: epicenter magnitude (%f) out of expected range (%f to %f)\n", out_event_data->epicenter_direction, 0.0f, 25.0f);
 			}
-			out_event_data->epicenter_direction = PIN(out_event_data->epicenter_direction, 0.0f, 25.0f);
+			out_event_data->epicenter_direction = CLAMP(out_event_data->epicenter_direction, 0.0f, 25.0f);
 		}
 	}
 	if (!IN_RANGE_INCLUSIVE(result_data->scale, 0.0f, 2.0f))
 	{
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: scale (%f) out of expected range (%f to %f)\n", result_data->scale, 0.0f, 2.0f);
 	}
-	out_event_data->scale = PIN(result_data->scale, 0.0f, 2.0f);
+	out_event_data->scale = CLAMP(result_data->scale, 0.0f, 2.0f);
 
 	if (!IN_RANGE_INCLUSIVE(result_data->shake_scale, 0.0f, 2.0f))
 	{
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: shake scale (%f) out of expected range (%f to %f)\n", result_data->shake_scale, 0.0f, 2.0f);
 	}
-	out_event_data->shake_scale = PIN(result_data->shake_scale, 0.0f, 2.0f);
+	out_event_data->shake_scale = CLAMP(result_data->shake_scale, 0.0f, 2.0f);
 	out_event_data->flags = result_data->flags;
 	out_event_data->ping_type = result_data->ping_type;
 
@@ -154,13 +154,13 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	{
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: body damage (%f) out of expected range (%f to %f)\n", result_data->body_damage, 0.0f, 16.0f);
 	}
-	out_event_data->body_damage = PIN(result_data->body_damage, 0.0f, 16.0f);
+	out_event_data->body_damage = CLAMP(result_data->body_damage, 0.0f, 16.0f);
 
 	if (!IN_RANGE_INCLUSIVE(result_data->shield_damage, 0.0f, 3.0f))
 	{
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: shield damage (%f) out of expected range (%f to %f)\n", result_data->shield_damage, 0.0f, 3.0f);
 	}
-	out_event_data->shield_damage = PIN(result_data->shield_damage, 0.0f, 3.0f);
+	out_event_data->shield_damage = CLAMP(result_data->shield_damage, 0.0f, 3.0f);
 	out_event_data->body_part = static_cast<short>(result_data->body_part);
 	out_event_data->node_index = static_cast<short>(result_data->node_index);
 	out_event_data->damage_reporting_info = result_data->damage_reporting_info;
