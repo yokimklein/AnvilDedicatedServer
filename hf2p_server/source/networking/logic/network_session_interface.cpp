@@ -166,6 +166,7 @@ void network_session_update_team_indices(c_network_session* session, bool varian
         // In ms23 there's a dedicated server check here which would override team sorting
         // in the client build we have, the function used to override is likely stubbed as it only returns 0
         // I'm guessing saber had some sort of rank or skill based team sorting system? we're probably not gonna go for that right now
+        // It's also likely that they sorted teams based on player parties, keeping parties together on the same team
 
         // spartans vs elites team sorting
         if (sve_teams)
@@ -182,7 +183,7 @@ void network_session_update_team_indices(c_network_session* session, bool varian
             for (long player_index = membership->get_first_player(); player_index != -1; player_index = membership->get_next_player(player_index))
             {
                 s_network_session_player* player = membership->get_player(player_index);
-                player->configuration.host.user_selected_team_index = player_index % 2;
+                player->configuration.host.user_selected_team_index = player_index % 2; // temporarily just sort every other player into the other team
             }
         }
         // assign user selected team to team_index

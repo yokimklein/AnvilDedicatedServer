@@ -138,6 +138,19 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook1()
         simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_revenge);
     }
 }
+
+__declspec(safebuffers) void __fastcall c_game_statborg__record_player_death_hook1()
+{
+    datum_index dead_player_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x14, sizeof(dead_player_index));
+    __asm
+    {
+        mov ecx, original_ebp;
+        mov eax, [ecx + 0x08];
+        mov dead_player_index, eax;
+    }
+    simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_grief);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -184,5 +197,9 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xB80A6, 0xB80AD, players_update_after_game_hook1, _hook_execute_replaced_last); // countdown blocking ticks
 
     // sync revenge
-    insert_hook(0xF8FCB, 0xF8FD2, game_engine_player_killed_hook1, _hook_execute_replaced_first);// inlined player_set_revenge_shield_boost
+    insert_hook(0xF8FCB, 0xF8FD2, game_engine_player_killed_hook1, _hook_execute_replaced_first); // inlined player_set_revenge_shield_boost
+
+    // sync betrayal grief
+    insert_hook(0x1B0248, 0x1B024E, c_game_statborg__record_player_death_hook1, _hook_execute_replaced_first); // inlined game_engine_respond_to_betrayal
+
 }
