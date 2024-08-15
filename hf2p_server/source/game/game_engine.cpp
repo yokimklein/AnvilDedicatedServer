@@ -127,7 +127,7 @@ void game_engine_update_round_conditions()
 				player_iterator.begin();
 				while (player_iterator.next())
 				{
-					long player_index = player_iterator.get_index();
+					datum_index player_index = player_iterator.get_index();
 					current_game_engine()->emit_game_start_event(player_index);
 				}
 			}

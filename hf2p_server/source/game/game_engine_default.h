@@ -172,6 +172,6 @@ public:
 private:
 	virtual void dump_settings(s_file_reference*) const;
 public:
-	virtual void emit_game_start_event(long) const;
+	virtual void emit_game_start_event(datum_index player_index) const;
 };
 #pragma pack(pop)

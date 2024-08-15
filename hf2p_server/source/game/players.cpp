@@ -132,7 +132,7 @@ player_datum* c_player_in_game_iterator::get_datum()
 	return m_iterator.m_datum;
 }
 
-long c_player_in_game_iterator::get_index() const
+datum_index c_player_in_game_iterator::get_index() const
 {
 	return m_iterator.m_iterator.index;
 }

@@ -336,7 +336,7 @@ public:
 	void begin();
 	bool next();
 	player_datum* get_datum();
-	long get_index() const;
+	datum_index get_index() const;
 	short get_absolute_index() const;
 
 protected:

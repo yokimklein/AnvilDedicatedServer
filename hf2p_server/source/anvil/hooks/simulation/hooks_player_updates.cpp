@@ -9,6 +9,8 @@
 #include <units\units.h>
 #include <simulation\simulation_queue_global_events.h>
 #include <game\game.h>
+#include <game\game_engine_util.h>
+#include <Patch.hpp>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -171,6 +173,31 @@ __declspec(safebuffers) void __fastcall game_engine_player_damaged_player_hook()
     }
     game_engine_set_player_navpoint_action(player_index, _navpoint_action_player_damaged);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook3()
+{
+    c_player_in_game_iterator player_iterator;
+    player_iterator.begin();
+    while (player_iterator.next())
+    {
+        e_shield_multiplier_setting shield_multiplier = current_game_variant()->get_active_variant()->get_map_override_options()->get_base_player_traits()->get_shield_vitality_traits()->get_shield_multiplier_setting();
+        player_iterator.get_datum()->traits.get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(shield_multiplier, true);
+        simulation_action_game_engine_player_update(player_iterator.get_index(), _simulation_player_update_health_traits);
+    }
+}
+
+__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook4()
+{
+    c_player_in_game_iterator* player_iterator;
+    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(player_iterator));
+    __asm
+    {
+        mov ecx, original_ebp;
+        lea eax, [ecx - 0x10];
+        mov player_iterator, eax;
+    }
+    simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_lives_remaining);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -226,4 +253,11 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xFA0B9, 0xFA1B4, game_engine_player_fired_weapon_hook, _hook_replace); // set weapon fire waypoint
     insert_hook(0xF8E00, 0xF8EEB, game_engine_player_damaged_player_hook, _hook_replace); // set damaged player waypoint
     hook_function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
+
+    // sync health traits
+    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace);
+    Patch(0xC9C7F, { 0xE9, 0xE0, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90 }).Apply(); // redirect jump to end of loop 0x4C9D64
+    
+    // sync lives remaining
+    insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
 }
