@@ -162,7 +162,7 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
             printf("Setting test mode...\n");
-            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 1);
+            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
             anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
@@ -275,14 +275,9 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     }
 
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(3);
-    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(1);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(3);
     //game_variant.get_slayer_variant_writeable()->set_score_to_win(1);
-    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(1);
     //game_variant.get_slayer_variant_writeable()->set_suicide_points(1);
-    //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_poor, false);
-    //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->get_respawn_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_invisible, false);
-    //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_respawn_growth_seconds(15);
-    //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_respawn_player_traits_duration_seconds(60);
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_team_lives_per_round(2);
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_lives_per_round(2);
 
@@ -513,11 +508,13 @@ void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure
 void anvil_boot_peer(long peer_index)
 {
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
-    s_network_session_peer* peer = session->get_session_membership()->get_peer(peer_index);
+    if (!session->get_session_membership()->is_peer_valid(peer_index))
+        return;
 
     // If we're in a game, display boot message for all associated players
     if (life_cycle_globals.state_manager.get_current_state() == _life_cycle_state_in_game)
     {
+        s_network_session_peer* peer = session->get_session_membership()->get_peer(peer_index);
         for (short player_absolute_index = 0; player_absolute_index < k_maximum_players; player_absolute_index++)
         {
             if (peer->player_mask.test(player_absolute_index))

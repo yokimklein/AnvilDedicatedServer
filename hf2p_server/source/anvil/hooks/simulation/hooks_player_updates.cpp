@@ -198,6 +198,13 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_update_sta
     }
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_lives_remaining);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_update_player_hook2()
+{
+    datum_index player_index;
+    __asm mov player_index, esi;
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_grief_player_index);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -248,6 +255,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync betrayal grief
     insert_hook(0x1B0248, 0x1B024E, c_game_statborg__record_player_death_hook1, _hook_execute_replaced_first); // inlined game_engine_respond_to_betrayal
+    insert_hook(0xC96E5, 0xC96EF, game_engine_update_player_hook2, _hook_execute_replaced_first);
 
     // sync waypoint actions
     insert_hook(0xFA0B9, 0xFA1B4, game_engine_player_fired_weapon_hook, _hook_replace); // set weapon fire waypoint
