@@ -184,10 +184,32 @@ void c_network_message_handler::handle_join_refuse(s_transport_address const* ou
     DECLFUNC(0x25660, void, __thiscall, c_network_message_handler*, s_transport_address const*, s_network_message_join_refuse const*)(this, outgoing_address, message);
 }
 
+// this is what clients SHOULD be using when they disconnect, instead they just release the channel and timeout - thanks saber
 void c_network_message_handler::handle_leave_session(s_transport_address const* outgoing_address, s_network_message_leave_session const* message)
 {
-    // TODO: implement this
-    // this is what clients SHOULD be using when they disconnect, but right now they just send an observer released connect closed packet
+    c_network_session* session = this->m_session_manager->get_session(&message->session_id);
+    if (session != nullptr)
+    {
+        if (session->is_host())
+        {
+            if (!session->handle_leave_request(outgoing_address))
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: can't handle leave-session request (%s) from '%s'\n",
+                    transport_secure_identifier_get_string(&message->session_id),
+                    transport_address_get_string(outgoing_address));
+            }
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: ignoring leave-session from '%s' (not hosting)\n",
+                transport_address_get_string(outgoing_address));
+        }
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: ignoring leave-session from '%s' (session not found)\n",
+            transport_address_get_string(outgoing_address));
+    }
 }
 
 void c_network_message_handler::handle_leave_acknowledge(s_transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)

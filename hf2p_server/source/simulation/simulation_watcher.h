@@ -13,6 +13,7 @@ public:
 	//void describe_status(char* buffer, long buffer_size) const;
 	//bool need_to_generate_updates() const;
 	long get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier);
+	bool boot_machine(s_machine_identifier const* machine_identifier, e_network_session_boot_reason reason);
 
 protected:
 	c_simulation_world* m_world;

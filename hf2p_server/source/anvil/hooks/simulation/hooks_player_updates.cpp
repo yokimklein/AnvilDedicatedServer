@@ -114,4 +114,10 @@ void anvil_hooks_player_updates_apply()
 
     // sync player active in game flag
     hook_function(0x54A70, 0x68, simulation_queue_player_event_apply_set_activation);
+
+    // sync spectating player after boot
+    hook_function(0x54AE0, 0x43, game_engine_boot_player_safe); // UNTESTED!!
+
+    // sync player booting
+    hook_function(0xCCB20, 0xF5, game_engine_boot_player);
 }

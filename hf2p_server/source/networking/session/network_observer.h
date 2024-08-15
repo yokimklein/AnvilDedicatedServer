@@ -74,9 +74,9 @@ class c_network_observer
 			c_network_time_statistics time_statistics[3];
 			c_network_window_statistics window_statistics[2];
 			byte unknown_data2[44];
-			bool stream__active; // stream.active
+			bool stream_active; // stream.active
 			bool load_bearing;
-			bool unknown_bool2;
+			bool report_badness; // unconfirmed
 			bool unknown_bool3;
 			byte unknown_data3[1];
 			bool synchronous;
@@ -84,6 +84,8 @@ class c_network_observer
 			byte unknown_data4[245];
 		};
 		static_assert(sizeof(s_channel_observer) == 0x10A8); // 0x10D8 in ms23
+		static_assert(0xFAC == OFFSETOF(s_channel_observer, stream_active));
+		static_assert(0xFAE == OFFSETOF(s_channel_observer, report_badness));
 
 		void handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message);
 		void observer_channel_initiate_connection(e_network_observer_owner observer_owner, long observer_channel_index);
@@ -98,6 +100,8 @@ class c_network_observer
 		long observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel); // owner type might be a byte?
 		s_channel_observer* find_observer_by_channel(c_network_channel* channel);
 		bool is_bandwidth_stable();
+		void quality_statistics_notify_peer_left_gracefully(e_network_observer_owner owner, long observer_index);
+		void quality_statistics_report_badness(long observer_index, bool bad_not_good);
 
 		c_network_link* m_link;
 		c_network_message_gateway* m_message_gateway;

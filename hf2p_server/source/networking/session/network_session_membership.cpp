@@ -783,3 +783,24 @@ void c_network_session_membership::player_data_updated()
 {
     this->increment_update();
 }
+
+long c_network_session_membership::get_peer_from_unique_identifier(s_transport_unique_identifier const* unique_identifier)
+{
+    assert(get_session());
+    c_network_session* session = get_session();
+    assert(unique_identifier);
+    if (this->m_session->current_local_state())
+    {
+        for (long peer_index = get_first_peer(); peer_index != NONE; peer_index = get_next_peer(peer_index))
+        {
+            s_network_session_peer* peer = get_peer(peer_index);
+            s_transport_unique_identifier unique_identifier_from_peer;
+            transport_secure_address_extract_identifier(&peer->secure_address, &unique_identifier_from_peer);
+            if (!csmemcmp(&unique_identifier_from_peer, unique_identifier, sizeof(s_transport_unique_identifier)))
+            {
+                return peer_index;
+            }
+        }
+    }
+    return NONE;
+}

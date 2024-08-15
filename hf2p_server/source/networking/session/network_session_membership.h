@@ -238,6 +238,7 @@ public:
 	bool get_peer_needs_reestablishment(long peer_index);
 	bool has_membership();
 	void player_data_updated();
+	long get_peer_from_unique_identifier(s_transport_unique_identifier const* unique_identifier);
 
 	c_network_session* m_session;
 	long unknown1;

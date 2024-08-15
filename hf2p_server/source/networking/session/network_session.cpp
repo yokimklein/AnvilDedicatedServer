@@ -1457,3 +1457,89 @@ c_network_session_membership* c_network_session::get_session_membership_for_upda
     assert(m_session_membership.is_peer_valid(m_session_membership.host_peer_index()));
     return &m_session_membership;
 }
+
+long c_network_session::find_peer_by_machine_identifier(s_machine_identifier const* machine_identifier)
+{
+    return m_session_membership.get_peer_from_unique_identifier(&machine_identifier->unique_identifiers);
+}
+
+bool c_network_session::host_boot_machine(long peer_index, e_network_session_boot_reason reason)
+{
+    if (is_host())
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::host_boot_machine: [%s] booting machine [#%d] locally [reason %d]\n",
+            managed_session_get_id_string(m_managed_session_index),
+            peer_index,
+            reason);
+        if (m_session_membership.local_peer_index() == peer_index)
+        {
+            printf("MP/NET/SESSION,CTRL: c_network_session::host_boot_machine: we are the host and are being booted, leaving...\n");
+            // halox no longer used & gutted, we won't need this call
+            //user_interface_networking_notify_booted_from_session(m_session_type, reason);
+            initiate_leave_protocol(false);
+        }
+        else
+        {
+            boot_peer(peer_index, reason);
+        }
+        return true;
+    }
+    return false;
+}
+
+void c_network_session::initiate_leave_protocol(bool leave_immediately)
+{
+    DECLFUNC(0x21C30, void, __thiscall, c_network_session*, bool)(this, leave_immediately);
+}
+
+bool c_network_session::handle_leave_request(s_transport_address const* outgoing_address)
+{
+    assert(is_host());
+    long peer_index = m_session_membership.get_peer_from_incoming_address(outgoing_address);
+    if (peer_index == NONE || peer_index == m_session_membership.local_peer_index())
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_leave_request: [%s] leave-request received from an incorrect peer [%s] (invalid or local)\n",
+            managed_session_get_id_string(m_managed_session_index),
+            get_peer_description(peer_index));
+        return true;
+    }
+    else
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session::handle_leave_request: [%s] leave-request received from peer [%s]\n",
+            managed_session_get_id_string(m_managed_session_index),
+            get_peer_description(peer_index));
+        return handle_leave_internal(peer_index);
+    }
+}
+
+bool c_network_session::handle_leave_internal(long peer_index)
+{
+    assert(is_host());
+    assert(established());
+    assert(peer_index != NONE);
+    assert(peer_index != m_session_membership.local_peer_index());
+    long channel_index = m_session_membership.get_observer_channel_index(peer_index);
+    if (m_session_class == _network_session_class_xbox_live)
+    {
+        m_observer->quality_statistics_notify_peer_left_gracefully(observer_owner(), channel_index);
+    }
+    if (membership_is_locked() || !m_session_membership.get_current_membership()->peer_valid_mask.test(peer_index))
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::handle_leave_internal: Warning. [%s] leave-request from peer [%s] denied, session membership is locked (state %s)\n",
+            managed_session_get_id_string(m_managed_session_index),
+            get_peer_description(peer_index),
+            get_state_string());
+        return false;
+    }
+    else
+    {
+        printf("MP/NET/SESSION,CTRL: c_network_session::handle_leave_internal: %s leave-request accepted for peer [%s]\n",
+            managed_session_get_id_string(m_managed_session_index),
+            get_peer_description(peer_index));
+        s_network_message_leave_acknowledge message;
+        csmemset(&message, 0, sizeof(message));
+        managed_session_get_id(m_managed_session_index, &message.session_id);
+        m_observer->observer_channel_send_message(observer_owner(), channel_index, true, _network_message_type_leave_acknowledge, sizeof(message), &message);
+        return true;
+    }
+}

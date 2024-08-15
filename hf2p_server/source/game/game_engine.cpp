@@ -177,3 +177,25 @@ void game_engine_player_activated(datum_index player_index)
 		current_game_engine()->player_activated(player_index);
 	}
 }
+
+void __fastcall game_engine_boot_player_safe(datum_index player_index, datum_index spectating_player_index)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player->spectating_player_index = datum_absolute_index_to_index(*players, spectating_player_index);
+	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spectating_player);
+}
+
+void __fastcall game_engine_boot_player(datum_index booted_player_index)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, booted_player_index);
+	if (player != nullptr)
+	{
+		s_game_engine_event_data event_data;
+		game_engine_initialize_event(_multiplayer_event_type_general, STRING_ID(game_engine, general_event_player_booted_player), &event_data);
+		game_engine_set_event_effect_player_and_team(booted_player_index, &event_data);
+		game_engine_send_event(&event_data);
+		simulation_boot_machine(&player->machine_identifier, _network_session_boot_reason_player_booted_player);
+	}
+}

@@ -184,6 +184,9 @@ long __cdecl datum_absolute_index_to_index(s_data_array const* data, long absolu
 {
 	long index = -1;
 	if (absolute_index != -1)
-		index = absolute_index | (*&data->data[absolute_index * data->size] << 16);
+	{
+		s_datum_header* header = (s_datum_header*)&data->data[absolute_index * data->size];
+		index = absolute_index | ((word)header->identifier << 16);
+	}
 	return index;
 }

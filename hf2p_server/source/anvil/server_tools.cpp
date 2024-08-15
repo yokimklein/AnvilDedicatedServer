@@ -8,11 +8,13 @@
 #include <interface\user_interface_networking.h>
 #include <interface\user_interface_session.h>
 #include <iostream>
-#include <memory\tls.h>
 #include <networking\logic\network_life_cycle.h>
 #include <networking\logic\network_session_interface.h>
 #include <networking\session\network_managed_session.h>
 #include <networking\session\network_session.h>
+#include <game\game_engine_event_definitions.h>
+#include <game\game_engine_util.h>
+#include <tag_files\string_ids.h>
 
 const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -140,6 +142,8 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
             printf("Running test command...\n");
+
+            anvil_boot_peer(1);
 
             printf("Command finished!\n");
 
@@ -504,4 +508,30 @@ void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure
     // 379bd202-9787-bd4a-ad96-a89bae9c7e4a
     byte temp_identifier[16] = { 0x02, 0xd2, 0x9b, 0x37, 0x87, 0x97, 0x4a, 0xbd, 0xad, 0x96, 0xa8, 0x9b, 0xae, 0x9c, 0x7e, 0x4a };
     memcpy(secure_identifier, temp_identifier, sizeof(s_transport_secure_identifier));
+}
+
+void anvil_boot_peer(long peer_index)
+{
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    s_network_session_peer* peer = session->get_session_membership()->get_peer(peer_index);
+
+    // If we're in a game, display boot message for all associated players
+    if (life_cycle_globals.state_manager.get_current_state() == _life_cycle_state_in_game)
+    {
+        for (long player_absolute_index = 0; player_absolute_index < k_maximum_players; player_absolute_index++)
+        {
+            if (peer->player_mask.test(player_absolute_index))
+            {
+                datum_index player_index = player_index_from_absolute_player_index(player_absolute_index);
+                if (player_index != NONE)
+                {
+                    s_game_engine_event_data event_data;
+                    game_engine_initialize_event(_multiplayer_event_type_general, STRING_ID(game_engine, general_event_player_booted_player), &event_data);
+                    game_engine_set_event_effect_player_and_team(player_index, &event_data);
+                    game_engine_send_event(&event_data);
+                }
+            }
+        }
+    }
+    session->host_boot_machine(peer_index, _network_session_boot_reason_banned);
 }

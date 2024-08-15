@@ -35,6 +35,13 @@ struct s_player_respawn_target_request_event_data
 };
 static_assert(sizeof(s_player_respawn_target_request_event_data) == 0x4);
 
+struct s_game_engine_request_boot_player_event_data
+{
+	datum_index booted_player_index;
+	datum_index booting_player_index;
+};
+static_assert(sizeof(s_game_engine_request_boot_player_event_data) == 0x8);
+
 void simulation_action_game_engine_player_create(short player_absolute_index);
 void simulation_action_game_engine_player_delete(short player_absolute_index);
 void simulation_action_game_engine_player_update(short player_index, c_flags<long, ulong64, 64>* update_flags);

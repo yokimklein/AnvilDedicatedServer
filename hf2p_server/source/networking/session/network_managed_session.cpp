@@ -32,18 +32,17 @@ const char* managed_session_get_id_string(long managed_session_index)
 		return transport_secure_identifier_get_string(&online_session_manager_globals.managed_sessions[managed_session_index].actual_online_session_state.description.session_id);
 }
 
-// this exists in ms29, I rewrote it thinking there was an issue with it but there wasn't, oh well lol
-bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* secure_id)
+bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* out_secure_identifier)
 {
-	if (secure_id != nullptr)
-		memset(secure_id, 0, sizeof(s_transport_secure_identifier));
+	if (out_secure_identifier != nullptr)
+		memset(out_secure_identifier, 0, sizeof(s_transport_secure_identifier));
 	if (managed_session_index == -1)
 		return false;
 	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
 	if (!managed_session->flags.test(_online_managed_session_created_bit))
 		return false;
-	if (secure_id != nullptr)
-		*secure_id = managed_session->actual_online_session_state.description.session_id;
+	if (out_secure_identifier != nullptr)
+		*out_secure_identifier = managed_session->actual_online_session_state.description.session_id;
 	return true;
 }
 

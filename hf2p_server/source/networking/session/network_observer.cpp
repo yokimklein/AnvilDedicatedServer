@@ -107,3 +107,25 @@ bool c_network_observer::is_bandwidth_stable()
 {
 	return this->m_bandwidth_unstable == false;
 }
+
+void c_network_observer::quality_statistics_notify_peer_left_gracefully(e_network_observer_owner owner, long observer_index)
+{
+	s_channel_observer* observer = get_observer(owner, observer_index);
+	if (observer->stream_active)
+	{
+		if (observer->report_badness)
+		{
+			printf("MP/NET/OBSERVER,QUALITY: c_network_observer::quality_statistics_notify_peer_left_gracefully: [%s] peer left gracefully, reporting as 'good'\n",
+				get_name(observer_index));
+			// originally the channel index was calculated like this:
+			// sizeof(s_channel_observer) * channel_index / sizeof(s_channel_observer)
+			// I have no idea why they did this because this is entirely pointless
+			quality_statistics_report_badness(observer_index, false);
+		}
+	}
+}
+
+void c_network_observer::quality_statistics_report_badness(long observer_index, bool bad_not_good)
+{
+	DECLFUNC(0xF160, void, __thiscall, c_network_observer*, long, bool)(this, observer_index, bad_not_good);
+}

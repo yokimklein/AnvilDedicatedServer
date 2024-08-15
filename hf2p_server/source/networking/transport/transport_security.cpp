@@ -110,28 +110,29 @@ const char* transport_secure_address_get_mac_string(s_transport_secure_address c
     return transport_unique_identifier_get_string(&unique_id);
 }
 
-void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_id)
+void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_identifier)
 {
-    memcpy(unique_id, secure_address, sizeof(s_transport_unique_identifier));
+    memcpy(unique_identifier, secure_address, sizeof(s_transport_unique_identifier));
 }
 
-char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_id)
+char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_identifier)
 {
-    static char unique_id_str[0x26]{};
-    csnzprintf(unique_id_str, 0x26,
+    assert(unique_identifier != NULL);
+    static char out_string[0x26]{};
+    csnzprintf(out_string, 0x26,
         "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        unique_id->part0,
-        unique_id->part4[0],
-        unique_id->part4[1],
-        unique_id->part8[0],
-        unique_id->part8[1],
-        unique_id->part8[2],
-        unique_id->part8[3],
-        unique_id->part8[4],
-        unique_id->part8[5],
-        unique_id->part8[6],
-        unique_id->part8[7]);
-    return unique_id_str;
+        unique_identifier->part0,
+        unique_identifier->part4[0],
+        unique_identifier->part4[1],
+        unique_identifier->part8[0],
+        unique_identifier->part8[1],
+        unique_identifier->part8[2],
+        unique_identifier->part8[3],
+        unique_identifier->part8[4],
+        unique_identifier->part8[5],
+        unique_identifier->part8[6],
+        unique_identifier->part8[7]);
+    return out_string;
 }
 
 void transport_secure_address_generate(s_transport_secure_address* secure_address)

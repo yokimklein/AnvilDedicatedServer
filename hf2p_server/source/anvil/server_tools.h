@@ -27,3 +27,6 @@ bool anvil_key_pressed(long vkey, bool* key_held);
 
 void anvil_get_dedicated_secure_address(s_transport_secure_address* secure_address);
 void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure_identifier);
+
+// admin tools
+void anvil_boot_peer(long peer_index);

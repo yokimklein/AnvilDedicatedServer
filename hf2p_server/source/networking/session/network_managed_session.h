@@ -143,7 +143,7 @@ extern s_online_session_manager_globals& online_session_manager_globals;
 
 bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform);
 const char* managed_session_get_id_string(long managed_session_index);
-bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* secure_id);
+bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* out_secure_identifier);
 void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count);
 short* managed_session_get_status(short* managed_session_status, long managed_session_index);
 bool managed_session_is_master_session(long managed_session_index);

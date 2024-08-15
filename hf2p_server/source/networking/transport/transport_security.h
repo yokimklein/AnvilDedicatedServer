@@ -10,28 +10,20 @@ struct s_transport_unique_identifier
 };
 static_assert(sizeof(s_transport_unique_identifier) == 0x10);
 
-struct s_transport_secure_address
+struct s_transport_secure_address : s_transport_unique_identifier
 {
 	bool operator==(s_transport_secure_address other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
 	bool operator!=(s_transport_secure_address other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
-
-	dword part0;
-	word part4[2];
-	byte part8[8];
 };
 static_assert(sizeof(s_transport_secure_address) == 0x10);
 
-struct s_transport_secure_identifier
+struct s_transport_secure_identifier : s_transport_unique_identifier
 {
-	dword part0;
-	word part4[2];
-	byte part8[8];
 };
 static_assert(sizeof(s_transport_secure_identifier) == 0x10);
 
-struct s_transport_secure_key
+struct s_transport_secure_key : s_transport_unique_identifier
 {
-	byte data[16];
 };
 static_assert(sizeof(s_transport_secure_key) == 0x10);
 
@@ -66,11 +58,11 @@ char const* transport_secure_identifier_get_string(s_transport_secure_identifier
 char const* transport_session_description_get_string(s_transport_session_description const* session_description);
 char* transport_secure_address_to_string(s_transport_secure_address const* secure_address, char* string, long maximum_string_length, bool include_online, bool include_mac);
 const char* transport_secure_address_get_mac_string(s_transport_secure_address const* secure_address);
-char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_id);
+char const* transport_unique_identifier_get_string(s_transport_unique_identifier const* unique_identifier);
 const s_transport_unique_identifier* transport_unique_identifier_get();
 void transport_secure_address_build_from_identifier(s_transport_unique_identifier const* unique_identifier, s_transport_secure_address* secure_address);
 bool transport_secure_identifier_retrieve(s_transport_address const* usable_address, e_transport_platform transport_platform, s_transport_secure_identifier* secure_identifier, s_transport_secure_address* secure_address);
-void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_id);
+void transport_secure_address_extract_identifier(s_transport_secure_address const* secure_address, s_transport_unique_identifier* unique_identifier);
 void transport_secure_address_generate(s_transport_secure_address* secure_address);
 bool __cdecl transport_secure_address_resolve();
 s_transport_secure_address* get_session_secure_address(s_transport_secure_address* out_address);

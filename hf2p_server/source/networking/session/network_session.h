@@ -20,11 +20,11 @@ enum e_network_session_type
 enum e_network_session_boot_reason
 {
 	_network_session_boot_reason_player_booted_player,
-	_network_session_boot_reason_unknown1,
+	_network_session_boot_reason_join_timeout,
 	_network_session_boot_reason_failed_to_load_map,
 	_network_session_boot_reason_write_stats_grief_time,
 	_network_session_boot_reason_unknown4,
-	_network_session_boot_reason_unknown5,
+	_network_session_boot_reason_banned,
 	_network_session_boot_reason_recreating_session,
 	_network_session_boot_reason_join_aborted,
 	_network_session_boot_reason_simulation_aborted,
@@ -144,6 +144,11 @@ public:
 	void peer_request_player_add(const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings);
 	long get_session_membership_update_number();
 	c_network_session_membership* get_session_membership_for_update();
+	long find_peer_by_machine_identifier(s_machine_identifier const* machine_identifier);
+	bool host_boot_machine(long peer_index, e_network_session_boot_reason reason);
+	void initiate_leave_protocol(bool leave_immediately);
+	bool handle_leave_request(s_transport_address const* outgoing_address);
+	bool handle_leave_internal(long peer_index);
 
 	c_network_message_gateway* m_message_gateway;
 	c_network_observer* m_observer;

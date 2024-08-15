@@ -1,6 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <game\player_appearance.h>
+#include <networking\transport\transport_security.h>
 
 // e_multiplayer_team
 // k_multiplayer_team_none = -1
@@ -52,11 +53,10 @@ enum e_player_vote_selection
 
 struct s_machine_identifier
 {
-	long data1;
-	long data2;
-	long data3;
-	long data4;
+	s_transport_unique_identifier unique_identifiers;
 };
+static_assert(sizeof(s_machine_identifier) == 0x10);
+
 
 struct s_player_identifier
 {
