@@ -518,7 +518,7 @@ void anvil_boot_peer(long peer_index)
     // If we're in a game, display boot message for all associated players
     if (life_cycle_globals.state_manager.get_current_state() == _life_cycle_state_in_game)
     {
-        for (long player_absolute_index = 0; player_absolute_index < k_maximum_players; player_absolute_index++)
+        for (short player_absolute_index = 0; player_absolute_index < k_maximum_players; player_absolute_index++)
         {
             if (peer->player_mask.test(player_absolute_index))
             {

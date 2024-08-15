@@ -4,6 +4,7 @@
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
 #include <stdio.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
 
 bool player_identifier_is_valid(s_player_identifier const* identifier)
 {
@@ -138,4 +139,16 @@ long c_player_in_game_iterator::get_index() const
 short c_player_in_game_iterator::get_absolute_index() const
 {
 	return m_iterator.get_absolute_index();
+}
+
+void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index)
+{
+	if (!game_is_predicted())
+	{
+		TLS_DATA_GET_VALUE_REFERENCE(players);
+		player_datum* player = (player_datum*)datum_get(*players, player_index);
+		player->flags.set(_player_vehicle_entrance_ban_bit, true);
+		player->vehicle_entrance_ban_ticks = game_seconds_to_ticks_round(2.0f);
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
+	}
 }

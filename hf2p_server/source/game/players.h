@@ -226,7 +226,7 @@ struct player_datum : s_datum_header
 	ushort sprint_restoration_timer;
 	ushort sprint_depleted_timer;
 	bool sprint_disabled;
-	ushort unknown_ticks_4;
+	word vehicle_entrance_ban_ticks;
 	c_aim_target_object aim_target_object;
 	long field_2CFC;
 	struct {
@@ -313,6 +313,7 @@ static_assert(0x30 == OFFSETOF(player_datum, unit_index));
 static_assert(0x49 == OFFSETOF(player_datum, next_spawn_control_context));
 static_assert(0x4C == OFFSETOF(player_datum, active_loadout_index));
 static_assert(0x70 == OFFSETOF(player_datum, configuration));
+static_assert(0x178E == OFFSETOF(player_datum, vehicle_entrance_ban_ticks));
 static_assert(0x1842 == OFFSETOF(player_datum, lives));
 static_assert(0x1848 == OFFSETOF(player_datum, last_killed_game_time));
 static_assert(0x1874 == OFFSETOF(player_datum, spectating_player_index));
@@ -428,3 +429,4 @@ bool __fastcall player_is_local(datum_index player_index);
 void __fastcall player_clear_assassination_state(datum_index player_index);
 long get_player_action_control_context_identifier_bits();
 s_machine_identifier* players_get_machine_identifier(long machine_index);
+void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index);

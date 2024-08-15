@@ -70,3 +70,4 @@ long game_seconds_integer_to_ticks(long seconds);
 real game_seconds_to_ticks_real(real seconds);
 real game_tick_length();
 long game_tick_rate();
+long game_seconds_to_ticks_round(real seconds);

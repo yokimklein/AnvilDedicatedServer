@@ -56,3 +56,12 @@ long game_tick_rate()
 	assert(game_time_globals->initialized);
 	return game_time_globals->tick_rate;
 }
+
+long game_seconds_to_ticks_round(real seconds)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_time_globals);
+	assert(game_time_globals);
+	assert(game_time_globals->initialized);
+	real tick_rate = game_time_globals->tick_rate * seconds;
+	return long(tick_rate + ((tick_rate < 0.0f ? -1.0f : 1.0f) / 2));
+}

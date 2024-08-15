@@ -120,4 +120,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync player booting
     hook_function(0xCCB20, 0xF5, game_engine_boot_player);
+
+    // sync vehicle entrance ban after hijack
+    hook_function(0xBFB90, 0x79, player_notify_vehicle_ejection_finished);
 }
