@@ -325,3 +325,29 @@ void __fastcall game_engine_apply_appearance_traits(datum_index player_index, c_
 		}
 	}
 }
+
+void __fastcall game_engine_apply_movement_traits(datum_index player_index, c_player_trait_movement* trait)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	bool player_update = false;
+	if (player->traits.get_movement_traits()->get_speed() != trait->get_speed())
+	{
+		player->traits.get_movement_traits_writeable()->set_speed_setting(trait->get_speed_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_movement_traits()->get_gravity() != trait->get_gravity())
+	{
+		player->traits.get_movement_traits_writeable()->set_gravity_setting(trait->get_gravity_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_movement_traits()->get_vehicle_usage_setting() != trait->get_vehicle_usage_setting())
+	{
+		player->traits.get_movement_traits_writeable()->set_vehicle_usage_setting(trait->get_vehicle_usage_setting(), false);
+		player_update = true;
+	}
+	if (player_update)
+	{
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_movement_traits);
+	}
+}

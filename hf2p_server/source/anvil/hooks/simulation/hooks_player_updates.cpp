@@ -403,9 +403,12 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xF8E00, 0xF8EEB, game_engine_player_damaged_player_hook, _hook_replace); // set damaged player waypoint
     hook_function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
 
-    // sync health traits
-    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace);
+    // sync player traits
+    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace); // health traits
     Patch(0xC9C7F, { 0xE9, 0xE0, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90 }).Apply(); // redirect jump to end of loop 0x4C9D64
+    insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first); // sync all player traits on rejoin
+    hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits); // sync appearance traits
+    hook_function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
@@ -424,12 +427,6 @@ void anvil_hooks_player_updates_apply()
     // sync player active
     insert_hook(0xFA5D1, 0xFA5D6, game_engine_player_left_hook, _hook_execute_replaced_first);
 
-    // sync all player traits
-    insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first);
-
     // sync player aiming vectors
     insert_hook(0x11867D, 0x118682, teleporter_teleport_object_hook, _hook_execute_replaced_first);
-
-    // sync appearance traits
-    hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits);
 }
