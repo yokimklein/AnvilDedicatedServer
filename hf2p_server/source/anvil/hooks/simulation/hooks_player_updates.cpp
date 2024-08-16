@@ -429,4 +429,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync player aiming vectors
     insert_hook(0x11867D, 0x118682, teleporter_teleport_object_hook, _hook_execute_replaced_first);
+
+    // sync appearance traits
+    hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits);
 }

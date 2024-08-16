@@ -251,7 +251,7 @@ void __fastcall player_navpoint_data_update(s_player_waypoint_data* waypoint)
 			if (waypoint->action2.get() != _navpoint_action_none)
 			{
 				waypoint->action1 = waypoint->action2;
-				waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+				waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f); // This seems bad, wouldn't this cause issues if you have more than 255 ticks per second?
 				waypoint->action2 = _navpoint_action_none;
 			}
 			else
@@ -268,5 +268,60 @@ void __fastcall game_engine_player_indices_swapped(long player_1_absolute_index,
 	if (current_game_engine())
 	{
 		game_engine_get_statborg()->player_indices_swapped(player_1_absolute_index, player_2_absolute_index);
+	}
+}
+
+void __fastcall game_engine_apply_appearance_traits(datum_index player_index, c_player_trait_appearance* trait)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	bool player_update = false;
+	bool update_camo = false;
+	if (player->traits.get_appearance_traits()->get_active_camo_setting() != trait->get_active_camo_setting())
+	{
+		player->traits.get_appearance_traits_writeable()->set_active_camo_setting(trait->get_active_camo_setting(), false);
+		player_update = true;
+		update_camo = game_is_authoritative();
+	}
+	if (player->traits.get_appearance_traits()->get_waypoint_setting() != trait->get_waypoint_setting())
+	{
+		player->traits.get_appearance_traits_writeable()->set_waypoint_setting(trait->get_waypoint_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_appearance_traits()->get_aura_setting() != trait->get_aura_setting())
+	{
+		player->traits.get_appearance_traits_writeable()->set_aura_setting(trait->get_aura_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_appearance_traits()->get_forced_change_color_setting() != trait->get_forced_change_color_setting())
+	{
+		player->traits.get_appearance_traits_writeable()->set_forced_change_color_setting(trait->get_forced_change_color_setting(), false);
+		player_update = true;
+	}
+	if (player_update)
+	{
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_appearance_traits);
+	}
+	if (update_camo)
+	{
+		if (player->unit_index != NONE)
+		{
+			float active_camo_value;
+			const long minimum_value = _active_camo_setting_off;
+			switch (trait->get_active_camo_setting())
+			{
+				case _active_camo_setting_poor:
+				case _active_camo_setting_good:
+				case _active_camo_setting_invisible:
+					active_camo_value = k_active_camo_values[trait->get_active_camo_setting() - minimum_value];
+					unit_active_camouflage_set_maximum(player->unit_index, active_camo_value);
+					unit_active_camouflage_set_level(player->unit_index, 4.0f, NONE);
+					break;
+				default:
+					unit_active_camouflage_set_maximum(player->unit_index, 1.0f);
+					unit_active_camouflage_disable(player->unit_index, 4.0f);
+					break;
+			}
+		}
 	}
 }

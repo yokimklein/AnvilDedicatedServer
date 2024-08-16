@@ -333,6 +333,14 @@ enum e_active_camo_setting
 	k_active_camo_settings
 };
 
+constexpr real k_active_camo_values[k_active_camo_settings - _active_camo_setting_off]
+{
+	0.0f,
+	0.33f,
+	0.66f,
+	1.0f
+};
+
 enum e_waypoint_setting
 {
 	// UNCHANGED
