@@ -278,6 +278,13 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
     }
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_lives_remaining);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_player_left_hook()
+{
+    datum_index player_index;
+    __asm mov player_index, ebx;
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_active_in_game);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -353,4 +360,6 @@ void anvil_hooks_player_updates_apply()
     // update everything on player delete
     insert_hook(0xB5737, 0xB573C, player_delete_hook, _hook_execute_replaced_last); // inlined game_engine_player_deleted
     
+    // sync player active
+    insert_hook(0xFA5D1, 0xFA5D6, game_engine_player_left_hook, _hook_execute_replaced_first);
 }
