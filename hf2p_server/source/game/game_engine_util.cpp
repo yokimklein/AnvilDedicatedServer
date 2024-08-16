@@ -10,6 +10,8 @@
 #include <game\multiplayer_definitions.h>
 #include <tag_files\tag_groups.h>
 #include <game\game_engine_event_definitions.h>
+#include <stdio.h>
+#include <simulation\game_interface\simulation_game_events.h>
 
 // TODO
 bool game_engine_is_sandbox()
@@ -39,7 +41,19 @@ c_game_variant* current_game_variant()
 
 void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
 {
-	INVOKE(0x11C0C0, game_engine_send_event, event_data);
+	if (game_is_predicted())
+	{
+		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: game_engine_send_event: predicted client attempting to send event type [%d]\n", event_data->event_name);
+	}
+	else
+	{
+		assert(event_data->event_identifier == NONE);
+		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+		event_data->event_identifier = game_engine_globals->current_event_identifier;
+		game_engine_globals->current_event_identifier = (game_engine_globals->current_event_identifier + 1) % 64;
+		simulation_action_multiplayer_event(event_data);
+		game_engine_handle_event(event_data, true);
+	}
 }
 
 short __fastcall game_engine_get_multiplayer_weapon_selection_absolute_index(long name)
@@ -68,4 +82,9 @@ void game_engine_set_event_effect_player_and_team(datum_index effect_player_inde
 	player_datum* player = (player_datum*)datum_get(*players, effect_player_index);
 	event_data->effect_player_index = effect_player_index;
 	event_data->effect_team_index = player->configuration.host.team_index;
+}
+
+void __fastcall game_engine_handle_event(s_game_engine_event_data* event_data, bool unknown)
+{
+	INVOKE(0xD0AD0, game_engine_handle_event, event_data, unknown);
 }

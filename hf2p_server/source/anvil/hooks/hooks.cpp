@@ -2,6 +2,7 @@
 #include <cseries\cseries.h>
 #include <anvil\hooks\hooks_ds.h>
 #include <anvil\hooks\hooks_session.h>
+#include <anvil\hooks\hooks_miscellaneous.h>
 #include <anvil\hooks\simulation\hooks_simulation.h>
 #include <anvil\hooks\simulation\hooks_statborg.h>
 #include <anvil\hooks\simulation\hooks_simulation_globals.h>
@@ -13,7 +14,6 @@
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
 #include <anvil\hooks\simulation\hooks_player_updates.h>
 #include <anvil\hooks\simulation\hooks_simulation_events.h>
-#include <anvil\hooks\simulation\hooks_miscellaneous.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
 #include <stdio.h>

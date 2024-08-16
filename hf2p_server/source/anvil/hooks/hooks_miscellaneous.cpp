@@ -11,6 +11,7 @@
 #include <hf2p\podium.h>
 #include <game\game.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <hf2p\loadouts.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -30,6 +31,11 @@ __declspec(safebuffers) void __fastcall c_simulation_player_taunt_request_event_
     {
         simulation_action_player_taunt_request((word)player_index);
     }
+}
+
+__declspec(safebuffers) void __fastcall sub_718BF0_hook_new()
+{
+
 }
 #pragma runtime_checks("", restore)
 
@@ -119,15 +125,18 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     return result;
 }
 
-void __fastcall sub_7172B0_hook(void* api_loadout)
+#pragma runtime_checks("", off)
+// fastcall which user cleans up 4 bytes
+void __fastcall sub_718BF0_hook(long loadout_index, s_api_user_loadout* loadout, s_api_user_customisation* user_customisation)
 {
     // Check if loadout is valid before calling first
-    // If a player kills the local player and no API loadout information for the killer exists, a nullptr is returned
-    if (api_loadout != nullptr)
-    {
-        INVOKE(0x3172B0, sub_7172B0_hook, api_loadout);
-    }
+    // If a player kills the local player and no API loadout information for the killer exists, the pointer is null and can crash
+    if (loadout == nullptr || user_customisation == nullptr)
+        return;
+    INVOKE(0x318BF0, sub_718BF0_hook, loadout_index, loadout, user_customisation);
+    __asm add esp, 4; // Fix usercall & cleanup stack
 }
+#pragma runtime_checks("", restore)
 
 void anvil_hooks_miscellaneous_apply()
 {
@@ -173,5 +182,28 @@ void anvil_hooks_miscellaneous_apply()
     //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
     
     // Fix host crashing when killed by a player when not connected to the API
-    Hook(0x318C2A, sub_7172B0_hook, HookFlags::IsCall).Apply();
+    Hook(0x33B1E0, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch::NopFill(Pointer::Base(0x33B1E5), 3);
+    Hook(0x33B2B0, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch::NopFill(Pointer::Base(0x33B2B5), 3);
+    Hook(0x33B33A, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B341, { 0x08 }).Apply();
+    Hook(0x33B3BA, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B3C1, { 0x08 }).Apply();
+    Hook(0x33B43A, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B441, { 0x08 }).Apply();
+    Hook(0x33B4B7, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B4BE, { 0x08 }).Apply();
+    Hook(0x33B53A, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B541, { 0x08 }).Apply();
+    Hook(0x33B5BA, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B5C1, { 0x08 }).Apply();
+    Hook(0x33B63A, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch(0x33B641, { 0x08 }).Apply();
+    Hook(0x33B6B8, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch::NopFill(Pointer::Base(0x33B6BD), 3);
+    Hook(0x33B6D3, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch::NopFill(Pointer::Base(0x33B6D8), 3);
+    Hook(0x33B6EE, sub_718BF0_hook, HookFlags::IsCall).Apply();
+    Patch::NopFill(Pointer::Base(0x33B6F3), 3);
 }

@@ -25,8 +25,8 @@ enum e_multiplayer_event_type
 struct s_game_engine_event_data
 {
 	c_enum<e_multiplayer_event_type, long, _multiplayer_event_type_general, k_multiplayer_event_type_count> event_type;
-	string_id type;
-	long identifier;
+	string_id event_name;
+	long event_identifier;
 	datum_index audience_player_index;
 	datum_index cause_player_index;
 	long cause_team_index;

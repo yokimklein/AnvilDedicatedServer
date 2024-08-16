@@ -171,7 +171,7 @@
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h" />
-    <ClInclude Include="source\anvil\hooks\simulation\hooks_miscellaneous.h" />
+    <ClInclude Include="source\anvil\hooks\hooks_miscellaneous.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h" />
@@ -422,7 +422,7 @@
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp" />
-    <ClCompile Include="source\anvil\hooks\simulation\hooks_miscellaneous.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks_miscellaneous.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp" />
