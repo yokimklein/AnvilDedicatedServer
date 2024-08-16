@@ -321,6 +321,13 @@ __declspec(safebuffers) void __fastcall objective_game_player_forced_base_respaw
     __asm mov player_index, edi;
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
+
+__declspec(safebuffers) void __fastcall player_killed_player_perform_respawn_on_kill_check_hook()
+{
+    c_player_in_game_iterator* player_iterator;
+    __asm mov player_iterator, ecx;
+    simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -340,6 +347,7 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first);
     insert_hook(0xFA088, 0xFA08F, game_engine_setup_player_for_respawn_hook, _hook_execute_replaced_first);
     insert_hook(0xFC021, 0xFC028, objective_game_player_forced_base_respawn_hook, _hook_execute_replaced_first);
+    insert_hook(0x1C9FA4, 0x1C9FB0, player_killed_player_perform_respawn_on_kill_check_hook, _hook_execute_replaced_first); // inlined game_engine_reset_player_respawn_timer
 
     // update spectating player
     hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
