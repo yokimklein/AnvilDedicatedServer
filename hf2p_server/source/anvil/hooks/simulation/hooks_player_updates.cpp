@@ -285,6 +285,22 @@ __declspec(safebuffers) void __fastcall game_engine_player_left_hook()
     __asm mov player_index, ebx;
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_active_in_game);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
+{
+    datum_index player_index;
+    __asm mov player_index, esi;
+    if (game_is_authoritative())
+    {
+        c_flags<long, ulong64, 64> update_flags;
+        update_flags.set(_simulation_player_update_health_traits, true);
+        update_flags.set(_simulation_player_update_weapon_traits, true);
+        update_flags.set(_simulation_player_update_movement_traits, true);
+        update_flags.set(_simulation_player_update_appearance_traits, true);
+        update_flags.set(_simulation_player_update_sensor_traits, true);
+        simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), &update_flags);
+    }
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -362,4 +378,7 @@ void anvil_hooks_player_updates_apply()
     
     // sync player active
     insert_hook(0xFA5D1, 0xFA5D6, game_engine_player_left_hook, _hook_execute_replaced_first);
+
+    // sync all player traits
+    insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first);
 }
