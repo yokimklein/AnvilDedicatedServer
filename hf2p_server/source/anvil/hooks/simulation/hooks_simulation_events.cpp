@@ -346,6 +346,19 @@ __declspec(safebuffers) void __fastcall game_engine_scoring_update_leaders_inter
     }
     game_engine_send_event(event_data);
 }
+
+__declspec(safebuffers) void __fastcall game_engine_award_medal_hook()
+{
+    s_game_engine_event_data* event_data;
+    DEFINE_ORIGINAL_EBP_ESP(0x3C, sizeof(event_data));
+    __asm
+    {
+        mov ecx, original_esp;
+        lea eax, [ecx + 0x38 - 0x28];
+        mov event_data, eax;
+    }
+    game_engine_send_event(event_data);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_events_apply()
@@ -396,5 +409,6 @@ void anvil_hooks_simulation_events_apply()
     // simulation_action_multiplayer_event
     hook_function(0x11C0C0, 0x40, game_engine_send_event);
     insert_hook(0xFAF89, 0xFAFC3, game_engine_earn_wp_event_hook2, _hook_replace); // inline in game_engine_earn_wp_event
-    insert_hook(0xE00DF, 0xE011A, game_engine_scoring_update_leaders_internal_hook, _hook_replace);
+    insert_hook(0xE00DF, 0xE011A, game_engine_scoring_update_leaders_internal_hook, _hook_replace); // score leaders ('x' took the lead!)
+    insert_hook(0xFB1D8, 0xFB209, game_engine_award_medal_hook, _hook_replace); // medals
 }
