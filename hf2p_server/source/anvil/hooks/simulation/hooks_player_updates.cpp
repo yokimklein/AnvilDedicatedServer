@@ -409,6 +409,7 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first); // sync all player traits on rejoin
     hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits); // sync appearance traits
     hook_function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
+    hook_function(0x11E170, 0x51, game_engine_apply_sensors_traits); // sync sensor traits
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);

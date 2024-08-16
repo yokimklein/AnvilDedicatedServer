@@ -351,3 +351,24 @@ void __fastcall game_engine_apply_movement_traits(datum_index player_index, c_pl
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_movement_traits);
 	}
 }
+
+void __fastcall game_engine_apply_sensors_traits(datum_index player_index, c_player_trait_sensors* trait)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	bool player_update = false;
+	if (player->traits.get_sensor_traits()->get_motion_tracker_setting() != trait->get_motion_tracker_setting())
+	{
+		player->traits.get_sensor_traits_writeable()->set_motion_tracker_setting(trait->get_motion_tracker_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_sensor_traits()->get_motion_tracker_range_setting() != trait->get_motion_tracker_range_setting())
+	{
+		player->traits.get_sensor_traits_writeable()->set_motion_tracker_range_setting(trait->get_motion_tracker_range_setting(), false);
+		player_update = true;
+	}
+	if (player_update)
+	{
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_sensor_traits);
+	}
+}

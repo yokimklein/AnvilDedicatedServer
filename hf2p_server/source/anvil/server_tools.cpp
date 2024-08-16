@@ -283,6 +283,7 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     //game_variant.get_active_variant_writeable()->get_respawn_options_writeable()->set_lives_per_round(2);
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_appearance_traits_writeable()->set_active_camo_setting(_active_camo_setting_good, false);
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_movement_traits_writeable()->set_gravity_setting(_player_gravity_setting_50_percent, false);
+    //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_sensor_traits_writeable()->set_motion_tracker_setting(_motion_tracker_setting_off, false);
 
     if (!session->get_session_parameters()->ui_game_mode.request_change(_gui_game_mode_multiplayer))
     {
