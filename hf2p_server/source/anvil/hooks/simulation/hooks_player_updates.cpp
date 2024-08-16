@@ -301,6 +301,19 @@ __declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
         simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), &update_flags);
     }
 }
+
+__declspec(safebuffers) void __fastcall game_engine_setup_player_for_respawn_hook()
+{
+    datum_index player_index;
+    DEFINE_ORIGINAL_EBP_ESP(0x90, sizeof(player_index));
+    __asm
+    {
+        mov ecx, original_esp;
+        mov eax, [ecx + 0x90 - 0x84];
+        mov player_index, eax;
+    }
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -318,6 +331,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync early respawn
     insert_hook(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first);
+    insert_hook(0xFA088, 0xFA08F, game_engine_setup_player_for_respawn_hook, _hook_execute_replaced_first);
 
     // update spectating player
     hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
