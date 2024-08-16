@@ -258,7 +258,25 @@ __declspec(safebuffers) void __fastcall player_delete_hook()
     __asm mov player_index, edi;
     c_flags<long, ulong64, 64> update_flags;
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
-    simulation_action_game_engine_player_update(player_index, &update_flags);
+    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), &update_flags);
+}
+
+__declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
+{
+    short lives_remaining;
+    player_datum* dead_player;
+    datum_index dead_player_index;
+    __asm
+    {
+        mov lives_remaining, cx;
+        mov dead_player, edx;
+        mov dead_player_index, edi;
+    }
+    if (lives_remaining == 0 && game_engine_has_teams() && game_engine_teams_use_one_shared_life(dead_player->configuration.host.team_index))
+    {
+        dead_player->lives++;
+    }
+    simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_lives_remaining);
 }
 #pragma runtime_checks("", restore)
 
@@ -323,6 +341,7 @@ void anvil_hooks_player_updates_apply()
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
+    insert_hook(0xF917F, 0xF91A7, game_engine_player_killed_hook2, _hook_replace);
 
     // sync player sitting out
     insert_hook(0xCB1DD, 0xCB1E5, game_engine_update_player_sitting_out_hook, _hook_execute_replaced_first);

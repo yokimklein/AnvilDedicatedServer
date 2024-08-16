@@ -134,3 +134,8 @@ void game_get_determinism_versions(long* determinism_version, long* determinism_
 	if (determinism_compatible_version)
 		*determinism_compatible_version = get_network_configuration()->determinism_compatible_version;
 }
+
+bool __fastcall game_engine_teams_use_one_shared_life(e_game_team team)
+{
+	return INVOKE(0xDC7F0, game_engine_teams_use_one_shared_life, team);
+}
