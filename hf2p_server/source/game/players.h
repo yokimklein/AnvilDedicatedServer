@@ -440,3 +440,4 @@ struct s_player_waypoint_data;
 enum e_navpoint_action;
 void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoint_action action);
 void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index);
+void __fastcall player_delete(datum_index player_index);

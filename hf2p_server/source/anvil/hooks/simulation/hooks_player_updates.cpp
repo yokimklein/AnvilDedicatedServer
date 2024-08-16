@@ -251,6 +251,15 @@ __declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook2
     simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), &update_flags);
     simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), &update_flags);
 }
+
+__declspec(safebuffers) void __fastcall player_delete_hook()
+{
+    datum_index player_index;
+    __asm mov player_index, edi;
+    c_flags<long, ulong64, 64> update_flags;
+    update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
+    simulation_action_game_engine_player_update(player_index, &update_flags);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -318,7 +327,11 @@ void anvil_hooks_player_updates_apply()
     // sync player sitting out
     insert_hook(0xCB1DD, 0xCB1E5, game_engine_update_player_sitting_out_hook, _hook_execute_replaced_first);
 
-    // update everything for player swap
+    // update everything on player swap
     insert_hook(0xB5544, 0xB554E, game_engine_player_changed_indices_hook1, _hook_execute_replaced_first);
     insert_hook(0xB558C, 0xB5597, game_engine_player_changed_indices_hook2, _hook_execute_replaced_first);
+
+    // update everything on player delete
+    insert_hook(0xB5737, 0xB573C, player_delete_hook, _hook_execute_replaced_last); // inlined game_engine_player_deleted
+    
 }
