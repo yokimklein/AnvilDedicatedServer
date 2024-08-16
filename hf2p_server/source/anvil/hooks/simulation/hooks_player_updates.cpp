@@ -73,11 +73,22 @@ __declspec(safebuffers) void __fastcall player_update_loadout_hook1()
 
 __declspec(safebuffers) void __fastcall player_update_loadout_hook2()
 {
-    player_datum* player_data;
-    __asm mov player_data, esi;
-
+    player_datum* player;
+    __asm mov player, esi;
     datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);
-    player_update_loadout(player_index, player_data);
+    player_update_loadout(player_index, player);
+}
+
+__declspec(safebuffers) void __fastcall player_reset_hook()
+{
+    datum_index player_index;
+    player_datum* player;
+    __asm
+    {
+        mov player_index, ebx;
+        mov player, edi;
+    }
+    player_update_loadout(player_index, player);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_update_hook()
@@ -367,10 +378,11 @@ void anvil_hooks_player_updates_apply()
     // update spectating player
     hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
 
-    // sync character type
+    // sync loadout index
     insert_hook(0xBAF22, 0xBAF29, player_update_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
     insert_hook(0xE05A8, 0xE05AF, player_update_loadout_hook2, _hook_replace); // add player_index argument back to call in equipment_add
     hook_function(0xE0660, 0x40, player_update_loadout);
+    insert_hook(0xB5259, 0xB532D, player_reset_hook, _hook_replace); // replace inlined player_update_loadout, added new since ms23
 
     // sync player netdebug data
     insert_hook(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);

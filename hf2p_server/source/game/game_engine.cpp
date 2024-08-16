@@ -109,19 +109,19 @@ void game_engine_update_round_conditions()
 		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
 		long round_time = game_engine_round_time_get();
 		long game_over_timer = game_engine_globals->game_over_timer;
-		c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> condition;
-		condition.set(_game_engine_round_condition_unknown0, round_time < 5); // 5
-		condition.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1)); // 1
-		condition.set(_game_engine_round_condition_welcome, round_time < game_seconds_integer_to_ticks(k_pre_round_seconds + 3)); // 3
-		condition.set(_game_engine_round_condition_waiting_for_players, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 14, 0))); // 4
-		condition.set(_game_engine_round_condition_match_introduction, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 7, 0))); // 11
-		condition.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // 5
-		condition.set(_game_engine_round_condition_spawn_players, round_time <= game_seconds_integer_to_ticks(k_pre_round_seconds)); // 18
-		condition.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4)); // 4
-		if (game_engine_globals->round_condition_flags != condition)
+		c_flags<e_game_engine_round_condition, byte, k_game_engine_round_condition_count> round_condition_flags;
+		round_condition_flags.set(_game_engine_round_condition_unknown0, round_time < 5); // 5
+		round_condition_flags.set(_game_engine_round_condition_unknown1, round_time < game_seconds_integer_to_ticks(1)); // 1
+		round_condition_flags.set(_game_engine_round_condition_welcome, round_time < game_seconds_integer_to_ticks(k_pre_round_seconds + 3)); // 3
+		round_condition_flags.set(_game_engine_round_condition_waiting_for_players, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 14, 0))); // 4
+		round_condition_flags.set(_game_engine_round_condition_match_introduction, round_time < game_seconds_integer_to_ticks(MAX(k_pre_round_seconds - 7, 0))); // 11
+		round_condition_flags.set(_game_engine_round_condition_unknown6, round_time < game_seconds_integer_to_ticks(5)); // 5
+		round_condition_flags.set(_game_engine_round_condition_spawn_players, round_time <= game_seconds_integer_to_ticks(k_pre_round_seconds)); // 18
+		round_condition_flags.set(_game_engine_round_condition_unknown7, game_over_timer >= game_seconds_integer_to_ticks(4)); // 4
+		if (game_engine_globals->round_condition_flags != round_condition_flags)
 		{
 			if (game_engine_globals->round_condition_flags.test(_game_engine_round_condition_waiting_for_players) &&
-				!condition.test(_game_engine_round_condition_waiting_for_players))
+				!round_condition_flags.test(_game_engine_round_condition_waiting_for_players))
 			{
 				c_player_in_game_iterator player_iterator;
 				player_iterator.begin();
@@ -132,7 +132,7 @@ void game_engine_update_round_conditions()
 				}
 			}
 			simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_condition);
-			game_engine_globals->round_condition_flags = condition;
+			game_engine_globals->round_condition_flags = round_condition_flags;
 		}
 	}
 }

@@ -41,10 +41,11 @@ __declspec(safebuffers) void __fastcall object_update_hook()
 __declspec(safebuffers) void __fastcall c_map_variant__remove_object_hook()
 {
     datum_index object_index;
-
-    __asm mov eax, [edi + 0x4]; // map_variant_placement->object_index
-    __asm mov object_index, eax;
-
+    __asm
+    {
+        mov eax, [edi + 0x4]; // map_variant_placement->object_index
+        mov object_index, eax;
+    }
     if (game_is_authoritative())
     {
         simulation_action_object_update(object_index, _simulation_object_update_map_variant_index);

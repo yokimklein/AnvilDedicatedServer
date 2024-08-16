@@ -125,11 +125,10 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
     }
     this->add_player_internal(next_player_index, player_identifier, peer_index, this->get_current_membership()->player_sequence_number, player_left);
     this->get_current_membership()->player_sequence_number = (this->get_current_membership()->player_sequence_number + 1) % 0x100000;
-    this->get_player(next_player_index)->configuration.client.user_selected_team_index = -1;
-    this->get_player(next_player_index)->configuration.client.active_loadout_index = -1;
-    this->get_player(next_player_index)->configuration.client.player_is_griefer = false;
-    this->get_player(next_player_index)->configuration.host.team_index = -1;
-    this->get_player(next_player_index)->configuration.host.user_selected_team_index = -1;
+    this->get_player(next_player_index)->configuration.client.user_selected_team_index = _game_team_none;
+    this->get_player(next_player_index)->configuration.client.selected_loadout_index = -1;
+    this->get_player(next_player_index)->configuration.host.team_index = _game_team_none;
+    this->get_player(next_player_index)->configuration.host.user_selected_team_index = _game_team_none;
     this->increment_update();
     return next_player_index;
 }

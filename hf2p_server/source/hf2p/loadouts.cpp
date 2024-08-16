@@ -10,19 +10,18 @@
 
 void __fastcall player_update_loadout(datum_index player_index, player_datum* player)
 {
-	byte client_loadout_index = player->configuration.client.active_loadout_index;
-	long host_loadout_index = player->configuration.host.s3d_player_customization.active_loadout_index;
-	if (client_loadout_index < 3)
+	byte selected_loadout_index = player->configuration.client.selected_loadout_index;
+	long desired_loadout_index = player->configuration.host.s3d_player_customization.active_loadout_index;
+	if (selected_loadout_index < 3)
 	{
-		host_loadout_index = client_loadout_index;
+		desired_loadout_index = selected_loadout_index;
 	}
-
-	if (host_loadout_index != player->active_loadout_index)
+	if (desired_loadout_index != player->active_loadout_index)
 	{
 		qword user_xuid = player->configuration.host.user_xuid;
 		player->revenge_shield_boost_multiplier = 0;
-		player->active_loadout_index = host_loadout_index;
-		player_update_loadout_internal(host_loadout_index, user_xuid);
+		player->active_loadout_index = desired_loadout_index;
+		player_update_loadout_internal(desired_loadout_index, user_xuid);
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_loadout_index);
 	}
 }
