@@ -411,6 +411,7 @@ void anvil_hooks_player_updates_apply()
     hook_function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
     hook_function(0x11E170, 0x51, game_engine_apply_sensors_traits); // sync sensor traits
     hook_function(0x11DD50, 0xA8, game_engine_apply_shield_vitality_traits); // sync shield vitality traits
+    hook_function(0x11DE00, 0x111, game_engine_apply_weapons_traits); // sync weapon traits
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);

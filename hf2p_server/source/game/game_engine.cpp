@@ -408,3 +408,49 @@ void __fastcall game_engine_apply_shield_vitality_traits(datum_index player_inde
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_shield_vitality_traits);
 	}
 }
+
+void __fastcall game_engine_apply_weapons_traits(datum_index player_index, c_player_trait_weapons* trait)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	bool player_update = false;
+	if (player->traits.get_weapons_traits()->get_damage_modifier_percentage_setting() != trait->get_damage_modifier_percentage_setting())
+	{
+		player->traits.get_weapons_traits_writeable()->set_damage_modifier_percentage_setting(trait->get_damage_modifier_percentage_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_initial_primary_weapon_absolute_index() != trait->get_initial_primary_weapon_absolute_index())
+	{
+		player->traits.get_weapons_traits_writeable()->set_initial_primary_weapon_absolute_index(trait->get_initial_primary_weapon_absolute_index(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_initial_secondary_weapon_absolute_index() != trait->get_initial_secondary_weapon_absolute_index())
+	{
+		player->traits.get_weapons_traits_writeable()->set_initial_secondary_weapon_absolute_index(trait->get_initial_secondary_weapon_absolute_index(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_initial_grenade_count_setting() != trait->get_initial_grenade_count_setting())
+	{
+		player->traits.get_weapons_traits_writeable()->set_initial_grenade_count_setting(trait->get_initial_grenade_count_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_recharging_grenades_setting() != trait->get_recharging_grenades_setting())
+	{
+		player->traits.get_weapons_traits_writeable()->set_recharging_grenades_setting(trait->get_recharging_grenades_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_infinite_ammo_setting() != trait->get_infinite_ammo_setting())
+	{
+		player->traits.get_weapons_traits_writeable()->set_infinite_ammo_setting(trait->get_infinite_ammo_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_weapons_traits()->get_weapon_pickup_allowed() != trait->get_weapon_pickup_allowed())
+	{
+		player->traits.get_weapons_traits_writeable()->set_weapon_pickup_allowed(trait->get_weapon_pickup_allowed(), false);
+		player_update = true;
+	}
+	if (player_update)
+	{
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_weapon_traits);
+	}
+}

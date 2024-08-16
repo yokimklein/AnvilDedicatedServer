@@ -213,5 +213,6 @@ void __fastcall game_engine_apply_appearance_traits(datum_index player_index, c_
 void __fastcall game_engine_apply_movement_traits(datum_index player_index, c_player_trait_movement* trait);
 void __fastcall game_engine_apply_sensors_traits(datum_index player_index, c_player_trait_sensors* trait);
 void __fastcall game_engine_apply_shield_vitality_traits(datum_index player_index, c_player_trait_shield_vitality* trait);
+void __fastcall game_engine_apply_weapons_traits(datum_index player_index, c_player_trait_weapons* trait);
 
 extern c_game_engine* (&game_engines)[k_game_engine_type_count];

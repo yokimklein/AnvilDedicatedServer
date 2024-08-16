@@ -285,6 +285,7 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_movement_traits_writeable()->set_gravity_setting(_player_gravity_setting_50_percent, false);
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_sensor_traits_writeable()->set_motion_tracker_setting(_motion_tracker_setting_off, false);
     //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(_shield_multiplier_setting_4x, false);
+    //game_variant.get_active_variant_writeable()->get_map_override_options_writeable()->get_base_player_traits_writeable()->get_weapons_traits_writeable()->set_infinite_ammo_setting(_infinite_ammo_setting_enabled, false);
 
     if (!session->get_session_parameters()->ui_game_mode.request_change(_gui_game_mode_multiplayer))
     {
