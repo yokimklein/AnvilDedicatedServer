@@ -335,6 +335,13 @@ __declspec(safebuffers) void __fastcall game_engine_reset_player_respawn_timers_
     __asm mov player_iterator, ecx;
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
 }
+
+__declspec(safebuffers) void __fastcall teleporter_teleport_object_hook()
+{
+    datum_index player_index;
+    __asm mov player_index, esi;
+    simulation_action_game_engine_player_update(player_index, _simulation_player_update_control_aiming);
+}
 #pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
@@ -419,4 +426,7 @@ void anvil_hooks_player_updates_apply()
 
     // sync all player traits
     insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first);
+
+    // sync player aiming vectors
+    insert_hook(0x11867D, 0x118682, teleporter_teleport_object_hook, _hook_execute_replaced_first);
 }

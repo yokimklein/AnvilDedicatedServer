@@ -20,7 +20,7 @@ enum e_simulation_player_update_flag
 	_simulation_player_update_active_in_game, // used in player quit? syncs _player_active_in_game_bit
 	_simulation_player_update_sitting_out,
 	_simulation_player_update_spectating_player,
-	_simulation_player_update_control,
+	_simulation_player_update_control_aiming,
 	_simulation_player_update_loadout_index,
 	_simulation_player_update_consumable_supression,
 	_simulation_player_update_last_killer,
