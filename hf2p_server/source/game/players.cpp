@@ -188,3 +188,8 @@ void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoin
 		}
 	}
 }
+
+void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index)
+{
+	INVOKE(0xB5340, player_swap, player_absolute_index, swap_player_absolute_index);
+}

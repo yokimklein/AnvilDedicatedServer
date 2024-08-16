@@ -79,10 +79,11 @@ void simulation_action_game_engine_player_update(short player_index, c_flags<lon
 void simulation_action_game_engine_player_update(datum_index player_index, long update_flag)
 {
 	assert(update_flag >= 0 && update_flag < k_simulation_player_update_flag_count);
-	assert((word)player_index >= 0 && (word)player_index <= k_maximum_players);
-	c_flags<long, ulong64, 64> update_flags = {};
+	short absolute_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index);
+	assert(absolute_player_index >= 0 && absolute_player_index <= k_maximum_players);
+	c_flags<long, ulong64, 64> update_flags;
 	update_flags.set(update_flag, true);
-	simulation_action_game_engine_player_update((word)player_index, &update_flags);
+	simulation_action_game_engine_player_update(absolute_player_index, &update_flags);
 }
 
 void simulation_action_player_taunt_request(short player_index)

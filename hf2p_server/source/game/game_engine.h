@@ -208,5 +208,6 @@ void __fastcall game_engine_boot_player(datum_index booted_player_index);
 void __fastcall game_engine_set_player_navpoint_action(datum_index player_index, e_navpoint_action action);
 void __fastcall update_player_navpoint_data(datum_index player_index);
 void __fastcall player_navpoint_data_update(s_player_waypoint_data* waypoint);
+void __fastcall game_engine_player_indices_swapped(long player_1_absolute_index, long player_2_absolute_index);
 
 extern c_game_engine* (&game_engines)[k_game_engine_type_count];

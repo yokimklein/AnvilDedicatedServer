@@ -109,3 +109,18 @@ void c_game_statborg::stats_reset_for_round_switch()
 	}
 	game_engine_scoring_notify_statborg_reset();
 }
+
+void c_game_statborg::player_indices_swapped(long absolute_index_a, long absolute_index_b)
+{
+	if (!game_is_predicted())
+	{
+		assert(absolute_index_a >= 0 && absolute_index_a < k_maximum_multiplayer_players);
+		assert(absolute_index_b >= 0 && absolute_index_b < k_maximum_multiplayer_players);
+		s_game_statborg_player player_temp;
+		csmemcpy(&player_temp, &player[absolute_index_a], sizeof(s_game_statborg_player));
+		csmemcpy(&player[absolute_index_a], &player[absolute_index_b], sizeof(s_game_statborg_player));
+		csmemcpy(&player[absolute_index_b], &player_temp, sizeof(s_game_statborg_player));
+		simulation_action_game_statborg_update(FLAG(absolute_index_a));
+		simulation_action_game_statborg_update(FLAG(absolute_index_b));
+	}
+}

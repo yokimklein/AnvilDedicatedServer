@@ -106,6 +106,7 @@ public:
 	void clear_player_stats(datum_index player_index);
 	void adjust_team_stat(e_game_team team_index, long statistic, short unknown, long value);
 	void stats_reset_for_round_switch();
+	void player_indices_swapped(long absolute_index_a, long absolute_index_b);
 
 	word __unknown0;
 	word __unknown2;

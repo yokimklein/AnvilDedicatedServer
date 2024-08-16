@@ -60,17 +60,6 @@ __declspec(safebuffers) void __fastcall player_changed_teams_hook()
     __asm mov player_index, bx;
     simulation_action_game_statborg_update(_simulation_statborg_update_player0 + player_index);
 }
-
-__declspec(safebuffers) void __fastcall player_indices_swapped_hook()
-{
-    long absolute_index_a;
-    __asm mov absolute_index_a, edi;
-    long absolute_index_b;
-    __asm mov absolute_index_b, esi;
-
-    simulation_action_game_statborg_update(absolute_index_a);
-    simulation_action_game_statborg_update(absolute_index_b);
-}
 #pragma runtime_checks("", restore)
 
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
@@ -99,14 +88,14 @@ void anvil_hooks_statborg_apply()
 
     // c_game_statborg::adjust_team_stat
     Hook(0x1AF710, adjust_team_stat_hook).Apply();
-    insert_hook(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3);
+    insert_hook(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3, _hook_execute_replaced_first);
     insert_hook(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, _hook_execute_replaced_last);
 
     // c_game_statborg::player_changed_teams
-    insert_hook(0xFA956, 0xFA95F, player_changed_teams_hook);
+    insert_hook(0xFA956, 0xFA95F, player_changed_teams_hook, _hook_execute_replaced_first);
 
     // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
-    insert_hook(0xFA7B1, 0xFA7B8, player_indices_swapped_hook); // TODO: TEST - WHERE IS THIS USED?
+    hook_function(0xFA740, 0x7F, game_engine_player_indices_swapped); // add back inlined c_game_statborg::player_indices_swapped
 
     // c_game_statborg::stats_reset_for_round_switch
     Hook(0x1AEE00, stats_reset_for_round_switch_hook).Apply();

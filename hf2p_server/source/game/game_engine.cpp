@@ -262,3 +262,11 @@ void __fastcall player_navpoint_data_update(s_player_waypoint_data* waypoint)
 		}
 	}
 }
+
+void __fastcall game_engine_player_indices_swapped(long player_1_absolute_index, long player_2_absolute_index)
+{
+	if (current_game_engine())
+	{
+		game_engine_get_statborg()->player_indices_swapped(player_1_absolute_index, player_2_absolute_index);
+	}
+}

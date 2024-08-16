@@ -439,3 +439,4 @@ void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index
 struct s_player_waypoint_data;
 enum e_navpoint_action;
 void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoint_action action);
+void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index);
