@@ -6,7 +6,7 @@ enum e_simulation_player_update_flag
 {
 	_simulation_player_update_spawn_timer,
 	_simulation_player_update_early_respawn,
-	_simulation_player_update_health_traits,
+	_simulation_player_update_shield_vitality_traits,
 	_simulation_player_update_weapon_traits,
 	_simulation_player_update_movement_traits,
 	_simulation_player_update_appearance_traits,

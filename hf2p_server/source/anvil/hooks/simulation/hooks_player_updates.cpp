@@ -182,7 +182,7 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_update_sta
     {
         e_shield_multiplier_setting shield_multiplier = current_game_variant()->get_active_variant()->get_map_override_options()->get_base_player_traits()->get_shield_vitality_traits()->get_shield_multiplier_setting();
         player_iterator.get_datum()->traits.get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(shield_multiplier, true);
-        simulation_action_game_engine_player_update(player_iterator.get_index(), _simulation_player_update_health_traits);
+        simulation_action_game_engine_player_update(player_iterator.get_index(), _simulation_player_update_shield_vitality_traits);
     }
 }
 
@@ -293,7 +293,7 @@ __declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
     if (game_is_authoritative())
     {
         c_flags<long, ulong64, 64> update_flags;
-        update_flags.set(_simulation_player_update_health_traits, true);
+        update_flags.set(_simulation_player_update_shield_vitality_traits, true);
         update_flags.set(_simulation_player_update_weapon_traits, true);
         update_flags.set(_simulation_player_update_movement_traits, true);
         update_flags.set(_simulation_player_update_appearance_traits, true);
@@ -404,12 +404,13 @@ void anvil_hooks_player_updates_apply()
     hook_function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
 
     // sync player traits
-    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace); // health traits
+    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace); // shield vitality traits
     Patch(0xC9C7F, { 0xE9, 0xE0, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90 }).Apply(); // redirect jump to end of loop 0x4C9D64
     insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first); // sync all player traits on rejoin
     hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits); // sync appearance traits
     hook_function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
     hook_function(0x11E170, 0x51, game_engine_apply_sensors_traits); // sync sensor traits
+    hook_function(0x11DD50, 0xA8, game_engine_apply_shield_vitality_traits); // sync shield vitality traits
     
     // sync lives remaining
     insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);

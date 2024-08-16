@@ -372,3 +372,39 @@ void __fastcall game_engine_apply_sensors_traits(datum_index player_index, c_pla
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_sensor_traits);
 	}
 }
+
+void __fastcall game_engine_apply_shield_vitality_traits(datum_index player_index, c_player_trait_shield_vitality* trait)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	bool player_update = false;
+	if (player->traits.get_shield_vitality_traits()->get_damage_resistance_percentage_setting() != trait->get_damage_resistance_percentage_setting())
+	{
+		player->traits.get_shield_vitality_traits_writeable()->set_damage_resistance_percentage_setting(trait->get_damage_resistance_percentage_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_shield_vitality_traits()->get_shield_recharge_rate_percentage_setting() != trait->get_shield_recharge_rate_percentage_setting())
+	{
+		player->traits.get_shield_vitality_traits_writeable()->set_shield_recharge_rate_percentage_setting(trait->get_shield_recharge_rate_percentage_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_shield_vitality_traits()->get_vampirism_percentage_setting() != trait->get_vampirism_percentage_setting())
+	{
+		player->traits.get_shield_vitality_traits_writeable()->set_vampirism_percentage_setting(trait->get_vampirism_percentage_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_shield_vitality_traits()->get_headshot_immunity_setting() != trait->get_headshot_immunity_setting())
+	{
+		player->traits.get_shield_vitality_traits_writeable()->set_headshot_immunity_setting(trait->get_headshot_immunity_setting(), false);
+		player_update = true;
+	}
+	if (player->traits.get_shield_vitality_traits()->get_shield_multiplier_setting() != trait->get_shield_multiplier_setting())
+	{
+		player->traits.get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(trait->get_shield_multiplier_setting(), false);
+		player_update = true;
+	}
+	if (player_update)
+	{
+		simulation_action_game_engine_player_update(player_index, _simulation_player_update_shield_vitality_traits);
+	}
+}
