@@ -141,13 +141,8 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            printf("Running test command...\n");
-
-            //player_delete(0xEC700001);
+            printf("Booting peer...\n");
             anvil_boot_peer(1);
-
-            printf("Command finished!\n");
-
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             //printf("Starting session countdown...\n");
@@ -251,6 +246,15 @@ void anvil_session_update()
                 parameters->countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
             }
             // dedi state is set to in game by c_life_cycle_state_handler_in_game::enter, and reset to waiting for players in c_life_cycle_state_handler_in_game::exit
+            
+            // when enough players are found JOINING SESSION
+            // once connected, WAITING FOR PLAYERS until all lobby players have connected
+            // VOTING ENDS IN for 10 seconds during vote phase
+            // GAME STARTS 5 second countdown timer
+            // wait 30 seconds once loaded back to mainmenu after game with 'PREPARE FOR BATTLE' text, kick all players from session back to matchmake
+            // then return to MATCHMAKING QUEUE until enough players are found
+
+            // TODO: what displays the 'PREPARE FOR BATTLE' text?
         }
     }
 }
