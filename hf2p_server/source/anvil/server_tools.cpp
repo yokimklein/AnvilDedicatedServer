@@ -163,7 +163,7 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
             printf("Setting test mode...\n");
-            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 1);
+            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
             anvil_session_set_map(_riverworld);
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
