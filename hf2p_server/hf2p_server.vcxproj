@@ -207,6 +207,7 @@
     <ClInclude Include="source\game\game_time.h" />
     <ClInclude Include="source\game\materials.h" />
     <ClInclude Include="source\game\player_mapping.h" />
+    <ClInclude Include="source\hf2p\hf2p_definitions.h" />
     <ClInclude Include="source\hf2p\podium.h" />
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
     <ClInclude Include="source\math\matrix_math.h" />
+    <ClInclude Include="source\memory\hashtable.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
@@ -480,6 +482,7 @@
     <ClCompile Include="source\math\matrix_math.cpp" />
     <ClCompile Include="source\math\real_math.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
+    <ClCompile Include="source\memory\hashtable.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />
     <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp" />

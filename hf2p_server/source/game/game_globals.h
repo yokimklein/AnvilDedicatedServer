@@ -197,11 +197,14 @@ struct s_game_globals
 	c_typed_tag_block<s_game_globals_difficulty_information> difficulty;
 	byte data2[0x84];
 	c_typed_tag_reference<MULTIPLAYER_GLOBALS_TAG> multiplayer_globals;
-	byte data3[0x454];
+	c_typed_tag_reference<SURVIVAL_MODE_GLOBALS_TAG> survival_globals;
+	c_typed_tag_reference<HF2P_GLOBALS_TAG> armor_globals;
+	byte data3[0x434];
 };
 static_assert(sizeof(s_game_globals) == 0x614);
 static_assert(0x120 == OFFSETOF(s_game_globals, difficulty));
 static_assert(0x1B0 == OFFSETOF(s_game_globals, multiplayer_globals));
+static_assert(0x1D0 == OFFSETOF(s_game_globals, armor_globals));
 
 real game_difficulty_get_value_by_difficulty(short value_type, e_campaign_difficulty_level difficulty_level);
 real __fastcall game_difficulty_get_team_value(short value_type, e_game_team team);

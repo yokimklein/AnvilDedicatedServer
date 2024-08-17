@@ -1,9 +1,12 @@
 #pragma once
 #include <memory\data.h>
+#include <game\player_appearance.h>
 
 struct s_api_user_loadout
 {
-	dword_flags flags;
+	void write_configuration(s_s3d_player_loadout* out_loadout);
+
+	long gender;
 	char armour_suit[32];
 	char primary_weapon[32];
 	char secondary_weapon[32];
@@ -18,7 +21,9 @@ static_assert(sizeof(s_api_user_loadout) == 0x124);
 
 struct s_api_user_customisation
 {
-	long unknown;
+	void write_configuration(s_s3d_player_customization* out_customisation);
+
+	long loadout_index;
 	char account_label[32];
 	char emblem[32];
 	char primary_colour[32];
@@ -36,3 +41,5 @@ void __fastcall player_update_loadout(datum_index player_index, player_datum* pl
 void __fastcall player_update_loadout_internal(long loadout_index, qword user_xuid);
 // equipment_index from multiplayer_globals > Universal > Equipment
 bool __fastcall equipment_add(long slot_index, long equipment_index);
+s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index);
+s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xuid);

@@ -12,6 +12,7 @@
 #include <game\game.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <hf2p\loadouts.h>
+#include <tag_files\string_ids.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -31,11 +32,6 @@ __declspec(safebuffers) void __fastcall c_simulation_player_taunt_request_event_
     {
         simulation_action_player_taunt_request((word)player_index);
     }
-}
-
-__declspec(safebuffers) void __fastcall sub_718BF0_hook_new()
-{
-
 }
 #pragma runtime_checks("", restore)
 
@@ -206,4 +202,7 @@ void anvil_hooks_miscellaneous_apply()
     Patch::NopFill(Pointer::Base(0x33B6D8), 3);
     Hook(0x33B6EE, sub_718BF0_hook, HookFlags::IsCall).Apply();
     Patch::NopFill(Pointer::Base(0x33B6F3), 3);
+
+    // load string ids
+    insert_hook(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
 }

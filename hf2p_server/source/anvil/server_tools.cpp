@@ -15,6 +15,7 @@
 #include <game\game_engine_event_definitions.h>
 #include <game\game_engine_util.h>
 #include <tag_files\string_ids.h>
+#include <hf2p\loadouts.h>
 
 const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -143,6 +144,19 @@ void anvil_session_update()
         {
             printf("Booting peer...\n");
             anvil_boot_peer(1);
+
+            //qword user_xuid = 1;
+            //s_api_user_loadout* loadout = nullptr;
+            //s_api_user_customisation* customisation = user_get_customisation_from_api(user_xuid);
+            //if (customisation != nullptr)
+            //{
+            //    if (VALID_INDEX(customisation->loadout_index, 3))
+            //    {
+            //        loadout = user_get_loadout_from_api(user_xuid, customisation->loadout_index);
+            //    }
+            //}
+            //printf("Command finished.\n");
+
             //printf("Setting test player data...\n");
             //anvil_session_set_test_player_data(membership);
             //printf("Starting session countdown...\n");
@@ -333,7 +347,6 @@ void anvil_session_set_test_player_data(c_network_session_membership* membership
     membership->increment_update();
 }
 
-// TODO: PULL THIS DATA FROM THE API RATHER THAN HARDCODING IT
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration)
 {
     assert(configuration != nullptr);
@@ -350,26 +363,10 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         // assign player name based on peer name - TODO: THIS IS TEMPORARY, WE NEED A MORE RIGOROUS WAY OF VERIFYING USER CREDENTIALS
         configuration->player_name.set(peer->properties.peer_name.get_string());
 
-        // assign temporary hardcoded loadout data
-        configuration->s3d_player_customization.colors[_armor_color_primary] = 0xFF230A; // orange red
-        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0xFFFFFF; // white
-        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
-        configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
-        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
-        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
-        configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
-        configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
-        configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-        configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 1.0f;
-        player_data_updated = true;
-
         // dedi host loadout
         if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
         {
-            configuration->user_xuid = 3; // -1 SYSTEM/invalid player id, 0 empty ID
+            configuration->user_xuid = -1; // -1 SYSTEM/invalid player id, 0 empty ID
             player->controller_index = 0;
             configuration->s3d_player_customization.colors[_armor_color_primary] = 0x0F0F0F;
             configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x05286E;
@@ -377,16 +374,19 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
             configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
             configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
-            //configuration->s3d_player_container.loadouts[0].secondary_weapon = _gravity_hammer;
-            //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_player_cdt] = 1.0f;
-            //configuration->s3d_player_container.modifiers[0].modifier_values[_detonate_on_vehicle_cdt] = 1.0f;
+            configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
+            configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
+            configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
+            configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
+            configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
+            configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
+            //configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 1.0f;
             configuration->s3d_player_customization.override_api_data = true;
             configuration->s3d_player_container.override_api_data = true;
             wchar_t service_tag[5] = L"HOST";
             configuration->player_appearance.service_tag.set(service_tag);
             player_data_updated = true;
         }
-        // standard player xuids here
         else
         {
             // make sure these appear in API user id order
@@ -403,64 +403,31 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                         wchar_t service_tag[5] = L"DEV";
                         configuration->player_appearance.service_tag.set(service_tag);
                     }
-                    else if (i == 3)
-                    {
-                        wchar_t service_tag[5] = L"BFB";
-                        configuration->player_appearance.service_tag.set(service_tag);
-                    }
-
-                    if (i == 0) // zz
-                    {
-                        configuration->s3d_player_customization.colors[_armor_color_primary] = 0x0F0F0F;
-                        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x00AAF0;
-                        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
-                        configuration->s3d_player_customization.colors[_armor_color_lights] = 0x00B4FF;
-                        configuration->s3d_player_customization.colors[_armor_color_holo] = 0x00B4FF;
-                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_ninja_rare;
-                    }
-                    else if (i == 1) // yokim
-                    {
-                        configuration->s3d_player_customization.colors[_armor_color_primary] = 0x0F0F0F;
-                        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x05286E;
-                        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
-                        configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
-                        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
-                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
-                    }
-                    else if (i == 2) // twist
-                    {
-                        configuration->s3d_player_customization.colors[_armor_color_primary] = 0xFF230A;
-                        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0xFFFFFF;
-                        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xF5EB05;
-                        configuration->s3d_player_customization.colors[_armor_color_lights] = 0xF5EB05;
-                        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xF5EB05;
-                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_renegade_rare;
-                    }
-                    else if (i == 3)
-                    {
-                        configuration->s3d_player_customization.colors[_armor_color_primary] = 0xFFFFFFF;
-                        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x0F0F0F;
-                        configuration->s3d_player_customization.colors[_armor_color_visor] = 0x00B4FF;
-                        configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
-                        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
-                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
-                    }
-                    else if (i == 5)
-                    {
-                        configuration->s3d_player_customization.colors[_armor_color_primary] = 0xFFFFFF;
-                        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x0F0F0F;
-                        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
-                        configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFFFFFFF;
-                        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFFFFFFF;
-                        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_air_assault;
-                    }
-
                     player_data_updated = true;
                     break;
                 }
             }
         }
     }
+
+    if (configuration->user_xuid != -1 && configuration->user_xuid != 0)
+    {
+        s_api_user_loadout* loadout = nullptr;
+        s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
+        if (customisation != nullptr)
+        {
+            if (VALID_INDEX(customisation->loadout_index, 3))
+            {
+                loadout = user_get_loadout_from_api(configuration->user_xuid, customisation->loadout_index);
+                //customisation->write_configuration(&configuration->s3d_player_customization);
+                if (loadout != nullptr)
+                {
+                    loadout->write_configuration(&configuration->s3d_player_container.loadouts[customisation->loadout_index]);
+                }
+            }
+        }
+    }
+
     return player_data_updated;
 }
 

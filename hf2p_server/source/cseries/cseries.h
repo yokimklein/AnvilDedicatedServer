@@ -174,6 +174,8 @@ extern void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size);
 extern void* (__cdecl* csmemset)(void* _Dst, int _Val, size_t _Size);
 
 extern long csstricmp(char const* s1, char const* s2);
+extern long csstrcmp(char const* s1, char const* s2);
+extern long csstrncmp(char const* s1, char const* s2, dword size);
 //extern long csstrnicmp(char const* s1, char const* s2, dword size);
 //extern char* csstristr(char const* s1, char const* s2);
 extern char* csstrnzcpy(char* s1, char const* s2, dword size);
@@ -905,3 +907,30 @@ extern real_rgb_color const* const& global_real_rgb_violet;
 
 long bit_count(long val);
 long __fastcall index_from_mask(dword* mask, long bit_count); // first index?
+
+struct c_allocation_base
+{
+public:
+	virtual void* allocate(dword allocation, char const* name);
+	virtual void deallocate(void* buffer);
+};
+
+struct c_system_allocation :
+	public c_allocation_base
+{
+public:
+};
+
+struct c_normal_allocation :
+	public c_allocation_base
+{
+public:
+};
+
+struct c_no_allocation :
+	public c_allocation_base
+{
+public:
+};
+
+extern c_normal_allocation*& g_normal_allocation;

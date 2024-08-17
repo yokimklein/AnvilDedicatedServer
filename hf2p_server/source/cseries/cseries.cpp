@@ -49,6 +49,8 @@ const size_t module_base = (size_t)GetModuleHandle(NULL);
 //REFERENCE_DECLARE(0x0189CDD4, real_rgb_color const* const, global_real_rgb_salmon);
 //REFERENCE_DECLARE(0x0189CDD8, real_rgb_color const* const, global_real_rgb_violet);
 
+REFERENCE_DECLARE(0xE9B960, c_normal_allocation*, g_normal_allocation);
+
 int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size) = memcmp;
 void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size) = memcpy;
 void* (__cdecl* csmemset)(void* _Dst, int _Val, size_t _Size) = memset;
@@ -61,6 +63,17 @@ long csstricmp(char const* s1, char const* s2)
 }
 
 //long csstrnicmp(char const* s1, char const* s2, dword size)
+
+long csstrcmp(char const* s1, char const* s2)
+{
+    return strcmp(s1, s2);
+}
+
+extern long csstrncmp(char const* s1, char const* s2, dword size)
+{
+    return strncmp(s1, s2, size);
+}
+
 //char* csstristr(char const* s1, char const* s2)
 
 char* csstrnzcpy(char* s1, char const* s2, dword size)
