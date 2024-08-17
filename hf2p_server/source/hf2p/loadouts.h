@@ -2,6 +2,8 @@
 #include <memory\data.h>
 #include <game\player_appearance.h>
 
+constexpr long k_maximum_loadouts = 3;
+
 struct s_api_user_loadout
 {
 	void write_configuration(s_s3d_player_loadout* out_loadout);
@@ -21,7 +23,7 @@ static_assert(sizeof(s_api_user_loadout) == 0x124);
 
 struct s_api_user_customisation
 {
-	void write_configuration(s_s3d_player_customization* out_customisation);
+	void write_colours(s_s3d_player_customization* out_customisation);
 
 	long loadout_index;
 	char account_label[32];

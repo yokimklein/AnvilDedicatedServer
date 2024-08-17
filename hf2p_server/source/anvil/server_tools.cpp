@@ -410,20 +410,27 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         }
     }
 
-    if (configuration->user_xuid != -1 && configuration->user_xuid != 0)
+    if (configuration->user_xuid != -1 && configuration->user_xuid > 0)
     {
-        s_api_user_loadout* loadout = nullptr;
         s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation != nullptr)
         {
-            if (VALID_INDEX(customisation->loadout_index, 3))
+            customisation->write_colours(&configuration->s3d_player_customization);
+        }
+        else
+        {
+            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user customisation from API for user [%lld]!\n", configuration->user_xuid);
+        }
+        for (long i = 0; i < k_maximum_loadouts; i++)
+        {
+            s_api_user_loadout* loadout = user_get_loadout_from_api(configuration->user_xuid, i);
+            if (loadout != nullptr)
             {
-                loadout = user_get_loadout_from_api(configuration->user_xuid, customisation->loadout_index);
-                //customisation->write_configuration(&configuration->s3d_player_customization);
-                if (loadout != nullptr)
-                {
-                    loadout->write_configuration(&configuration->s3d_player_container.loadouts[customisation->loadout_index]);
-                }
+                loadout->write_configuration(&configuration->s3d_player_container.loadouts[i]);
+            }
+            else
+            {
+                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
             }
         }
     }

@@ -17,7 +17,7 @@ void __fastcall player_update_loadout(datum_index player_index, player_datum* pl
 {
 	byte selected_loadout_index = player->configuration.client.selected_loadout_index;
 	long desired_loadout_index = player->configuration.host.s3d_player_customization.active_loadout_index;
-	if (selected_loadout_index < 3)
+	if (selected_loadout_index < k_maximum_loadouts)
 	{
 		desired_loadout_index = selected_loadout_index;
 	}
@@ -59,66 +59,12 @@ s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xui
 
 void s_api_user_loadout::write_configuration(s_s3d_player_loadout* out_loadout)
 {
-	out_loadout->gender = (byte)gender;
-
-	long game_globals_index = cache_file_get_global_tag_index(GLOBALS_TAG);
-	if (game_globals_index == NONE)
-		return;
-
-	s_game_globals* global_game_globals = (s_game_globals*)tag_get(GLOBALS_TAG, game_globals_index);
-	assert(global_game_globals);
-
-	hf2p_globals_definition* armor_globals = (hf2p_globals_definition*)tag_get(HF2P_GLOBALS_TAG, global_game_globals->armor_globals.index);
-	assert(armor_globals);
-
-	if (armor_globals->race_armors.count() < 0)
-		return;
-	if (armor_globals->race_armors[0].genders.count() != 2)
-		return;
-	
-	// search armour globals tag for matching entry
-	c_typed_tag_block<s_armor_objects> armor_objects = armor_globals->race_armors[0].genders[gender].armor_objects; // just spartans for now
-	for (long i = 0; i < armor_objects.count(); i++)
-	{
-		if (strncmp(armor_objects[i].name.get_string(), armour_suit, 32) == 0)
-		{
-			out_loadout->armor_suit = i;
-			break;
-		}
-	}
-
-	// TODO: grab weapon ID from title instances instead, variants such as dmr_v2_type_1 don't have their own mulg entry
-	multiplayer_globals_definition* multiplayer_globals = (multiplayer_globals_definition*)tag_get(MULTIPLAYER_GLOBALS_TAG, global_game_globals->multiplayer_globals.index);
-	assert(multiplayer_globals);
-	if (multiplayer_globals->universal.count() == 1)
-	{
-		// search multiplayer globals for matching weapons
-		bool primary_found = false;
-		bool secondary_found = false;
-		for (long i = 0; i < multiplayer_globals->universal[0].weapon_selections.count(); i++)
-		{
-			const char* weapon_name = string_id_get_string_const(multiplayer_globals->universal[0].weapon_selections[i].name.get_value());
-			if (csstrncmp(weapon_name, primary_weapon, 32) == 0)
-			{
-				out_loadout->primary_weapon = i;
-				primary_found = true;
-			}
-			if (csstrncmp(weapon_name, secondary_weapon, 32) == 0)
-			{
-				out_loadout->secondary_weapon = i;
-				secondary_found = true;
-			}
-			if (primary_found && secondary_found)
-			{
-				break;
-			}
-		}
-	}
-
-	// TODO: nades, tactical packs
+	assert(out_loadout);
+	DECLFUNC(0x303CC0, void, __thiscall, s_api_user_loadout*, s_s3d_player_loadout*)(this, out_loadout);
 }
 
-void s_api_user_customisation::write_configuration(s_s3d_player_customization* out_customisation)
+void s_api_user_customisation::write_colours(s_s3d_player_customization* out_customisation)
 {
-
+	assert(out_customisation);
+	DECLFUNC(0x312110, void, __thiscall, s_api_user_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
 }
