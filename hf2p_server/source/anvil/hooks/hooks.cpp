@@ -1,5 +1,6 @@
 #include "hooks.h"
 #include <cseries\cseries.h>
+#include <anvil\hooks\effects\hooks_effect_system.h>
 #include <anvil\hooks\hooks_ds.h>
 #include <anvil\hooks\hooks_session.h>
 #include <anvil\hooks\hooks_miscellaneous.h>
@@ -516,5 +517,6 @@ void anvil_hooks_apply()
     anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
     anvil_hooks_player_updates_apply(); // PLAYER UPDATES
     anvil_hooks_simulation_events_apply(); // SIMULATION EVENTS
-    anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS                                                   
+    anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
+    anvil_hooks_effect_system_apply(); // EFFECTS
 }

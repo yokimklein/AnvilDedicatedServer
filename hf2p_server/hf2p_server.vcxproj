@@ -167,6 +167,7 @@
     <ClInclude Include="source\ai\sector.h" />
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
+    <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="source\cseries\language.h" />
     <ClInclude Include="source\devices\devices.h" />
     <ClInclude Include="source\effects\effects.h" />
+    <ClInclude Include="source\effects\particle_states.h" />
     <ClInclude Include="source\game\aim_target.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\game\game_allegiance.h" />
@@ -429,6 +431,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ai\actors.cpp" />
+    <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp" />
