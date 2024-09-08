@@ -148,14 +148,14 @@ struct s_network_session_parameter_lobby_vote_set
 {
 	struct s_lobby_vote
 	{
-		byte gamemode; // ditto below, for modes
-		byte map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
-		byte number_of_votes;
+		char gamemode; // ditto below, for modes
+		char map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
+		char number_of_votes;
 	};
 
 	c_static_array<s_lobby_vote, 2> vote_options;
-	byte winning_vote_index;
-	byte : 8;
+	char winning_vote_index;
+	char : 8;
 };
 static_assert(sizeof(s_network_session_parameter_lobby_vote_set) == 0x8);
 

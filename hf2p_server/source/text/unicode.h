@@ -80,7 +80,7 @@ extern void wchar_string_to_ascii_string(wchar_t const* src, char* dst, long sou
 //extern void ascii_string_to_utf32_string(char const *,struct s_escape_table const *,struct utf32 *,long,long *);
 //extern void wchar_string_to_utf32_string(wchar_t const *,struct s_escape_table const *,struct utf32 *,long,long *);
 
-//extern void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len);
+extern void __cdecl ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len);
 
 //extern long utf32_character_to_utf16_string(struct utf32,struct utf16 *,long);
 //extern struct utf32 utf16_string_to_utf32_character(struct utf16 const *,struct utf16 const * *);
@@ -185,7 +185,7 @@ public:
 		return m_string;
 	}
 
-	wchar_t const* vprint(wchar_t const* format, va_list list)
+	wchar_t const* print_va(wchar_t const* format, va_list list)
 	{
 		uvsnzprintf(m_string, k_buffer_size, format, list);
 
@@ -197,7 +197,7 @@ public:
 		va_list list;
 		va_start(list, format);
 
-		append_vprint(format, list);
+		append_print_va(format, list);
 
 		va_end(list);
 		return m_string;
@@ -208,19 +208,19 @@ public:
 		va_list list;
 		va_start(list, format);
 
-		wchar_t const* result = append_vprint(format, list);
+		wchar_t const* result = append_print_va(format, list);
 		append_line();
 
 		va_end(list);
 		return result;
 	}
 
-	wchar_t const* append_vprint(wchar_t const* format, va_list list)
+	wchar_t const* append_print_va(wchar_t const* format, va_list list)
 	{
 		long current_length = length();
 
-		//ASSERT(format);
-		//ASSERT(current_length >= 0 && current_length < k_buffer_size);
+		//assert(format);
+		//assert(current_length >= 0 && current_length < k_buffer_size);
 
 		uvsnzprintf(m_string + current_length, k_buffer_size - current_length, format, list);
 
@@ -238,6 +238,14 @@ public:
 	bool is_equal(wchar_t const* s) const
 	{
 		return is_equal(s, true);
+	}
+
+	wchar_t* copy_to(wchar_t* s, unsigned int size)const
+	{
+		if (size > k_buffer_size)
+			size = k_buffer_size;
+
+		return ustrnzcpy(s, m_string, size);
 	}
 
 protected:

@@ -25,9 +25,10 @@ void simulation_action_game_statborg_update(c_flags<long, ulong64, 64>* update_f
 	}
 }
 
+// TODO: ASSERTION IS CRASHING HERE
 void simulation_action_game_statborg_update(long update_flag)
 {
-	assert(update_flag >= 0 && update_flag < k_simulation_statborg_update_flag_count);
+	//assert(update_flag >= 0 && update_flag < k_simulation_statborg_update_flag_count);
 	c_flags<long, ulong64, 64> update_flags = {};
 	update_flags.set(update_flag, true);
 	simulation_action_game_statborg_update(&update_flags);

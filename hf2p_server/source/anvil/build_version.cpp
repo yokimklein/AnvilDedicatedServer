@@ -24,6 +24,7 @@ const char* anvil_get_config_string()
 		return BUILD_CONFIG_DS;
 	else
 		return BUILD_CONFIG_GS;
+	//return BUILD_CONFIG_GC;
 }
 
 const char* anvil_get_project_name_string()

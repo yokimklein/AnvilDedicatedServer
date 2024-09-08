@@ -8,16 +8,16 @@ struct s_api_user_loadout
 {
 	void write_configuration(s_s3d_player_loadout* out_loadout);
 
-	long gender;
-	char armour_suit[32];
-	char primary_weapon[32];
-	char secondary_weapon[32];
-	char grenade[32];
-	char support_pack[32];
-	char tactical_pack1[32];
-	char tactical_pack2[32];
-	char tactical_pack3[32];
-	char tactical_pack4[32];
+	c_static_flags<32> flags;
+	c_static_string<32> armour_suit;
+	c_static_string<32> primary_weapon;
+	c_static_string<32> secondary_weapon;
+	c_static_string<32> grenade;
+	c_static_string<32> support_pack;
+	c_static_string<32> tactical_pack1;
+	c_static_string<32> tactical_pack2;
+	c_static_string<32> tactical_pack3;
+	c_static_string<32> tactical_pack4;
 };
 static_assert(sizeof(s_api_user_loadout) == 0x124);
 
@@ -26,13 +26,13 @@ struct s_api_user_customisation
 	void write_colours(s_s3d_player_customization* out_customisation);
 
 	long loadout_index;
-	char account_label[32];
-	char emblem[32];
-	char primary_colour[32];
-	char secondary_colour[32];
-	char visor_colour[32];
-	char lights_colour[32];
-	char hologram_colour[32];
+	c_static_string<32> account_label;
+	c_static_string<32> emblem;
+	c_static_string<32> primary_colour;
+	c_static_string<32> secondary_colour;
+	c_static_string<32> visor_colour;
+	c_static_string<32> lights_colour;
+	c_static_string<32> hologram_colour;
 };
 static_assert(sizeof(s_api_user_customisation) == 0xE4);
 

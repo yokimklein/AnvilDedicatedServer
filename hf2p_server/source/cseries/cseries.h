@@ -694,10 +694,66 @@ static_assert(sizeof(s_location) == sizeof(s_cluster_reference));
 template<long k_maximum_count>
 struct c_static_string
 {
+	using t_type = char[k_maximum_count];
+
 public:
+	static long const element_count = k_maximum_count;
+
+	__forceinline t_type& get()
+	{
+		return m_string;
+	}
+
 	c_static_string() :
 		m_string{}
 	{
+		clear();
+	}
+
+	c_static_string(char const* s) :
+		m_string{}
+	{
+		clear();
+		set(s);
+	}
+
+	void null_terminate_buffer()
+	{
+		m_string[k_maximum_count - 1] = 0;
+	}
+
+	void set_character(long index, char character)
+	{
+		assert(VALID_INDEX(index, k_maximum_count - 1));
+
+		//long initial_length = length();
+		//assert(VALID_COUNT(index, initial_length));
+		//
+		//if (index >= initial_length)
+		//{
+		//	if (index == initial_length && index < k_maximum_count - 1)
+		//	{
+		//		m_string[index] = character;
+		//		m_string[index + 1] = 0;
+		//	}
+		//}
+		//else
+		//{
+		//	m_string[index] = character;
+		//}
+
+		if (!m_string[index])
+			m_string[index + 1] = 0;
+
+		m_string[index] = character;
+	}
+
+	void set_length(long length)
+	{
+		if (VALID_COUNT(length, k_maximum_count - 1))
+		{
+			m_string[length] = 0;
+		}
 	}
 
 	void set(char const* s)
@@ -708,6 +764,13 @@ public:
 	void append(char const* s)
 	{
 		csstrnzcat(m_string, s, k_maximum_count);
+	}
+
+	void append_line(char const* s = nullptr)
+	{
+		if (s != nullptr)
+			csstrnzcat(m_string, s, k_maximum_count);
+		csstrnzcat(m_string, "\r\n", k_maximum_count);
 	}
 
 	char const* print(char const* format, ...)
@@ -722,7 +785,20 @@ public:
 		return m_string;
 	}
 
-	char const* vprint(char const* format, va_list list)
+	char const* print_line(char const* format, ...)
+	{
+		va_list list;
+		va_start(list, format);
+
+		cvsnzprintf(m_string, k_maximum_count, format, list);
+		append_line();
+
+		va_end(list);
+
+		return m_string;
+	}
+
+	char const* print_va(char const* format, va_list list)
 	{
 		cvsnzprintf(m_string, k_maximum_count, format, list);
 
@@ -734,13 +810,25 @@ public:
 		va_list list;
 		va_start(list, format);
 
-		char const* result = append_vprint(format, list);
+		char const* result = append_print_va(format, list);
 
 		va_end(list);
 		return result;
 	}
 
-	char const* append_vprint(char const* format, va_list list)
+	char const* append_print_line(char const* format, ...)
+	{
+		va_list list;
+		va_start(list, format);
+
+		char const* result = append_print_va(format, list);
+		append_line();
+
+		va_end(list);
+		return result;
+	}
+
+	char const* append_print_va(char const* format, va_list list)
 	{
 		dword current_length = length();
 
@@ -757,7 +845,25 @@ public:
 		csmemset(m_string, 0, sizeof(m_string));
 	}
 
+	bool is_empty() const
+	{
+		return !m_string[0];
+	}
+
 	char const* get_string() const
+	{
+		return m_string;
+	}
+
+	char const* get_offset(long offset) const
+	{
+		if (VALID_INDEX(offset, length()))
+			return &m_string[offset];
+
+		return "";
+	}
+
+	char* get_buffer()
 	{
 		return m_string;
 	}
@@ -767,18 +873,41 @@ public:
 		return csstrnlen(m_string, k_maximum_count);
 	}
 
+	bool is_equal(char const* _string) const
+	{
+		assert(_string);
+
+		return csstrnlen(_string, k_maximum_count) == length() && csmemcmp(get_string(), _string, length()) == 0;
+	}
+
 	bool starts_with(char const* _string) const
 	{
-		//assert(_string);
+		assert(_string);
 
-		return csmemcmp(_string, get_string(), length()) == 0;
+		return csmemcmp(_string, get_string(), csstrnlen(_string, k_maximum_count)) == 0;
+	}
+
+	bool ends_with(char const* _string) const
+	{
+		assert(_string);
+
+		long _length = length();
+		long suffix_length = csstrnlen(_string, k_maximum_count);
+
+		if (suffix_length > _length)
+			return false;
+
+		char const* suffix = get_string() + (_length - suffix_length);
+
+		bool result = csmemcmp(suffix, _string, suffix_length) == 0;
+		return result;
 	}
 
 	long next_index_of(char const* _string, long index) const
 	{
-		//assert(_string);
+		assert(_string);
 
-		long result = -1;
+		long result = NONE;
 
 		if (index < length())
 		{
@@ -792,7 +921,7 @@ public:
 
 	long index_of(char const* _string) const
 	{
-		//assert(_string);
+		assert(_string);
 
 		return next_index_of(_string, 0);
 	}
@@ -812,9 +941,17 @@ public:
 		if (index < 0 || _length <= 0 || index + _length > length())
 			return false;
 
-		s.set_bounded(get_string() + index, _length);
+		s.set_bounded(get_offset(index), _length);
 
 		return true;
+	}
+
+	char* copy_to(char* s, unsigned int size)const
+	{
+		if (size > k_maximum_count)
+			size = k_maximum_count;
+
+		return csstrnzcpy(s, m_string, size);
 	}
 
 protected:

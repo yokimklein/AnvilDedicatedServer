@@ -98,7 +98,7 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     {
         printf("[+] %s \n", DstBuf);
     }
-    // parse obfuscated URIs - temporarily disabled
+    // parse obfuscated URIs - temporarily disabled due to crashes
     //else if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
     //{
     //    char resource_uri[0x100];
@@ -174,8 +174,8 @@ void anvil_hooks_miscellaneous_apply()
     // disable build watermark text
     //hook_function(0x1B0AB0, 0x5CF, game_engine_render_frame_watermarks_hook);
 
-    // hook net_debug_print's vsnprintf_s call to print API logs to the console - temporarily disabled due to crashes
-    //Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
+    // hook net_debug_print's vsnprintf_s call to print API logs to the console
+    Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
     
     // Fix host crashing when killed by a player when not connected to the API
     Hook(0x33B1E0, sub_718BF0_hook, HookFlags::IsCall).Apply();

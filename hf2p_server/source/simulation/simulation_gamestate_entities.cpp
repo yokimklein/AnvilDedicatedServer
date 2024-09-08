@@ -7,11 +7,11 @@ datum_index simulation_gamestate_entity_create()
 {
 	TLS_DATA_GET_VALUE_REFERENCE(simulation_gamestate_entities);
 	datum_index gamestate_index = datum_new(*simulation_gamestate_entities);
-	if (gamestate_index != -1)
+	if (gamestate_index != NONE)
 	{
 		simulation_gamestate_entity_datum* gamestate_entity = (simulation_gamestate_entity_datum*)datum_get(*simulation_gamestate_entities, gamestate_index);
-		gamestate_entity->object_index = -1;
-		gamestate_entity->entity_index = -1;
+		gamestate_entity->object_index = NONE;
+		gamestate_entity->entity_index = NONE;
 		gamestate_entity->__unknownC = 0;
 	}
 	else
@@ -32,7 +32,7 @@ void simulation_gamestate_entity_set_object_index(datum_index gamestate_index, l
 
 long simulation_gamestate_entity_get_object_index(datum_index gamestate_index)
 {
-	long object_index = -1;
+	long object_index = NONE;
 	assert(gamestate_index != NONE);
 	TLS_DATA_GET_VALUE_REFERENCE(simulation_gamestate_entities);
 

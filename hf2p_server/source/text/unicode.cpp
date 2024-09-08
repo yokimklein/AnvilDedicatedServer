@@ -82,7 +82,11 @@ wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count)
 
 //int ustricmp(wchar_t const* a1, wchar_t const* a2)
 
-//void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len)
+void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len)
+{
+    MultiByteToWideChar(0, 0, src, -1, dest, src_len);
+    dest[src_len] = 0;
+}
 
 int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count)
 {

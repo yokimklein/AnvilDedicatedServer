@@ -16,6 +16,9 @@
 #include <game\game_engine_util.h>
 #include <tag_files\string_ids.h>
 #include <hf2p\loadouts.h>
+#include <memory\tls.h>
+#include <fstream>
+#include <string>
 
 const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -75,7 +78,6 @@ void anvil_session_update()
     static bool key_held_pgup = false;
     static bool key_held_pgdown = false;
     //static bool key_held_delete = false; // used for podium taunts
-
     if (network_session->current_local_state() == _network_session_state_none)
     {
         anvil_create_session();
@@ -113,27 +115,17 @@ void anvil_session_update()
             }
         }
     }
-
     // once session is setup
     if (network_session->established())
     {
         c_network_session_membership* membership = network_session->get_session_membership();
         c_network_session_parameters* parameters = network_session->get_session_parameters();
-        static e_player_vote_selection vote_selections[k_maximum_multiplayer_players] {};
         
         // debug server controls
         if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
         {
             printf("Starting vote...\n");
-            s_network_session_parameter_lobby_vote_set lobby_vote_set = {};
-            lobby_vote_set.vote_options[0].gamemode = 1; // slayer small
-            lobby_vote_set.vote_options[0].map = 3; // guardian
-            lobby_vote_set.vote_options[1].gamemode = 1; // slayer small
-            lobby_vote_set.vote_options[1].map = 4; // valhalla
-            parameters->lobby_vote_set.set(&lobby_vote_set);
-            e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
-            parameters->dedicated_server_session_state.set(&session_state);
-            parameters->countdown_timer.set(_network_game_countdown_delayed_reason_voting, 10);
+            anvil_session_start_voting(network_session);
         }
         else if (anvil_key_pressed(VK_HOME, &key_held_home))
         {
@@ -142,23 +134,35 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            printf("Booting peer...\n");
-            anvil_boot_peer(1);
+            // load new string from text file
+            std::ifstream file("map_load.txt");
+            std::string scenario_path_str;
+            std::string map_name_str;
+            if (std::getline(file, scenario_path_str))
+            {
+                if (!std::getline(file, map_name_str))
+                {
+                    printf("no .map name provided, using -1 map id\n");
+                    anvil_launch_scenario(scenario_path_str.c_str(), nullptr);
+                }
+                else
+                {
+                    wchar_t map_name[128];
+                    ascii_string_to_wchar_string(map_name_str.c_str(), map_name, map_name_str.length(), nullptr);
+                    anvil_launch_scenario(scenario_path_str.c_str(), map_name);
+                }
+            }
+            else
+            {
+                printf("map_load.txt mising scenario path line!\n");
+            }
 
-            //qword user_xuid = 1;
-            //s_api_user_loadout* loadout = nullptr;
-            //s_api_user_customisation* customisation = user_get_customisation_from_api(user_xuid);
-            //if (customisation != nullptr)
-            //{
-            //    if (VALID_INDEX(customisation->loadout_index, 3))
-            //    {
-            //        loadout = user_get_loadout_from_api(user_xuid, customisation->loadout_index);
-            //    }
-            //}
-            //printf("Command finished.\n");
+            //TLS_DATA_GET_VALUE_REFERENCE(director_globals);
+            //director_globals->infos[0].camera_mode;
+            //director_globals->infos[0].director_mode;
+            //director_globals->infos[0].director_perspective;
+            //printf("Finished.\n");
 
-            //printf("Setting test player data...\n");
-            //anvil_session_set_test_player_data(membership);
             //printf("Starting session countdown...\n");
             //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
             //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
@@ -174,102 +178,173 @@ void anvil_session_update()
             printf("Setting test mode...\n");
             anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
             anvil_session_set_map(_riverworld);
-            //printf("Setting test player data...\n");
-            //anvil_session_set_test_player_data(membership);
-            
-            //printf("TEST: loading campaign file...\n");
-            //s_file_reference file_reference;
-            //file_reference_create_from_path(&file_reference, L"maps\\halo3.campaign", false);
-            //levels_add_campaign(&file_reference);
         }
 
-        // update dedicated server state
-        if (!parameters->dedicated_server_session_state.get_allowed()) return; // skip if data is not available
+        // update voting
+        if (parameters->dedicated_server_session_state.get_allowed()) // skip if data is not available
+            anvil_session_update_voting(network_session);
+    }
+}
 
-        e_dedicated_server_session_state* dedicated_server_session_state = parameters->dedicated_server_session_state.get();
-        if (dedicated_server_session_state != nullptr && game_is_dedicated_server())
+s_anvil_session_vote_pool::s_anvil_session_vote_pool()
+{
+    // Map ids in order
+    e_map_id map_ids[] =
+    {
+        _zanzibar,
+        _s3d_turf,
+        _deadlock,
+        _guardian,
+        _riverworld,
+        _chill,
+        _cyberdyne,
+        _bunkerworld,
+        _s3d_reactor,
+        _s3d_edge,
+        _s3d_avalanche
+    };
+    for (long i = 0; i < map_entries.get_count(); i++)
+    {
+        map_entries[i].map_id = map_ids[i];
+        map_entries[i].map_title_instance = i; // TIs appear in map id order so this should be fine
+    }
+    gamemode_entries[0].engine_index = _game_engine_type_ctf;
+    gamemode_entries[0].gamemode_title_instance = 0;
+    gamemode_entries[0].variant_index = 0;
+    gamemode_entries[1].engine_index = _game_engine_type_slayer;
+    gamemode_entries[1].gamemode_title_instance = 1;
+    gamemode_entries[1].variant_index = 0;
+    gamemode_entries[2].engine_index = _game_engine_type_slayer;
+    gamemode_entries[2].gamemode_title_instance = 2;
+    gamemode_entries[2].variant_index = 1;
+}
+
+s_anvil_session_vote_pool g_anvil_session_vote_pool;
+e_player_vote_selection g_anvil_vote_selections[k_maximum_multiplayer_players]{};
+
+// TEMP FUNCTION: TODO blam _random_range
+long rand_range(long min, long max)
+{
+    long range = max - min + 1;
+    long num = rand() % range + min;
+    return num;
+};
+void anvil_session_start_voting(c_network_session* session)
+{
+    g_anvil_vote_selections[0] = _player_vote_none;
+    g_anvil_vote_selections[1] = _player_vote_none;
+    long map_entry_indices[2] = 
+    {
+        rand_range(0, g_anvil_session_vote_pool.map_entries.get_count() - 1),
+        rand_range(0, g_anvil_session_vote_pool.map_entries.get_count() - 1)
+    };
+    assert(VALID_INDEX(map_entry_indices[0], NUMBEROF(s_anvil_session_vote_pool::map_entries)));
+    assert(VALID_INDEX(map_entry_indices[1], NUMBEROF(s_anvil_session_vote_pool::map_entries)));
+    long gamemode_entry_indices[2] =
+    {
+        rand_range(1, g_anvil_session_vote_pool.gamemode_entries.get_count() - 1), // CLAMP OUT CTF
+        rand_range(1, g_anvil_session_vote_pool.gamemode_entries.get_count() - 1)  // CLAMP OUT CTF
+    };
+    assert(VALID_INDEX(gamemode_entry_indices[0], NUMBEROF(s_anvil_session_vote_pool::gamemode_entries)));
+    assert(VALID_INDEX(gamemode_entry_indices[1], NUMBEROF(s_anvil_session_vote_pool::gamemode_entries)));
+
+    c_network_session_parameters* parameters = session->get_session_parameters();
+    s_network_session_parameter_lobby_vote_set lobby_vote_set = {};
+    lobby_vote_set.vote_options[0].gamemode = g_anvil_session_vote_pool.gamemode_entries[gamemode_entry_indices[0]].gamemode_title_instance;
+    lobby_vote_set.vote_options[0].map = g_anvil_session_vote_pool.map_entries[map_entry_indices[0]].map_title_instance;
+    lobby_vote_set.vote_options[1].gamemode = g_anvil_session_vote_pool.gamemode_entries[gamemode_entry_indices[1]].gamemode_title_instance;
+    lobby_vote_set.vote_options[1].map = g_anvil_session_vote_pool.map_entries[map_entry_indices[1]].map_title_instance;
+    parameters->lobby_vote_set.set(&lobby_vote_set);
+    e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
+    parameters->dedicated_server_session_state.set(&session_state);
+    parameters->countdown_timer.set(_network_game_countdown_delayed_reason_voting, 10);
+}
+
+void anvil_session_update_voting(c_network_session* session)
+{
+    c_network_session_membership* membership = session->get_session_membership();
+    c_network_session_parameters* parameters = session->get_session_parameters();
+
+    e_dedicated_server_session_state* dedicated_server_session_state = parameters->dedicated_server_session_state.get();
+    if (dedicated_server_session_state != nullptr && game_is_dedicated_server())
+    {
+        if (*dedicated_server_session_state == _dedicated_server_session_state_voting)
         {
-            if (*dedicated_server_session_state == _dedicated_server_session_state_voting)
+            // if voting is active
+            if (parameters->countdown_timer.get_countdown_timer() > 0)
             {
-                // if voting is active
-                if (parameters->countdown_timer.get_countdown_timer() > 0)
+                // update votes
+                for (long i = membership->get_first_player(); i != -1; i = membership->get_next_player(i))
                 {
-                    // update votes
-                    for (long i = membership->get_first_player(); i != -1; i = membership->get_next_player(i))
+                    s_network_session_player* player = membership->get_player(i);
+                    e_player_vote_selection vote_selection_index = player->configuration.client.vote_selection_index;
+                    // if vote has changed and is valid
+                    if (vote_selection_index > _player_vote_none && vote_selection_index < k_player_vote_selection_count && vote_selection_index != g_anvil_vote_selections[i])
                     {
-                        s_network_session_player* player = membership->get_player(i);
-                        e_player_vote_selection vote_selection_index = player->configuration.client.vote_selection_index;
-                        // if vote has changed and is valid
-                        if (vote_selection_index > _player_vote_none && vote_selection_index < k_player_vote_selection_count && vote_selection_index != vote_selections[i])
-                        {
-                            s_network_session_parameter_lobby_vote_set lobby_vote_set;
-                            parameters->lobby_vote_set.get(&lobby_vote_set);
+                        s_network_session_parameter_lobby_vote_set lobby_vote_set;
+                        parameters->lobby_vote_set.get(&lobby_vote_set);
 
-                            // remove old vote if its valid
-                            if (vote_selections[i] > _player_vote_none && vote_selections[i] < k_player_vote_selection_count)
-                                lobby_vote_set.vote_options[vote_selections[i] - 1].number_of_votes--;
-                            // update vote selection
-                            vote_selections[i] = vote_selection_index;
-                            // add new vote
-                            lobby_vote_set.vote_options[vote_selection_index - 1].number_of_votes++;
+                        // remove old vote if its valid
+                        if (g_anvil_vote_selections[i] > _player_vote_none && g_anvil_vote_selections[i] < k_player_vote_selection_count)
+                            lobby_vote_set.vote_options[g_anvil_vote_selections[i] - 1].number_of_votes--;
+                        // update vote selection
+                        g_anvil_vote_selections[i] = vote_selection_index;
+                        // add new vote
+                        lobby_vote_set.vote_options[vote_selection_index - 1].number_of_votes++;
 
-                            // update vote set parameter
-                            parameters->lobby_vote_set.set(&lobby_vote_set);
-                        }
+                        // update vote set parameter
+                        parameters->lobby_vote_set.set(&lobby_vote_set);
                     }
                 }
-                // else if voting has ended
-                else
-                {
-                    // loop through each player and gather their vote selections
-                    byte option_votes[2] = {};
-                    for (long i = membership->get_first_player(); i != -1; i = membership->get_next_player(i))
-                    {
-                        // if vote selection is valid
-                        if (vote_selections[i] > _player_vote_none && vote_selections[i] < k_player_vote_selection_count)
-                            option_votes[vote_selections[i] - 1]++;
-                    }
-                    byte winning_index = (option_votes[0] > option_votes[1] ? 0 : 1);
-                    printf("option %d wins the vote!\n", winning_index);
-                    s_network_session_parameter_lobby_vote_set lobby_vote_set;
-                    parameters->lobby_vote_set.get(&lobby_vote_set);
-                    lobby_vote_set.winning_vote_index = winning_index;
-                    parameters->lobby_vote_set.set(&lobby_vote_set);
-
-                    // TODO: retrieve voting options from title instances - pull map id and use with anvil_session_set_map
-                    if (winning_index == 0)
-                    {
-                        anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
-                        anvil_session_set_map(_guardian);
-                    }
-                    else if (winning_index == 1)
-                    {
-                        anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
-                        anvil_session_set_map(_riverworld);
-                    }
-
-                    e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
-                    parameters->dedicated_server_session_state.set(&session_state);
-                }
             }
-            // if dedi state is ready to start and the map has finished loading, start the countdown
-            else if (*dedicated_server_session_state == _dedicated_server_session_state_game_start_countdown &&
-                parameters->game_start_status.get()->game_start_status == _session_game_start_status_ready_leader &&
-                parameters->game_start_status.get()->map_load_progress == 100)
+            // else if voting has ended
+            else
             {
-                parameters->countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
-            }
-            // dedi state is set to in game by c_life_cycle_state_handler_in_game::enter, and reset to waiting for players in c_life_cycle_state_handler_in_game::exit
-            
-            // when enough players are found JOINING SESSION
-            // once connected, WAITING FOR PLAYERS until all lobby players have connected
-            // VOTING ENDS IN for 10 seconds during vote phase
-            // GAME STARTS 5 second countdown timer
-            // wait 30 seconds once loaded back to mainmenu after game with 'PREPARE FOR BATTLE' text, kick all players from session back to matchmake
-            // then return to MATCHMAKING QUEUE until enough players are found
+                // loop through each player and gather their vote selections
+                char option_votes[2] = {};
+                for (long i = membership->get_first_player(); i != -1; i = membership->get_next_player(i))
+                {
+                    // if vote selection is valid
+                    if (g_anvil_vote_selections[i] > _player_vote_none && g_anvil_vote_selections[i] < k_player_vote_selection_count)
+                        option_votes[g_anvil_vote_selections[i] - 1]++;
+                }
+                char winning_index = (option_votes[0] > option_votes[1] ? 0 : 1);
+                printf("option %d wins the vote!\n", winning_index);
+                s_network_session_parameter_lobby_vote_set lobby_vote_set;
+                parameters->lobby_vote_set.get(&lobby_vote_set);
+                lobby_vote_set.winning_vote_index = winning_index;
+                parameters->lobby_vote_set.set(&lobby_vote_set);
 
-            // TODO: what displays the 'PREPARE FOR BATTLE' text?
+                // load winning map & mode
+                char gamemode_index = lobby_vote_set.vote_options[winning_index].gamemode;
+                e_game_engine_type engine_index = g_anvil_session_vote_pool.gamemode_entries[gamemode_index].engine_index.get();
+                char variant_index = g_anvil_session_vote_pool.gamemode_entries[gamemode_index].variant_index;
+                char map_index = lobby_vote_set.vote_options[winning_index].map;
+                e_map_id map_id = g_anvil_session_vote_pool.map_entries[map_index].map_id;
+                anvil_session_set_gamemode(session, engine_index, variant_index);
+                anvil_session_set_map(map_id);
+
+                e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+                parameters->dedicated_server_session_state.set(&session_state);
+            }
         }
+        // if dedi state is ready to start and the map has finished loading, start the countdown
+        else if (*dedicated_server_session_state == _dedicated_server_session_state_game_start_countdown &&
+            parameters->game_start_status.get()->game_start_status == _session_game_start_status_ready_leader &&
+            parameters->game_start_status.get()->map_load_progress == 100)
+        {
+            parameters->countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
+        }
+        // dedi state is set to in game by c_life_cycle_state_handler_in_game::enter, and reset to waiting for players in c_life_cycle_state_handler_in_game::exit
+
+        // when enough players are found JOINING SESSION
+        // once connected, WAITING FOR PLAYERS until all lobby players have connected
+        // VOTING ENDS IN for 10 seconds during vote phase
+        // GAME STARTS 5 second countdown timer
+        // wait 30 seconds once loaded back to mainmenu after game with 'PREPARE FOR BATTLE' text, kick all players from session back to matchmake
+        // then return to MATCHMAKING QUEUE until enough players are found
+
+        // TODO: what displays the 'PREPARE FOR BATTLE' text?
     }
 }
 
@@ -293,6 +368,7 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
         return false;
     }
 
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_teams_enabled(false);
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(3);
     //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(3);
     //game_variant.get_slayer_variant_writeable()->set_score_to_win(1);
@@ -389,16 +465,16 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         }
         else
         {
-            // make sure these appear in API user id order
-            wchar_t player_list[16][16] = { L"zzVertigo", L"Yokim", L"Twister", L"Berth", L"", L"ilikemyname", L"", L"", L"", L"", L"", L"", L"", L"", L"", L""};
-            for (size_t i = 0; i < 16; i++)
+            wchar_t player_list[16][16] = { L"zzVertigo", L"ilikemyname", L"Twister", L"Yokim" }; // player nicknames
+            qword user_ids[16] = { 1724964179, 1724964187, 1724964203, 1724964208 };
+            for (size_t i = 0; i < NUMBEROF(user_ids); i++)
             {
                 // if a match is found
                 if (peer->properties.peer_name.is_equal(player_list[i]))
                 {
-                    configuration->user_xuid = i + 1;
+                    configuration->user_xuid = user_ids[i];
                     // set dev service tag
-                    if (i == 0 || i == 1 || i == 2)
+                    if (i == 0)
                     {
                         wchar_t service_tag[5] = L"DEV";
                         configuration->player_appearance.service_tag.set(service_tag);
@@ -410,7 +486,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         }
     }
 
-    if (configuration->user_xuid != -1 && configuration->user_xuid > 0)
+    if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != -1 && configuration->user_xuid > 0)
     {
         s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation != nullptr)
@@ -433,6 +509,10 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                 printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
             }
         }
+        // TODO: modifiers
+        //configuration->s3d_player_container.modifiers[0].modifier_values[_enable_nemesis_mechanics] = true;
+        //configuration->s3d_player_container.modifiers[0].modifier_values[_grenade_warning] = false;
+        membership->increment_update();
     }
 
     return player_data_updated;
@@ -466,10 +546,28 @@ bool anvil_key_pressed(long vkey, bool* key_held)
     return key_pressed;
 }
 
-void anvil_launch_scenario(const char* scenario_path)
+// map_name is optional to retrieve a map id from a .map
+void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
 {
-    //csstrnzcpy(g_tutorial_scenario_path, scenario_path, 40);
-    //csmemcpy(g_tutorial_scenario_path, scenario_path, strlen_debug(scenario_path));
+    assert(scenario_path != nullptr);
+    g_tutorial_scenario_path.set(scenario_path);
+    if (map_name != nullptr)
+    {
+        g_tutorial_map_name.set(map_name);
+    }
+    else
+    {
+        g_tutorial_map_name.set(L"no .map provided");
+    }
+
+    long scnr_path_address = (long)g_tutorial_scenario_path.get_string();
+    memcpy((void*)BASE_ADDRESS(0x33AB0D), &scnr_path_address, 4);
+    memcpy((void*)BASE_ADDRESS(0x33AB58), &scnr_path_address, 4);
+
+    long map_name_address = (long)g_tutorial_map_name.get_string();
+    memcpy((void*)BASE_ADDRESS(0xDD176), &map_name_address, 4);
+
+    printf("anvil_launch_scenario(): launching %s (%ls)\n", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
     hq_start_tutorial_level();
 }
 
@@ -515,4 +613,36 @@ void anvil_boot_peer(long peer_index)
         }
     }
     session->host_boot_machine(peer_index, _network_session_boot_reason_banned);
+}
+
+void anvil_power_sister(long peer_index)
+{
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (!session->get_session_membership()->is_peer_valid(peer_index))
+        return;
+
+    s_network_session_peer* peer = session->get_session_membership()->get_peer(peer_index);
+    for (short player_absolute_index = 0; player_absolute_index < k_maximum_players; player_absolute_index++)
+    {
+        if (peer->player_mask.test(player_absolute_index))
+        {
+            datum_index player_index = player_index_from_absolute_player_index(player_absolute_index);
+            if (player_index != NONE)
+            {
+                s_network_session_player* player = session->get_session_membership()->get_player(player_absolute_index);
+                player->configuration.host.player_name.set(L"tickle tipson");
+                player->configuration.host.player_appearance.flags = 1;
+                player->configuration.host.player_appearance.service_tag.set(L"SIS");
+                player->configuration.host.s3d_player_container.override_api_data = true;
+                player->configuration.host.s3d_player_container.loadouts[0].armor_suit = _armor_prophet;
+                player->configuration.host.s3d_player_container.loadouts[0].gender = _gender_female;
+                player->configuration.host.s3d_player_customization.active_loadout_index = 0;
+                player->configuration.host.s3d_player_customization.colors[_armor_color_primary] = 0xFF69B4;
+                player->configuration.host.s3d_player_customization.colors[_armor_color_secondary] = 0xFF69B4;
+                player->configuration.host.s3d_player_customization.colors[_armor_color_lights] = 0xFF69B4;
+                player->configuration.host.s3d_player_customization.colors[_armor_color_holo] = 0xFF69B4;
+                session->get_session_membership()->increment_update();
+            }
+        }
+    }
 }

@@ -12,8 +12,8 @@
 
 char const* k_session_type_strings[k_network_session_type_count] = {
     "none",
-    "group",
     "squad"
+    //"group" // No longer exists in ms29
 };
 
 char const* k_session_state_strings[k_network_session_state_count] = {

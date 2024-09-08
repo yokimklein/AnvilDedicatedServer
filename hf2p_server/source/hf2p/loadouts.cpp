@@ -45,6 +45,7 @@ bool __fastcall equipment_add(long slot_index, long equipment_index)
 	return INVOKE(0xE0530, equipment_add, slot_index, equipment_index);
 }
 
+// retrieves from cached loadouts
 s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
 {
 	assert(VALID_INDEX(loadout_index, 3));
@@ -52,6 +53,7 @@ s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_inde
 	return user_get_loadout_from_api_funcs[loadout_index](user_xuid);
 }
 
+// retrieves from cached customisations
 s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xuid)
 {
 	return INVOKE(0xE0890, user_get_customisation_from_api, user_xuid);

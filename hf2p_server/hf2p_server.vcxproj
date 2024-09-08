@@ -182,7 +182,16 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
     <ClInclude Include="source\cache\cache_files.h" />
+    <ClInclude Include="source\camera\camera.h" />
     <ClInclude Include="source\camera\camera_globals.h" />
+    <ClInclude Include="source\camera\debug_director.h" />
+    <ClInclude Include="source\camera\director.h" />
+    <ClInclude Include="source\camera\director_globals.h" />
+    <ClInclude Include="source\camera\editor_director.h" />
+    <ClInclude Include="source\camera\game_director.h" />
+    <ClInclude Include="source\camera\observer.h" />
+    <ClInclude Include="source\camera\observer_director.h" />
+    <ClInclude Include="source\camera\saved_film_director.h" />
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
     <ClInclude Include="source\devices\devices.h" />

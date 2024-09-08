@@ -21,7 +21,7 @@ datum_index game_engine_globals_get_statborg_gamestate_index()
 		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
 		return game_engine_globals->statborg_gamestate_index;
 	}
-	return -1;
+	return NONE;
 }
 
 void game_engine_globals_set_gamestate_index(datum_index index)

@@ -9,7 +9,7 @@
 #include <game\game.h>
 #include <networking\network_globals.h>
 
-bool const k_dedicated_has_player = true;
+bool const k_dedicated_has_player = false;
 
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -76,7 +76,7 @@ void anvil_hooks_ds_apply()
 {
     // add anvil_session_update to network_update after network_session_interface_update
     insert_hook(0x24601, 0x24606, anvil_session_update_hook, _hook_execute_replaced_first);
-
+    
     // hook c_network_session_parameter_game_start_status::set calls to log when the session start status & start error are updated
     Hook(0x3BA00, c_network_session_parameter_game_start_status__set_hook).Apply();
     insert_hook(0x4DF34, 0x4DF99, c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook, _hook_replace);

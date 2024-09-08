@@ -85,6 +85,7 @@ s3d_burial_mounds
 s3d_chillout // Abeyance
 s3d_beaver_creek
 */
+	k_map_id_count
 };
 
 struct s_map_variant_placement_properties

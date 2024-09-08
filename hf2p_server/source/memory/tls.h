@@ -9,6 +9,7 @@
 #include <game\game_time.h>
 #include <game\survival_mode.h>
 #include <ai\actors.h>
+#include <camera\director_globals.h>
 
 struct s_thread_local_storage
 {
@@ -60,7 +61,7 @@ struct s_thread_local_storage
 	struct s_game_sound_globals* game_sound_globals;
 	byte* __unknownB8;
 	byte* __unknownBC; // impacts
-	byte* director_globals;
+	s_director_globals* director_globals;
 	byte* __unknownC4; // cached object render states
 	byte* __unknownC8; // device groups
 	byte* __unknownCC;
