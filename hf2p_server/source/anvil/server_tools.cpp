@@ -16,6 +16,7 @@
 #include <game\game_engine_util.h>
 #include <tag_files\string_ids.h>
 #include <hf2p\loadouts.h>
+#include <hf2p\user.h>
 #include <memory\tls.h>
 #include <fstream>
 #include <string>
@@ -134,6 +135,13 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
+            s_api_user_loadout* loadout = user_get_loadout_from_api(2, 0);
+
+            s_s3d_player_loadout player_loadout;
+            loadout->write_configuration(&player_loadout);
+
+            printf("Test loadout retrieve...\n");
+            /*
             // load new string from text file
             std::ifstream file("map_load.txt");
             std::string scenario_path_str;
@@ -156,7 +164,7 @@ void anvil_session_update()
             {
                 printf("map_load.txt mising scenario path line!\n");
             }
-
+            */
             //TLS_DATA_GET_VALUE_REFERENCE(director_globals);
             //director_globals->infos[0].camera_mode;
             //director_globals->infos[0].director_mode;
@@ -318,7 +326,7 @@ void anvil_session_update_voting(c_network_session* session)
                 // load winning map & mode
                 char gamemode_index = lobby_vote_set.vote_options[winning_index].gamemode;
                 e_game_engine_type engine_index = g_anvil_session_vote_pool.gamemode_entries[gamemode_index].engine_index.get();
-                char variant_index = g_anvil_session_vote_pool.gamemode_entries[gamemode_index].variant_index;
+                long variant_index = g_anvil_session_vote_pool.gamemode_entries[gamemode_index].variant_index;
                 char map_index = lobby_vote_set.vote_options[winning_index].map;
                 e_map_id map_id = g_anvil_session_vote_pool.map_entries[map_index].map_id;
                 anvil_session_set_gamemode(session, engine_index, variant_index);
@@ -432,18 +440,17 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     c_network_session_membership* membership = session->get_session_membership();
     s_network_session_player* player = membership->get_player(player_index);
     s_network_session_peer* peer = membership->get_peer(player->peer_index);
+    
+    /*
     // if the player's xuid is unassigned 
     // temp peer name check, we're currently relying on this to assign the right user id so we need to wait until the first peer properties update comes in and sets this
     if (configuration->user_xuid == 0 && peer->properties.peer_name.length() > 0)
-    {        
-        // assign player name based on peer name - TODO: THIS IS TEMPORARY, WE NEED A MORE RIGOROUS WAY OF VERIFYING USER CREDENTIALS
-        configuration->player_name.set(peer->properties.peer_name.get_string());
-
+    {
         // dedi host loadout
         if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
         {
-            configuration->user_xuid = -1; // -1 SYSTEM/invalid player id, 0 empty ID
-            player->controller_index = 0;
+            //configuration->user_xuid = USER_SYSTEM;
+            //player->controller_index = 0;
             configuration->s3d_player_customization.colors[_armor_color_primary] = 0x0F0F0F;
             configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x05286E;
             configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
@@ -456,7 +463,6 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
             configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
             configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-            //configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 1.0f;
             configuration->s3d_player_customization.override_api_data = true;
             configuration->s3d_player_container.override_api_data = true;
             wchar_t service_tag[5] = L"HOST";
@@ -485,9 +491,12 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             }
         }
     }
-
-    if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != -1 && configuration->user_xuid > 0)
+    */
+    if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)
     {
+        // assign player name based on peer name - TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
+        configuration->player_name.set(peer->properties.peer_name.get_string());
+
         s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation != nullptr)
         {

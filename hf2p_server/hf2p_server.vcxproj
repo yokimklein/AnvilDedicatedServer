@@ -64,7 +64,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>C:\Users\toby\Documents\Halo\Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\bin\plugins\</OutDir>
+    <OutDir>$(SolutionDir)Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\bin\plugins\</OutDir>
     <IntDir>$(SolutionDir)bin\obj\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -218,10 +218,12 @@
     <ClInclude Include="source\game\game_time.h" />
     <ClInclude Include="source\game\materials.h" />
     <ClInclude Include="source\game\player_mapping.h" />
+    <ClInclude Include="source\hf2p\hf2p.h" />
     <ClInclude Include="source\hf2p\hf2p_definitions.h" />
     <ClInclude Include="source\hf2p\podium.h" />
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
+    <ClInclude Include="source\hf2p\user.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\item_definitions.h" />
     <ClInclude Include="source\items\projectiles.h" />
@@ -482,10 +484,12 @@
     <ClCompile Include="source\game\multiplayer_definitions.cpp" />
     <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\game\survival_mode.h" />
+    <ClCompile Include="source\hf2p\hf2p.cpp" />
     <ClCompile Include="source\hf2p\hf2p_session.cpp" />
     <ClCompile Include="source\hf2p\hq.cpp" />
     <ClCompile Include="source\hf2p\podium.cpp" />
     <ClCompile Include="source\hf2p\loadouts.cpp" />
+    <ClCompile Include="source\hf2p\user.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />

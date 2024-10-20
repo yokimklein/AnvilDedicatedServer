@@ -12,6 +12,14 @@ enum e_gender
 	k_gender_count
 };
 
+enum e_race
+{
+	_race_spartan,
+	_race_covenant,
+
+	k_race_count
+};
+
 // IDs are based on globals\hf2p_globals.hf2p_globals > RaceArmors[0].Genders[0].ArmorObjects
 // this assumes you are playing as a spartan, genders use the same IDs
 enum e_armor // non original name
@@ -211,9 +219,11 @@ enum e_grenade
 	k_grenade_count
 };
 
-// TODO - find out what these are
+// called 'boosters' on the API
 enum e_support_package
 {
+	_support_package_none,
+
 	k_support_package_count
 };
 
@@ -371,6 +381,11 @@ enum e_tactical_package
 
 struct s_emblem_info
 {
+	s_emblem_info()
+	{
+		csmemset(this, 0, sizeof(s_emblem_info));
+	}
+
 	struct
 	{
 		struct
@@ -397,16 +412,6 @@ static_assert(sizeof(s_emblem_info) == 0x650);
 #pragma pack(push, 4)
 struct s_player_appearance
 {
-	s_player_appearance() :
-		flags(),
-		player_model_choice(), 
-		emblem_info(),
-		service_tag(),
-		pad1(),  // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
-		pad2()
-	{
-	};
-
 	byte flags; // gender
 	byte player_model_choice; // 0 - male spartan, 1 - elite
 	byte pad1[2];
@@ -424,7 +429,7 @@ struct s_s3d_player_loadout
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> primary_weapon;
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> secondary_weapon;
 	c_enum<e_grenade, byte, _frag_grenade, k_grenade_count> grenade;
-	c_enum<e_support_package, byte, k_support_package_count, k_support_package_count> support_pack; // actually boosters? or just for the in game playercard? support packs are mechanically handled by the player modifiers
+	c_enum<e_support_package, byte, k_support_package_count, k_support_package_count> support_pack; // title instance ID + 1
 	c_enum<e_tactical_package, byte, _tactical_package_empty, k_tactical_package_count> tactical_packs[4];
 };
 static_assert(sizeof(s_s3d_player_loadout) == 0xA);

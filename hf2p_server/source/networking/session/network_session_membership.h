@@ -37,7 +37,7 @@ enum e_network_session_peer_state
 struct s_player_add_queue_entry
 {
 	s_player_identifier player_identifier;
-	long player_index;
+	long peer_index;
 	long player_update_number;
 	long controller_index;
 	s_player_configuration_from_client client_configuration;
@@ -90,6 +90,8 @@ static_assert(sizeof(s_network_session_peer_properties) == 0xA8);
 #pragma pack(push, 4)
 struct s_network_session_peer
 {
+	long get_player_index();
+
 	s_transport_secure_address secure_address;
 	c_enum<e_network_session_peer_state, long, _network_session_peer_state_none, k_network_session_peer_state_count> connection_state;
 	ulong version;
@@ -221,6 +223,7 @@ public:
 	void set_player_properties(long player_index, long desired_configuration_version, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings);
 	long get_creation_timestamp(long peer_index);
 	s_player_add_queue_entry* get_first_player_from_player_add_queue();
+	s_player_add_queue_entry* get_player_add_queue_entry(long queue_index);
 	void remove_player(long player_index);
 	void remove_player_internal(long player_index);
 	long get_player_from_identifier(s_player_identifier const* player_identifier);

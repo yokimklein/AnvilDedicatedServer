@@ -9,7 +9,7 @@
 #include <game\game.h>
 #include <networking\network_globals.h>
 
-bool const k_dedicated_has_player = false;
+bool const k_add_local_player_in_dedicated_server_mode = false;
 
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -63,13 +63,13 @@ bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_networ
 // hooks to prevent the game from adding a player to the host if we're running a dedicated server
 void __fastcall peer_request_player_add_hook(c_network_session* session, void* unused, const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
 {
-    if (game_is_dedicated_server() && !k_dedicated_has_player)
+    if (game_is_dedicated_server() && !k_add_local_player_in_dedicated_server_mode)
         return;
     session->peer_request_player_add(player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
 }
 bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
 {
-    return (!game_is_dedicated_server() || k_dedicated_has_player) && network_session_interface_get_local_user_identifier(player_identifier);
+    return (!game_is_dedicated_server() || k_add_local_player_in_dedicated_server_mode) && network_session_interface_get_local_user_identifier(player_identifier);
 }
 
 void anvil_hooks_ds_apply()

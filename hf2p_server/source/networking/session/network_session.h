@@ -91,7 +91,7 @@ public:
 	bool handle_parameters_update(s_network_message_parameters_update const* message);
 	void join_accept(s_network_session_join_request const* join_request, s_transport_address const* address);
 	e_network_join_refuse_reason can_accept_join_request(s_network_session_join_request const* join_request);
-	e_network_join_refuse_reason get_closure_reason();
+	e_network_join_refuse_reason can_accept_any_join_request();
 	const char* get_type_string(e_network_session_type session_type);
 	const char* get_state_string();
 	const char* get_peer_description(long peer_index);

@@ -74,18 +74,12 @@ static_assert(sizeof(s_player_identifier) == 0x8);
 
 struct s_player_configuration_from_client
 {
-	s_player_configuration_from_client() :
-		name(),
-		user_selected_team_index(_game_team_none),
-		vote_selection_index(),
-		selected_loadout_index(-1),
-		pad1(),
-		player_is_griefer(),
-		pad2(), // we have to initialise these so leftover garbage bytes don't screw with the membership update checksum
-		cheat_flags(),
-		ban_flags()
-	{
-	};
+	//s_player_configuration_from_client()
+	//{
+	//	memset(this, 0, sizeof(s_player_configuration_from_client));
+	//	user_selected_team_index = _game_team_none;
+	//	selected_loadout_index = NONE;
+	//};
 
 	wchar_t name[16];
 	c_enum<e_game_team, byte, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> user_selected_team_index;
@@ -101,18 +95,12 @@ static_assert(sizeof(s_player_configuration_from_client) == 0x30);
 
 struct s_player_configuration_from_host
 {
-	s_player_configuration_from_host() :
-		user_xuid(),
-		player_name(),
-		team_index(),
-		user_selected_team_index(),
-		player_appearance(),
-		s3d_player_container(),
-		s3d_player_customization()
-	{
-		team_index = _game_team_none;
-		user_selected_team_index = _game_team_none;
-	};
+	//s_player_configuration_from_host()
+	//{
+	//	csmemset(this, 0, sizeof(s_player_configuration_from_host));
+	//	team_index = _game_team_none;
+	//	user_selected_team_index = _game_team_none;
+	//};
 
 	qword user_xuid;
 	c_static_wchar_string<16> player_name;
@@ -126,7 +114,7 @@ static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
 
 struct s_player_configuration
 {
-	s_player_configuration() : client(), host() {};
+	//s_player_configuration() : client(), host() {};
 	bool operator==(s_player_configuration other) { return csmemcmp(this, &other, sizeof(*this)) == 0; };
 	bool operator!=(s_player_configuration other) { return csmemcmp(this, &other, sizeof(*this)) != 0; };
 

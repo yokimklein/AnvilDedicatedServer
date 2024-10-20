@@ -147,7 +147,7 @@ const long LONG_BITS = SIZEOF_BITS(long);
 #define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))
 #define ALIGN_UP(value, bit) ((((value) & ((1 << (bit)) - 1)) == 0) ? (value) : ((value) | ((1 << (bit)) - 1)) + 1)
 #define SET_BIT(flags, bit, enable) { if ((enable)) { (flags) |= FLAG((bit)); } else { (flags) &= ~FLAG((bit)); } }
-#define SET_MASK(flags, mask, enable) { if ((enable)) { (flags) |= (mask); } else { (flags) &= (mask); } }
+#define SET_MASK(flags, mask, enable) { if ((enable)) { (flags) |= (mask); } else { (flags) &= ~(mask); } }
 #define VALID_BITS(flags, max_bits) ((flags) & ~((1 << (max_bits)) - 1))
 
 #define ENTITY_INDEX_TO_SEED(value) ((ulong)(value >> 28))
@@ -197,6 +197,8 @@ void zero_array(t_type(&data)[k_count])
 {
 	csmemset(data, 0, sizeof(t_type) * k_count);
 }
+
+long __fastcall bit_vector_count_bits(const dword* bit_mask, int bit_count);
 
 template<typename t_type, long k_count>
 struct c_static_array

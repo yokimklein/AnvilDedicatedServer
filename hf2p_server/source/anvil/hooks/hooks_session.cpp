@@ -55,6 +55,11 @@ void __fastcall managed_session_delete_session_internal_hook(long managed_sessio
     managed_session_delete_session_internal(managed_session_index, managed_session);
 }
 
+void __fastcall can_accept_player_join_request_hook(c_network_session* thisptr, void* unused, s_player_identifier* player_identifier, s_transport_secure_address* secure_address, long peer_index, bool unknown)
+{
+    thisptr->can_accept_player_join_request(player_identifier, secure_address, peer_index, unknown);
+}
+
 void anvil_hooks_session_apply()
 {
     // add back missing host code by replacing existing stripped down functions
@@ -81,4 +86,8 @@ void anvil_hooks_session_apply()
 
     // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
     Hook(0xFBBA0, game_engine_should_spawn_player).Apply();
+
+    // TODO: REWRITE CALL FOR THIS, FUNCTION IS MISSING ARGUMENTS PASSED INTO IT
+    // hook can_accept_player_join_request to reimplement dedicated server userid check
+    //Hook(0x22F30, can_accept_player_join_request_hook).Apply();
 }

@@ -85,11 +85,41 @@ bool game_in_progress()
 		return false;
 }
 
+bool game_is_client()
+{
+	return false;
+}
+
 bool game_is_dedicated_server()
 {
 	// TODO: change this with build configuration
 	// dedicated server mode should disable rendering, sound, host player
 	return true;
+}
+
+bool game_is_bot_client()
+{
+	return false;
+}
+
+bool game_is_sapien()
+{
+	return false;
+}
+
+bool game_is_guerilla()
+{
+	return false;
+}
+
+bool game_is_tool()
+{
+	return false;
+}
+
+bool game_is_halo3()
+{
+	return false;
 }
 
 bool game_is_campaign()

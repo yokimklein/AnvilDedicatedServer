@@ -86,8 +86,8 @@ bool c_network_session_membership::add_peer(long peer_index, e_network_session_p
 long c_network_session_membership::find_or_add_player(long peer_index, s_player_identifier const* player_identifier, bool player_left)
 {
     s_network_session_peer* peer = this->get_peer(peer_index);
-    long player_index = index_from_mask(peer->player_mask.get_writeable_bits_direct(), peer->player_mask.MAX_COUNT);
-    if (player_index != -1)
+    long player_index = peer->get_player_index();
+    if (player_index != NONE)
     {
         if (this->get_player(player_index)->player_identifier == *player_identifier)
         {
@@ -664,13 +664,12 @@ void c_network_session_membership::remove_player_from_player_add_queue(s_player_
 void c_network_session_membership::commit_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
     s_player_add_queue_entry* queue_entry = &this->m_player_add_queue[this->m_player_add_queue_current_index];
-    bool player_left = false;
-    c_static_flags<16>& player_mask = this->m_baseline.peers[queue_entry->player_index].player_mask;
-    long mask_player_index = index_from_mask(player_mask.get_writeable_bits_direct(), player_mask.MAX_COUNT);
-    if (mask_player_index != -1)
-        player_left = this->m_baseline.players[mask_player_index].left_game;
-    long player_index = this->find_or_add_player(queue_entry->player_index, &queue_entry->player_identifier, player_left);
-    this->set_player_properties(player_index, queue_entry->player_update_number, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
+    bool player_left_game = false;
+    long queue_player_index = this->m_baseline.peers[queue_entry->peer_index].get_player_index();
+    if (queue_player_index != NONE)
+        player_left_game = this->m_baseline.players[queue_player_index].left_game;
+    long find_player_index = this->find_or_add_player(queue_entry->peer_index, &queue_entry->player_identifier, player_left_game);
+    this->set_player_properties(find_player_index, queue_entry->player_update_number, queue_entry->controller_index, &queue_entry->client_configuration, queue_entry->voice_settings);
     this->m_player_add_queue_current_index = (this->m_player_add_queue_current_index + 1) % 4;
 }
 
@@ -690,6 +689,22 @@ s_player_add_queue_entry* c_network_session_membership::get_first_player_from_pl
         return nullptr;
     else
         return &this->m_player_add_queue[this->m_player_add_queue_current_index];
+}
+
+s_player_add_queue_entry* c_network_session_membership::get_player_add_queue_entry(long queue_index)
+{
+    bool index_in_bounds = m_player_add_queue_current_index <= m_player_add_queue_count;
+    if (m_player_add_queue_current_index < m_player_add_queue_count)
+    {
+        if (queue_index >= m_player_add_queue_current_index && queue_index < m_player_add_queue_count)
+            return &m_player_add_queue[queue_index];
+        index_in_bounds = m_player_add_queue_current_index <= m_player_add_queue_count;
+    }
+
+    if (!index_in_bounds && (queue_index >= m_player_add_queue_current_index || queue_index < m_player_add_queue_count))
+        return &m_player_add_queue[queue_index];
+
+    return nullptr;
 }
 
 void c_network_session_membership::remove_player(long player_index)
@@ -802,4 +817,9 @@ long c_network_session_membership::get_peer_from_unique_identifier(s_transport_u
         }
     }
     return NONE;
+}
+
+long s_network_session_peer::get_player_index()
+{
+    return index_from_mask(player_mask.get_writeable_bits_direct(), player_mask.MAX_COUNT);
 }

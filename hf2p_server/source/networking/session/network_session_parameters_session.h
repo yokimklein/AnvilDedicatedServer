@@ -110,6 +110,7 @@ class c_network_session_parameter_session_size : public c_network_session_parame
 public:
 	long get_max_player_count();
 	bool set_max_player_count(long player_count);
+	long get_max_peer_count();
 };
 static_assert(sizeof(c_network_session_parameter_session_size) == 0x40);
 

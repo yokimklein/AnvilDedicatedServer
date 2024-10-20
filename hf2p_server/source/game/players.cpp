@@ -149,7 +149,7 @@ void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index
 		TLS_DATA_GET_VALUE_REFERENCE(players);
 		player_datum* player = (player_datum*)datum_get(*players, player_index);
 		player->flags.set(_player_vehicle_entrance_ban_bit, true);
-		player->vehicle_entrance_ban_ticks = game_seconds_to_ticks_round(2.0f);
+		player->vehicle_entrance_ban_ticks = (word)game_seconds_to_ticks_round(2.0f);
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
 	}
 }
@@ -165,13 +165,13 @@ void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoin
 	else if (waypoint->action1 == _navpoint_action_none)
 	{
 		waypoint->action1 = action;
-		waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+		waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
 	}
 	else if (action == waypoint->action1.get())
 	{
 		if (action == _navpoint_action_player_damaged || waypoint->action2 != _navpoint_action_player_damaged)
 		{
-			waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+			waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
 		}
 	}
 	else if (action != waypoint->action2.get())
@@ -184,7 +184,7 @@ void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoin
 		{
 			waypoint->action1 = waypoint->action2;
 			waypoint->action2 = action;
-			waypoint->ticks = game_seconds_to_ticks_round(0.5f);
+			waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
 		}
 	}
 }

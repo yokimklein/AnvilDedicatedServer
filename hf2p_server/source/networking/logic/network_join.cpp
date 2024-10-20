@@ -13,7 +13,7 @@ void network_join_add_join_to_queue(c_network_session* session, s_transport_addr
     long entry_count = g_network_join_data.join_queue_entry_count;
 
     // make sure join isn't closed
-    e_network_join_refuse_reason closure_reason = session->get_closure_reason();
+    e_network_join_refuse_reason closure_reason = session->can_accept_any_join_request();
     if (closure_reason != _network_join_refuse_reason_none)
     {
         session->acknowledge_join_request(address, closure_reason);
