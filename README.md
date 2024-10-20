@@ -6,19 +6,20 @@ A modification for Halo Online build 11.1.604673 cert_ms29 which restores missin
 We're looking for new developers to help us with the reverse engineering efforts. If you're interested and familiar with IDA & C++, [come talk to us!](https://discord.gg/hetx7ekZJQ)
 
 ## Work is in progress!
-Simulation updates are only partially restored, so whilst the game is 'playable' in its current form, desyncs are present alongside general jank-iness. Please bare this in mind!<br/>
+Whilst slayer is playable in a mostly stable state, desyncs are present alongside some general jank-iness, and other gamemodes are not supported. Please bare this in mind!<br/>
+Parts of the codebase are also long overdue for a cleanup.<br/>
 <br/>
-There currently isn't a way for clients to join a server without connecting to our closed source game API. If you would like to test this on your own, you will have to call the function hf2p_join_game manually:
+There currently isn't a way to join a server without connecting to our closed source game API. If you would like to test this on your own, you will have to call the hf2p_join_game function on your client manually:
 ```cpp
 // located at (base address + 0x319880)
 void __fastcall hf2p_join_game(long ip_address, short port, s_transport_secure_identifier session_id, s_transport_secure_address host_address)
 ```
 
 ## Controls
-- HOME: Launches into a game
-- END: Ends the game
 - PAGE DOWN: Starts a map vote when in the lobby, followed by the launch countdown
-- PAGE UP: Starts the game launch countdown when in the lobby
+- INSERT: Force sets the game to Slayer on Valhalla
+- HOME: Launches into a game if a valid map & gamemode are set
+- END: Returns an active game to the main menu/lobby
 
 ## Quick setup
 1) Build hf2p_dedicated_server.dll & hf2p_launcher.exe
@@ -31,6 +32,6 @@ void __fastcall hf2p_join_game(long ip_address, short port, s_transport_secure_i
 8) Once the map vote has concluded the launch countdown will begin and the game will start
 
 ## Special thanks & credits
+- [@twist84](https://github.com/twist84) for reversing many of game's structures used in this project and allowing me to use code from [ManagedDonkey](https://github.com/theTwist84/ManagedDonkey/)
 - The [Anvil Station](https://discord.gg/hetx7ekZJQ) team
-- [@twist84](https://github.com/twist84) for reversing many of game's structures used in this project and allowing me to pull code from [ManagedDonkey](https://github.com/theTwist84/ManagedDonkey/)
-- The [ElDewrito project](https://github.com/ElDewrito/ElDorito), which I have borrowed the patching & hooking code from along with engine research
+- The [ElDewrito project](https://github.com/ElDewrito/ElDorito) for engine research & for being my start into Halo modding
