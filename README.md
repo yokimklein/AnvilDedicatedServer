@@ -2,6 +2,11 @@
 A modification for Halo Online build 11.1.604673 cert_ms29 which restores missing server hosting features.<br/>
 
 **Part of the [Anvil Station](https://discord.gg/hetx7ekZJQ) project, dedicated to reviving the original Halo Online game.**<br/>
+<div align="left">
+      <a href="https://www.youtube.com/watch?v=S9f6aUFZ4Ek">
+         <img src="https://github.com/yokimklein/AnvilDedicatedServer/blob/master/video_thumbnail.png" style="width:100%;">
+      </a>
+</div> <br/>
 
 We're looking for new developers to help us with the reverse engineering efforts. If you're interested and familiar with IDA & C++, [come talk to us!](https://discord.gg/hetx7ekZJQ)
 
@@ -32,6 +37,6 @@ void __fastcall hf2p_join_game(long ip_address, short port, s_transport_secure_i
 8) Once the map vote has concluded the launch countdown will begin and the game will start
 
 ## Special thanks & credits
-- [@twist84](https://github.com/twist84) for reversing many of game's structures used in this project and allowing me to use code from [ManagedDonkey](https://github.com/theTwist84/ManagedDonkey/)
+- [@twist84](https://github.com/twist84) for reversing many of game's structures used in this project and allowing me to use code from [ManagedDonkey](https://github.com/twist84/ManagedDonkey)
 - The [Anvil Station](https://discord.gg/hetx7ekZJQ) team
 - The [ElDewrito project](https://github.com/ElDewrito/ElDorito) for engine research & for being my start into Halo modding
