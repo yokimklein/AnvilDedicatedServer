@@ -22,26 +22,29 @@ class c_network_out_of_band_consumer;
 class c_network_link
 {
 public:
-	c_network_channel* __fastcall get_associated_channel(s_transport_address const* address);
+	static c_network_channel* __fastcall get_associated_channel(transport_address const* address);
 
 	struct s_link_packet
 	{
-		c_enum<e_network_packet_mode, long, _network_packet_mode_none, k_network_packet_mode_count> mode;
-		bool __unknown4;
-		byte __pad5[0x3];
-		s_transport_address address;
+		c_enum<e_network_packet_mode, long, _network_packet_mode_none, k_network_packet_mode_count> packet_mode;
+		bool simulate_packet;
+		transport_address address;
 		long game_data_length;
 		byte game_data[k_network_link_maximum_game_data_size];
 		long voice_data_length;
 		byte voice_data[k_network_link_maximum_voice_data_size];
 	};
+	static_assert(sizeof(s_link_packet) == 0x6D4);
 
+private:
 	bool m_initialized;
-	long __unknown4;
-	long __unknown8;
-	s_transport_endpoint* m_endpoint;
-	c_network_out_of_band_consumer* m_out_of_band;
-	long __unknown14;
-	c_network_time_statistics m_time_statistics[4];
+	ulong m_next_channel_identifier;
+	long m_next_first_channel_index;
+	transport_endpoint* m_endpoint;
+	c_network_out_of_band_consumer* m_out_of_band_consumer;
+	c_network_time_statistics m_packets_transmitted;
+	c_network_time_statistics m_packets_received;
+	c_network_time_statistics m_upstream_bandwidth;
+	c_network_time_statistics m_downstream_bandwidth;
 };
 static_assert(sizeof(c_network_link) == 0x378);

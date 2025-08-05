@@ -6,17 +6,52 @@
 #include <networking\session\network_session_membership.h>
 #include <networking\session\network_session_parameters_saved_film_game_options.h>
 
+enum e_network_session_peer_properties_status_flags
+{
+    _network_session_peer_properties_status_game_stats_written_bit = 0,
+    _network_session_peer_properties_status_match_ready_to_start_bit,
+    _network_session_peer_properties_status_match_arbitration_succeeded_bit,
+    _network_session_peer_properties_status_match_arbitration_failed_bit,
+    _network_session_peer_properties_status_match_teams_selected_bit,
+    _network_session_peer_properties_status_match_repeated_play_set_bit,
+    _network_session_peer_properties_status_match_started_bit,
+    _network_session_peer_properties_status_match_start_failed_bit,
+    _network_session_peer_properties_status_match_initial_stats_written_bit,
+    _network_session_peer_properties_status_match_initial_stats_write_failed_bit,
+    _network_session_peer_properties_status_match_stats_written_bit,
+    _network_session_peer_properties_status_match_host_selection_complete_bit,
+    _network_session_peer_properties_status_match_post_match_countdown_bit,
+    _network_session_peer_properties_status_match_has_idle_controller_bit,
+    _network_session_peer_properties_status_match_ready_for_next_match_bit,
+    _network_session_peer_properties_status_match_simulation_aborted_bit,
+    _network_session_peer_properties_status_match_acknowledge_sync_bit,
+
+    k_network_session_peer_properties_status_flags
+};
+
 #pragma pack(push, 1)
+enum e_controller_index;
 struct s_network_session_interface_user
 {
-    long state;
-    s_player_identifier identifier;
-    long controller_index;
+    long user_state;
+    s_player_identifier player_identifier;
+    e_controller_index controller_index;
     s_player_configuration player_data;
-    c_enum<e_output_user_index, long, _output_user_index0, k_number_of_output_users> output_user_index;
+    long player_update_number;
     c_static_string<64> override_hopper_directory;
-    long player_voice_settings;
-    byte __data78[0x20];
+    union
+    {
+        dword player_voice_settings;
+        struct
+        {
+            word player_mute_mask;
+            word player_voice_flags;
+        };
+    };
+    long session_to_change_teams_on;
+    long desired_team_index;
+    dword user_update_timestamp[3];
+    dword user_remove_timestamp[3];
 };
 static_assert(sizeof(s_network_session_interface_user) == 0xBE8);
 
@@ -25,26 +60,33 @@ struct s_network_session_interface_globals
 {
     bool initialized;
     byte : 8;
-    c_static_wchar_string<16> machine_name; // 0x3EAE0C2
-    c_static_wchar_string<32> session_name; // 0x3EAE0E2
-    bool has_live_connection_info; // May no longer exist and just be padding
+    c_static_wchar_string<16> machine_name;
+    c_static_wchar_string<32> session_name;
+    bool has_live_connection_info; // may no longer exist and just be padding
     byte : 8;
     //s_transport_qos_result qos_result;
     //long bandwidth_bps;
     //long max_machine_count;
-    dword peer_status_flags;
+    e_network_session_peer_properties_status_flags peer_status_flags;
     //short ready_hopper_identifier;
     //byte : 8;
     //byte : 8;
-    long game_start_error;
+    enum e_session_game_start_error game_start_error;
     //bool was_guide_opened_during_a_multiplayer_session;
     //byte : 8;
     //byte : 8;
     //byte : 8;
-    long map_id;
-    c_enum<e_network_session_map_status, long, _network_session_map_status_none, k_network_session_map_status_count> current_map;
+    e_map_id map_id;
+    e_network_session_map_status current_map;
     long current_map_progress_percentage;
-    s_network_session_interface_user users[k_number_of_output_users];
+    //short hopper_identifier;
+    //byte : 8;
+    //byte : 8;
+    //byte : 8;
+    //byte : 8;
+    //byte : 8;
+    //byte : 8;
+    c_static_array<s_network_session_interface_user, k_number_of_users> users;
     qword game_instance;
     long scenario_type;
     c_static_string<128> scenario_path;
@@ -56,11 +98,13 @@ struct s_network_session_interface_globals
     c_static_array<long, 3> session_connection_identifiers;
     c_static_array<long, 3> session_update_times;
     c_static_array<long, 3> session_connection_update_numbers;
-    bool session_variant_has_teams[3];
-    bool session_variant_has_sve_teams[3];
-    bool session_variant_observers_allowed[3];
-    byte __data5EF1[3];
-    long session_variant_maximum_team_count[3];
+    c_static_array<bool, 3> session_variant_has_teams;
+    c_static_array<bool, 3> session_variant_has_sve_teams;
+    c_static_array<bool, 3> session_variant_observers_allowed;
+    byte : 8;
+    byte : 8;
+    byte : 8;
+    c_static_array<long, 3> session_variant_session_maximum_team_counts;
     c_network_session_manager* session_manager;
     byte : 8;
     byte : 8;
@@ -84,7 +128,6 @@ class c_network_session;
 struct s_network_session_peer;
 struct s_player_identifier;
 struct s_network_session_peer_connectivity;
-
 void __fastcall network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer);
 void network_session_check_properties(c_network_session* session);
 void network_session_update_team_indices(c_network_session* session, bool variant_has_teams, bool previous_update_variant_had_teams, bool observer_allowed, bool sve_teams, long maximum_team_count);

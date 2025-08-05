@@ -1,9 +1,32 @@
 #pragma once
 #include <networking\logic\life_cycle\life_cycle_state_handler.h>
 
-struct c_life_cycle_state_handler_end_game_write_stats : c_life_cycle_state_handler
+enum e_end_game_write_stats_flags
 {
-	long __time28;
-	word_flags m_flags;
+	_end_game_write_stats_session_start_initiated_bit = 0,
+	_end_game_write_stats_session_start_completed_bit,
+	_end_game_write_stats_write_initiated_bit,
+	_end_game_write_stats_write_completed_bit,
+	_end_game_write_stats_write_blocked_bit,
+	_end_game_write_stats_session_end_initiated_bit,
+	_end_game_write_stats_session_end_completed_bit,
+	_end_game_write_stats_data_mine_upload_initiated_bit,
+	_end_game_write_stats_data_mine_upload_completed_bit,
+	_end_game_write_stats_webstats_submitted_bit,
+	_end_game_write_stats_initiated_bit,
+	_end_game_write_stats_suppressed_bit,
+	_end_game_write_stats_bypassed_bit,
+	_end_game_write_stats_completed_bit,
+
+	k_end_game_write_stats_flags_count
+};
+
+class c_life_cycle_state_handler_end_game_write_stats : public c_life_cycle_state_handler
+{
+public:
+
+protected:
+	ulong m_end_game_write_stats_start_time;
+	c_flags<e_end_game_write_stats_flags, word, k_end_game_write_stats_flags_count> m_flags;
 };
 static_assert(sizeof(c_life_cycle_state_handler_end_game_write_stats) == 0x18);

@@ -1,41 +1,4 @@
 #include "data.h"
-#include "assert.h"
-
-// https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/memory/data.cpp
-
-long s_data_array::get_index(long index) const
-{
-	if ((index < 0) || (index >= first_unallocated))
-		return -1;
-
-	while (!((1 << (index & 31)) & in_use_bit_vector[index >> 5]))
-	{
-		if (++index >= first_unallocated)
-			return -1;
-	}
-
-	return index;
-}
-
-long s_data_array::get_allocation_size() const
-{
-	long padding = flags ? ((1 << flags) - 1) : 0;
-
-	return padding + size * maximum_count + 4 * (((maximum_count + 31) >> 5) + 21);
-}
-
-s_datum_header* s_data_array::get_datum(const datum_index index) const
-{
-	if (index == -1 || DATUM_INDEX_TO_ABSOLUTE_INDEX(index) < (dword)first_unallocated)
-		return nullptr;
-
-	s_datum_header* datum = (s_datum_header*)&data[index * size];
-
-	if (!datum->identifier || datum->identifier != DATUM_INDEX_TO_IDENTIFIER(index))
-		return nullptr;
-
-	return datum;
-}
 
 long __fastcall data_next_absolute_index(s_data_array const* data, long absolute_index)
 {
@@ -45,8 +8,8 @@ long __fastcall data_next_absolute_index(s_data_array const* data, long absolute
 void data_iterator_begin(s_data_iterator* iterator, s_data_array const* data)
 {
 	iterator->data = data;
-	iterator->index = -1;
-	iterator->absolute_index = -1;
+	iterator->index = NONE;
+	iterator->absolute_index = NONE;
 }
 
 void* data_iterator_next(s_data_iterator* data)
@@ -64,7 +27,7 @@ void* data_iterator_next(s_data_iterator* data)
 	{
 		result = &data_array->data[index * data_array->size];
 		data->absolute_index = index;
-		data->index = index | (*(word*)result << 16);
+		data->index = BUILD_DATUM_INDEX(*(short*)result, index);
 	}
 	return result;
 }
@@ -77,22 +40,26 @@ void __fastcall datum_delete(s_data_array* data, datum_index index)
 void datum_initialize(s_data_array* data, s_datum_header* header)
 {
 	csmemset(header, 0, data->size);
-	assert(data->next_identifier != 0);
+	ASSERT(data->next_identifier != 0);
 	if (data->next_identifier == 0xFFFF)
+	{
 		data->next_identifier = 0x8000;
+	}
 	header->identifier = data->next_identifier++;
 }
 
+// TODO: clean up this code because it is horrid
+// alternatively just call the original directly
 datum_index datum_new(s_data_array* data)
 {
-	long index_iterator = -1;
-	long out_index = -1;
-	assert(!TEST_BIT(data->flags, _data_array_disconnected_bit));
-	assert(data->offset_to_data != NULL);
-	assert(data->data != NULL);
+	long index_iterator = NONE;
+	long out_index = NONE;
+	ASSERT(!TEST_BIT(data->flags, _data_array_disconnected_bit));
+	ASSERT(data->offset_to_data != NULL);
+	ASSERT(data->data != NULL);
 	//data_verify(data); // TODO
-	assert(data->valid);
-	for (long i = data->next_index; i < data->first_unallocated; ++i)
+	ASSERT(data->valid);
+	for (long i = data->first_possibly_free_absolute_index; i < data->count; ++i)
 	{
 		if ((data->in_use_bit_vector[i >> 5] & (1 << (i & 0x1F))) == 0)
 		{
@@ -100,25 +67,29 @@ datum_index datum_new(s_data_array* data)
 			break;
 		}
 	}
-	if (index_iterator == -1 && data->first_unallocated < data->maximum_count)
-		index_iterator = data->first_unallocated;
-	if (index_iterator != -1)
+	if (index_iterator == NONE && data->count < data->maximum_count)
+	{
+		index_iterator = data->count;
+	}
+	if (index_iterator != NONE)
 	{
 		s_datum_header* header = (s_datum_header*)&data->data[index_iterator * data->size];
 		data->in_use_bit_vector[index_iterator >> 5] |= 1 << (index_iterator & 0x1F);
 		++data->actual_count;
-		data->next_index = index_iterator + 1;
-		if (data->first_unallocated <= index_iterator)
+		data->first_possibly_free_absolute_index = index_iterator + 1;
+		if (data->count <= index_iterator)
 		{
-			data->first_unallocated = index_iterator + 1;
+			data->count = index_iterator + 1;
 			//sub_8292E418(data); // TODO
 		}
-		assert(DATUM_IS_FREE(header));
+		ASSERT(DATUM_IS_FREE(header));
 		datum_initialize(data, header);
-		out_index = index_iterator | ((word)header->identifier << 16);
+		out_index = BUILD_DATUM_INDEX(header->identifier, index_iterator);
 	}
-	if (out_index != -1)
+	if (out_index != NONE)
+	{
 		datum_get(data, out_index);
+	}
 	return out_index;
 }
 
@@ -130,18 +101,21 @@ void* datum_get(s_data_array* data, datum_index index)
 void* __cdecl datum_try_and_get(s_data_array const* data, long index)
 {
 	if (!data)
+	{
 		return NULL;
+	}
 
 	void* result = NULL;
 
-	assert(data);
-	assert(data->valid);
+	ASSERT(data);
+	ASSERT(data->valid);
 
 	word identifier = DATUM_INDEX_TO_IDENTIFIER(index);
 	word absolute_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(index);
 
 	if (index != NONE || absolute_index != 0xFFFF)
 	{
+		// TODO:
 		//if (!identifier)
 		//	ASSERT2(c_string_builder("tried to access %s using datum_try_and_get() with an absolute index #%d",
 		//		data->name.get_string(),
@@ -153,7 +127,7 @@ void* __cdecl datum_try_and_get(s_data_array const* data, long index)
 		//		index,
 		//		data->maximum_count).get_string());
 
-		if (absolute_index < data->first_unallocated)
+		if (absolute_index < data->count)
 		{
 			void** data_ptr = (void**)offset_pointer(data, OFFSETOF(s_data_array, data));
 			s_datum_header* header = (s_datum_header*)offset_pointer(*data_ptr, absolute_index * data->size);
@@ -161,32 +135,36 @@ void* __cdecl datum_try_and_get(s_data_array const* data, long index)
 			if (header->identifier)
 			{
 				if (header->identifier == identifier)
+				{
 					result = header;
+				}
 			}
 		}
 	}
 
-	assert(result == align_pointer(result, data->alignment_bits));
+	ASSERT(result == align_pointer(result, data->alignment_bits));
 	return result;
 }
 
 void* __cdecl datum_try_and_get_absolute(s_data_array const* data, long absolute_index)
 {
-	if (absolute_index >= 0 && absolute_index < data->first_unallocated)
+	if (absolute_index >= 0 && absolute_index < data->count)
 	{
 		if (*&data->data[absolute_index * data->size])
+		{
 			return &data->data[absolute_index * data->size];
+		}
 	}
 	return nullptr;
 }
 
 long __cdecl datum_absolute_index_to_index(s_data_array const* data, long absolute_index)
 {
-	long index = -1;
-	if (absolute_index != -1)
+	long index = NONE;
+	if (absolute_index != NONE)
 	{
 		s_datum_header* header = (s_datum_header*)&data->data[absolute_index * data->size];
-		index = absolute_index | ((word)header->identifier << 16);
+		index = BUILD_DATUM_INDEX(header->identifier, absolute_index);
 	}
 	return index;
 }

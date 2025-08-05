@@ -87,7 +87,7 @@ struct c_hash_table
 
 	//bool __cdecl create(char const* name, long bucket_count, long maximum_elements, hash_table_hash_function_t* hash_function, hash_table_compare_function_t* compare_function, c_allocation_base* allocation)
 	//{
-	//	assert(m_hash_table == NULL);
+	//	ASSERT(m_hash_table == NULL);
 	//	m_hash_table = hash_table_new(name, sizeof(t_user_data_type), bucket_count, maximum_elements, hash_function, compare_function, allocation);
 	//
 	//	return created();

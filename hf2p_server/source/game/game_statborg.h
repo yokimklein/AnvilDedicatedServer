@@ -41,7 +41,7 @@ enum e_statborg_entry
 	_statborg_entry_vehicle_kills_in_a_row,
 	_statborg_entry_team_kills_team,
 
-	_statborg_entry_unknown23,
+	_statborg_entry_finalised,
 
 	_statborg_entry_kill_damage_type,
 
@@ -50,43 +50,7 @@ enum e_statborg_entry
 
 struct s_game_statborg_player
 {
-	word in_round_score;
-	word in_game_total_score;
-	word kills;
-	word deaths;
-	word suicides;
-	word betrayals;
-	word assists;
-	word rounds_won;
-	union
-	{
-		struct
-		{
-			word infection_time_as_human;
-			word infection_infections;
-			word infection_zombie_kills;
-		};
-		struct
-		{
-			word territories_owned;
-			word territories_captures;
-			word territories_ousts;
-		};
-	};
-	word total_wp;
-	word kills_in_a_row;
-	word multiple_kills;
-	word total_kill_damage_dealt;
-	word unknown15;
-	word team_kills_in_a_row;
-	word unknown17;
-	word sniper_kills_in_a_row;
-	word shotgun_kills_in_a_row;
-	word sword_kills_in_a_row;
-	word vehicle_kills_in_a_row;
-	word team_kills_team;
-	bool finalised;
-	word kill_damage_type;
+	c_static_array<word, k_statborg_indices_count> statistics;
 	bool __unknown32;
 	byte __unknown33;
 };
@@ -111,7 +75,7 @@ public:
 	word __unknown0;
 	word __unknown2;
 	c_static_array<s_game_statborg_player, k_maximum_multiplayer_players> player;
-	c_static_array<s_game_statborg_team, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
+	c_static_array<s_game_statborg_team, k_multiplayer_team_count> team;
 	bool stats_started;
 	dword __unknown418;
 	dword __unknown41C;

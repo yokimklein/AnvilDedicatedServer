@@ -7,8 +7,10 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
     s_transport_secure_address address = *secure_address;
 
     // set system userid if local secure address
-    if (transport_security_globals.secure_address == *secure_address)
+    if (transport_security_globals.local_secure_address == *secure_address)
+    {
         return USER_SYSTEM;
+    }
 
     s_transport_secure_address addresses[3];
     // aed61e55-632d-4ea5-9bf9-ead4322b640f ZZVERTIGO
@@ -16,7 +18,11 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
     // FFC6472C-AD90-4393-AD53-0741123F29CE ILIKENAME
     byte temp_address2[16] = { 0x2c, 0x47, 0xc6, 0xff, 0x90, 0xad, 0x93, 0x43, 0xad, 0x53, 0x07, 0x41, 0x12, 0x3f, 0x29, 0xce };
     // c073068b-5ca5-4c53-84cf-c720dfaa2f40 YOKIM
-    byte temp_address3[16] = { 0x8b, 0x06, 0x73, 0xc0, 0xa5, 0x5c, 0x53, 0x4c, 0x84, 0xcf, 0xc7, 0x20, 0xdf, 0xaa, 0x2f, 0x40 };
+
+    // NEW: 0363777e-f9af-46b9-a26e-3c7bf1d42ce4
+    // 0x7e, 0x77, 0x63, 0x03
+    //                               reversed                reversed          reversed         forward                   forward
+    byte temp_address3[16] = { 0x56, 0xf0, 0xea, 0xba, /**/ 0xbd, 0xc2, /**/ 0x76, 0x47, /**/ 0xac, 0xbf, /**/ 0xe8, 0x0c, 0xe0, 0x40, 0xbe, 0x68};
 
     memcpy(&addresses[0], temp_address1, sizeof(s_transport_secure_address));
     memcpy(&addresses[1], temp_address2, sizeof(s_transport_secure_address));
@@ -27,10 +33,11 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
     for (long i = 0; i < NUMBEROF(addresses); i++)
     {
         if (addresses[i] == *secure_address)
+        {
             return user_ids[i];
+        }
     }
 
-    printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_xuid_from_secure_address: could not find userID associated with secure address [%s]!\n",
-        transport_secure_address_get_string(secure_address));
+    printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_xuid_from_secure_address: could not find userID associated with secure address [%s]!\n", transport_secure_address_get_string(secure_address));
     return USER_INVALID;
 }

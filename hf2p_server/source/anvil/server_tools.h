@@ -22,14 +22,14 @@ struct s_anvil_session_vote_pool
 	struct s_map_entry
 	{
 		c_enum<e_map_id, long, _map_id_none, k_map_id_count> map_id;
-		long map_title_instance;
+		char map_title_instance;
 
 	};
 	struct s_gamemode_entry
 	{
 		c_enum<e_game_engine_type, long, _game_engine_type_none, k_game_engine_type_count> engine_index;
-		long variant_index;
-		long gamemode_title_instance;
+		char variant_index;
+		char gamemode_title_instance;
 	};
 	c_static_array<s_map_entry, 11> map_entries;
 	c_static_array<s_gamemode_entry, 3> gamemode_entries;

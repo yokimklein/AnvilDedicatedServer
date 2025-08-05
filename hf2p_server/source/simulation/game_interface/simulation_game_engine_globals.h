@@ -14,5 +14,6 @@ enum e_simulation_game_engine_globals_update_flag
 	k_simulation_game_engine_globals_flag_count
 };
 
-void simulation_action_game_engine_globals_update(c_flags<long, ulong64, 64>* update_flags);
+class c_simulation_object_update_flags;
+void simulation_action_game_engine_globals_update(c_simulation_object_update_flags& update_flags);
 void simulation_action_game_engine_globals_update(long update_flag);

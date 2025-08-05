@@ -10,13 +10,15 @@
 #include <game\game_engine_spawning.h>
 
 // add back missing message handlers
-void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, s_transport_address const* address, e_network_message_type message_type, long message_storage_size, s_network_message const* message)
+void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, transport_address const* address, e_network_message_type message_type, long unused2, const void* message)
 {
-    message_handler->handle_out_of_band_message(address, message_type, message_storage_size, message);
+    // message_storage_size is unused and just set to the same value as message_handler
+    // $TODO: Fix up message_storage_size arg, it exists at [ebp + 0x0C] prior to the function call
+    message_handler->handle_out_of_band_message(address, message_type, 0, message);
 }
-void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, s_network_message const* stub_message)
+void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, const void* stub_message)
 {
-    s_network_message const* message = (s_network_message const*)BASE_ADDRESS(0x4FFB090);
+    const void* message = (const void*)BASE_ADDRESS(0x4FFB090);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
 }
 
@@ -47,7 +49,7 @@ void __fastcall network_session_interface_update_session_hook(c_network_session*
     }
 }
 
-void __fastcall managed_session_delete_session_internal_hook(long managed_session_index, c_managed_session* managed_session)
+void __fastcall managed_session_delete_session_internal_hook(long managed_session_index, s_online_managed_session* managed_session)
 {
     if (managed_session->flags.test(_online_managed_session_created_bit) && managed_session->session_class == _network_session_class_online)
         XNetUnregisterKey(&transport_security_globals.address);

@@ -1,8 +1,18 @@
 #pragma once
+#include <cseries\cseries.h>
 #include <networking\logic\life_cycle\life_cycle_state_handler.h>
 
-struct c_life_cycle_state_handler_leaving : c_life_cycle_state_handler
+enum e_leaving_flags
 {
+	_leaving_ready_for_state_transition = 0,
+
+	k_leaving_flags_count
+};
+
+enum e_gui_game_mode;
+class c_life_cycle_state_handler_leaving : public c_life_cycle_state_handler
+{
+public:
 	virtual void update() override;
 	virtual e_life_cycle_state_transition_type update_for_state_transition() override;
 	virtual void enter(c_life_cycle_state_handler* handler, long entry_data_size, void* entry_data) override;
@@ -11,11 +21,9 @@ struct c_life_cycle_state_handler_leaving : c_life_cycle_state_handler
 
 	//void initialize(c_life_cycle_state_manager* manager);
 
-	// TODO: 4 bytes worth of data here was removed since ms23
-	//byte_flags m_flags;
-	//bool m_disconnected;
-	//byte __data[0x6];
-
-	byte unknown_temp[0x4];
+protected:
+	c_flags<e_leaving_flags, byte, k_leaving_flags_count> m_flags;
+	bool m_leave_and_disconnect;
+	//e_gui_game_mode m_failure_game_mode;
 };
 static_assert(sizeof(c_life_cycle_state_handler_leaving) == 0x14);

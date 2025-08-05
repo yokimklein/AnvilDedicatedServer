@@ -22,6 +22,18 @@ enum e_multiplayer_event_type
 	k_multiplayer_event_type_count
 };
 
+struct s_territories_event_data
+{
+	short territory_index;
+};
+static_assert(sizeof(s_territories_event_data) == 0x2);
+
+struct s_objective_game_role_change_event_data
+{
+	long objective_game_role_index;
+};
+static_assert(sizeof(s_objective_game_role_change_event_data) == 0x4);
+
 struct s_game_engine_event_data
 {
 	c_enum<e_multiplayer_event_type, long, _multiplayer_event_type_general, k_multiplayer_event_type_count> event_type;
@@ -36,8 +48,8 @@ struct s_game_engine_event_data
 
 	union
 	{
-		short dummy;
-		short territories;
+		s_territories_event_data territories_event_data;
+		s_objective_game_role_change_event_data objective_game_role_event_data;
 	};
 };
 static_assert(sizeof(s_game_engine_event_data) == 0x28);

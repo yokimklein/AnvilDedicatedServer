@@ -2,29 +2,43 @@
 #include <cseries\cseries.h>
 #include <game\players.h>
 #include <game\player_configuration.h>
+#include <networking\transport\transport_security.h>
 #include <networking\session\network_session_membership.h>
+#include <networking\logic\network_join.h>
 
 #pragma pack(push, 1)
 struct s_network_message_membership_update_player
 {
-	ulong player_index;
-	ulong update_type;
+	long player_index;
+	long update_type;
 	bool player_location_updated;
 	s_player_identifier identifier;
 	byte : 8;
-	ushort peer_index;
-	ulong player_addition_number;
-	bool player_left_game;
+	short peer_index;
+	long player_addition_number;
+	bool player_occupies_a_public_slot;
 	bool player_properties_updated;
-	ushort : 16;
-	ulong player_update_number;
-	ulong controller_index;
-	ulong : 32;
+	short peer_user_index;
+	long player_update_number;
+	long controller_index;
+	long : 32;
 	s_player_configuration player_data;
 	ulong player_voice;
 	ulong : 32;
 };
 static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_index) == 0x00);
+static_assert(OFFSETOF(s_network_message_membership_update_player, update_type) == 0x04);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_location_updated) == 0x08);
+static_assert(OFFSETOF(s_network_message_membership_update_player, identifier) == 0x09);
+static_assert(OFFSETOF(s_network_message_membership_update_player, peer_index) == 0x12);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_addition_number) == 0x14);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_occupies_a_public_slot) == 0x18);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_properties_updated) == 0x19);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_update_number) == 0x1C);
+static_assert(OFFSETOF(s_network_message_membership_update_player, controller_index) == 0x20);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_data) == 0x28);
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_voice) == 0xB98);
 #pragma pack(pop)
 
 struct s_network_message_membership_update_peer_properties
@@ -38,8 +52,8 @@ struct s_network_message_membership_update_peer_properties
 	bool peer_map_updated;
 	c_enum<e_network_session_map_status, long, _network_session_map_status_none, k_network_session_map_status_count> peer_map_status;
 	ulong peer_map_progress_percentage; // 0-100
-	bool peer_game_instance_exists;
-	long64 peer_game_instance;
+	bool peer_game_instance_updated;
+	ulong64 peer_game_instance;
 	bool available_multiplayer_map_mask_updated;
 	ulong available_multiplayer_map_mask;
 	bool peer_connection_updated;
@@ -56,7 +70,6 @@ struct s_network_message_membership_update_peer_properties
 };
 static_assert(sizeof(s_network_message_membership_update_peer_properties) == 0xC8);
 
-#pragma pack(push, 1)
 struct s_network_message_membership_update_peer
 {
 	ulong peer_index;
@@ -71,12 +84,11 @@ struct s_network_message_membership_update_peer
 	ulong peer_creation_timestamp;
 	bool peer_properties_updated;
 	byte pad2[7];
-	s_network_message_membership_update_peer_properties peer_properties_update;
+	s_network_message_membership_update_peer_properties peer_properties;
 };
 static_assert(sizeof(s_network_message_membership_update_peer) == 0x108);
-#pragma pack(pop)
 
-struct s_network_message_membership_update : s_network_message
+struct s_network_message_membership_update
 {
 	s_transport_secure_identifier session_id;
 	long update_number;
@@ -84,8 +96,8 @@ struct s_network_message_membership_update : s_network_message
 	ulong baseline_checksum;
 	ushort peer_update_count; // max 34? number of updates rather than peers
 	ushort player_update_count; // max 32? ditto
-	s_network_message_membership_update_peer peer_updates[k_network_maximum_machines_per_session];
-	s_network_message_membership_update_player player_updates[k_network_maximum_players_per_session];
+	c_static_array<s_network_message_membership_update_peer, k_network_maximum_machines_per_session> peer_updates;
+	c_static_array<s_network_message_membership_update_player, k_network_maximum_players_per_session> player_updates;
 	bool player_addition_number_updated;
 	ulong player_addition_number;
 	bool leader_updated;
@@ -102,7 +114,7 @@ struct s_network_message_membership_update : s_network_message
 };
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
 
-struct s_network_message_peer_properties : s_network_message
+struct s_network_message_peer_properties
 {
 	s_transport_secure_identifier session_id;
 	s_transport_secure_address secure_address;
@@ -110,14 +122,14 @@ struct s_network_message_peer_properties : s_network_message
 };
 static_assert(sizeof(s_network_message_peer_properties) == 0xC8);
 
-struct s_network_message_delegate_leadership : s_network_message
+struct s_network_message_delegate_leadership
 {
 	s_transport_secure_identifier session_id;
 	s_transport_secure_address desired_leader_address;
 };
 static_assert(sizeof(s_network_message_delegate_leadership) == 0x20);
 
-struct s_network_message_boot_machine : s_network_message
+struct s_network_message_boot_machine
 {
 	s_transport_secure_identifier session_id;
 	enum e_network_session_boot_reason reason;
@@ -125,41 +137,37 @@ struct s_network_message_boot_machine : s_network_message
 };
 static_assert(sizeof(s_network_message_boot_machine) == 0x24);
 
-#pragma pack(push, 4)
-struct s_network_message_player_add : s_network_message
+struct s_network_message_player_add
 {
 	s_transport_secure_identifier session_id;
 	s_player_identifier player_identifier;
-	ulong player_update_number;
-	ulong controller_index;
-	s_player_configuration_from_client configuration;
-	ulong voice_settings;
+	long user_index;
+	long controller_index;
+	s_player_configuration_from_client player_data;
+	long player_voice;
 };
 static_assert(sizeof(s_network_message_player_add) == 0x54);
-#pragma pack(pop)
 
-#pragma pack(push, 4)
-struct s_network_message_player_refuse : s_network_message
+struct s_network_message_player_refuse
 {
 	s_transport_secure_identifier session_id;
 	s_player_identifier player_identifier;
-	e_network_join_refuse_reason refuse_reason;
+	e_network_join_refuse_reason join_refusal_reason;
 };
 static_assert(sizeof(s_network_message_player_refuse) == 0x1C);
-#pragma pack(pop)
 
-struct s_network_message_player_remove : s_network_message
+struct s_network_message_player_remove
 {
 	s_transport_secure_identifier session_id;
 };
 static_assert(sizeof(s_network_message_player_remove) == 0x10);
 
-struct s_network_message_player_properties : s_network_message
+struct s_network_message_player_properties
 {
 	s_transport_secure_identifier session_id;
-	ulong player_update_number; // or user_index?
-	ulong controller_index;
+	long player_update_number;
+	long controller_index;
 	s_player_configuration_from_client player_from_client;
-	ulong player_voice;
+	long player_voice;
 };
 static_assert(sizeof(s_network_message_player_properties) == 0x4C);

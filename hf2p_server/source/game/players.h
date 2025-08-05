@@ -28,104 +28,20 @@ enum e_player_respawn_failure
 // there's a high likelihood of Halo Online using the Halo Reach player flags enum
 enum e_player_flags
 {
-	// game_engine_player_is_playing
-	// players_update_activation
-	// c_game_engine::apply_player_update
-	// halo reach x360: bit 0
-	// halo 4 x360:     bit 0
 	_player_active_in_game_bit = 0,
-
-	// game_engine_player_is_playing
-	// player_rejoined_game
-	// players_joined_in_progress_allow_spawn
-	// halo 4 x360:     bit 1
-	// halo reach x360: bit 1
 	_player_left_game_bit,
-
-	// player_update_after_game
-	// c_game_engine::apply_player_update
-	// halo reach x360: bit 2
-	// halo 4 x360:     bit 2
 	_player_blocking_teleporter_bit,
-
-	// game_engine_update_after_game_update_state
-	// player_spawn
-	// player_reset
-	// players_detach_from_map
-	// c_game_engine::apply_player_update
-	// halo reach x360: bit 3
-	// halo 4 x360:     bit 3
 	_player_initial_spawn_bit,
-
-	// halo 4 adds 2 new flags here
-	// bit 4, game_engine_display_role_selection_ui
-
-	// player_prepare_action
-	// unit_action_vehicle_exit_finished
-	// player_suppress_action
-	// halo reach x360: bit 4
-	// halo 4 x360:     bit 6
-	_player_unknown_bit4,
-
-	// player_prepare_action
-	// player_suppress_action
-	// halo reach x360: bit 5
-	// halo 4 x360:     bit 7
-	_player_unknown_bit5,
-
-	// player_prepare_action
-	// player_suppress_action
-	// halo reach x360: bit 6
-	// halo 4 x360:     bit 8
-	_player_unknown_bit6,
-
-	// player_suppress_action
-	// halo reach x360: bit 7
-	// halo 4 x360:     bit 9
-	_player_unknown_bit7,
-
-	// teleporter_flag_object_as_having_teleported_recursive
-	//  should pass `_object_mask_unit` test
-	// update_players_before_teleporters
-	// update_players_after_teleporters
-	// c_teleporter_area::update_players
-	// halo reach x360: bit 8
-	// halo 4 x360:     bit 10
-	_player_unknown_bit8,
-
-	// teleporter_flag_object_as_having_teleported_recursive
-	//  should pass `_object_mask_unit` test
-	// update_players_after_teleporters
-	// c_teleporter_area::update_players
-	// halo reach x360: bit 9
-	// halo 4 x360:     bit 11
-	_player_unknown_bit9,
-
-	// player_update_after_game
-	// player_notify_vehicle_ejection_finished
-	// c_game_engine::apply_player_update
-	// halo reach x360: bit 10
-	// halo 4 x360:     bit 12
+	_player_action_suppress_primary_bit,
+	_player_action_suppress_secondary_bit,
+	_player_action_suppress_tertiary_bit,
+	_player_action_dual_wield_grenade_latch_bit,
+	_player_standing_in_teleporter_bit,
+	_player_standing_in_teleporter_teleported_bit,
 	_player_vehicle_entrance_ban_bit,
-
-	// player_spawn
-	// players_coop_update_respawn
-	// halo reach x360: bit 11
-	// halo 4 x360:     bit 13
-	_player_unknown_bit11,
-
-	// game_engine_player_is_playing
-	// game_engine_update_player_sitting_out
-	// c_game_engine::apply_player_update
-	// halo reach x360: bit 12
-	// halo 4 x360:     bit 14
+	_player_play_coop_spawn_effect_bit,
 	_player_sitting_out_bit,
-
-	// player_reset
-	// players_joined_in_progress_allow_spawn
-	// halo reach x360: bit 13
-	// halo 4 x360:     bit 15
-	_player_unknown_bit13,
+	_player_joined_in_progress_bit,
 
 	// game_engine_update_coop_spawning
 	// halo reach x360: bit 14
@@ -146,66 +62,158 @@ enum e_player_flags
 	// halo 4 x360:     bit 18
 	_player_unknown_bit16,
 
-	// unit_action_melee_player_update
-	// halo reach x360: bit 19
-	// halo 4 x360:     bit 23
+	k_player_flag_count
+};
 
-	// halo 3:     count unknown
-	// halo reach: count 20
-	// halo 4:     count 31
+enum e_multiplayer_powerup_flavor
+{
+	_powerup_flavor_red = 0,
+	_powerup_flavor_blue,
+	_powerup_flavor_yellow,
 
-	k_player_flags_count // unconfirmed size
+	k_multiplayer_powerup_flavor_count,
+	_powerup_flavor_none = -1
+};
+
+struct s_simulation_unit_melee_damage_event_data;
+struct _simulation_unit_melee_damage_event_data
+{
+	real_point3d impact_point;
+	real_vector3d impact_normal;
+	long damage_definition_index;
+	long clang_damage_definition_index;
+	short breakable_surface_set_index;
+	short breakable_surface_index;
+	long instanced_geometry_instance_index;
+	long surface_index;
+	long global_material_index;
+	long object_material_index;
+	real scale;
+	s_damage_reporting_info damage_reporting_info;
 };
 
 struct s_player_shot_info
 {
-	word __unknown0;
+	short shot_id;
 	s_damage_reporting_info damage_reporting_info;
-	char __data6[0x6];
+	word pad;
+	long game_time;
 };
 static_assert(sizeof(s_player_shot_info) == 0xC);
+
+struct s_tracking_object
+{
+	byte __data[0x4];
+	long object_index;
+	long __time8;
+};
+static_assert(sizeof(s_tracking_object) == 0xC);
+
+struct s_king_player_info
+{
+	short ticks_on_hill;
+	short ticks_outside_hill;
+	short ticks_on_hill_contested;
+	short pad;
+};
+static_assert(sizeof(s_king_player_info) == 0x8);
+
+struct s_juggernaut_player_info
+{
+	long juggernaut_index;
+};
+static_assert(sizeof(s_juggernaut_player_info) == 0x4);
+
+struct multiplayer_player_info
+{
+	long player_display_index;
+	short teleporter_index;
+	char in_vehicle_timer;
+	char without_unit_timer;
+	char with_unit_timer;
+	bool was_crouched;
+	bool is_crouched;
+	byte pad;
+	short player_display_count;
+	short remaining_lives;
+	long last_betrayer_player_index;
+	long time_of_death;
+	c_player_traits player_traits;
+	long powerup_pickup_time[k_multiplayer_powerup_flavor_count];
+	long dead_camera_target_player_index;
+
+	struct
+	{
+		bool player_locked_for_manipulation;
+		bool pad[3];
+		real_vector2d roll_distance_amount;
+		real_vector2d yaw_pitch_angles;
+	} map_editor_data;
+
+	union
+	{
+		s_king_player_info king_player_info;
+		s_juggernaut_player_info juggernaut_player_info;
+	};
+};
+static_assert(sizeof(multiplayer_player_info) == 0x60);
 
 struct player_datum : s_datum_header
 {
 	short unknown;
-	c_flags<e_player_flags, long, k_player_flags_count> flags;
+	c_flags<e_player_flags, long, k_player_flag_count> flags;
 	s_player_identifier player_identifier;
 	ulong left_game_time;
 	s_machine_identifier machine_identifier; // secure_address / xnaddr
 	short machine_index;
 	short machine_input_user_index;
 	long machine_controller_index;
-	short location; // s_scenario_location
+	s_cluster_reference cluster_reference;
 	datum_index unit_index;
 	datum_index dead_unit_index;
-	datum_index previous_unit_index;
-	ulong unknown_flags2;
-	ushort equipment_cooldown_ticks;
-	ushort unknown_simulation_ticks3; // hf2p cooldown?
-	ushort unknown_simulation_ticks4; // hf2p cooldown?
-	ushort unknownflags3;
-	uchar unknown_simulation_ticks;
-	uchar next_spawn_control_context;
+	datum_index failed_teleport_unit_index;
+	ulong latched_control_flags;
+
+	struct // ---------- cooldown_reset ----------
+	{
+		// these are used in `players_update_after_game`, `player_spawn`, `sub_53C860`, struct?
+		// if `player->equipment_cooldown_ticks == 0` do something with equipment
+		// gameplay_modifier: `cooldown_reset` related
+		word equipment_cooldown_ticks;
+		word cooldown_reset_unknown42;
+		word cooldown_reset_unknown44;
+	};
+
+	word_flags latched_action_flags;
+	byte outside_of_world_timer;
+	byte next_spawn_control_context;
 	uchar field_4C;
 	uchar field_4B;
+
 	long active_loadout_index;
 	ulong consumable_index;
-	uchar melee_recovery_timer;
-	uchar melee_soft_recovery_timer;
-	uchar grenade_supression_timer;
+
+	byte melee_recovery_ticks;
+	byte melee_soft_recovery_ticks;
+	byte grenade_suppression_timer;
+
 	bool is_sprinting;
 	bool is_crouching;
 	bool is_firing_left;
 	bool is_firing_right;
 	uchar field_5B;
 	ushort magnification_level;
+
 	bool sprint_longerupted_firing;
 	bool sprint_longerupted_zoom;
 	short sprint_cooldown;
 	short sprint_cooldown2;
+
 	real_vector3d position;
+
 	s_player_configuration configuration;
 	s_player_configuration desired_configuration;
+
 	long single_player_respawn_timer;
 	bool early_respawn_requested;
 	bool respawn_in_progress;
@@ -213,31 +221,32 @@ struct player_datum : s_datum_header
 	long respawn_timer_countdown_ticks;
 	long respawn_timer_countdown_seconds;
 	ulong respawn_time_penalty;
-	char blocking_teleporter;
+	char telefrag_timer;
 	long dead_timer;
 	long in_game_timer;
 	long alive_timer;
 	long unknown_input_global_ticks;
 	long grenade_regeneration_timer;
-	long unknown_object_index;
-	long last_aim_target_time;
+
+	long aim_assist_object_index;
+	long aim_assist_timestamp;
+
 	ushort ticks_sprinting;
 	ushort field_2CE6;
 	ushort sprint_restoration_timer;
 	ushort sprint_depleted_timer;
 	bool sprint_disabled;
+
 	word vehicle_entrance_ban_ticks;
-	c_aim_target_object aim_target_object;
-	long field_2CFC;
-	struct {
-		char mask;
-		long object_index;
-		long field_8;
-	}
-	tracking_objects[8];
-	ushort respawn_duration_seconds;
-	bool first_spawn;
-	uchar respawn_failed_reason;
+
+	c_aim_target_object cached_target;
+	long cached_target_untargeted_ticks;
+	c_static_array<s_tracking_object, 8> tracking_objects;
+
+	short recently_spawned_timer;
+	bool recently_spawned_timer_is_initial_spawn;
+	byte respawn_failure_reason;
+
 	struct // tank_mode
 	{
 		long tank_mode_last_used_tick;
@@ -247,6 +256,7 @@ struct player_datum : s_datum_header
 		real tank_mode_field_10;
 		real tank_mode_field_14;
 	};
+
 	struct // reactive armor
 	{
 		long reactive_armor_last_used_tick;
@@ -254,55 +264,42 @@ struct player_datum : s_datum_header
 		real reactive_armor_damage_reflection_scale;
 		real reactive_armor_field_0C;
 	};
+
 	long stamina_restore_near_death_timer;
 	bool grenade_scavenger_modifier_used;
 	byte : 3;
-	long last_aim_assist_target_player_index;
-	short unused;
-	char game_engine_vehicle_use_timer;
-	char game_engine_simulation_update_timer;
-	char game_engine_simulation_update_timer2;
-	bool was_sneaking;
-	bool is_sneaking;
-	byte : 8;
-	ushort aim_assist_update_timer;
-	ushort lives;
-	long griefer_player_index;
-	ulong last_killed_game_time;
-	c_player_traits traits;
-	c_static_array<dword, 3> powerup_pickup_time;
-	long spectating_player_index;
-	bool map_editor_rotating;
-	real_point2d map_editor_throttle;
-	real_euler_angles2d map_editor_rotation;
-	ushort time_in_hill;
-	ushort time_outside_hill;
-	ushort time_hill_left;
-	short : 16;
+
+	multiplayer_player_info multiplayer;
+
 	union // nemesis mechanics
 	{
 		c_static_array<short, 16> nemesis_mechanics_nemesis_counts; // killing_player, nemesis medal
 		c_static_array<short, 16> nemesis_mechanics_avenger_counts; // dead_player, avenger medal
 	};
+
 	char revenge_shield_boost_unknown80;
 	char field_18B5; // padding?
 	short revenge_shield_boost_multiplier;
 	long revenge_unknown1; // last_hit_marker_game_time?
 	long revenge_unknown2; // last_hit_marker_game_time?
-	long revenge_killing_player_index;
-	s_damage_reporting_info revenge_damage_reporting_info;
+	long revenge_shield_boost_player_index;
+	s_damage_reporting_info revenge_shield_boost_damage;
 	bool revenge_taken;
 	char : 8;
 	char : 8;
 	char : 8;
 	byte __unknown_data[0x20];
+
 	struct // assassination info
 	{
 		long assassination_victim_unit_index;
 		bool is_assassination_victim;
+		char : 8;
+		char : 8;
+		char : 8;
 		real_point3d assasination_authorative_position;
 		real_vector3d assasination_authorative_forward;
-		uchar assassination_state[60];
+		c_typed_opaque_data<struct s_simulation_unit_melee_damage_event_data, sizeof(_simulation_unit_melee_damage_event_data), __alignof(_simulation_unit_melee_damage_event_data) - 1> melee_damage_event_data;
 	};
 	c_static_array<s_player_shot_info, 8> shot_info;
 	short spawn_count;
@@ -318,13 +315,13 @@ static_assert(0x70 == OFFSETOF(player_datum, configuration));
 static_assert(0x1758 == OFFSETOF(player_datum, respawn_timer_countdown_ticks));
 static_assert(0x175C == OFFSETOF(player_datum, respawn_timer_countdown_seconds));
 static_assert(0x178E == OFFSETOF(player_datum, vehicle_entrance_ban_ticks));
-static_assert(0x1842 == OFFSETOF(player_datum, lives));
-static_assert(0x1848 == OFFSETOF(player_datum, last_killed_game_time));
-static_assert(0x1874 == OFFSETOF(player_datum, spectating_player_index));
+static_assert(0x1842 == OFFSETOF(player_datum, multiplayer.remaining_lives));
+static_assert(0x1848 == OFFSETOF(player_datum, multiplayer.time_of_death));
+static_assert(0x1874 == OFFSETOF(player_datum, multiplayer.dead_camera_target_player_index));
 static_assert(0x18B4 == OFFSETOF(player_datum, revenge_shield_boost_unknown80));
 static_assert(0x18B6 == OFFSETOF(player_datum, revenge_shield_boost_multiplier));
-static_assert(0x18C0 == OFFSETOF(player_datum, revenge_killing_player_index));
-static_assert(0x18C4 == OFFSETOF(player_datum, revenge_damage_reporting_info));
+static_assert(0x18C0 == OFFSETOF(player_datum, revenge_shield_boost_player_index));
+static_assert(0x18C4 == OFFSETOF(player_datum, revenge_shield_boost_damage));
 static_assert(0x18EC == OFFSETOF(player_datum, assassination_victim_unit_index));
 static_assert(0x18F0 == OFFSETOF(player_datum, is_assassination_victim));
 static_assert(0x18F4 == OFFSETOF(player_datum, assasination_authorative_position));
@@ -344,84 +341,55 @@ protected:
 };
 
 #pragma pack(push, 1)
-struct s_players_global_data
+struct players_global_data
 {
 	long players_in_game_count;
-
 	bool input_disabled;
 	bool mostly_inhibited;
-
 	bool weapon_pickup_disabled;
-	bool __unknown7;
+	bool sprint_inhibited;
 	bool equipment_use_disabled;
-
 	byte __data9[3];
-
 	long unknown_todo; // TODO: additional 4 byte field added somewhere above here since ms23
 
 	dword machine_valid_mask;
 	c_static_array<s_machine_identifier, k_maximum_machines> machine_identifiers;
 
 	bool local_machine_exists;
-	s_machine_identifier local_machine_identifier;
+	__declspec(align(1)) s_machine_identifier local_machine_identifier;
 	byte __pad131[0x3];
 
 	long local_machine_index;
 	bool scripted_dont_allow_respawning;
-
 	byte __data139;
-
 	c_enum<e_player_respawn_failure, short, _player_respawn_failure_none, k_player_respawn_failure_count> respawn_failure;
 
 	// player_positions_initialize_for_new_structure_bsp
 	// players_update_after_game
-	bool __unknown13C;
+	bool force_player_positions_initialize;
 
 	byte __data13D[0x3];
 
 	real_point3d switching_player_position;
 	real_vector3d switching_player_forward;
 
-	// player_positions_initialize_for_new_structure_bsp
-	// players_update_after_game
 	long begin_zone_set_switch_trigger_volume_index;
 	long commit_zone_set_switch_trigger_volume_index;
-
-	// players_update_after_game
-	// if (player_index != -1 && ++__unknown160 > 12)
-	//    __unknown160 = 0
-	short __unknown160;
-
+	short zone_set_switch_check_recursive_ticks;
 	short __unknown162;
-
-	// players_update_after_game
-	long player_index;
-
-	// players_update_after_game
-	long zoneset_index;
-
-	// memset in `players_initialize_for_new_map`
-	// zone_set_trigger_volume_index
-	c_static_flags<1024> zone_set_switch_flags;
-
-	// `terminal_was_completed`
-	// - returns whether or not the given terminal was read to completion
+	long zone_set_switch_player_index;
+	long zone_set_switch_previous_zone_set_index;
+	dword disabled_zone_set_switch_trigger_volume_flags[32];
 	word terminal_completed_flags;
-
-	// `terminal_was_accessed`
-	// - returns whether or not the given terminal was accessed
 	word terminal_accessed_flags;
-
-	// `terminal_is_being_read`
-	// - returns whether or not a terminal is currently being read
 	bool terminal_being_read;
-
 	byte __data1F1[0x3];
 
-	byte __data1F4[0x40];
+	dword combined_pvs[8];
+	dword combined_pvs_local[8];
 };
-static_assert(sizeof(s_players_global_data) == 0x238);
-static_assert(0x14 == OFFSETOF(s_players_global_data, machine_identifiers));
+static_assert(sizeof(players_global_data) == 0x238);
+static_assert(0x14 == OFFSETOF(players_global_data, machine_identifiers));
 #pragma pack(pop)
 
 bool player_identifier_is_valid(s_player_identifier const* identifier);
@@ -436,8 +404,8 @@ void __fastcall player_clear_assassination_state(datum_index player_index);
 long get_player_action_control_context_identifier_bits();
 s_machine_identifier* players_get_machine_identifier(long machine_index);
 void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index);
-struct s_player_waypoint_data;
+struct s_player_navpoint_data;
 enum e_navpoint_action;
-void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoint_action action);
+void player_navpoint_data_set_action(s_player_navpoint_data* waypoint, e_navpoint_action action);
 void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index);
 void __fastcall player_delete(datum_index player_index);

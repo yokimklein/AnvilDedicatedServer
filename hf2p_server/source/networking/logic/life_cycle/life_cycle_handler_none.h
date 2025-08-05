@@ -1,8 +1,9 @@
 #pragma once
 #include <networking\logic\life_cycle\life_cycle_state_handler.h>
 
-struct c_life_cycle_state_handler_none : c_life_cycle_state_handler
+class c_life_cycle_state_handler_none : public c_life_cycle_state_handler
 {
+public:
 	virtual void update() override;
 	virtual e_life_cycle_state_transition_type update_for_state_transition() override;
 	virtual void enter(c_life_cycle_state_handler* handler, long entry_data_size, void* entry_data) override;

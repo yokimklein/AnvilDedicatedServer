@@ -1,5 +1,7 @@
 #pragma once
 
+// $TODO: Find a better home for these
+
 enum e_game_mode
 {
 	_game_mode_none = 0,

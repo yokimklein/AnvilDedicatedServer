@@ -32,11 +32,11 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
     {
         size_t instruction_length = nmd_x86_ldisasm((void*)((size_t)source + i), length, NMD_X86_MODE_32);
         // ensure nmd_x86_ldisasm ran successfully
-        assert(instruction_length != 0);
+        ASSERT(instruction_length != 0);
         // ensure instruction length fits within the length of the buffer provided
-        assert(i + instruction_length <= length);
+        ASSERT(i + instruction_length <= length);
         // ensure operand exists after opcode
-        assert(i + 1 <= length);
+        ASSERT(i + 1 <= length);
 
         // switch opcode
         long offset;
@@ -48,7 +48,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             case 0xE8: // call
             case 0xE9: // jump
                 // ensure instruction length is valid for a jump/call
-                assert(instruction_length == 5);
+                ASSERT(instruction_length == 5);
                 offset = *(long*)&code_buffer[i + 1]; // near offset
                 offset = (long)(((size_t)source + i) + offset + 5); // destination address
                 offset = offset - ((size_t)destination + i) - 5; // new offset
@@ -62,21 +62,21 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             case 0x7E: // jle
             case 0xEB: // jmp short
                 // ensure instruction length is valid for a short jump
-                assert(instruction_length == 2);
+                ASSERT(instruction_length == 2);
                 // verify offset fits in buffer
                 short_offset = code_buffer[i + 1];
                 near_jump_is_in_bounds = (short_offset + 2 + i) < length; // if this assert fails you've likely ended your replaced instructions with a short jump
                 if (!near_jump_is_in_bounds && redirect_oob_jumps)
                 {
                     offset = (length - (i + 2)); // redirect near jump to NOP at the end of the buffer
-                    assert(offset <= 255); // Ensure we don't go beyond the short jump offset range
+                    ASSERT(offset <= 255); // Ensure we don't go beyond the short jump offset range
                     short_offset = static_cast<char>(offset);
                     code_buffer[i + 1] = short_offset;
                 }
                 else
                 {
                     // Not in bounds and set to not redirect!!
-                    assert(near_jump_is_in_bounds);
+                    ASSERT(near_jump_is_in_bounds);
                 }
                 break;
 
@@ -93,7 +93,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
             case 0x7D: // jge
             case 0x7F: // jg
             case 0xE3: // jcxz
-                assert(false);
+                ASSERT(false);
                 break;
 
             // Near jumps
@@ -102,7 +102,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                 {
                     case 0x85: // jnz
                         // ensure instruction length is valid for a near jump
-                        assert(instruction_length == 6);
+                        ASSERT(instruction_length == 6);
                         offset = *(long*)&code_buffer[i + 2]; // near offset
                         offset = (long)(((size_t)source + i) + offset + 6); // destination address
                         offset = offset - ((size_t)destination + i) - 6; // new offset
@@ -124,7 +124,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                     case 0x8F: // jg
                     case 0x8A: // jp
                     case 0x8B: // jnp
-                        assert(false);
+                        ASSERT(false);
                         break;
                 }
                 break;
@@ -188,7 +188,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
 
     if (hook_type == _hook_stack_frame_increase)
     {
-        assert((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
+        ASSERT((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
         char increase_bytes = (char)inserted_function;
         memcpy(&sub_esp_code[2], &increase_bytes, sizeof(increase_bytes));
         memcpy(inserted_code + code_offset, sub_esp_code, sizeof(sub_esp_code));
@@ -196,7 +196,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
     else if (hook_type == _hook_stack_frame_cleanup)
     {
-        assert((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
+        ASSERT((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
         char decrease_bytes = (char)inserted_function;
         memcpy(&add_esp_code[2], &decrease_bytes, sizeof(decrease_bytes));
         memcpy(inserted_code + code_offset, add_esp_code, sizeof(add_esp_code));
@@ -256,11 +256,11 @@ void increase_esp_offsets(size_t function_start, size_t function_end, size_t off
     {
         void* function_address = (void*)(base_function + i);
         size_t instruction_length = nmd_x86_ldisasm(function_address, length, NMD_X86_MODE_32);
-        assert(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
+        ASSERT(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
 
         nmd_x86_instruction instruction{};
         nmd_x86_decode(function_address, instruction_length, &instruction, NMD_X86_MODE_32, NMD_X86_DECODER_FLAGS_MINIMAL | NMD_X86_DECODER_FLAGS_OPERANDS);
-        assert(instruction.valid && instruction.length > 0); // ensure decode ran successfully
+        ASSERT(instruction.valid && instruction.length > 0); // ensure decode ran successfully
 
         // find instructions with esp offsets
         for (size_t j = 0; j < instruction.num_operands; j++)
@@ -268,21 +268,21 @@ void increase_esp_offsets(size_t function_start, size_t function_end, size_t off
             if (!instruction.operands[j].is_implicit && instruction.operands[j].type == NMD_X86_OPERAND_TYPE_MEMORY && instruction.operands[j].fields.mem.base == NMD_X86_REG_ESP)
             {
                 // i'm unsure as to what scale does right now, and all instructions I've seen have it as zero
-                assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
-                //assert(instruction.operands[j].fields.mem.index == 0); // can safely ignore this?
+                ASSERT(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
+                //ASSERT(instruction.operands[j].fields.mem.index == 0); // can safely ignore this?
                 //printf("ESP instruction(%p) w/ offset: %d prefixes: %d\n", function_address, instruction.displacement, instruction.num_prefixes);
 
                 // prefixes, opcode, modrm, register, displacement
                 // ensure disp_mask is as we expect it and not a combination of values
-                assert(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
+                ASSERT(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
 
                 long displacement_offset = instruction.num_prefixes + instruction.opcode_size + 2; // prefixes + opcode size + modrm + register
                 long assumed_size = displacement_offset + instruction.disp_mask;
-                assert(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
-                //assert(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
-                assert(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
+                ASSERT(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
+                //ASSERT(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
+                ASSERT(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
                 // this assert is generally true but not for operands where fields.mem.index is not 0
-                //assert(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size + 1] == instruction.operands[j].fields.mem.base); // check register is where it should be
+                //ASSERT(((byte*)function_address)[instruction.num_prefixes + instruction.opcode_size + 1] == instruction.operands[j].fields.mem.base); // check register is where it should be
 
                 ulong64 displacement = 0;
                 ulong64 new_displacement = 0;
@@ -295,30 +295,30 @@ void increase_esp_offsets(size_t function_start, size_t function_end, size_t off
                         break;
                     case NMD_X86_DISP8:
                         displacement = *(char*)displacement_address;
-                        assert(displacement == instruction.displacement);
+                        ASSERT(displacement == instruction.displacement);
                         new_displacement = displacement + offset_increase;
-                        assert(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
+                        ASSERT(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
                         *(char*)displacement_address = new_displacement;
                         break;
                     case NMD_X86_DISP16:
                         displacement = *(short*)displacement_address;
-                        assert(displacement == instruction.displacement);
+                        ASSERT(displacement == instruction.displacement);
                         new_displacement = displacement + offset_increase;
-                        assert(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
+                        ASSERT(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
                         *(short*)displacement_address = new_displacement;
                         break;
                     case NMD_X86_DISP32:
                         displacement = *(long*)displacement_address;
-                        assert(displacement == instruction.displacement);
+                        ASSERT(displacement == instruction.displacement);
                         new_displacement = displacement + offset_increase;
-                        assert(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
+                        ASSERT(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
                         *(long*)displacement_address = new_displacement;
                         break;
                     case NMD_X86_DISP64:
                         displacement = *(long64*)displacement_address;
-                        assert(displacement == instruction.displacement);
+                        ASSERT(displacement == instruction.displacement);
                         new_displacement = displacement + offset_increase;
-                        assert(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
+                        ASSERT(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
                         *(long64*)displacement_address = new_displacement;
                         break;
                 }
@@ -340,11 +340,11 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
     {
         void* instruction_address = (void*)(base_function + i);
         size_t instruction_length = nmd_x86_ldisasm(instruction_address, length, NMD_X86_MODE_32);
-        assert(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
+        ASSERT(instruction_length != 0); // ensure nmd_x86_ldisasm ran successfully
 
         nmd_x86_instruction instruction{};
         bool result = nmd_x86_decode(instruction_address, instruction_length, &instruction, NMD_X86_MODE_32, NMD_X86_DECODER_FLAGS_MINIMAL | NMD_X86_DECODER_FLAGS_OPERANDS);
-        assert(result && instruction.valid && instruction.length > 0); // ensure decode ran successfully
+        ASSERT(result && instruction.valid && instruction.length > 0); // ensure decode ran successfully
 
         // find instructions with positive ebp offsets
         for (size_t j = 0; j < instruction.num_operands; j++)
@@ -352,17 +352,17 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
             if (!instruction.operands[j].is_implicit && instruction.operands[j].type == NMD_X86_OPERAND_TYPE_MEMORY && instruction.operands[j].fields.mem.base == NMD_X86_REG_EBP)
             {
                 // i'm unsure as to what scale does right now, and all instructions I've seen have it as zero
-                //assert(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
+                //ASSERT(instruction.operands[j].fields.mem.scale == 0); // leaving this here so it'll alert me in case I need to handle this
 
                 // prefixes, opcode, modrm, displacement
                 // ensure disp_mask is as we expect it and not a combination of values
-                assert(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
+                ASSERT(instruction.disp_mask == NMD_X86_DISP_NONE || instruction.disp_mask == NMD_X86_DISP8 || instruction.disp_mask == NMD_X86_DISP16 || instruction.disp_mask == NMD_X86_DISP32 || instruction.disp_mask == NMD_X86_DISP64);
 
                 long displacement_offset = instruction.num_prefixes + instruction.opcode_size + 1; // prefixes + opcode size + modrm
                 long assumed_size = displacement_offset + instruction.disp_mask;
-                assert(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
-                //assert(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
-                assert(((byte*)instruction_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
+                ASSERT(instruction.length >= assumed_size); // ensure our assumption about the instruction length is correct (GTE because immediate operands might add bytes onto the end?)
+                //ASSERT(((byte*)function_address)[assumed_prefix_size] == instruction.opcode); // check opcode is where it should be
+                ASSERT(((byte*)instruction_address)[instruction.num_prefixes + instruction.opcode_size] == instruction.modrm.modrm); // check modrm is where it should be
                 long64 displacement = 0;
                 long64 new_displacement = 0;
                 void* displacement_address = (void*)(base_function + i + displacement_offset);
@@ -370,15 +370,15 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                 {
                     case NMD_X86_DISP_NONE:
                         displacement = 0;
-                        assert(false); // TODO: handle this
+                        ASSERT(false); // TODO: handle this
                         break;
                     case NMD_X86_DISP8:
                         displacement = *(char*)displacement_address;
                         if (displacement >= 0)
                         {
-                            assert(displacement == *(char*)&instruction.displacement); // ensure displacement value is correct
+                            ASSERT(displacement == *(char*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
-                            assert(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
+                            ASSERT(new_displacement <= INT8_MAX); // ensure we don't go beyond the max byte value
                             *(char*)displacement_address = new_displacement;
                         }
                         break;
@@ -386,9 +386,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         displacement = *(short*)displacement_address;
                         if (displacement >= 0)
                         {
-                            assert(displacement == *(short*)&instruction.displacement); // ensure displacement value is correct
+                            ASSERT(displacement == *(short*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
-                            assert(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
+                            ASSERT(new_displacement <= INT16_MAX); // ensure we don't go beyond the max short value
                             *(short*)displacement_address = new_displacement;
                         }
                         break;
@@ -396,9 +396,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         displacement = *(long*)displacement_address;
                         if (displacement >= 0)
                         {
-                            assert(displacement == *(long*)&instruction.displacement); // ensure displacement value is correct
+                            ASSERT(displacement == *(long*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
-                            assert(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
+                            ASSERT(new_displacement <= INT32_MAX); // ensure we don't go beyond the max long value
                             *(long*)displacement_address = new_displacement;
                         }
                         break;
@@ -406,9 +406,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
                         displacement = *(long64*)displacement_address;
                         if (displacement >= 0)
                         {
-                            assert(displacement == *(long64*)&instruction.displacement); // ensure displacement value is correct
+                            ASSERT(displacement == *(long64*)&instruction.displacement); // ensure displacement value is correct
                             new_displacement = displacement + offset_increase;
-                            assert(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
+                            ASSERT(new_displacement <= INT64_MAX); // ensure we don't go beyond the max long64 value
                             *(long64*)displacement_address = new_displacement;
                         }
                         break;
@@ -447,7 +447,7 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
 
     }
     while (bytes_to_overwrite < 5);
-    assert(bytes_to_overwrite < length); // ensure the space we want to overwrite hasn't exceeded the bounds of the function
+    ASSERT(bytes_to_overwrite < length); // ensure the space we want to overwrite hasn't exceeded the bounds of the function
 
     // correct positive ebp offsets (typically function arguments) to account for the extra space we've pushed to the stack
     increase_positive_ebp_offsets(function_start, function_end, space_in_bytes);
@@ -466,7 +466,7 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
 
     // ensure we have the space to write a jump
-    assert(length >= 5);
+    ASSERT(length >= 5);
 
     // cleanup old function code
     nop_region(function_address, length);

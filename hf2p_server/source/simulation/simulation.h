@@ -73,6 +73,13 @@ enum e_predictability // TODO: where does this belong?
 	k_predictability_count
 };
 
+enum e_simulation_playback_event
+{
+	_simulation_playback_event_revert = 0,
+
+	k_simulation_playback_event_count,
+};
+
 struct simulation_machine_update
 {
 	dword machine_valid_mask;
@@ -130,26 +137,28 @@ struct s_simulation_update_metadata
 };
 static_assert(sizeof(s_simulation_update_metadata) == 0xC);
 
-struct s_simulation_update_playback_event
+struct s_simulation_queued_update
 {
-	byte __data0[0xC];
-	long event_update_number;
-};
-static_assert(sizeof(s_simulation_update_playback_event) == 0x10);
-
-// unknown struct name using `s_simulation_update_node` for now
-struct s_simulation_update_node
-{
-	c_enum<e_update_queue_node, long, _update_queue_node_update, k_update_queue_node_count> node_type;
+	e_update_queue_node node_type;
 
 	byte __data0[0x4];
 
-	simulation_update update;
-	s_simulation_update_metadata metadata;
-	s_simulation_update_playback_event playback_event;
-	s_simulation_update_node* next;
+	struct
+	{
+		simulation_update update;
+		s_simulation_update_metadata metadata;
+	} update;
+
+	struct
+	{
+		e_simulation_playback_event event_type;
+		long event_data;
+		long event_update_number;
+	} playback_event;
+
+	s_simulation_queued_update* next_node;
 };
-static_assert(sizeof(s_simulation_update_node) == 0x1680);
+static_assert(sizeof(s_simulation_queued_update) == 0x1680);
 
 class c_simulation_world;
 class c_simulation_watcher;
@@ -157,40 +166,29 @@ class c_simulation_type_collection;
 struct s_simulation_globals
 {
 	bool initialized;
-	bool fatal_error;
-	bool saved_film_revert;
-	bool aborted;
-	dword network_time_since_abort;
-	c_enum<e_simulation_abort_reason, long, _simulation_abort_reason_exiting_in_game, k_simulation_abort_reason_count> abort_reason;
-	bool reset;
-	bool reset_in_progress;
-	bool in_online_networked_session;
-	bool prepare_to_load_saved_game;
+	bool simulation_fatal_error;
+	bool simulation_deferred;
+	bool simulation_aborted;
+	dword simulation_aborted_timestamp;
+	e_simulation_abort_reason abort_reason;
+	bool simulation_in_initial_state;
+	bool simulation_reset_in_progress;
+	bool simulation_in_online_networked_session;
+	bool gamestate_load_in_progress;
 	bool recording_film;
-	byte __unknown11;
-	byte __unknown12;
-	byte __unknown13;
-
+	bool must_close_saved_film;
+	bool performed_main_save_and_exit_campaign_immediately_this_map;
 	c_simulation_world* world;
 	c_simulation_watcher* watcher;
 	c_simulation_type_collection* type_collection;
-
-	dword __unknown20;
-
+	s_data_array* view_data_array;
 	c_static_string<256> status;
-	/* - removed in MS29
-	bool paused;
-	byte __unknown125;
-	byte __unknown126;
-	byte __unknown127;
-
-	// used in `simulation_update_write_to_buffer`
-	simulation_update update;
-	dword_flags update_flags;
-	*/
+	// confirm these two are in ms29
+	bool simulation_paused;
+	bool handled_determinism_failure;
 };
-static_assert(sizeof(s_simulation_globals) == 0x124); // 0x1784 in ms23
-static_assert(0x0E == OFFSETOF(s_simulation_globals, in_online_networked_session));
+static_assert(sizeof(s_simulation_globals) == 0x128);
+static_assert(0x0E == OFFSETOF(s_simulation_globals, simulation_in_online_networked_session));
 
 extern s_simulation_globals& simulation_globals;
 

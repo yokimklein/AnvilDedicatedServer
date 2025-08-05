@@ -22,10 +22,7 @@ struct s_scenario_zone_activation
 
 	bool is_empty() const
 	{
-		return !deactivating_designer_zone_mask
-			&& !activating_designer_zone_mask
-			&& !deactivating_cinematic_zone_mask
-			&& !activating_cinematic_zone_mask;
+		return !deactivating_designer_zone_mask && !activating_designer_zone_mask && !deactivating_cinematic_zone_mask && !activating_cinematic_zone_mask;
 	}
 
 	long deactivating_designer_zone_mask;

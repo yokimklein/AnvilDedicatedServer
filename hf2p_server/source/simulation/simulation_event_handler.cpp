@@ -4,8 +4,8 @@
 
 const char* c_simulation_event_handler::get_event_type_name(e_simulation_event_type event_type)
 {
-	assert(m_initialized);
-	assert(m_type_collection);
+	ASSERT(m_initialized);
+	ASSERT(m_type_collection);
 	return m_type_collection->get_event_type_name(event_type);
 }
 

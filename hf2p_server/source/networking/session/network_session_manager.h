@@ -1,8 +1,8 @@
 #pragma once
-#include <networking\transport\transport_security.h>
 #include <networking\network_globals.h>
 
 class c_network_session;
+struct s_transport_secure_identifier;
 class c_network_session_manager
 {
 public:

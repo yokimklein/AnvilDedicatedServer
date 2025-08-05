@@ -60,7 +60,7 @@ public:
 
 protected:
 	c_enum<long, short, -1, 250> m_score_to_win;        // default: 25
-	c_enum<long, short, 0, 250> m_score_unknown;        // default: 20, halo online specific
+	c_enum<long, short, 0, 250> m_early_win_score;		// default: 20, halo online specific
 	c_enum<long, short, -10, 10> m_kill_points;         // default: 1
 	c_enum<long, char, -10, 10> m_assist_points;        // default: 0
 	c_enum<long, char, -10, 10> m_death_points;         // default: 0

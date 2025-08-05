@@ -35,52 +35,69 @@ enum e_dedicated_server_session_state
 	k_dedicated_server_session_state_count
 };
 
-struct s_network_session_state_peer_creating
+struct s_local_state_data_peer_creating
 {
-	c_enum<e_transport_platform, long, _transport_platform_xnet, k_transport_platform_count> platform;
-	bool __unknown4;
+	e_transport_platform secure_key_platform;
+	bool connect_not_join;
 	qword join_nonce;
 	s_network_session_join_request join_request;
 };
-static_assert(sizeof(s_network_session_state_peer_creating) == 0x248);
+static_assert(sizeof(s_local_state_data_peer_creating) == 0x248);
 
-struct s_network_session_state_peer_joining
+struct s_local_state_data_peer_joining
 {
-	long observer_channel;
-	s_transport_secure_address join_address;
-	s_transport_address join_usable_address;
-	bool use_peer_joining_join_nonce;
+	long observer_channel_index;
+	s_transport_secure_address join_remote_address;
+	transport_address join_usable_address;
+	bool connect_not_join;
 	qword join_nonce;
 	s_network_session_join_request join_request;
+	dword join_initiated_timestamp;
+	dword join_ping_from_host_timestamp;
 	dword join_secure_connection_timestamp;
-	dword __unknown34C;
-	dword __unknown350;
-	byte __data[0xC];
+	long join_attempt_count;
+	dword last_join_attempt_timestamp;
 };
-static_assert(sizeof(s_network_session_state_peer_joining) == 0x288);
+static_assert(sizeof(s_local_state_data_peer_joining) == 0x288);
 
-struct s_network_session_state_peer_join_abort
+struct s_local_state_data_peer_join_abort
 {
-	s_transport_secure_address join_address;
-	s_transport_address join_usable_address;
-	s_transport_secure_address secure_address;
+	s_transport_secure_address join_remote_address;
+	transport_address join_usable_address;
+	s_transport_secure_address joining_local_address;
 	qword join_nonce;
-	dword join_secure_connection_timestamp;
-	dword join_abort_secure_connection_timestamp;
-	byte __data[0x8];
+	dword join_initiated_timestamp;
+	dword join_abort_initiated_timestamp;
+	dword last_join_abort_timestamp;
 };
-static_assert(sizeof(s_network_session_state_peer_join_abort) == 0x50);
+static_assert(sizeof(s_local_state_data_peer_join_abort) == 0x50);
 
-struct s_network_session_state_peer_established
+struct s_local_state_data_peer_established
 {
-	dword __unknown0;
-	dword peer_established_secure_connection_timestamp;
+	dword peer_reestablishment_state; // e_peer_reestablish_state
+	dword established_timestamp;
 };
-static_assert(sizeof(s_network_session_state_peer_established) == 0x8);
+static_assert(sizeof(s_local_state_data_peer_established) == 0x8);
 
-struct s_network_session_state_peer_leaving
+struct s_local_state_data_peer_leaving
 {
-	byte __data[0x8];
-	dword __unknown8;
+	long peer_reestablishment_state; // e_peer_reestablish_state
+	dword leave_initiated_timestamp;
+	dword last_leave_attempt_timestamp;
 };
-static_assert(sizeof(s_network_session_state_peer_leaving) == 0xC);
+static_assert(sizeof(s_local_state_data_peer_leaving) == 0xC);
+
+struct s_local_state_data
+{
+	union
+	{
+		s_local_state_data_peer_creating peer_creating;
+		s_local_state_data_peer_joining peer_joining;
+		s_local_state_data_peer_join_abort peer_join_abort;
+		s_local_state_data_peer_established peer_established;
+		s_local_state_data_peer_leaving peer_leaving;
+		//s_local_state_data_host_handoff host_handoff;
+		//s_local_state_data_host_reestablish host_reestablish;
+		//s_local_state_data_election election;
+	};
+};

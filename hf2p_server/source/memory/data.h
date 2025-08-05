@@ -7,8 +7,8 @@ enum e_data_array_flags
 {
 	_data_array_can_disconnect_bit,
 	_data_array_disconnected_bit,
-	_data_array_unknown2_bit,
-	_data_array_invalidate_bit,
+	_data_array_protection_bit,
+	_data_array_invalidate_bit, // _data_array_verify_data_pattern_bit
 	_data_array_unknown4_bit,
 	_data_array_unknown5_bit,
 	_data_array_unknown6_bit,
@@ -36,9 +36,14 @@ enum : datum_index
 	_datum_index_none = 0xFFFFFFFF
 };
 
-#define DATUM_INDEX_TO_ABSOLUTE_INDEX(VALUE) ((VALUE) & 0xFFFF)
-#define DATUM_INDEX_TO_IDENTIFIER(VALUE)  ((VALUE) >> 16)
 #define DATUM_IS_FREE(VALUE) (VALUE->identifier == 0)
+#define DATUM_INDEX_TO_ABSOLUTE_INDEX(VALUE) ((VALUE) & 0x3FF)
+#define DATUM_INDEX_TO_IDENTIFIER(VALUE) ((VALUE) >> 16)
+#define BUILD_DATUM_INDEX(IDENTIFIER, ABSOLUTE_INDEX) ((IDENTIFIER << 16) | ABSOLUTE_INDEX)
+#define DATUM_GET(DATA, TYPE, INDEX) ((TYPE*)datum_get(DATA, INDEX))
+#define DATUM_TRY_AND_GET(DATA, TYPE, INDEX) ((TYPE*)datum_try_and_get(DATA, INDEX))
+#define DATUM_GET_ABSOLUTE(DATA, TYPE, INDEX) ((TYPE*)datum_get_absolute(DATA, INDEX))
+#define DATUM_TRY_AND_GET_ABSOLUTE(DATA, TYPE, INDEX) ((TYPE*)datum_try_and_get_absolute(DATA, INDEX))
 
 struct s_datum_header
 {
@@ -53,35 +58,18 @@ struct s_data_array
 	long size;
 	byte alignment_bits; // e_data_alignment
 	bool valid;
-
-	// bit 0, _data_array_can_disconnect_bit
-	// bit 1, _data_array_disconnected_bit
 	word flags;
-
 	tag signature;
-
-	// c_allocation_interface
-	void* allocator;
-
-	long next_index;
-	long first_unallocated;
+	c_allocation_base* allocation;
+	long first_possibly_free_absolute_index;
+	long count;
 	long actual_count;
-
-	// e_datum_salt
-	// salt_type == 0
 	word next_identifier;
-
-	// salt_type == 1
 	word isolated_next_identifier;
-
 	char* data;
 	dword* in_use_bit_vector;
-	long offset_to_data;
-	long offset_to_bit_vector;
-
-	long get_index(long index) const;
-	long get_allocation_size() const;
-	s_datum_header* get_datum(const datum_index index) const;
+	dword offset_to_data;
+	dword offset_to_bit_vector;
 };
 static_assert(sizeof(s_data_array) == 0x54);
 

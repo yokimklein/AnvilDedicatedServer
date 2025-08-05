@@ -1,6 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <simulation\game_interface\simulation_game_entities.h>
+#include <memory\data.h>
+//#include <simulation\game_interface\simulation_game_entities.h>
 
 enum e_simulation_object_update_flag
 {
@@ -62,47 +63,10 @@ struct c_simulation_object_index_state_data
 };
 static_assert(sizeof(c_simulation_object_index_state_data) == 0x8);
 
-// CAREFUL USING THIS IN HOOKS - constructor is called by default and will immediately use a register!
-class c_simulation_object_update_flags
-{
-public:
-	c_simulation_object_update_flags()
-	{
-		m_flags.clear();
-	}
-
-	template<typename t_update_type>
-	void set_flag(datum_index object_index, t_update_type update_flag)
-	{
-		long flag = *reinterpret_cast<long*>(&update_flag);
-		m_flags.set(flag, true);
-	};
-	void set_raw(ulong64 raw_bits)
-	{
-		m_flags.set_unsafe(raw_bits);
-	}
-
-	c_flags<long, ulong64, 64> m_flags;
-};
-
-void simulation_action_object_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags);
-template <typename t_update_type>
-void __fastcall simulation_action_object_update(datum_index object_index, t_update_type update_type)
-{
-	c_simulation_object_update_flags update_flags;
-	update_flags.set_flag(object_index, update_type);
-	simulation_action_object_update_internal(object_index, update_flags);
-}
-
-void simulation_action_object_force_update_internal(datum_index object_index, c_simulation_object_update_flags update_flags);
-template <typename t_update_type>
-void __fastcall simulation_action_object_force_update(datum_index object_index, t_update_type update_type)
-{
-	c_simulation_object_update_flags update_flags;
-	update_flags.set_flag(object_index, update_type);
-	simulation_action_object_force_update_internal(object_index, update_flags);
-}
-
+enum e_simulation_entity_type;
+class c_simulation_object_update_flags;
+void simulation_action_object_update_internal(datum_index object_index, c_simulation_object_update_flags& flags);
+void __fastcall simulation_action_object_force_update(datum_index object_index, c_simulation_object_update_flags& flags);
 void __cdecl simulation_action_object_create(datum_index object_index);
 void simulation_action_object_create_build_entity_types(datum_index object_index, datum_index last_object_index, long maximum_entity_count, long* out_entity_count, e_simulation_entity_type* entity_types, long* object_indices);
 void simulation_action_object_delete(datum_index object_index);

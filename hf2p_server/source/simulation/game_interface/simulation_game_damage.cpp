@@ -10,43 +10,53 @@
 
 void simulation_action_damage_section_response(datum_index object_index, long damage_section_index, long response_index, e_damage_section_response_type damage_section_response_type)
 {
-	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	if (!game_is_distributed() || !game_is_server() || game_is_playback())
 	{
-		if (simulation_object_get_authoritative_entity(object_index) == NONE)
+		return;
+	}
+
+	if (simulation_object_get_authoritative_entity(object_index) == NONE)
+	{
+		const char* object_description;
+		if (object_index == NONE)
 		{
-			const char* object_description;
-			if (object_index == NONE)
-				object_description = "NONE";
-			else
-				object_description = object_describe(object_index);
-			printf("MP/NET/SIMULATION,EVENT: simulation_action_damage_section_response: damage section on [%s] fired without an entity index\n", object_description);
+			object_description = "NONE";
 		}
 		else
 		{
-			s_simulation_damage_section_response_data response_data;
-			response_data.damage_section_index = damage_section_index;
-			response_data.response_index = response_index;
-			response_data.damage_section_response_type = damage_section_response_type;
-			datum_index object_references[] = { object_index };
-			simulation_event_generate_for_clients(_simulation_event_type_damage_section_response, NUMBEROF(object_references), object_references, NONE, sizeof(s_simulation_damage_section_response_data), &response_data);
+			object_description = object_describe(object_index);
 		}
+		printf("MP/NET/SIMULATION,EVENT: simulation_action_damage_section_response: damage section on [%s] fired without an entity index\n", object_description);
+	}
+	else
+	{
+		s_simulation_damage_section_response_data response_data;
+		response_data.damage_section_index = damage_section_index;
+		response_data.response_index = response_index;
+		response_data.damage_section_response_type = damage_section_response_type;
+		datum_index object_references[] = { object_index };
+		simulation_event_generate_for_clients(_simulation_event_type_damage_section_response, NUMBEROF(object_references), object_references, NONE, sizeof(s_simulation_damage_section_response_data), &response_data);
 	}
 }
 
 void simulation_action_damage_aftermath(datum_index object_index, s_damage_aftermath_result_data const* result_data)
 {
-	if (should_send_damage_aftermath_event(object_index, result_data))
+	if (!should_send_damage_aftermath_event(object_index, result_data))
 	{
-		datum_index object_references[2];
-		s_simulation_damage_aftermath_event_data aftermath_event_data;
-		build_damage_aftermath_event_data(object_index, result_data, &aftermath_event_data, object_references);
-		simulation_event_generate_for_clients(_simulation_event_type_damage_aftermath, NUMBEROF(object_references), object_references, NONE, sizeof(s_simulation_damage_aftermath_event_data), &aftermath_event_data);
+		return;
 	}
+
+	datum_index object_references[2];
+	s_simulation_damage_aftermath_event_data aftermath_event_data;
+	build_damage_aftermath_event_data(object_index, result_data, &aftermath_event_data, object_references);
+	simulation_event_generate_for_clients(_simulation_event_type_damage_aftermath, NUMBEROF(object_references), object_references, NONE, sizeof(s_simulation_damage_aftermath_event_data), &aftermath_event_data);
 }
 
 bool should_send_damage_aftermath_event(datum_index object_index, s_damage_aftermath_result_data const* result_data)
 {
-	if (game_is_distributed() && game_is_server() && !game_is_playback()
+	if (game_is_distributed()
+		&& game_is_server()
+		&& !game_is_playback()
 		&& simulation_object_get_authoritative_entity(object_index) != NONE
 		&& damage_aftermath_is_important(object_index, result_data))
 	{
@@ -71,9 +81,9 @@ bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_
 		return false;
 	}
 	if (damage_effect_definition->damage.intantaneous_acceleration * object_definition->object.acceleration_scale > k_real_epsilon
-		&& (!result_data->flags.test(_damage_aftermath_flag_outside_aoe_dmg_range_bit))
+		&& (!result_data->flags.test(_damage_aftermath_outside_aoe_dmg_range_bit))
 		|| TEST_BIT(_object_mask_unit, object->object.object_identifier.m_type.get())
-		&& (!object->object.damage_flags.test(_object_damage_flag_bit2) || result_data->flags.test(_damage_aftermath_flag_unused_bit0))
+		&& (!object->object.damage_flags.test(_object_damage_flag_bit2) || result_data->flags.test(_damage_aftermath_body_depleted_bit))
 		&& (result_data->body_damage > 0.0f || result_data->shield_damage > 0.0f))
 	{
 		return true;
@@ -90,7 +100,9 @@ bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_
 void build_damage_aftermath_event_data(datum_index object_index, s_damage_aftermath_result_data const* result_data, s_simulation_damage_aftermath_event_data* out_event_data, datum_index out_object_references[2])
 {
 	if (simulation_object_get_authoritative_entity(object_index) == NONE)
+	{
 		return;
+	}
 	out_object_references[0] = object_index;
 	if (result_data->object_index == NONE || !object_try_and_get_and_verify_type(result_data->object_index, NONE))
 	{
@@ -112,7 +124,7 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	}
 	else
 	{
-		out_event_data->direction = *(real_vector3d*)&global_up3d;
+		out_event_data->direction = global_up3d;
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: event damage_aftermath has bad direction vector - who generated this nonsense?\n");
 	}
 	if (result_data->epicenter_valid)
@@ -169,11 +181,13 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 
 void simulation_action_damage_aftermath_exclusive_list(datum_index object_index, s_damage_aftermath_result_data const* result_data, datum_index const* player_indices, long player_count)
 {
-	if (should_send_damage_aftermath_event(object_index, result_data))
+	if (!should_send_damage_aftermath_event(object_index, result_data))
 	{
-		datum_index object_references[2];
-		s_simulation_damage_aftermath_event_data aftermath_event_data;
-		build_damage_aftermath_event_data(object_index, result_data, &aftermath_event_data, object_references);
-		simulation_event_generate_for_client_player_list(_simulation_event_type_damage_aftermath, NUMBEROF(object_references), object_references, player_indices, player_count, sizeof(s_simulation_damage_aftermath_event_data), &aftermath_event_data);
+		return;
 	}
+
+	datum_index object_references[2];
+	s_simulation_damage_aftermath_event_data aftermath_event_data;
+	build_damage_aftermath_event_data(object_index, result_data, &aftermath_event_data, object_references);
+	simulation_event_generate_for_client_player_list(_simulation_event_type_damage_aftermath, NUMBEROF(object_references), object_references, player_indices, player_count, sizeof(s_simulation_damage_aftermath_event_data), &aftermath_event_data);
 }

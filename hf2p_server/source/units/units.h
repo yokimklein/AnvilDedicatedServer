@@ -93,7 +93,7 @@ struct _unit_datum
 	long actor_index;
 	long simulation_actor_index;
 	c_flags<e_unit_flags, ulong, k_unit_flags_count> flags;
-	c_enum<e_game_team, long, _game_team_none, k_multiplayer_max_team_game_and_ffa_game_team_count> team;
+	c_enum<e_game_team, long, _game_team_none, k_multiplayer_team_count> team;
 	long player_index;
 	long last_weak_player_index;
 	long game_time_at_last_unit_effect;

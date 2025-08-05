@@ -9,7 +9,7 @@
 #include <game\game.h>
 #include <networking\network_globals.h>
 
-bool const k_add_local_player_in_dedicated_server_mode = false;
+bool const k_add_local_player_in_dedicated_server_mode = true;
 
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -40,7 +40,7 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__enter_h
     if (network_session_interface_get_squad_session(&session) && game_is_dedicated_server())
     {
         e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_in_game;
-        session->get_session_parameters()->dedicated_server_session_state.set(&dedi_state);
+        session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);
     }
 }
 
@@ -50,7 +50,7 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__exit_ho
     if (network_session_interface_get_squad_session(&session) && game_is_dedicated_server())
     {
         e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_waiting_for_players;
-        session->get_session_parameters()->dedicated_server_session_state.set(&dedi_state);
+        session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);
     }
 }
 #pragma runtime_checks("", restore)
@@ -64,7 +64,9 @@ bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_networ
 void __fastcall peer_request_player_add_hook(c_network_session* session, void* unused, const s_player_identifier* player_identifier, long user_index, long controller_index, s_player_configuration_from_client* configuration_from_client, long voice_settings)
 {
     if (game_is_dedicated_server() && !k_add_local_player_in_dedicated_server_mode)
+    {
         return;
+    }
     session->peer_request_player_add(player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
 }
 bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)

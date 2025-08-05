@@ -4,12 +4,10 @@
 
 struct invitation_data
 {
-	byte __data[0x10];
+	short behavior_index;
+	short slot;
+	long joint_type;
+	long jindex;
+	long expiration_time;
 };
 static_assert(sizeof(invitation_data) == 0x10);
-
-struct joint_state_datum : s_datum_header
-{
-	byte __data[0xCA];
-};
-static_assert(sizeof(joint_state_datum) == 0xCC);

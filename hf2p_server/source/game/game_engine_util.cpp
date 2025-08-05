@@ -2,7 +2,6 @@
 #include <memory\tls.h>
 #include <game\game.h>
 #include <game\game_engine.h>
-#include "assert.h"
 #include <tag_files\string_ids.h>
 #include <scenario\scenario.h>
 #include <cache\cache_files.h>
@@ -30,13 +29,13 @@ c_game_engine* current_game_engine()
 
 bool game_engine_running()
 {
-	return current_game_engine() != nullptr;
+	return current_game_engine() != NULL;
 }
 
 c_game_variant* current_game_variant()
 {
-	assert(game_options_get() != NULL);
-	return &game_options_get()->game_variant;
+	ASSERT(game_options_get() != NULL);
+	return &game_options_get()->multiplayer_variant;
 }
 
 void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
@@ -47,10 +46,10 @@ void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
 	}
 	else
 	{
-		assert(event_data->event_identifier == NONE);
+		ASSERT(event_data->event_identifier == NONE);
 		TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
-		event_data->event_identifier = game_engine_globals->current_event_identifier;
-		game_engine_globals->current_event_identifier = (game_engine_globals->current_event_identifier + 1) % 64;
+		event_data->event_identifier = game_engine_globals->game_engine_event_identifier;
+		game_engine_globals->game_engine_event_identifier = (game_engine_globals->game_engine_event_identifier + 1) % 64;
 		simulation_action_multiplayer_event(event_data);
 		game_engine_handle_event(event_data, true);
 	}

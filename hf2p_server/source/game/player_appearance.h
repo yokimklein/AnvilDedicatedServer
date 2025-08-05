@@ -379,33 +379,83 @@ enum e_tactical_package
 	k_tactical_package_count
 };
 
+enum e_emblem_info_flags
+{
+	_emblem_info_flag_alternate_foreground_channel_off = 0,
+	_emblem_info_flag_flip_foreground,
+	_emblem_info_flag_flip_background,
+
+	k_emblem_info_flags_count
+};
+
+enum e_player_color_index
+{
+	_player_color_00 = 0,
+	_player_color_01,
+	_player_color_02,
+	_player_color_03,
+	_player_color_04,
+	_player_color_05,
+	_player_color_06,
+	_player_color_07,
+	_player_color_08,
+	_player_color_09,
+	_player_color_10,
+	_player_color_11,
+	_player_color_12,
+	_player_color_13,
+	_player_color_14,
+	_player_color_15,
+	_player_color_16,
+	_player_color_17,
+	_player_color_18,
+	_player_color_19,
+	_player_color_20,
+	_player_color_21,
+	_player_color_22,
+	_player_color_23,
+	_player_color_24,
+	_player_color_25,
+	_player_color_26,
+	_player_color_27,
+	_player_color_28,
+	_player_color_29,
+	_player_color_30,
+	_player_color_31,
+
+	k_player_color_index_count,
+
+	_player_color_none = -1,
+	k_default_primary_color = _player_color_13,
+	k_default_secondary_color = _player_color_13,
+	k_default_tertiary_color = _player_color_13,
+	k_default_emblem_icon_color1 = _player_color_27,
+	k_default_emblem_icon_color2 = _player_color_10,
+	k_default_emblem_background_color = _player_color_02,
+};
+
 struct s_emblem_info
 {
-	s_emblem_info()
+	s_emblem_info() :
+		foreground_emblem_index(),
+		background_emblem_index(),
+		emblem_info_flags(),
+		primary_color_index(),
+		secondary_color_index(),
+		background_color_index(),
+		pad(0)
 	{
-		csmemset(this, 0, sizeof(s_emblem_info));
 	}
 
-	struct
-	{
-		struct
-		{
-			word __unknown0;
-			word __unknown2;
-			word __unknown4;
-			word __unknown6;
-			word __unknown8;
-			word __unknownA;
-			word __unknownC;
-			byte __unknownE;
-			byte __unknownF;
-		} __unknown0[50];
+	byte foreground_emblem_index;
+	byte background_emblem_index;
+	c_flags<e_emblem_info_flags, byte, k_emblem_info_flags_count> emblem_info_flags;
+	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> primary_color_index;
+	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> secondary_color_index;
+	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> background_color_index;
+	word pad;
 
-		long __unknown0_count;
-	} __unknown0[2];
-
-	// checksums calculated with fast_checksum / hashlittle
-	dword __unknown0_checksums[2];
+	byte __pad8[0x648];
 };
 static_assert(sizeof(s_emblem_info) == 0x650);
 

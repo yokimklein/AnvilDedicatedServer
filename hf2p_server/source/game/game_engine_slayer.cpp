@@ -8,7 +8,7 @@ c_game_engine_slayer_variant* c_game_engine_slayer_variant::constructor()
 
 void c_game_engine_slayer_variant::set(c_game_engine_slayer_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	c_game_engine_base_variant::set(variant, force);
 

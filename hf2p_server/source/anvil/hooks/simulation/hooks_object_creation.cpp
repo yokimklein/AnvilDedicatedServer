@@ -99,7 +99,7 @@ __declspec(safebuffers) void __fastcall throw_release_hook1()
 	// Added these checks which the update would be nested within had there been enough space to fit it
 	if (object_index != NONE && !action_state_storage->unk2_4) // TODO: figure out what this field is
 	{
-		assert(force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
+		ASSERT(force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
 		if (stick || force_inside_bsp) // needs to stay in this order - force inside may not have a valid value if object_force_inside_bsp hasn't run?
 		{
 			simulation_action_object_create(object_index);

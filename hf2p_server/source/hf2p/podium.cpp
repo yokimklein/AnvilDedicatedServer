@@ -16,7 +16,7 @@ void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long play
 	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
 	s_player_podium& player_podium = g_player_podiums[g_player_podium_count++];
 	player_podium.current_action = _podium_action_base;
-	player_podium.ticks = game_time_globals->elapsed_ticks;
+	player_podium.ticks = game_time_globals->time;
 	player_podium.player_index = player_index;
 	player_podium.player_model_index = player_data->configuration.host.player_appearance.player_model_choice;
 	player_podium.female = TEST_BIT(player_data->configuration.host.player_appearance.flags, 0);

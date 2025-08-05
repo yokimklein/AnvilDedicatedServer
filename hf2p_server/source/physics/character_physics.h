@@ -20,8 +20,6 @@ public:
 		_mode_last = _mode_melee,
 	};
 
-	e_mode get_mode() const;
-
 protected:
 	short __unknown0;
 	c_enum<e_mode, byte, _mode_none, k_mode_count> m_mode;

@@ -49,7 +49,7 @@ public:
 protected:
 	c_flags<e_oddball_variant_flags, dword_flags, k_oddball_variant_flags> m_variant_flags;
 	c_enum<long, short, -1, 1000> m_score_to_win;              // default: 200
-	c_enum<long, short, 0, 1000> m_score_unknown;              // default: 180, halo online specific
+	c_enum<long, short, 0, 1000> m_early_win_score;            // default: 180, halo online specific
 	c_enum<long, short, -10, 10> m_carrying_points;            // default: 1, points per second when carrying the ball
 	c_enum<long, char, -10, 10> m_kill_points;                 // default: 0
 	c_enum<long, char, -10, 10> m_ball_kill_points;            // default: 0, number of points for a melee kill with the ball
@@ -72,12 +72,19 @@ public:
 
 struct s_oddball_globals
 {
-	c_static_array<long, 5> __unknown0;
-	c_static_array<real_point3d, 5> __unknown14;
-	c_static_array<short, 5> __unknown50;
-	c_static_array<long, 5> __unknown5C;
-	c_static_array<char, 5> __unknown70;
-	c_static_array<char, 5> __unknown75;
-	c_static_array<long, 5> __unknown7C;
+	struct
+	{
+		c_static_array<long, 5> ball_spawn_timer;
+		c_static_array<real_point3d, 5> ball_spawn_position;
+		c_static_array<short, 5> ball_reset_timer;
+		c_static_array<long, 5> ball_owner_player_index;
+		c_static_array<char, 5> ball_second_timer;
+		c_static_array<char, 5> ball_second_count;
+	} networked;
+
+	struct
+	{
+		c_static_array<long, 5> ball_last_held_time;
+	} local;
 };
 static_assert(sizeof(s_oddball_globals) == 0x90);

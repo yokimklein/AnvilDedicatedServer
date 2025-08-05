@@ -9,7 +9,7 @@ bool game_is_playback();
 e_game_playback_type game_playback_get();
 bool game_is_available();
 bool game_is_predicted();
-bool __cdecl game_is_authoritative();
+bool game_is_authoritative();
 bool game_engine_has_teams();
 bool game_in_progress();
 bool game_is_client();

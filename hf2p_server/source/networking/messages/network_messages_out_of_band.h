@@ -2,17 +2,18 @@
 #include <cseries\cseries.h>
 #include <networking\messages\network_message_type_collection.h>
 
-struct s_network_message_ping : s_network_message
+struct s_network_message_ping
 {
-	ulong id;
-	ulong timestamp;
-	ulong request_qos;
+	word id;
+	dword timestamp;
+	bool request_qos;
 };
+static_assert(sizeof(s_network_message_ping) == 0xC);
 
-struct s_network_message_pong : s_network_message
+struct s_network_message_pong
 {
-	ulong id;
-	ulong timestamp;
-	ulong request_qos;
+	word id;
+	dword timestamp;
+	dword qos_response;
 };
 static_assert(sizeof(s_network_message_pong) == 0xC);

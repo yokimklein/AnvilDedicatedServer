@@ -2,8 +2,6 @@
 #include <cseries\cseries.h>
 
 constexpr long k_network_maximum_sessions = 3;
-// reach replaced this with get_network_protocol_version()
-constexpr long k_network_protocol_version = 9; // H3 is 7, ODST is 8
 
 struct s_network_globals
 {

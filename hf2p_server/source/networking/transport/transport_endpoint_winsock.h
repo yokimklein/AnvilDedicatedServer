@@ -8,7 +8,7 @@ enum e_transport_type
 	k_transport_type_count = 0x3,
 };
 
-struct s_transport_endpoint
+struct transport_endpoint
 {
 	void* socket;
 	e_transport_type type;

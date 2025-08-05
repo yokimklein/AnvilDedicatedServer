@@ -1,11 +1,12 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <memory\data.h>
+#include <simulation\game_interface\simulation_game_action.h>
 
 enum e_simulation_entity_type
 {
-	k_simulation_entity_type_none = -1,
-	_simulation_entity_type_game_engine_slayer,
+	k_simulation_entity_type_none = NONE,
+	_simulation_entity_type_game_engine_slayer = 0,
 	_simulation_entity_type_game_engine_ctf,
 	_simulation_entity_type_game_engine_assault,
 	_simulation_entity_type_game_engine_oddball,
@@ -44,8 +45,8 @@ struct s_simulation_entity
 	bool exists_in_gameworld;
 	byte event_reference_count;
 	datum_index gamestate_index;
-	c_flags<long, ulong64, 64> pending_update_mask;
-	c_flags<long, ulong64, 64> force_update_mask;
+	c_simulation_object_update_flags pending_update_mask;
+	c_simulation_object_update_flags force_update_mask;
 	dword creation_data_size;
 	void* creation_data;
 	dword state_data_size;
@@ -55,7 +56,7 @@ static_assert(sizeof(s_simulation_entity) == 0x30);
 
 long simulation_entity_create(e_simulation_entity_type simulation_entity_type, long object_index, datum_index gamestate_index);
 e_simulation_entity_type simulation_entity_type_from_game_engine();
-void simulation_entity_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags);
+void simulation_entity_update(long entity_index, datum_index object_index, c_simulation_object_update_flags& update_flags);
 e_simulation_entity_type simulation_entity_type_from_object_creation(long object_tag_index, datum_index object_index, bool recycling);
 void simulation_entity_delete(long entity_index, datum_index object_index, datum_index gamestate_index);
-void simulation_entity_force_update(long entity_index, datum_index object_index, c_flags<long, ulong64, 64>* update_flags);
+void simulation_entity_force_update(long entity_index, datum_index object_index, c_simulation_object_update_flags& update_flags);

@@ -7,8 +7,8 @@
 
 struct s_aim_assist_targeting_result
 {
-	c_aim_target_object aim_arget;
-	dword model_target;
+	c_aim_target_object aim_target;
+	long target_player;
 	real primary_autoaim_level;
 	real secondary_autoaim_level;
 	real_vector3d lead_vector;

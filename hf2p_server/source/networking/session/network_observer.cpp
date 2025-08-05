@@ -1,7 +1,7 @@
 #include "network_observer.h"
-#include "assert.h"
+#include <stdio.h>
 
-char const* k_observer_state_strings[k_observer_state_count]
+char const* k_observer_state_strings[]
 {
 	"none",
 	"dead",
@@ -14,118 +14,119 @@ char const* k_observer_state_strings[k_observer_state_count]
 	"reconnecting",
 	"disconnected"
 };
+static_assert(NUMBEROF(k_observer_state_strings) == k_observer_state_count);
 
-char const* k_owner_type_strings[k_network_observer_owner_count]
+char const* k_owner_type_strings[]
 {
 	"squad one",
 	"squad two",
 	"group",
 	"simulation"
 };
+static_assert(NUMBEROF(k_owner_type_strings) == k_network_observer_owner_count);
 
-void c_network_observer::handle_connect_request(s_transport_address const* address, s_network_message_connect_request const* message)
+void c_network_observer::handle_connect_request(transport_address const* incoming_address, s_network_message_connect_request const* connect_request)
 {
-	DECLFUNC(0x10E30, void, __thiscall, c_network_observer*, s_transport_address const*, s_network_message_connect_request const*)(this, address, message);
+	INVOKE_CLASS_MEMBER(0x10E30, c_network_observer, handle_connect_request, incoming_address, connect_request);
 }
 
 void c_network_observer::observer_channel_initiate_connection(e_network_observer_owner observer_owner, long observer_channel_index)
 {
-	DECLFUNC(0xF970, void, __thiscall, c_network_observer*, e_network_observer_owner, long)(this, observer_owner, observer_channel_index);
+	INVOKE_CLASS_MEMBER(0xF970, c_network_observer, observer_channel_initiate_connection, observer_owner, observer_channel_index);
 }
 
 const char* c_network_observer::get_name(long observer_index)
 {
-	s_channel_observer* observer = &this->m_channel_observers[observer_index];
-	assert(observer_index >= 0 && observer_index < k_network_maximum_observers);
-	assert(observer->state != _observer_state_none);
-	assert(observer->allocated());
-	return observer->get_name();
+	s_channel_observer* observer = &m_channel_observers[observer_index];
+	ASSERT(observer_index >= 0 && observer_index < k_network_maximum_observers);
+	ASSERT(observer->state != _observer_state_none);
+	ASSERT(observer->channel.allocated());
+	return observer->channel.get_name();
 }
 
 bool c_network_observer::observer_channel_dead(e_network_observer_owner owner_type, long observer_index)
 {
-	return this->get_observer(owner_type, observer_index)->state == _observer_state_dead;
+	return get_observer(owner_type, observer_index)->state == _observer_state_dead;
 }
 
 c_network_observer::s_channel_observer* c_network_observer::get_observer(e_network_observer_owner owner_type, long observer_index)
 {
-	s_channel_observer* observer = &this->m_channel_observers[observer_index];
-	assert(observer_index >= 0 && observer_index < k_network_maximum_observers);
-	assert(owner_type >= 0 && owner_type < k_network_observer_owner_count);
-	assert(observer->state > _observer_state_none && observer->state < k_observer_state_count);
-	assert(TEST_BIT(observer->owner_flags, owner_type));
+	s_channel_observer* observer = &m_channel_observers[observer_index];
+	ASSERT(observer_index >= 0 && observer_index < k_network_maximum_observers);
+	ASSERT(owner_type >= 0 && owner_type < k_network_observer_owner_count);
+	ASSERT(observer->state > _observer_state_none && observer->state < k_observer_state_count);
+	ASSERT(TEST_BIT(observer->owner_flags, owner_type));
 	return observer;
 }
 
-void c_network_observer::observer_channel_send_message(e_network_observer_owner owner_type, long observer_index, bool disconnected, e_network_message_type message_type, long message_size, s_network_message* message)
+void c_network_observer::observer_channel_send_message(e_network_observer_owner owner_type, long observer_channel_index, bool out_of_band, e_network_message_type message_type, long message_size, void const* message)
 {
-	DECLFUNC(0xF440, void, __thiscall, c_network_observer*, e_network_observer_owner, long, bool, e_network_message_type, long, s_network_message*)(this, owner_type, observer_index, disconnected, message_type, message_size, message);
+	INVOKE_CLASS_MEMBER(0xF440, c_network_observer, observer_channel_send_message, owner_type, observer_channel_index, out_of_band, message_type, message_size, message);
 }
 
 bool c_network_observer::observer_channel_connected(e_network_observer_owner owner_type, long observer_index)
 {
-	return this->get_observer(owner_type, observer_index)->state == _observer_state_connected;
+	return get_observer(owner_type, observer_index)->state == _observer_state_connected;
 }
 
 bool c_network_observer::observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
-	return DECLFUNC(0xF880, bool, __thiscall, c_network_observer*, e_network_observer_owner, long, e_network_message_type)(this, owner_type, observer_index, message_type);
+	return INVOKE_CLASS_MEMBER(0xF880, c_network_observer, observer_channel_backlogged, owner_type, observer_index, message_type);
 }
 
 void c_network_observer::observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
-	DECLFUNC(0xF900, void, __thiscall, c_network_observer*, e_network_observer_owner, long, e_network_message_type)(this, owner_type, observer_index, message_type);
+	INVOKE_CLASS_MEMBER(0xF900, c_network_observer, observer_channel_set_waiting_on_backlog, owner_type, observer_index, message_type);
 }
 
 void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating)
 {
-	DECLFUNC(0xEF30, void, __thiscall, c_network_observer*, ulong*, ulong*, ulong*)(this, connectivity_badness_rating, host_badness_rating, client_badness_rating);
+	INVOKE_CLASS_MEMBER(0xEF30, c_network_observer, quality_statistics_get_ratings, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
 
-long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel* channel)
+long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel const* channel) const
 {
-	assert(owner_type >= 0 && owner_type < k_network_observer_owner_count);
-	assert(channel != NULL);
-	s_channel_observer* observer = this->find_observer_by_channel(channel);
-	assert(observer != NULL);
+	ASSERT(owner_type >= 0 && owner_type < k_network_observer_owner_count);
+	ASSERT(channel != NULL);
+
+	s_channel_observer const* observer = find_observer_by_channel(channel);
+	ASSERT(observer != NULL);
 	
-	if (observer->state != _observer_state_none && TEST_BIT(observer->owner_flags, owner_type))
-		return observer - m_channel_observers;
-	else
+	if (observer->state == _observer_state_none || !TEST_BIT(observer->owner_flags, owner_type))
+	{
 		return NONE;
+	}
+	
+	return observer - m_channel_observers;
 }
 
-c_network_observer::s_channel_observer* c_network_observer::find_observer_by_channel(c_network_channel* channel)
+c_network_observer::s_channel_observer const* c_network_observer::find_observer_by_channel(c_network_channel const* channel) const
 {
-	s_channel_observer* observer = (c_network_observer::s_channel_observer*)channel;
-	assert(observer >= &m_channel_observers[0] && observer < &m_channel_observers[k_network_maximum_observers]);
-	assert(((byte*)observer - (byte*)&m_channel_observers[0]) % sizeof(s_channel_observer) == 0);
+	s_channel_observer const* observer = (c_network_observer::s_channel_observer*)channel;
+	ASSERT(observer >= &m_channel_observers[0] && observer < &m_channel_observers[k_network_maximum_observers]);
+	ASSERT(((byte *)observer - (byte *)&m_channel_observers[0]) % sizeof(s_channel_observer) == 0);
 	return observer;
 }
 
 bool c_network_observer::is_bandwidth_stable()
 {
-	return this->m_bandwidth_unstable == false;
+	return m_expansion_state == 0;
 }
 
 void c_network_observer::quality_statistics_notify_peer_left_gracefully(e_network_observer_owner owner, long observer_index)
 {
-	s_channel_observer* observer = get_observer(owner, observer_index);
-	if (observer->stream_active)
+	s_channel_observer const* observer = get_observer(owner, observer_index);
+	if (observer->stream.active && observer->stream.is_simulation)
 	{
-		if (observer->report_badness)
-		{
-			printf("MP/NET/OBSERVER,QUALITY: c_network_observer::quality_statistics_notify_peer_left_gracefully: [%s] peer left gracefully, reporting as 'good'\n",
-				get_name(observer_index));
-			// originally the channel index was calculated like this:
-			// sizeof(s_channel_observer) * channel_index / sizeof(s_channel_observer)
-			// I have no idea why they did this because this is entirely pointless
-			quality_statistics_report_badness(observer_index, false);
-		}
+		printf("MP/NET/OBSERVER,QUALITY: c_network_observer::quality_statistics_notify_peer_left_gracefully: [%s] peer left gracefully, reporting as 'good'\n", get_name(observer_index));
+		// originally the channel index was calculated like this:
+		// sizeof(s_channel_observer) * channel_index / sizeof(s_channel_observer)
+		// I have no idea why they did this because this is entirely pointless
+		quality_statistics_report_badness(observer_index, false/*, "peer left gracefully"*/);
 	}
 }
 
 void c_network_observer::quality_statistics_report_badness(long observer_index, bool bad_not_good)
 {
-	DECLFUNC(0xF160, void, __thiscall, c_network_observer*, long, bool)(this, observer_index, bad_not_good);
+	INVOKE_CLASS_MEMBER(0xF160, c_network_observer, quality_statistics_report_badness, observer_index, bad_not_good);
 }

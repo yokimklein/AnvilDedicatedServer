@@ -3,10 +3,12 @@
 #include <game\player_configuration.h>
 #include <simulation\simulation_players.h>
 #include <networking\delivery\network_channel.h>
+#include <networking\session\network_observer.h>
 
 class c_simulation_world;
 class c_network_observer;
 class c_network_session;
+enum e_network_session_boot_reason;
 class c_simulation_watcher : public c_network_channel_owner
 {
 public:
@@ -24,13 +26,13 @@ protected:
 	dword m_local_session_membership_update_number;
 	dword m_local_machine_valid_mask;
 	dword m_local_machine_index;
-	s_machine_identifier m_local_machine_identifiers[17];
-	bool __unknown134;
-	s_player_collection player_collection;
-	dword m_machine_valid_mask;
 	s_machine_identifier m_machine_identifiers[17];
-	bool __unknown16654;
-	bool m_game_reverted;
+	bool m_machine_update_pending;
+	s_player_collection m_player_collection;
+	dword m_player_collection_machine_valid_mask;
+	s_machine_identifier m_player_collection_machine_identifiers[17];
+	bool m_changes_pending_acknowledgement;
+	bool m_game_revert_occured;
 	bool __unknown16656;
 	bool __unknown16657;
 };

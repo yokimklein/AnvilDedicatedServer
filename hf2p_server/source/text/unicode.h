@@ -125,7 +125,7 @@ public:
 		*m_string = 0;
 	}
 
-	bool is_empty()
+	bool is_empty() const
 	{
 		return !m_string[0];
 	}
@@ -219,8 +219,8 @@ public:
 	{
 		long current_length = length();
 
-		//assert(format);
-		//assert(current_length >= 0 && current_length < k_buffer_size);
+		//ASSERT(format);
+		//ASSERT(current_length >= 0 && current_length < k_buffer_size);
 
 		uvsnzprintf(m_string + current_length, k_buffer_size - current_length, format, list);
 

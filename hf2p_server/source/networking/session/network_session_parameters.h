@@ -32,47 +32,51 @@ public:
 	bool handle_change_request(bool is_leader, s_network_message_parameters_request const* message);
 	const char* get_session_description();
 
-	c_network_session_parameter_session_mode session_mode;
-	c_network_session_parameter_session_size session_size;
-	c_generic_network_session_parameter<s_network_session_privacy_mode> privacy_mode;
-	c_network_session_parameter_ui_game_mode ui_game_mode;
-	c_generic_network_session_parameter<e_dedicated_server_session_state> dedicated_server_session_state; // value between 0-10
-	c_generic_network_session_parameter<s_network_session_parameter_map> map;
-	c_network_session_parameter_initial_participants initial_participants;
-	c_generic_network_session_parameter<qword> game_instance;
-	c_generic_network_session_parameter<dword> random_seed;
-	c_generic_network_session_parameter<e_language> language;
-	c_generic_network_session_parameter<long> determinism_version;
-	c_generic_network_session_parameter<e_network_game_simulation_protocol> game_simulation_protocol;
-	c_generic_network_session_parameter<e_campaign_difficulty_level> campaign_difficulty;
-	c_generic_network_session_parameter<c_flags<e_campaign_skulls_primary, dword, k_campaign_skulls_primary_count>> campaign_active_skulls_primary;
-	c_generic_network_session_parameter<c_flags<e_campaign_skulls_secondary, dword, k_campaign_skulls_secondary_count>> campaign_active_skulls_secondary;
-	c_generic_network_session_parameter<short> campaign_metagame_scoring;
-	c_generic_network_session_parameter<short> campaign_insertion_point;
-	c_generic_network_session_parameter<s_network_ui_state> ui_state;
-	c_generic_network_session_parameter<bool> end_game;
-	c_generic_network_session_parameter<e_network_game_start_mode> start_mode;
-	c_network_session_parameter_game_variant game_variant;
-	c_network_session_parameter_map_variant map_variant;
-	c_generic_network_session_parameter<s_saved_film_description> saved_film;
-	c_network_session_parameter_saved_film_game_options saved_film_game_options;
-	c_network_session_parameter_game_start_status game_start_status;
-	c_network_session_parameter_countdown_timer countdown_timer;
-	c_generic_network_session_parameter<long> voice_repeater; // peer_index
-	c_network_session_parameter_requested_remote_join_data requested_remote_join_data;
-	c_network_session_parameter_remote_join_data remote_join_data;
-	c_generic_network_session_parameter<s_network_session_parameter_synchronous_out_of_sync> synchronous_out_of_sync;
-	c_network_session_parameter_matchmaking_messaging matchmaking_messaging;
-	c_generic_network_session_parameter<e_network_rough_quality> host_frame_quality;
-	c_generic_network_session_parameter<s_network_session_parameter_request_campaign_quit> request_campaign_quit;
-	c_generic_network_session_parameter<s_network_session_parameter_leader_properties> leader_properties;
-	c_network_session_parameter_lobby_vote_set lobby_vote_set;
+	struct s_network_session_parameters_internal
+	{
+		c_network_session_parameter_session_mode session_mode;
+		c_network_session_parameter_session_size session_size;
+		c_generic_network_session_parameter<s_network_session_privacy_mode> privacy_mode;
+		c_network_session_parameter_ui_game_mode ui_game_mode;
+		c_generic_network_session_parameter<e_dedicated_server_session_state> dedicated_server_session_state; // value between 0-10
+		c_generic_network_session_parameter<s_network_session_parameter_map> map;
+		c_network_session_parameter_initial_participants initial_participants;
+		c_generic_network_session_parameter<qword> game_instance;
+		c_generic_network_session_parameter<dword> random_seed;
+		c_generic_network_session_parameter<e_language> language;
+		c_generic_network_session_parameter<long> determinism_version;
+		c_generic_network_session_parameter<e_network_game_simulation_protocol> game_simulation_protocol;
+		c_generic_network_session_parameter<e_campaign_difficulty_level> campaign_difficulty;
+		c_generic_network_session_parameter<c_flags<e_campaign_skulls_primary, dword, k_campaign_skulls_primary_count>> campaign_active_skulls_primary;
+		c_generic_network_session_parameter<c_flags<e_campaign_skulls_secondary, dword, k_campaign_skulls_secondary_count>> campaign_active_skulls_secondary;
+		c_generic_network_session_parameter<short> campaign_metagame_scoring;
+		c_generic_network_session_parameter<short> campaign_insertion_point;
+		c_generic_network_session_parameter<s_network_ui_state> ui_state;
+		c_generic_network_session_parameter<bool> end_game;
+		c_generic_network_session_parameter<e_network_game_start_mode> start_mode;
+		c_network_session_parameter_game_variant game_variant;
+		c_network_session_parameter_map_variant map_variant;
+		c_generic_network_session_parameter<s_saved_film_description> saved_film;
+		c_network_session_parameter_saved_film_game_options saved_film_game_options;
+		c_network_session_parameter_game_start_status game_start_status;
+		c_network_session_parameter_countdown_timer countdown_timer;
+		c_generic_network_session_parameter<long> voice_repeater; // peer_index
+		c_network_session_parameter_requested_remote_join_data requested_remote_join_data;
+		c_network_session_parameter_remote_join_data remote_join_data;
+		c_generic_network_session_parameter<s_network_session_parameter_synchronous_out_of_sync> synchronous_out_of_sync;
+		c_network_session_parameter_matchmaking_messaging matchmaking_messaging;
+		c_generic_network_session_parameter<e_network_rough_quality> host_frame_quality;
+		c_generic_network_session_parameter<s_network_session_parameter_request_campaign_quit> request_campaign_quit;
+		c_generic_network_session_parameter<s_network_session_parameter_leader_properties> leader_properties;
+		c_network_session_parameter_lobby_vote_set lobby_vote_set;
+	} m_parameters;
+
 	long : 32;
-	c_network_session* session;
-	c_network_observer* observer;
-	c_network_session_parameter_base* parameters[k_network_session_parameter_type_count];
-	ulong flags;
-	ulong initial_parameters_update_mask;
+	c_network_session* m_session;
+	c_network_observer* m_observer;
+	c_network_session_parameter_base* m_parameter_interfaces[k_network_session_parameter_type_count];
+	ulong m_flags;
+	ulong m_initial_parameters_update_mask;
 };
 static_assert(sizeof(c_network_session_parameters) == 0xCA114);
 #pragma pack(pop)

@@ -8,7 +8,7 @@ c_game_engine_vip_variant* c_game_engine_vip_variant::constructor()
 
 void c_game_engine_vip_variant::set(c_game_engine_vip_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	c_game_engine_base_variant::set(variant, force);
 
@@ -264,8 +264,8 @@ e_vip_zone_movement_settings c_game_engine_vip_variant::get_zone_movement() cons
 
 long c_game_engine_vip_variant::get_zone_movement_time_in_seconds() const
 {
-	//assert(VALID_INDEX(m_zone_movement, k_number_of_vip_zone_movement_settings));
-	assert(VALID_INDEX(get_zone_movement(), k_number_of_vip_zone_movement_settings));
+	//ASSERT(VALID_INDEX(m_zone_movement, k_number_of_vip_zone_movement_settings));
+	ASSERT(VALID_INDEX(get_zone_movement(), k_number_of_vip_zone_movement_settings));
 
 	return k_vip_zone_movement_values[get_zone_movement()];
 }

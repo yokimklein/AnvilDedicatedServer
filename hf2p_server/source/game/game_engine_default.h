@@ -6,7 +6,6 @@
 #include <text\unicode.h>
 
 enum e_multiplayer_team;
-enum e_team_scoring_method;
 enum e_game_team;
 enum e_multiplayer_team_designator;
 enum e_game_engine_kill_flags;
@@ -16,10 +15,24 @@ class c_bitstream;
 struct game_engine_interface_state;
 struct s_chud_navpoint;
 struct s_netgame_goal_influencer;
-struct s_game_engine_state_data;
 struct s_game_engine_event_data;
 struct s_multiplayer_runtime_globals_definition;
 struct s_game_engine_base_variant_definition;
+
+enum e_team_scoring_method
+{
+	_team_scoring_method_first = 0,
+
+	_team_scoring_method_sum = _team_scoring_method_first,
+	_team_scoring_method_minimum,
+	_team_scoring_method_maximum,
+	_team_scoring_method_custom,
+
+	_team_scoring_method_last = _team_scoring_method_custom,
+
+	k_number_of_team_scoring_methods,
+	k_team_scoring_method_default = _team_scoring_method_sum,
+};
 
 #pragma pack(push, 4)
 class c_game_engine_base_variant
@@ -35,7 +48,7 @@ public:
 	virtual void __thiscall decode(class c_bitstream*);
 	virtual bool __cdecl can_add_to_recent_list() const;
 	virtual long __thiscall get_score_to_win_round() const;
-	virtual long __thiscall get_score_unknown() const; // halo online specific
+	virtual long __thiscall get_score_to_win_round_early() const; // halo online specific
 	virtual bool __stdcall can_be_cast_to(enum e_game_engine_type, void const**) const;
 	virtual void __stdcall custom_team_score_stats(long, long, long) const;
 
@@ -78,19 +91,34 @@ protected:
 	c_game_engine_social_options m_social_options;
 	c_game_engine_map_override_options m_map_override_options;
 	c_flags<e_base_variant_flags, word, k_base_variant_flags> m_flags;
-	short m_team_scoring_method;
+	c_enum<e_team_scoring_method, short, _team_scoring_method_first, k_number_of_team_scoring_methods> m_team_scoring_method;
 };
 static_assert(sizeof(c_game_engine_base_variant) == 0x1D0);
+
+struct s_game_engine_state_data
+{
+	word_flags initial_teams;
+	word_flags valid_team_designators;
+	word_flags valid_teams;
+	word_flags active_teams;
+	word_flags ever_active_teams;
+	c_static_array<short, 9> team_designator_to_team_index;
+	c_static_array<char, 8> team_lives_per_round;
+	byte current_state;
+	byte game_finished;
+	short round_index;
+	short round_timer;
+	byte_flags round_condition_flags;
+	byte pad2B[0x1];
+};
+static_assert(sizeof(s_game_engine_state_data) == 0x2C);
 
 class c_game_engine
 {
 public:
 	virtual long get_type() const;
 	virtual long get_score_to_win_round() const;
-
-	// some new score saber added for halo online
-	virtual long get_score_unknown() const;
-
+	virtual long get_score_to_win_round_early() const; // new to halo online
 	virtual void recompute_team_score(e_multiplayer_team, long, e_team_scoring_method) const;
 	virtual void get_score_string(long, wchar_t(&)[256]) const;
 	virtual void get_hud_interface_state(long, game_engine_interface_state*) const;
@@ -147,10 +175,7 @@ public:
 	virtual bool should_end_round(long*) const;
 	virtual long get_player_state_index(long, bool*) const;
 	virtual bool should_purge_multiplayer_item(long) const;
-
-	// function in the same place as `close_any_custom_ui` from Reach, also exists in h3 mcc
-	virtual void close_any_ui(enum e_output_user_index output_user_index) const;
-
+	virtual void close_any_custom_ui(enum e_output_user_index output_user_index) const;
 	virtual e_simulation_entity_type get_simulation_entity_type() const;
 	virtual void promote_to_simulation_authority() const;
 	virtual void recover_state_before_promotion() const;

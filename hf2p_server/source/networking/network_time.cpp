@@ -2,14 +2,6 @@
 
 REFERENCE_DECLARE(0x1038344, s_network_time_globals, network_time_globals);
 
-ulong network_time_get()
-{
-	if (network_time_globals.locked)
-		return network_time_globals.time;
-	else
-		return network_time_get_exact();
-}
-
 ulong network_time_get_exact()
 {
 	return system_milliseconds();

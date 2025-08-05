@@ -49,7 +49,7 @@ protected:
 	c_enum<e_ctf_touch_return_settings, short, _ctf_touch_return_settings_off, k_ctf_touch_return_settings> m_touch_return_timeout;
 	c_enum<e_ctf_sudden_death_time, short, _ctf_sudden_death_time_infinite, k_ctf_sudden_death_times> m_sudden_death_time;
 	c_enum<long, short, 0, 50> m_score_to_win;     // default: 5
-	c_enum<long, short, 0, 50> m_score_unknown;    // default: 3, halo online specific
+	c_enum<long, short, 0, 50> m_early_win_score;  // default: 3, halo online specific
 	c_enum<long, short, 0, 300> m_flag_reset_time; // default: 30
 	c_player_traits m_carrier_traits;
 
@@ -71,7 +71,7 @@ public:
 	virtual bool object_should_exist(long) const;
 
 	// unknown function, also exists in halo 3 mcc
-	virtual void* function88(void*, ...);
+	virtual bool function88(long object_index, float radius);
 
 	virtual bool verify_state(void) const;
 
@@ -80,27 +80,25 @@ public:
 
 struct s_ctf_shared_globals
 {
-	c_static_array<c_area_set<c_area, 3>, 9> area_set0;
-	c_static_array<c_area_set<c_area, 3>, 9> area_setB1C;
-	bool __unknown1638;
-	bool __unknown1639;
-	byte __data163A[0x2];
-	long defensive_team;
-	long __unknown1640;
-	byte __data1644[0x4];
+	c_static_array<c_area_set<c_area, 3>, 9> goal_areas_by_team_designator;
+	c_static_array<c_area_set<c_area, 3>, 9> spawn_areas_by_team_designator;
+	bool supress_reset_message;
+	bool object_returned_by_player;
+	long defensive_team_index;
+	long sudden_death_ticks;
+	long grace_period_ticks;
 	word_flags helper_flags;
 	word_flags flags;
 };
 static_assert(sizeof(s_ctf_shared_globals) == 0x164C);
 
-struct s_ctf_globals
+struct s_ctf_globals : s_ctf_shared_globals
 {
-	s_ctf_shared_globals shared_globals;
-	c_static_array<dword, 9> touch_return_timers;
-	c_static_array<word, 9> flag_reset_timers;
-	c_static_array<dword, 9> __unknown1684;
+	c_static_array<long, 9> touch_return_timer;
+	c_static_array<short, 9> flag_reset_timer;
+	c_static_array<long, 9> player_emblem_for_flag;
 	c_static_array<byte_flags, 9> flag_weapon_flags;
-	c_static_array<word, 9> __unknown16B2;
-	c_static_array<word, 9> __unknown16C4;
+	c_static_array<short, 9> failure_event_timer;
+	c_static_array<short, 9> timeout_return_second_counter;
 };
 static_assert(sizeof(s_ctf_globals) == 0x16D8);

@@ -25,7 +25,7 @@ struct s_thread_local_storage
 	game_globals_storage* game_globals;
 	byte* __unknown28; // squad
 	struct s_scripted_camera_globals* scripted_camera_globals;
-	s_players_global_data* players_globals;
+	players_global_data* players_globals;
 	byte* __unknown34; // effect (survival_mode_globals?)
 	byte* __unknown38; // prop
 	byte* __unknown3C; // command scripts
@@ -38,7 +38,7 @@ struct s_thread_local_storage
 	byte* breakable_surface_globals;
 	byte* timing_samples_global;
 	byte* __unknown60; // joint state
-	s_game_time_globals* game_time_globals;
+	game_time_globals_definition* game_time_globals;
 	byte* __unknown68;
 	byte* __unknown6C;
 	struct s_data_array* object_looping_sounds_data;
@@ -46,7 +46,7 @@ struct s_thread_local_storage
 	byte* __unknown78;
 	byte* __unknown7C; // effect event
 	byte* __unknown80;
-	s_player_mapping* player_mapping_globals;
+	s_player_mapping_globals* player_mapping_globals;
 	byte* __unknown88; // lights
 	byte* __unknown8C;
 	byte* __unknown90;

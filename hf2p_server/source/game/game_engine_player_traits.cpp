@@ -3,7 +3,7 @@
 
 void c_player_traits::set(c_player_traits const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	if (traits)
 	{
@@ -125,7 +125,7 @@ e_damage_resistance_percentage_setting c_player_trait_shield_vitality::get_damag
 
 void c_player_trait_shield_vitality::set(c_player_trait_shield_vitality const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	set_damage_resistance_percentage_setting(traits->get_damage_resistance_percentage_setting(), force);
 	set_shield_recharge_rate_percentage_setting(traits->get_shield_recharge_rate_percentage_setting(), force);
@@ -370,7 +370,7 @@ real c_player_trait_shield_vitality::get_maximum_shield_vitality()
 
 void c_player_trait_weapons::set(c_player_trait_weapons const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	set_initial_grenade_count_setting(traits->get_initial_grenade_count_setting(), force);
 	set_initial_primary_weapon_absolute_index(traits->get_initial_primary_weapon_absolute_index(), force);
@@ -649,7 +649,7 @@ void c_player_trait_weapons::set_weapon_pickup_allowed(bool weapon_pickup_allowe
 
 void c_player_trait_movement::set(c_player_trait_movement const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	set_speed_setting(traits->get_speed_setting(), force);
 	set_gravity_setting(traits->get_gravity_setting(), force);
@@ -780,7 +780,7 @@ void c_player_trait_movement::set_vehicle_usage_setting(e_vehicle_usage_setting 
 
 void c_player_trait_appearance::set(c_player_trait_appearance const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	set_active_camo_setting(traits->get_active_camo_setting(), force);
 	set_waypoint_setting(traits->get_waypoint_setting(), force);
@@ -870,7 +870,7 @@ void c_player_trait_appearance::set_forced_change_color_setting(e_forced_change_
 
 void c_player_trait_sensors::set(c_player_trait_sensors const* traits, bool force)
 {
-	assert(traits != NULL);
+	ASSERT(traits != NULL);
 
 	set_motion_tracker_setting(traits->get_motion_tracker_setting(), force);
 	set_motion_tracker_range_setting(traits->get_motion_tracker_range_setting(), force);

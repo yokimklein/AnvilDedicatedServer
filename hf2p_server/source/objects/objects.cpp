@@ -1,6 +1,5 @@
 #include "objects.h"
 #include <memory\tls.h>
-#include "assert.h"
 #include <stdio.h>
 #include <cache\cache_files.h>
 #include <objects\object_definitions.h>
@@ -27,15 +26,15 @@ e_object_type object_get_type(datum_index object_index)
 
 bool object_is_multiplayer_cinematic_object(datum_index object_index)
 {
-	assert(object_index != NONE);
+	ASSERT(object_index != NONE);
 	object_datum* object = object_get(object_index);
 	return object->object.simulation_flags.test(_object_simulation_is_multiplayer_cinematic_object);
 }
 
 datum_index object_get_ultimate_parent(datum_index object_index)
 {
-	datum_index parent_index = -1;
-	while (object_index != -1)
+	datum_index parent_index = NONE;
+	while (object_index != NONE)
 	{
 		parent_index = object_index;
 		object_index = object_get(object_index)->object.parent_object_index;
@@ -46,29 +45,33 @@ datum_index object_get_ultimate_parent(datum_index object_index)
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index)
 {
 	object_datum* object = object_get(object_index);
-	assert(gamestate_index != NONE);
-	assert(object->object.gamestate_index == NONE);
+	ASSERT(gamestate_index != NONE);
+	ASSERT(object->object.gamestate_index == NONE);
 	datum_index ultimate_parent_index = object_get_ultimate_parent(object_index);
 	if (object_is_multiplayer_cinematic_object(object_index))
+	{
 		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object [0x%08lX]\n", object_index);
+	}
 	else if (object_is_multiplayer_cinematic_object(ultimate_parent_index))
+	{
 		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object (parent) [0x%08lX]\n", ultimate_parent_index);
+	}
 	object->object.gamestate_index = gamestate_index;
 }
 
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index)
 {
 	object_datum* object = object_get(object_index);
-	assert(gamestate_index != NONE);
-	assert(object->object.gamestate_index == gamestate_index);
+	ASSERT(gamestate_index != NONE);
+	ASSERT(object->object.gamestate_index == gamestate_index);
 	object_type_detach_gamestate_entity(object_index);
-	object->object.gamestate_index = -1;
+	object->object.gamestate_index = NONE;
 	object->object.simulation_flags = 0;
 }
 
 e_object_type c_object_identifier::get_type()
 {
-	return this->m_type.get();
+	return m_type.get();
 }
 
 void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
@@ -87,20 +90,23 @@ void __cdecl object_set_velocities_internal(datum_index object_index, real_vecto
 	}
 	if (!skip_update)
 	{
-		if (!update_flags.m_flags.is_clear())
+		if (!update_flags.is_empty())
 		{
 			simulation_action_object_update_internal(object_index, update_flags);
 		}
 	}
 }
 
+// $TODO: Rewrite this to remove that godawful goto statement
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate)
 {
 	object_datum* object = object_get(object_index);
 	if (TEST_BIT(_object_mask_physics, object_get_type(object_index)) && object->object.physics_flags.test(_object_connected_to_physics_bit) && object->object.havok_component_index != -1)
 	{
 		if (force_activate)
+		{
 			goto simulation_update;
+		}
 
 		c_havok_component* havok_component = (c_havok_component*)datum_get(havok_components_get_data_array(), object->object.havok_component_index);
 		havok_component->force_activate(false);
@@ -115,9 +121,13 @@ void __fastcall object_set_at_rest(datum_index object_index, bool force_activate
 	// update here
 simulation_update:
 	if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
+	{
 		simulation_action_object_update(object_index, _simulation_item_update_set_at_rest);
+	}
 	else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
+	{
 		simulation_action_object_update(object_index, _simulation_projectile_update_set_at_rest);
+	}
 }
 
 const char* object_describe(datum_index object_index)
@@ -134,7 +144,9 @@ void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner
 	{
 		object->object.damage_owner = *damage_owner;
 		if (!skip_update)
+		{
 			simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
+		}
 	}
 }
 
@@ -207,10 +219,13 @@ void* object_get_and_verify_type(datum_index object_index, dword object_type_mas
 
 	object_header_datum const* object_header = object_header_get(object_index);
 	if (!object_header)
+	{
 		return NULL;
+	}
 
 	object_datum* object = object_header->datum;
 
+	// $TODO:
 	if (!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get()))
 	{
 	//	c_static_string<256> string_builder;
@@ -218,7 +233,7 @@ void* object_get_and_verify_type(datum_index object_index, dword object_type_mas
 	//		object_type_mask,
 	//		object->object_identifier.m_type.get());
 	//
-		assert(!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get())/*, string_builder.get_string()*/);
+		ASSERT(!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get())/*, string_builder.get_string()*/);
 	}
 
 	return object;
@@ -251,16 +266,16 @@ void* __cdecl object_header_block_get(long object_index, object_header_block_ref
 	object_header_datum const* object_header = object_header_get(object_index);
 	object_datum* object = object_get(object_index);
 
-	assert(reference->offset > 0);
-	assert(reference->size > 0);
-	assert(reference->offset + reference->size <= object_header->data_size);
+	ASSERT(reference->offset > 0);
+	ASSERT(reference->size > 0);
+	ASSERT(reference->offset + reference->size <= object_header->data_size);
 
 	return (byte*)object + reference->offset;
 }
 
 void* __cdecl object_header_block_get_with_count(long object_index, object_header_block_reference const* reference, unsigned int element_size, long* element_count)
 {
-	assert(element_count);
+	ASSERT(element_count);
 
 	if (reference->offset == NONE)
 	{
@@ -270,7 +285,7 @@ void* __cdecl object_header_block_get_with_count(long object_index, object_heade
 
 	void* block = object_header_block_get(object_index, reference);
 
-	assert(reference->size % element_size == 0);
+	ASSERT(reference->size % element_size == 0);
 
 	*element_count = reference->size / element_size;
 
@@ -280,7 +295,7 @@ void* __cdecl object_header_block_get_with_count(long object_index, object_heade
 real_matrix4x3* object_get_node_matrices(datum_index object_index, long* out_node_count)
 {
 	object_datum* object = object_get(object_index);
-	assert(out_node_count);
+	ASSERT(out_node_count);
 	return (real_matrix4x3*)object_header_block_get_with_count(object_index, &object->object.node_matrices, 0x34, out_node_count);
 }
 

@@ -8,7 +8,7 @@ c_game_engine_infection_variant* c_game_engine_infection_variant::constructor()
 
 void c_game_engine_infection_variant::set(c_game_engine_infection_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	c_game_engine_base_variant::set(variant, force);
 

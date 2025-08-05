@@ -37,6 +37,16 @@ enum e_simulation_world_state
 	k_simulation_world_state_count
 };
 
+enum e_update_queue_state
+{
+	_update_queue_state_normal = 0,
+	_update_queue_state_peaking,
+	_update_queue_state_throttling,
+	_update_queue_state_cooling,
+
+	k_update_queue_state_count,
+};
+
 class c_simulation_distributed_world
 {
 public:
@@ -58,67 +68,77 @@ public:
 	c_simulation_event_handler* get_event_handler();
 	long get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier);
 
+	struct s_world_state_data_disconnected
+	{
+		ulong disconnected_timestamp;
+	};
+	static_assert(sizeof(s_world_state_data_disconnected) == 0x4);
+
+	struct s_world_state_data_joining
+	{
+		ulong join_start_timestamp;
+		ulong join_client_machine_mask;
+	};
+	static_assert(sizeof(s_world_state_data_joining) == 0x8);
+
+	struct s_world_state_data_active
+	{
+		ulong active_client_machine_mask;
+	};
+	static_assert(sizeof(s_world_state_data_active) == 0x4);
+
+	struct s_world_state_data
+	{
+		union
+		{
+			s_world_state_data_disconnected disconnected;
+			s_world_state_data_joining joining;
+			s_world_state_data_active active;
+		};
+	};
+	static_assert(sizeof(s_world_state_data) == 0x8);
+
 	c_simulation_watcher* m_watcher;
 	c_simulation_distributed_world* m_distributed_world;
-	c_enum<e_simulation_world_type, long, _simulation_world_type_none, k_simulation_world_type_count> m_world_type;
-
-	union
-	{
+	e_simulation_world_type m_world_type;
+	bool m_local_machine_identifier_valid;
 #pragma pack(push, 1)
-		struct
-		{
-			bool m_local_machine_identifier_valid;
-			s_machine_identifier m_local_machine_identifier;
-			byte __align1D[0x3];
-		} s;
+	s_machine_identifier m_local_machine_identifier;
 #pragma pack(pop)
-
-		byte data[sizeof(s)];
-	};
-
 	long m_local_machine_index;
-	c_enum<e_simulation_world_state, long, _simulation_world_state_none, k_simulation_world_state_count> m_world_state;
-	long m_last_time_disconnected;
-	byte __unknown2C;
+	e_simulation_world_state m_world_state;
+	s_world_state_data m_world_state_data;
 	bool m_time_running;
 	bool m_time_immediate_update;
-	byte __unknown32; // pad?
-	byte __unknown33; // pad?
 	long m_next_update_number;
-	long m_current_update_number;
-	bool m_synchronous_out_of_sync;
-	bool m_synchronous_determinism_failure;
-	byte __unknown3E; // pad?
-	// c_simulation_world::notify_gamestate_flush
-	bool m_notify_gamestate_flushed;
-	// c_simulation_world::notify_gamestate_flush_outside_game_tick
-	bool m_notify_gamestate_flushed_outside_game_tick;
-	// c_simulation_world::update_joining_view
-	bool __unknown41;
-	// c_simulation_world::attach_to_map
+	long m_acknowledged_update_number;
+	bool m_out_of_sync;
+	bool m_out_of_sync_determinism_failure;
+	bool m_world_clean;
+	bool m_gamestate_flushed;
+	bool m_gamestate_flushed_outside_game_tick;
+	bool m_gamestate_modified_initial_state;
 	bool m_attached_to_map;
-	// c_simulation_world::skip_next_gamestate_flush
-	bool m_skipped_next_gamestate_flush;
-	long m_join_attempt_count;
-	long m_last_time_active;
-	long m_view_establishment_identifier;
-	long __unknown50;
-	long __unknown54;
-	long __unknown58;
-	long __unknown5C;
+	bool m_gamestate_flush_client_skip;
+	long m_unsuccessful_join_attempts;
+	ulong m_last_active_timestamp;
+	long m_next_view_establishment_identifier;
+	long m_joining_total_wait_msec;
+	long m_maximum_queued_updates;
+	e_update_queue_state m_update_queue_state;
+	ulong m_update_queue_state_time;
 	long m_view_count;
-	c_static_array<c_simulation_view*, k_network_maximum_players_per_session> m_views;
-	long __unknownA4;
-	c_static_array<c_simulation_player, k_network_maximum_players_per_session> m_players;
-	c_static_array<c_simulation_actor, k_network_maximum_players_per_session> m_actors;
-	long m_next_update_dequeue;
+	c_simulation_view* m_views[k_network_maximum_players_per_session];
+	c_simulation_player m_players[k_network_maximum_players_per_session];
+	c_simulation_actor m_actors[k_network_maximum_players_per_session];
+	ulong m_synchronous_catchup_initiation_failure_timestamp;
 	long m_update_queue_next_update_number_to_dequeue;
-	long m_update_queue_latest_entry_received_type;
+	e_update_queue_node m_update_queue_latest_entry_received_type;
 	long m_update_queue_latest_entry_received_update_number;
 	long m_update_queue_length;
 	long m_update_queue_number_of_updates;
-	s_simulation_update_node* m_update_queue_head;
-	s_simulation_update_node* m_update_queue_tail;
+	s_simulation_queued_update* m_update_queue_head;
+	s_simulation_queued_update* m_update_queue_tail;
 	c_simulation_queue m_bookkeeping_simulation_queue;
 	c_simulation_queue m_game_simulation_queue;
 };

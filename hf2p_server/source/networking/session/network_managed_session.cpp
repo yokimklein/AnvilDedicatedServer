@@ -2,240 +2,359 @@
 #include <cseries\cseries.h>
 #include <networking\session\network_session.h>
 #include <iostream>
-#include <assert.h>
 #include <networking\network_time.h>
 
 REFERENCE_DECLARE(0x3EAB120, s_online_session_manager_globals, online_session_manager_globals);
 
-bool managed_session_get_security_information(long managed_session_index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
+bool managed_session_get_security_information(long index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
+	ASSERT(index < k_managed_sessions_max_count);
 
-	if (managed_session_index == -1 || !managed_session->flags.test(_online_managed_session_created_bit))
+	s_online_managed_session* managed_session = managed_session_get(index);
+
+	if (index == NONE || !managed_session->flags.test(_online_managed_session_created_bit))
+	{
 		return false;
-	if (out_secure_host_description != nullptr)
+	}
+
+	if (out_secure_host_description)
 	{
 		out_secure_host_description->session_id = managed_session->actual_online_session_state.description.session_id;
 		out_secure_host_description->host_address = managed_session->actual_online_session_state.description.host_address;
 		out_secure_host_description->key = managed_session->actual_online_session_state.description.key;
 	}
-	if (out_transport_platform != nullptr)
+	if (out_transport_platform)
+	{
 		*out_transport_platform = managed_session->platform;
+	}
 	return true;
 }
 
-const char* managed_session_get_id_string(long managed_session_index)
+const char* managed_session_get_id_string(long index)
 {
-	if (managed_session_index == -1)
+	if (index == NONE)
+	{
 		return "00:00:00:00:00:00:00:00";
-	else
-		return transport_secure_identifier_get_string(&online_session_manager_globals.managed_sessions[managed_session_index].actual_online_session_state.description.session_id);
+	}
+
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
+	return transport_secure_identifier_get_string(&managed_session->actual_online_session_state.description.session_id);
 }
 
-bool managed_session_get_id(long managed_session_index, s_transport_secure_identifier* out_secure_identifier)
+bool managed_session_get_id(long index, s_transport_secure_identifier* out_secure_identifier)
 {
-	if (out_secure_identifier != nullptr)
-		memset(out_secure_identifier, 0, sizeof(s_transport_secure_identifier));
-	if (managed_session_index == -1)
+	if (out_secure_identifier)
+	{
+		csmemset(out_secure_identifier, 0, sizeof(s_transport_secure_identifier));
+	}
+
+	if (index == NONE)
+	{
 		return false;
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
+	}
+
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
 	if (!managed_session->flags.test(_online_managed_session_created_bit))
+	{
 		return false;
-	if (out_secure_identifier != nullptr)
+	}
+	if (out_secure_identifier)
+	{
 		*out_secure_identifier = managed_session->actual_online_session_state.description.session_id;
+	}
 	return true;
 }
 
-void managed_session_modify_slot_counts(long managed_session_index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count)
+void managed_session_modify_slot_counts(long index, long private_slot_count, long public_slot_count, bool friends_only, long peer_count)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
-	if (managed_session->desired_online_session_state.private_slot_count != private_slot_count
-		|| managed_session->desired_online_session_state.public_slot_count != public_slot_count
-		|| ((managed_session->desired_online_session_state.public_slots_flags & 0x200) != 0))
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
+	s_online_session& online_session = managed_session->desired_online_session_state;
+
+	if (online_session.private_slot_count != private_slot_count || online_session.public_slot_count != public_slot_count || TEST_BIT(online_session.public_slots_flags, 9) != friends_only)
 	{
-		managed_session->desired_online_session_state.private_slot_count = private_slot_count;
-		managed_session->desired_online_session_state.public_slot_count = public_slot_count;
-		if (public_slot_count)
-			managed_session->desired_online_session_state.public_slots_flags |= 0x200u;
+		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_modify_slot_counts: [%s]:%08X modify slot count from %d/%d/fo=%d to %d/%d/fo=%d\n",
+			transport_session_description_get_string(&online_session.description),
+			index,
+			online_session.private_slot_count,
+			online_session.public_slot_count,
+			TEST_BIT(online_session.public_slots_flags, 9),
+			private_slot_count,
+			public_slot_count,
+			friends_only);
+
+		online_session.private_slot_count = private_slot_count;
+		online_session.public_slot_count = public_slot_count;
+
+		if (friends_only)
+		{
+			SET_BIT(online_session.public_slots_flags, 9, true);
+		}
 		else
-			managed_session->desired_online_session_state.public_slots_flags &= 0xFDFFu;
+		{
+			SET_BIT(online_session.public_slots_flags, 9, false);
+		}
+
 		managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
-		managed_session->flags.set(_online_managed_session_recreating_bit, false);
-		managed_session->creation_time = 0;
+		managed_session->flags.set(_online_managed_session_pending_retry_bit, false);
+		managed_session->time_of_last_failure = 0;
 	}
-	if (friends_only)
+	if (peer_count != 0)
 	{
-		if (!managed_session->flags.test(_online_managed_session_master_session_bit) && !managed_session->flags.test(_online_managed_session_session_is_locked_bit))
-			managed_session->flags.set(_online_managed_session_lock_session_bit, true);
+		if (!managed_session->flags.test(_online_managed_session_master_bit) && !managed_session->flags.test(_online_managed_session_flags_locked_bit))
+		{
+			managed_session->flags.set(_online_managed_session_locking_flags_bit, true);
+		}
 	}
 }
 
-short* managed_session_get_status(short* managed_session_status, long managed_session_index)
+c_managed_session_status_flags managed_session_get_status(long index)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
-	short status = 0; // TODO: e_managed_session_status_flags
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
+	c_managed_session_status_flags status = {};
 	if (managed_session->flags.test(_online_managed_session_created_bit))
-		status = 2;
-	if (managed_session->flags.test(_online_managed_session_unknown_flag5_bit))
-		status |= 4u;
-	if (managed_session->current_operation_flags.test(_online_managed_session_create_bit) || managed_session->pending_operation_flags.test(_online_managed_session_create_bit))
-		status |= 1u;
-	if (managed_session->flags.test(_online_managed_session_host_migration_in_process_bit))
-		status |= 8u;
-	if (managed_session->flags.test(_online_managed_session_host_migration_session_created_bit))
-		status |= 0x10u;
-	if (managed_session->current_operation_flags.test(_online_managed_session_create_host_migration_bit) || managed_session->pending_operation_flags.test(_online_managed_session_create_host_migration_bit))
-		status |= 8u;
-	if (managed_session->flags.test(_online_managed_session_unknown_flag11_bit))
-		status |= 0x40u;
-	if (managed_session->flags.test(_online_managed_session_unknown_flag12_bit))
-		status |= 0x80u;
-	if (managed_session->flags.test(_online_managed_session_players_add_pending_bit))
-		status |= 0x20u;
-	if (managed_session->current_operation_flags.test(_online_managed_session_game_start_bit) || managed_session->pending_operation_flags.test(_online_managed_session_game_start_bit))
-		status |= 0x100u;
-	if (managed_session->flags.test(_online_managed_session_game_start_succeeded_bit))
-		status |= 0x200u;
-	if (managed_session->flags.test(_online_managed_session_game_start_failed_bit))
-		status |= 0x400u;
-	if (managed_session->current_operation_flags.test(_online_managed_session_game_end_bit) || managed_session->pending_operation_flags.test(_online_managed_session_game_end_bit))
-		status |= 0x800u;
-	if (managed_session->flags.test(_online_managed_session_game_end_succeeded_bit))
-		status |= 0x1000u;
-	if (managed_session->flags.test(_online_managed_session_game_end_failed_bit))
-		status |= 0x2000u;
-	*managed_session_status = status;
-	return managed_session_status;
-}
-
-bool managed_session_is_master_session(long managed_session_index)
-{
-	if (managed_session_index == -1)
-		return false;
-	else
 	{
-		c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
-		return managed_session->flags.test(_online_managed_session_master_session_bit);
+		status.set(_managed_session_creation_succeeded_bit, true);
 	}
+	if (managed_session->flags.test(_online_managed_session_creation_failed_bit))
+	{
+		status.set(_managed_session_creation_failed_bit, true);
+	}
+	if (managed_session->current_operation_flags.test(_online_managed_session_create_bit) ||
+		managed_session->pending_operation_flags.test(_online_managed_session_create_bit))
+	{
+		status.set(_managed_session_creation_in_progress_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_host_migration_in_process_bit))
+	{
+		status.set(_managed_session_host_migration_in_progress_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_host_migration_session_created_bit))
+	{
+		status.set(_managed_session_host_migration_session_created_bit, true);
+	}
+	if (managed_session->current_operation_flags.test(_online_managed_session_create_host_migration_bit) ||
+		managed_session->pending_operation_flags.test(_online_managed_session_create_host_migration_bit))
+	{
+		status.set(_managed_session_host_migration_in_progress_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_players_add_succeeded_bit))
+	{
+		status.set(_managed_session_players_add_succeeded_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_players_add_failed_bit))
+	{
+		status.set(_managed_session_players_add_failed_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_players_add_pending_bit))
+	{
+		status.set(_managed_session_players_add_in_progress_bit, true);
+	}
+	if (managed_session->current_operation_flags.test(_online_managed_session_game_start_bit) ||
+		managed_session->pending_operation_flags.test(_online_managed_session_game_start_bit))
+	{
+		status.set(_managed_session_game_start_in_progress_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_game_started_bit))
+	{
+		status.set(_managed_session_game_started_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_game_start_failed_bit))
+	{
+		status.set(_managed_session_game_start_failed_bit, true);
+	}
+	if (managed_session->current_operation_flags.test(_online_managed_session_game_end_bit) ||
+		managed_session->pending_operation_flags.test(_online_managed_session_game_end_bit))
+	{
+		status.set(_managed_session_game_end_in_progress_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_game_ended_bit))
+	{
+		status.set(_managed_session_game_ended_bit, true);
+	}
+	if (managed_session->flags.test(_online_managed_session_game_end_failed_bit))
+	{
+		status.set(_managed_session_game_end_failed_bit, true);
+	}
+	return status;
 }
 
-void managed_session_reset_session(long managed_session_index, bool recreating_session)
+bool managed_session_is_master_session(long index)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
+	if (index == NONE)
+	{
+		return false;
+	}
+
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
+	return managed_session->flags.test(_online_managed_session_master_bit);
+}
+
+void managed_session_reset_session(long index, bool recreating_session)
+{
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
 	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_reset_session: [%s]:%08X reset session\n",
 		transport_session_description_get_string(&managed_session->desired_online_session_state.description),
-		managed_session_index);
+		index);
+
 	managed_session->pending_operation_flags.set(_online_managed_session_delete_bit, true);
-	managed_session->desired_online_session_state.public_slots_flags |= 1u;
-	//managed_session->unknown1 = true;
+	SET_BIT(managed_session->desired_online_session_state.public_slots_flags, 0, true);
+	//managed_session->we_are_the_new_host = true;
 	managed_session->pending_operation_flags.set(_online_managed_session_create_host_migration_bit, false);
 	managed_session->pending_operation_flags.set(_online_managed_session_create_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_players_add_bit, true);
+
 	if (recreating_session)
 	{
-		managed_session->flags.set(_online_managed_session_recreating_bit, true);
-		managed_session->creation_time = network_time_get();
+		managed_session->flags.set(_online_managed_session_pending_retry_bit, true);
+		managed_session->time_of_last_failure = network_time_get();
 	}
 	else
 	{
-		managed_session->flags.set(_online_managed_session_recreating_bit, false);
-		managed_session->creation_time = 0;
+		managed_session->flags.set(_online_managed_session_pending_retry_bit, false);
+		managed_session->time_of_last_failure = 0;
 	}
 }
 
-void managed_session_remove_players(long managed_session_index, qword* xuids, long xuid_count)
+void managed_session_remove_players(long index, qword const* xuids, long xuid_count)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
 	remove_from_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuid_count);
+	
+	for (long player_index = 0; player_index < xuid_count; player_index++)
+	{
+		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_remove_players: [0x%I64x] from session 0x%8X\n", xuids[player_index], index);
+	}
+
 	managed_session->pending_operation_flags.set(_online_managed_session_players_remove_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
-	managed_session->flags.set(_online_managed_session_recreating_bit, false);
-	managed_session->creation_time = 0;
+	managed_session->flags.set(_online_managed_session_pending_retry_bit, false);
+	managed_session->time_of_last_failure = 0;
 }
 
-void remove_from_player_list(s_online_session_player* players, long player_count, qword* xuids, long xuid_count)
+void remove_from_player_list(s_online_session_player* players, long player_count, qword const* xuids, long xuid_count)
 {
+	ASSERT(players);
+	ASSERT(player_count > 0);
+	ASSERT(xuids);
+
 	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{
 		long player_index = 0;
 		for (player_index = 0; player_index < player_count; player_index++)
 		{
-			if (players[player_index].flags & 1 && players[player_index].xuid == xuids[xuid_index])
+			if (players[player_index].flags.test(_online_session_player_valid_bit) && players[player_index].xuid == xuids[xuid_index])
 			{
-				players[player_index].flags = 0;
+				players[player_index].flags.clear();
 				players[player_index].xuid = 0;
-				memset(&players[player_index], 0, sizeof(s_online_session_player));
+				csmemset(&players[player_index], 0, sizeof(s_online_session_player));
 				break;
 			}
 		}
 		if (player_index == player_count)
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: remove_from_player_list: unable to find player [0x%I64x] in the list to remove from the session\n", xuids[player_index]); // uses 0x%Lx in ms23
+			// previously used 0x%Lx, but this caused compiler warnings
+			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: remove_from_player_list: unable to find player [0x%llx] in the list to remove from the session\n", xuids[player_index]);
 		}
 	}
 }
 
-void managed_session_reset_players_add_status(long managed_session_index)
+void managed_session_reset_players_add_status(long index)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
-	managed_session->flags.set(_online_managed_session_unknown_flag11_bit, false);
-	managed_session->flags.set(_online_managed_session_unknown_flag8_bit, false);
+	ASSERT(index < k_managed_sessions_max_count);
+
+	s_online_managed_session* managed_session = managed_session_get(index);
+	managed_session->flags.set(_online_managed_session_players_add_succeeded_bit, false);
+	managed_session->flags.set(_online_managed_session_players_add_failed_bit, false);
 }
 
-void managed_session_add_players(long managed_session_index, qword* player_xuids, bool* players_left, long xuid_count)
+void managed_session_add_players(long index, qword const* xuids, bool const* xuids_left_game, long xuid_count)
 {
-	c_managed_session* managed_session = &online_session_manager_globals.managed_sessions[managed_session_index];
-	managed_session_add_players_internal(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, player_xuids, players_left, xuid_count); // non-original function name
+	ASSERT(index < k_managed_sessions_max_count);
+	s_online_managed_session* managed_session = managed_session_get(index);
+	ASSERT(!managed_session->flags.test(_online_managed_session_players_add_pending_bit));
+
+	add_to_player_list(managed_session->desired_online_session_state.players, k_network_maximum_players_per_session, xuids, xuids_left_game, xuid_count);
 	managed_session->flags.set(_online_managed_session_players_add_pending_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_modify_session_bit, true);
 	managed_session->pending_operation_flags.set(_online_managed_session_players_add_bit, true);
-	managed_session->flags.set(_online_managed_session_recreating_bit, false);
-	managed_session->creation_time = 0;
+	managed_session->flags.set(_online_managed_session_pending_retry_bit, false);
+	managed_session->time_of_last_failure = 0;
 }
 
-void managed_session_add_players_internal(s_online_session_player* players, long player_count, qword* xuids, bool* players_left, long xuid_count)
+void add_to_player_list(s_online_session_player* players, long player_count, qword const* xuids, bool const* xuids_left_game, long xuid_count)
 {
-	assert(players);
-	assert(player_count > 0);
-	assert(xuids);
+	ASSERT(players);
+	ASSERT(player_count > 0);
+	ASSERT(xuids);
 
-	for (long i = 0; i < xuid_count; i++)
+	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{
-		long empty_index = -1;
-		if (xuids[i])
+		long empty_index = NONE;
+		if (xuids[xuid_index])
 		{
-			long j = 0;
-			for (j = 0; j < player_count; j++)
+			long player_index = 0;
+			for (player_index = 0; player_index < player_count; player_index++)
 			{
-				if ((players[j].flags & 1) != 0 || empty_index != -1)
+				if (players[player_index].flags.test(_online_session_player_valid_bit) || empty_index != NONE)
 				{
-					if (!csmemcmp(&xuids[i], &players[j].xuid, 8))
+					if (!csmemcmp(&xuids[xuid_index], &players[player_index].xuid, sizeof(qword)))
+					{
 						break;
+					}
 				}
 				else
 				{
-					empty_index = j;
+					empty_index = player_index;
 				}
 			}
-			if (j == player_count)
+			if (player_index == player_count)
 			{
-				assert(empty_index != NONE);
-				players[empty_index].xuid = xuids[i];
-				players[empty_index].flags |= 1u;
-				if (players_left[i])
-					players[empty_index].flags |= 2u;
+				ASSERT(empty_index != NONE);
+				players[empty_index].xuid = xuids[xuid_index];
+				players[empty_index].flags.set(_online_session_player_valid_bit, true);
+				if (xuids_left_game[xuid_index])
+				{
+					players[empty_index].flags.set(_online_session_player_occupies_private_slot_bit, true);
+				}
 			}
 		}
 	}
 }
 
-bool __fastcall managed_session_compare_id(long managed_session_index, s_transport_secure_identifier const* secure_id)
+bool __fastcall managed_session_compare_id(long index, s_transport_secure_identifier const* secure_id)
 {
-	return INVOKE(0x28B40, managed_session_compare_id, managed_session_index, secure_id);
+	if (index == NONE)
+	{
+		return false;
+	}
+
+	ASSERT(index < k_managed_sessions_max_count);
+
+	return INVOKE(0x28B40, managed_session_compare_id, index, secure_id);
 }
 
-void __fastcall managed_session_delete_session_internal(long managed_session_index, c_managed_session* managed_session)
+void __fastcall managed_session_delete_session_internal(long index, s_online_managed_session* managed_session)
 {
-	INVOKE(0x28C30, managed_session_delete_session_internal, managed_session_index, managed_session);
+	INVOKE(0x28C30, managed_session_delete_session_internal, index, managed_session);
+}
+
+s_online_managed_session* managed_session_get(long index)
+{
+	ASSERT(index < k_managed_sessions_max_count);
+	return &online_session_manager_globals.managed_sessions[index];
 }

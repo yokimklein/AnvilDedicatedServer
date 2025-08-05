@@ -3,11 +3,10 @@
 #include <game\game_engine_variant.h>
 #include <scenario\scenario_map_variant.h>
 #include <cseries\cseries.h>
-#include "assert.h"
 
 bool game_engine_variant_has_teams(c_game_variant* variant)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 	return variant->get_active_variant()->get_miscellaneous_options()->get_teams_enabled();
 }
 
@@ -24,7 +23,7 @@ void __fastcall game_engine_adjust_team_score_for_composition(e_game_team team_i
 bool game_engine_variant_is_observer_allowed(c_game_variant* variant)
 {
 	// this function always returns false in ms23, why is that? were observers removed before release?
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	// Observers were removed in ODST
 	return false;
@@ -36,7 +35,7 @@ bool game_engine_variant_is_observer_allowed(c_game_variant* variant)
 
 long __fastcall game_engine_variant_get_maximum_team_count(c_game_variant* variant, long multiplayer_map_id)
 {
-	assert(variant);
-	assert(multiplayer_map_id != _map_id_none);
+	ASSERT(variant);
+	ASSERT(multiplayer_map_id != _map_id_none);
 	return INVOKE(0xDC6F0, game_engine_variant_get_maximum_team_count, variant, multiplayer_map_id);
 }

@@ -192,7 +192,7 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_update_sta
     while (player_iterator.next())
     {
         e_shield_multiplier_setting shield_multiplier = current_game_variant()->get_active_variant()->get_map_override_options()->get_base_player_traits()->get_shield_vitality_traits()->get_shield_multiplier_setting();
-        player_iterator.get_datum()->traits.get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(shield_multiplier, true);
+        player_iterator.get_datum()->multiplayer.player_traits.get_shield_vitality_traits_writeable()->set_shield_multiplier_setting(shield_multiplier, true);
         simulation_action_game_engine_player_update(player_iterator.get_index(), _simulation_player_update_shield_vitality_traits);
     }
 }
@@ -234,7 +234,7 @@ __declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook1
 {
     datum_index player1_index;
     datum_index player2_index;
-    c_flags<long, ulong64, 64> update_flags;
+    c_simulation_object_update_flags update_flags;
     DEFINE_ORIGINAL_EBP_ESP(0x3394, sizeof(player1_index) + sizeof(player2_index) + sizeof(update_flags));
     __asm
     {
@@ -244,8 +244,8 @@ __declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook1
         mov player2_index, eax;
     }
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
-    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), &update_flags);
-    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), &update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook2()
@@ -257,19 +257,19 @@ __declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook2
         mov player1_index, edi;
         mov player2_index, ebx;
     }
-    c_flags<long, ulong64, 64> update_flags;
+    c_simulation_object_update_flags update_flags;
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
-    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), &update_flags);
-    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), &update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
 }
 
 __declspec(safebuffers) void __fastcall player_delete_hook()
 {
     datum_index player_index;
     __asm mov player_index, edi;
-    c_flags<long, ulong64, 64> update_flags;
+    c_simulation_object_update_flags update_flags;
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
-    simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), &update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), update_flags);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
@@ -285,7 +285,7 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
     }
     if (lives_remaining == 0 && game_engine_has_teams() && game_engine_teams_use_one_shared_life(dead_player->configuration.host.team_index))
     {
-        dead_player->lives++;
+        dead_player->multiplayer.remaining_lives++;
     }
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_lives_remaining);
 }
@@ -303,13 +303,13 @@ __declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
     __asm mov player_index, esi;
     if (game_is_authoritative())
     {
-        c_flags<long, ulong64, 64> update_flags;
+        c_simulation_object_update_flags update_flags;
         update_flags.set(_simulation_player_update_shield_vitality_traits, true);
         update_flags.set(_simulation_player_update_weapon_traits, true);
         update_flags.set(_simulation_player_update_movement_traits, true);
         update_flags.set(_simulation_player_update_appearance_traits, true);
         update_flags.set(_simulation_player_update_sensor_traits, true);
-        simulation_action_game_engine_player_update(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), &update_flags);
+        simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), update_flags);
     }
 }
 

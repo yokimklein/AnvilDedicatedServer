@@ -86,7 +86,7 @@ enum e_join_type
 struct s_network_session_parameter_session_mode
 {
 	long session_mode_sequence;
-	c_enum<e_network_session_mode, long, _network_session_mode_none, k_network_session_mode_count> session_mode;
+	e_network_session_mode session_mode;
 	dword session_mode_timestamp;
 };
 static_assert(sizeof(s_network_session_parameter_session_mode) == 0xC);
@@ -108,23 +108,23 @@ static_assert(sizeof(s_network_session_parameter_session_size) == 0x8);
 class c_network_session_parameter_session_size : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_parameter_session_size>
 {
 public:
-	long get_max_player_count();
+	long get_max_player_count() const;
 	bool set_max_player_count(long player_count);
-	long get_max_peer_count();
+	long get_max_peer_count() const;
 };
 static_assert(sizeof(c_network_session_parameter_session_size) == 0x40);
 
 struct s_network_session_remote_session_join_data
 {
-	c_enum<e_join_remote_state, long, _join_remote_state_none, k_join_remote_state_count> join_state;
-	c_enum<e_join_type, long, _join_type_squad, k_join_type_count> join_to;
+	e_join_remote_state join_state;
+	e_join_type join_to;
 	qword join_nonce;
-	c_enum<e_transport_platform, long, _transport_platform_xnet, k_transport_platform_count> platform;
+	e_transport_platform platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key session_key;
 	s_transport_secure_address host_secure_address;
-	c_enum<e_network_session_class, long, _network_session_class_offline, k_network_session_class_count> session_class;
-	c_enum<e_life_cycle_join_result, long, _life_cycle_join_result_none, k_life_cycle_join_result_count> join_result;
+	e_network_session_class session_class;
+	e_life_cycle_join_result join_result;
 	bool join_to_public_slots;
 };
 static_assert(sizeof(s_network_session_remote_session_join_data) == 0x50);
@@ -149,6 +149,8 @@ struct s_network_session_parameter_lobby_vote_set
 {
 	struct s_lobby_vote
 	{
+		bool operator!=(s_lobby_vote other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 		char gamemode; // ditto below, for modes
 		char map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
 		char number_of_votes;

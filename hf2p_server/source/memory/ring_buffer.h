@@ -10,8 +10,7 @@ class c_ring_buffer
 static_assert(sizeof(c_ring_buffer) == 0xC);
 
 template<typename t_type, long k_maximum_count>
-struct t_static_ring_buffer :
-	public c_ring_buffer
+struct t_static_ring_buffer : public c_ring_buffer
 {
 	t_type elements[k_maximum_count];
 };

@@ -1,6 +1,6 @@
 #pragma once
-
 #include <cseries\cseries.h>
+#include <objects\damage.h>
 
 enum e_game_progression_level
 {
@@ -12,37 +12,36 @@ enum e_game_progression_level
 	k_game_progression_level_count
 };
 
-struct s_persistent_campaign_player_weapon
+struct s_campaign_armaments_weapon
 {
-	short damage_reporting_type;
+	c_enum<e_damage_reporting_type, short, _damage_reporting_type_unknown, k_damage_reporting_type_count> damage_reporting_type;
 	short rounds_loaded_maximum;
 	short runtime_rounds_inventory_maximum;
 	short rounds_loaded_amount;
 };
-static_assert(sizeof(s_persistent_campaign_player_weapon) == 0x8);
+static_assert(sizeof(s_campaign_armaments_weapon) == 0x8);
 
-struct s_persistent_campaign_player
+struct s_campaign_armaments_player
 {
 	bool valid;
 	byte : 8;
 
-	s_persistent_campaign_player_weapon primary_weapon;
-	s_persistent_campaign_player_weapon backpack_weapon;
-	s_persistent_campaign_player_weapon secondary_weapon;
-
-	byte __unknown1A[0x4];
+	s_campaign_armaments_weapon primary_weapon;
+	s_campaign_armaments_weapon backpack_weapon;
+	s_campaign_armaments_weapon secondary_weapon;
+	c_static_array<byte, 4> grenade_counts;
 };
-static_assert(sizeof(s_persistent_campaign_player) == 0x1E);
+static_assert(sizeof(s_campaign_armaments_player) == 0x1E);
 
 struct s_campaign_armaments
 {
-	s_persistent_campaign_player players[4];
+	c_static_array<s_campaign_armaments_player, 4> players;
 };
 static_assert(sizeof(s_campaign_armaments) == 0x78);
 
 struct s_campaign_game_progression
 {
-	byte __data[0x80];
+	c_static_array<dword, 32> integer_names;
 };
 static_assert(sizeof(s_campaign_game_progression) == 0x80);
 

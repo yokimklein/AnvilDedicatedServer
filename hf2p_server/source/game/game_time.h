@@ -7,61 +7,87 @@
 // only `_game_time_pause_reason_debug` works in multiplayer
 enum e_game_time_pause_reason
 {
-	// set/unset at `game_time_update` begin/end
-	_game_time_pause_reason_unknown0 = 0,
+	_game_time_pause_recursion_lock_internal = 0,
+	_game_time_pause_debug,
+	//_game_time_pause_debug_menu,
+	_game_time_pause_ui,
+	_game_time_pause_controller0_removal,
+	_game_time_pause_controller1_removal,
+	_game_time_pause_controller2_removal,
+	_game_time_pause_controller3_removal,
+	_game_time_pause_xbox_guide_ui,
+	_game_time_pause_postgame,
 
-	// game_time_update
-	// - debug_pause_game != debug_pause_game_active
-	_game_time_pause_reason_debug,
+	k_game_time_pause_reason_count
+};
 
-	// halo 3: c_start_menu_game_campaign::initialize
-	// odst: c_start_menu_screen_widget::update
-	// halo reach: c_start_menu_pause_component::update_pause
-	// game_state_call_after_load_procs
-	//	- game_state_set_revert_time
-	_game_time_pause_reason_ui,
+enum e_game_tick_publishing_flags
+{
+	_game_published_new_game_tick = 0,
+	_game_published_shell_paused,
+	_game_published_game_time_unchanged,
+	_game_published_game_time_paused,
+	_game_published_game_paused,
+	_game_published_pregame,
+	_game_published_main_time_halted,
+	_game_published_game_speed_slowed,
+	_game_published_framerate_infinite,
+	_game_published_ui_request,
+	_game_published_network_playback_client,
+	_game_published_maintain_minimal_framerate,
 
-	// game_time_update
-	// - controllers
-	_game_time_pause_reason_controller0,
-	_game_time_pause_reason_controller1,
-	_game_time_pause_reason_controller2,
-	_game_time_pause_reason_controller3,
-
-	// user_interface_xbox_guide_is_active
-	_game_time_pause_reason_xbox_guide,
-
-	// metagame: load postgame carnage report
-	_game_time_pause_reason_postgame,
-
-	k_game_time_pause_reason_count,
+	k_game_tick_publishing_flag_count
 };
 
 struct s_game_tick_time_samples
 {
-	long flags;
-	real shell_seconds_elapsed;
-	real world_seconds_elapsed;
-	real game_seconds_elapsed;
-	dword game_ticks_elapsed;
+	void initialize()
+	{
+		reset();
+	}
+
+	void reset()
+	{
+		flags.clear();
+		shell_dt = 0.0f;
+		world_dt = 0.0f;
+		game_dt = 0.0f;
+		elapsed_game_ticks = 0;
+	}
+
+	void accum(s_game_tick_time_samples const* samples)
+	{
+		flags = samples->flags;
+		shell_dt += samples->shell_dt;
+		world_dt += samples->world_dt;
+		game_dt += samples->game_dt;
+		elapsed_game_ticks = samples->elapsed_game_ticks;
+	}
+
+	c_flags<e_game_tick_publishing_flags, dword, k_game_tick_publishing_flag_count> flags;
+	real shell_dt;
+	real world_dt;
+	real game_dt;
+	long elapsed_game_ticks;
 };
 static_assert(sizeof(s_game_tick_time_samples) == 0x14);
 
-struct s_game_time_globals
+struct game_time_globals_definition
 {
 	bool initialized;
-	// halo 3: bool paused
-	byte : 8;
-	c_flags<e_game_time_pause_reason, short, k_game_time_pause_reason_count> flags;
+	c_flags<e_game_time_pause_reason, word, k_game_time_pause_reason_count> flags;
 	short tick_rate;
-	word : 16;
 	real tick_length;
-	long elapsed_ticks;
+	long time;
 	real speed;
-	real ticks_leftover;
-	s_game_tick_time_samples time_samples;
+	real leftover_ticks;
+	real rate_scale_timer;
+	real rate_scale_duration;
+	real rate_scale_initial;
+	real rate_scale_final;
+	long game_message_tick;
 };
-static_assert(sizeof(s_game_time_globals) == 0x2C);
+static_assert(sizeof(game_time_globals_definition) == 0x2C);
 
 long game_time_get();
 real game_ticks_to_seconds(long ticks);

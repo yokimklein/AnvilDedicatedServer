@@ -8,7 +8,7 @@ c_game_engine_juggernaut_variant* c_game_engine_juggernaut_variant::constructor(
 
 void c_game_engine_juggernaut_variant::set(c_game_engine_juggernaut_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	c_game_engine_base_variant::set(variant, force);
 
@@ -129,8 +129,8 @@ e_juggernaut_zone_movement_settings c_game_engine_juggernaut_variant::get_zone_m
 
 long c_game_engine_juggernaut_variant::get_zone_movement_time_in_seconds() const
 {
-	//assert(VALID_INDEX(m_zone_movement, k_number_of_juggernaut_zone_movement_settings));
-	assert(VALID_INDEX(get_zone_movement(), k_number_of_juggernaut_zone_movement_settings));
+	//ASSERT(VALID_INDEX(m_zone_movement, k_number_of_juggernaut_zone_movement_settings));
+	ASSERT(VALID_INDEX(get_zone_movement(), k_number_of_juggernaut_zone_movement_settings));
 
 	return k_juggernaut_zone_movement_values[get_zone_movement()];
 }

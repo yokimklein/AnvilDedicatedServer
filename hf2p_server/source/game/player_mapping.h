@@ -2,6 +2,11 @@
 #include <memory\data.h>
 #include <cseries\cseries.h>
 
+enum
+{
+	k_number_of_users = 4,
+};
+
 enum e_input_user_index
 {
 	_input_user_index0 = 0,
@@ -26,7 +31,7 @@ enum e_output_user_index
 	k_output_user_none = -1
 };
 
-struct s_player_mapping
+struct s_player_mapping_globals
 {
 	short active_input_user_count;
 	short active_input_controller_count;

@@ -98,6 +98,11 @@ enum e_object_damage_flags
 	_object_damage_flag_bit2,
 	_object_damage_flag_bit3,
 	_object_damage_flag_bit4,
+	_object_damage_flag_bit5,
+	_object_damage_flag_bit6,
+	_object_damage_flag_bit7,
+	_object_damage_flag_bit8,
+	_object_damage_flag_bit9, // shield depletion is permanent?
 
 	k_object_damage_flags_count
 };

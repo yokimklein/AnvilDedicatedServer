@@ -1,5 +1,4 @@
 #include "simulation_game_events.h"
-#include "assert.h"
 #include <game\game.h>
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
@@ -7,6 +6,7 @@
 #include <networking\network_configuration.h>
 #include <game\game_engine_event_definitions.h>
 #include <game\game_engine_simulation.h>
+#include <stdio.h>
 
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
@@ -26,84 +26,101 @@ void simulation_event_generate_for_remote_peers(e_simulation_event_type event_ty
 
 void simulation_event_generate_for_clients(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
-	assert(game_is_authoritative());
+	ASSERT(game_is_authoritative());
 	simulation_event_generate_for_remote_peers(event_type, entity_reference_count, object_reference_indices, ignore_player_index, event_payload_size, event_payload);
 }
 
 void simulation_event_generate_for_client_player_list(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, datum_index const* player_indices, long player_count, long event_payload_size, void const* event_payload)
 {
 	c_simulation_world* world = simulation_get_world();
-	if (world->is_distributed())
+	if (!world->is_distributed())
 	{
-		c_simulation_event_handler* event_handler = world->get_event_handler();
-		c_flags<long, ulong, k_maximum_players> player_mask;
-		if (player_indices != nullptr && player_count >= 1 && player_count <= k_maximum_players)
+		return;
+	}
+
+	c_simulation_event_handler* event_handler = world->get_event_handler();
+	c_flags<long, ulong, k_maximum_players> player_mask;
+	if (!player_indices || player_count < 1 || player_count > k_maximum_players)
+	{
+		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: not sending exclusive list event %d/%s for invalid player list [count %d]\n",
+			event_type,
+			event_handler->get_event_type_name(event_type), player_count);
+	}
+	else
+	{
+		for (long i = 0; i < player_count; i++)
 		{
-			for (long i = 0; i < player_count; i++)
+			if (player_indices[i] == NONE)
 			{
-				if (player_indices[i] == NONE)
-				{
-					printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: exclusive player list has bad player index %d/%s\n", event_type, event_handler->get_event_type_name(event_type));
-				}
-				else
-				{
-					player_mask.set(player_indices[i], true);
-				}
+				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: exclusive player list has bad player index %d/%s\n",
+					event_type,
+					event_handler->get_event_type_name(event_type));
 			}
-			simulation_event_generate_for_client_player_mask(event_type, entity_reference_count, object_reference_indices, player_mask, event_payload_size, event_payload);
+			else
+			{
+				player_mask.set(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_indices[i]), true);
+			}
 		}
-		else
-		{
-			printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: not sending exclusive list event %d/%s for invalid player list [count %d]\n", event_type, event_handler->get_event_type_name(event_type), player_count);
-		}
+		simulation_event_generate_for_client_player_mask(event_type, entity_reference_count, object_reference_indices, player_mask, event_payload_size, event_payload);
 	}
 }
 
 void simulation_event_generate_for_client_player_mask(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, c_flags<long, ulong, k_maximum_multiplayer_players> player_mask, long event_payload_size, void const* event_payload)
 {
 	c_simulation_world* world = simulation_get_world();
-	if (world->is_distributed())
+	if (!world->is_distributed())
 	{
-		c_simulation_event_handler* event_handler = world->get_event_handler();
-		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: generating exclusive list event %d/%s\n", event_type, event_handler->get_event_type_name(event_type));
-		if (world->is_authority())
-		{
-			TLS_DATA_GET_VALUE_REFERENCE(players);
-			c_flags<long, ulong, k_maximum_machines> machine_mask;
-			for (long i = 0; i < k_maximum_players; i++)
-			{
-				if (player_mask.test(i))
-				{
-					player_datum* player = (player_datum*)datum_try_and_get_absolute(*players, i);
-					if (player != nullptr)
-					{
-						short machine_index = player->machine_index;
-						if (machine_index != NONE)
-						{
-							s_machine_identifier* machine_identifier = players_get_machine_identifier(machine_index);
-							long machine_index = world->get_machine_index_by_identifier(machine_identifier);
-							if (machine_index != NONE)
-							{
-								machine_mask.set(machine_index, true);
-							}
-						}
-					}
-					else
-					{
-						printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: Failed to get a player for index %d for event %d/%s\n", i, event_type, event_handler->get_event_type_name(event_type));
-					}
-				}
-			}
+		return;
+	}
 
-			if (!machine_mask.is_clear())
+	c_simulation_event_handler* event_handler = world->get_event_handler();
+	printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: generating exclusive list event %d/%s\n",
+		event_type,
+		event_handler->get_event_type_name(event_type));
+	if (!world->is_authority())
+	{
+		return;
+	}
+
+	TLS_DATA_GET_VALUE_REFERENCE(players);
+	c_flags<long, ulong, k_maximum_machines> machine_mask;
+	for (long player_index = 0; player_index < k_maximum_players; player_index++)
+	{
+		if (player_mask.test(player_index))
+		{
+			player_datum* player = (player_datum*)datum_try_and_get_absolute(*players, player_index);
+			if (!player)
 			{
-				event_handler_send_event(machine_mask, event_type, entity_reference_count, object_reference_indices, event_payload_size, event_payload);
+				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: Failed to get a player for index %d for event %d/%s\n",
+					player_index,
+					event_type,
+					event_handler->get_event_type_name(event_type));
 			}
 			else
 			{
-				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: exclusive player list for event %d/%s generated an invalid send machine mask\n", event_type, event_handler->get_event_type_name(event_type));
+				short machine_index = player->machine_index;
+				if (machine_index != NONE)
+				{
+					s_machine_identifier* machine_identifier = players_get_machine_identifier(machine_index);
+					long machine_index = world->get_machine_index_by_identifier(machine_identifier);
+					if (machine_index != NONE)
+					{
+						machine_mask.set(machine_index, true);
+					}
+				}
 			}
 		}
+	}
+
+	if (!machine_mask.is_empty())
+	{
+		event_handler_send_event(machine_mask, event_type, entity_reference_count, object_reference_indices, event_payload_size, event_payload);
+	}
+	else
+	{
+		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: exclusive player list for event %d/%s generated an invalid send machine mask\n",
+			event_type,
+			event_handler->get_event_type_name(event_type));
 	}
 }
 
@@ -114,8 +131,10 @@ void event_handler_send_event(c_flags<long, ulong, k_maximum_machines> machine_m
 	long entity_reference_indices[2];
 	simulation_event_build_entity_reference_indices(entity_reference_count, object_reference_indices, entity_reference_indices);
 	if (entity_reference_count <= 0)
+	{
 		entity_reference_indices[0] = 0;
-	long cancel_timer = get_network_configuration()->simulation_configuration.simulation_event_configurations[event_type].cancel_timer;
+	}
+	long cancel_timer = get_network_configuration()->simulation_configuration.simulation_event_configurations[event_type].cancel_timer_milliseconds;
 	world->m_distributed_world->m_entity_database.m_event_handler.send_event(event_type, entity_reference_count, entity_reference_indices, machine_mask, event_payload_size, event_payload, cancel_timer);
 }
 
@@ -130,21 +149,29 @@ void __fastcall simulation_event_build_entity_reference_indices(long entity_refe
 
 void simulation_action_multiplayer_event(s_game_engine_event_data* game_engine_event)
 {
-	if (game_is_distributed() && game_is_server() && !game_is_playback())
+	if (!game_is_distributed() || !game_is_server() || game_is_playback())
 	{
-		s_game_engine_event_data event_data = *game_engine_event;
-		if (event_data.audience_player_index != NONE)
-			event_data.audience_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.audience_player_index);
-		if (event_data.cause_player_index != NONE)
-			event_data.cause_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.cause_player_index);
-		if (event_data.effect_player_index != NONE)
-			event_data.effect_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.effect_player_index);
-		long player_response_list_count = 0;
-		datum_index player_response_list[k_maximum_multiplayer_players];
-		game_engine_event_build_player_response_list(game_engine_event, player_response_list, NUMBEROF(player_response_list), &player_response_list_count);
-		if (player_response_list_count > 0)
-		{
-			simulation_event_generate_for_client_player_list(_simulation_event_type_game_engine, 0, nullptr, player_response_list, player_response_list_count, sizeof(event_data), &event_data);
-		}
+		return;
+	}
+
+	s_game_engine_event_data event_data = *game_engine_event;
+	if (event_data.audience_player_index != NONE)
+	{
+		event_data.audience_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.audience_player_index);
+	}
+	if (event_data.cause_player_index != NONE)
+	{
+		event_data.cause_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.cause_player_index);
+	}
+	if (event_data.effect_player_index != NONE)
+	{
+		event_data.effect_player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data.effect_player_index);
+	}
+	long player_response_list_count = 0;
+	datum_index player_response_list[k_maximum_multiplayer_players];
+	game_engine_event_build_player_response_list(game_engine_event, player_response_list, NUMBEROF(player_response_list), &player_response_list_count);
+	if (player_response_list_count > 0)
+	{
+		simulation_event_generate_for_client_player_list(_simulation_event_type_game_engine, 0, nullptr, player_response_list, player_response_list_count, sizeof(event_data), &event_data);
 	}
 }

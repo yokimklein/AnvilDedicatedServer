@@ -5,7 +5,6 @@
 #include <game\player_configuration.h>
 #include <game\game_engine_simulation.h>
 
-#pragma pack(push, 1)
 class c_simulation_world;
 class c_simulation_player
 {
@@ -17,12 +16,10 @@ class c_simulation_player
 	c_simulation_world* m_world;
 	bool m_pending_deletion;
 	bool m_active;
-	byte __data2A[0x2];
-	long __unknown2C;
+	long m_current_action_time;
 	player_action m_action;
 };
 static_assert(sizeof(c_simulation_player) == 0xB0);
-#pragma pack(pop)
 
 struct s_player_collection_player
 {

@@ -6,7 +6,7 @@
 game_engine_settings_definition* game_engine_settings_try_and_get()
 {
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr)
+	if (universal)
 	{
 		long wezr_index = universal->halo3_game_engine_settings.index;
 		if (wezr_index != NONE)

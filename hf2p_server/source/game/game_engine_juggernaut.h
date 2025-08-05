@@ -64,7 +64,7 @@ public:
 
 protected:
 	c_enum<long, short, 0, 500> m_score_to_win_round;         // default: 15
-	c_enum<long, short, 0, 500> m_score_unknown;              // default: 13, halo online specific
+	c_enum<long, short, 0, 500> m_early_win_score;            // default: 13, halo online specific
 
 	byte m_pad[2];
 
@@ -94,11 +94,12 @@ public:
 
 struct s_juggernaut_globals
 {
-	dword juggernaut_player_index;
-	word unknown_seconds;
-	byte __unknown6;
-	dword unknown_ticks; // __unknown4 in ticks
-	c_area_set<c_area, 12> area_set;
-	c_static_array<long, 16> __unknown4CC;
+	long juggernaut_player_index;
+	short juggernaut_delay_seconds;
+	bool juggernaut_visited_zone;
+	long juggernaut_delay_ticks;
+	c_area_set<c_area, 12> zones;
+	c_static_array<long, 16> juggernaut_kills;
+	long juggernaut_player_index_at_game_update_start;
 };
-static_assert(sizeof(s_juggernaut_globals) == 0x50C);
+static_assert(sizeof(s_juggernaut_globals) == 0x510);

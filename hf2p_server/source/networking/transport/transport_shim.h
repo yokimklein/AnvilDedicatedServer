@@ -13,7 +13,7 @@ struct s_xnet_shim_table_row
 	byte : 8;
 	byte : 8;
 	byte : 8;
-	s_transport_address inaddr; // insecure_address
+	transport_address inaddr; // insecure_address
 	s_transport_secure_address xnaddr; // xnet_address
 	s_transport_secure_identifier xnkid; // xnet_identifier
 };
@@ -29,15 +29,15 @@ extern s_xnet_shim_table& g_xnet_shim_table;
 
 struct s_xnet_address
 {
-	s_transport_address addresses[8];
+	transport_address addresses[8];
 	char hostname[0x100];
 };
 
-long XNetFindEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, bool ignore_invalid_rows);
-void XNetAddEntry(const s_transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
-void XNetUnregisterKey(const s_transport_address* address);
-bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address);
-bool XNetInAddrToXnAddr(const s_transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);
-bool XNetXnAddrToInAddr(const s_transport_secure_address* secure_address, s_transport_address* address);
+long XNetFindEntry(const transport_address* address, const s_transport_secure_address* secure_address, bool ignore_invalid_rows);
+void XNetAddEntry(const transport_address* address, const s_transport_secure_address* secure_address, const s_transport_secure_identifier* secure_identifier);
+void XNetUnregisterKey(const transport_address* address);
+bool XNetInAddrToXnAddr(const transport_address* address, s_transport_secure_address* secure_address);
+bool XNetInAddrToXnAddr(const transport_address* address, s_transport_secure_address* secure_address, s_transport_secure_identifier* secure_identifier);
+bool XNetXnAddrToInAddr(const s_transport_secure_address* secure_address, transport_address* address);
 bool __fastcall XNetGetTitleXnAddr(s_xnet_address* out_addresses);
 void XNetCreateKey(s_transport_secure_identifier* out_secure_identifier);

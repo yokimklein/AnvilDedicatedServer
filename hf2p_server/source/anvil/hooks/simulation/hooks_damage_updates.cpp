@@ -47,7 +47,7 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
     real unknown_ticks;
     real new_body_vitality;
     real unknown_vitality;
-    DEFINE_ORIGINAL_EBP_ESP(0x100, 0x50);
+    DEFINE_ORIGINAL_EBP_ESP(0x108, 0x50);
     __asm
     {
         mov ecx, original_ebp;
@@ -86,13 +86,13 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
             new_body_vitality = unknown_vitality;
             vitality_delta = vitality_delta * vitality_multiplier;
         }
-        unit->object.damage_flags |= FLAG(9); // enable _model_shield_depletion_is_permanent_bit?
+        unit->object.damage_flags.set(_object_damage_flag_bit9, true); // enable _model_shield_depletion_is_permanent_bit?
         real vitality_result = unit->object.body_vitality + vitality_delta;
         unit->object.body_vitality = vitality_result;
         if (vitality_result > new_body_vitality)
         {
             unit->object.body_vitality = new_body_vitality;
-            unit->object.damage_flags &= ~FLAG(9); // disable _model_shield_depletion_is_permanent_bit?
+            unit->object.damage_flags.set(_object_damage_flag_bit9, false); // disable _model_shield_depletion_is_permanent_bit?
         }
         else
         {

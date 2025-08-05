@@ -16,49 +16,49 @@ __declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook
 {
     long absolute_player_index;
     __asm mov absolute_player_index, esi;
-    simulation_action_game_statborg_update(absolute_player_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
 {
     long absolute_player_index;
     __asm mov absolute_player_index, esi; // (ebx is full player datum index)
-    simulation_action_game_statborg_update(absolute_player_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook2()
 {
     long absolute_player_index;
     __asm mov absolute_player_index, esi; // (ebx is full player datum index)
-    simulation_action_game_statborg_update(absolute_player_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
 {
     long absolute_player_index;
     __asm mov absolute_player_index, esi;
-    simulation_action_game_statborg_update(absolute_player_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
 __declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook3()
 {
     long team_index;
     __asm mov team_index, ebx;
-    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
 __declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook()
 {
     long team_index;
     __asm mov team_index, edi;
-    simulation_action_game_statborg_update(_simulation_statborg_update_team0 + team_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
 __declspec(safebuffers) void __fastcall player_changed_teams_hook()
 {
     short player_index;
     __asm mov player_index, bx;
-    simulation_action_game_statborg_update(_simulation_statborg_update_player0 + player_index);
+    simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_player0 + player_index));
 }
 #pragma runtime_checks("", restore)
 

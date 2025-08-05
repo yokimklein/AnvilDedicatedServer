@@ -13,7 +13,7 @@ void __cdecl matrix4x3_rotation_from_vectors(real_matrix4x3* matrix, real_vector
 
 void __cdecl matrix4x3_from_point_and_vectors(real_matrix4x3* matrix, real_point3d const* point, real_vector3d const* forward, real_vector3d const* up)
 {
-	assert(point);
+	ASSERT(point);
 
 	matrix4x3_rotation_from_vectors(matrix, forward, up);
 	matrix->position = *point;

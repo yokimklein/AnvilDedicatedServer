@@ -15,17 +15,17 @@ enum e_damage_section_response_type
 
 enum e_damage_aftermath_flags
 {
-	_damage_aftermath_flag_unused_bit0 = 0,
-	_damage_aftermath_flag_shield_depleted_bit,
-	_damage_aftermath_flag_area_of_effect_bit,
-	_damage_aftermath_flag_any_damage_dealt_bit,
-	_damage_aftermath_flag_damaged_by_friendly_bit,
-	_damage_aftermath_flag_silent_bit,
-	_damage_aftermath_flag_killed_instantly_bit,
-	_damage_aftermath_flag_primary_recipient_bit,
-	_damage_aftermath_flag_outside_aoe_dmg_range_bit,
-	_damage_aftermath_flag_unused_bit9,
-	_damage_aftermath_flag_emp_bit,
+	_damage_aftermath_body_depleted_bit = 0,
+	_damage_aftermath_shield_depleted_bit,
+	_damage_aftermath_area_of_effect_bit,
+	_damage_aftermath_any_damage_dealt_bit,
+	_damage_aftermath_damaged_by_friendly_bit,
+	_damage_aftermath_silent_bit,
+	_damage_aftermath_killed_instantly_bit,
+	_damage_aftermath_primary_recipient_bit,
+	_damage_aftermath_outside_aoe_dmg_range_bit,
+	_damage_aftermath_object_destroyed_bit,
+	_damage_aftermath_emp_bit,
 
 	k_damage_aftermath_flags_count
 };

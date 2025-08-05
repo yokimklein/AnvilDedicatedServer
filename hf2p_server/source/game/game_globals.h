@@ -19,7 +19,7 @@ enum e_game_difficulty_value_type
 	_game_difficulty_friend_recharge,
 	_game_difficulty_infection_forms,
 	_game_difficulty_pad1,
-
+	
 	// ranged fire
 	_game_difficulty_rate_of_fire,
 	_game_difficulty_projectile_error,
@@ -34,27 +34,27 @@ enum e_game_difficulty_value_type
 	_game_difficulty_melee_delay_base,
 	_game_difficulty_melee_delay_scale,
 	_game_difficulty_pad2,
-
+	
 	// grenades
 	_game_difficulty_grenade_chance_scale,
 	_game_difficulty_grenade_timer_scale,
 	_game_difficulty_pad3,
 	_game_difficulty_pad4,
 	_game_difficulty_pad5,
-
+	
 	// placement
 	_game_difficulty_major_upgrade_normal,
 	_game_difficulty_major_upgrade_few,
 	_game_difficulty_major_upgrade_many,
-
+	
 	// vehicles
 	_game_difficulty_player_vehicle_ram_chance,
 	_game_difficulty_pad6,
 	_game_difficulty_pad7,
 	_game_difficulty_pad8,
-
-	NUMBER_OF_GAME_DIFFICULTY_VALUES
-};
+	
+	k_game_difficulty_value_count
+ };
 
 struct game_globals_storage
 {
@@ -62,11 +62,9 @@ struct game_globals_storage
 	bool map_active;
 	byte : 8;
 	byte : 8;
-
 	dword active_structure_bsp_mask;
 	dword active_designer_zone_mask;
 	dword active_cinematic_zone_mask;
-
 	game_options options;
 
 	// ODST
@@ -74,48 +72,35 @@ struct game_globals_storage
 	s_campaign_game_progression active_game_progression;
 
 	bool game_in_progress;
-
 	bool game_lost;
 	bool game_revert;
-	bool prepare_for_game_progression; // false if `active_game_progression_level` is `_invalid_string_id`
-	long game_lost_wait_time;
 
+	// ODST
+	bool prepare_for_game_progression;
+	
+	long game_loss_timer;
 	bool game_finished;
 	byte : 8;
 	byte : 8;
 	byte : 8;
-	long game_finished_wait_time;
-
+	long game_finished_timer;
 	c_flags<e_campaign_skulls_primary, dword, k_campaign_skulls_primary_count> active_primary_skulls;
 	c_flags<e_campaign_skulls_secondary, dword, k_campaign_skulls_secondary_count> active_secondary_skulls;
-
-	byte : 8;
-
-	// game_frame
-	// game_had_an_update_tick_this_frame
-	bool update_tick_this_frame;
-
+	bool game_is_playtest;
+	bool game_had_an_update_tick_this_frame;
 	byte : 8;
 	byte : 8;
-
 	s_game_cluster_bit_vectors cluster_pvs;
 	s_game_cluster_bit_vectors cluster_pvs_local;
 	s_game_cluster_bit_vectors cluster_activation;
-
-	// game_pvs_enable_scripted_camera_pvs
-	// game_pvs_clear_scripted_camera_pvs
-	bool scripted_camera_pvs;
+	bool pvs_use_scripted_camera;
 	byte : 8;
-
-	// game_pvs_scripted_clear
-	// game_pvs_scripted_set_object
-	// game_pvs_scripted_set_camera_point
-	word scripted;
-
-	// game_pvs_scripted_set_object
-	// game_pvs_scripted_set_camera_point
-	// scenario_group, scenario_block, scenario_cutscene_camera_point_block, camera_point_index
-	datum_index scripted_object_index; // scenario_group.scenario_block.cutscene_camera_points[camera_point_index]
+	word pvs_activation_type;
+	struct
+	{
+		datum_index object_index;
+		//s_cluster_reference cluster_reference;
+	} pvs_activation;
 
 	long game_ragdoll_count;
 
@@ -183,11 +168,11 @@ struct s_game_globals_difficulty_information
 			byte $$$$$$[sizeof(real) * k_number_of_campaign_difficulty_levels];
 			byte $$$$$$$[sizeof(real) * k_number_of_campaign_difficulty_levels];
 			byte $$$$$$$$[sizeof(real) * k_number_of_campaign_difficulty_levels];
-		};
-		real value[NUMBER_OF_GAME_DIFFICULTY_VALUES][k_number_of_campaign_difficulty_levels];
-	};
 
-	byte Q[0x54];
+			byte Q[0x54];
+		};
+		real value[k_game_difficulty_value_count][k_number_of_campaign_difficulty_levels];
+	};
 };
 static_assert(sizeof(s_game_globals_difficulty_information) == 0x284);
 

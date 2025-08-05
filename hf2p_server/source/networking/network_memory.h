@@ -18,7 +18,7 @@ struct s_data_array;
 class c_rockall_heap;
 struct s_network_shared_memory_globals
 {
-	bool initialized;
+	long current_configuration;
 	long allocation_size;
 	void* allocation_low_address;
 	void* allocation_high_address;

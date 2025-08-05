@@ -1,26 +1,25 @@
 #include "unicode.h"
 #include <cseries\cseries.h>
 
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
 int ustrcmp(wchar_t const* string1, wchar_t const* string2)
 {
-    assert(string1 != NULL);
-    assert(string2 != NULL);
+    ASSERT(string1 != NULL);
+    ASSERT(string2 != NULL);
     return wcscmp(string1, string2);
 }
 
 unsigned int ustrlen(wchar_t const* string)
 {
-    assert(string != NULL);
+    ASSERT(string != NULL);
     return wcslen(string);
 }
 
 unsigned int ustrnlen(wchar_t const* string, long count)
 {
-    assert(string != NULL);
+    ASSERT(string != NULL);
     return wcsnlen(string, count);
 }
 
@@ -36,16 +35,16 @@ wchar_t* ustrnzcat(wchar_t* dest, wchar_t const* src, long count)
 
 int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count)
 {
-    assert(string1 != NULL);
-    assert(string2 != NULL);
+    ASSERT(string1 != NULL);
+    ASSERT(string2 != NULL);
 
     return wcsncmp(string1, string2, count);
 }
 
 int ustrncpy(wchar_t* dest, wchar_t const* src, long count)
 {
-    assert(dest != NULL);
-    assert(src != NULL);
+    ASSERT(dest != NULL);
+    ASSERT(src != NULL);
 
     for (long i = 0; i <= count; i++)
     {
@@ -62,9 +61,9 @@ int ustrncpy(wchar_t* dest, wchar_t const* src, long count)
 
 wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count)
 {
-    assert(dest != NULL);
-    assert(src != NULL);
-    assert(count > 0);
+    ASSERT(dest != NULL);
+    ASSERT(src != NULL);
+    ASSERT(count > 0);
 
     ustrncpy(dest, src, count - 1);
     dest[count - 1] = 0;
@@ -133,8 +132,8 @@ int usnzprintf(wchar_t* string, long size, wchar_t const* format, ...)
 
 int uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_list list)
 {
-    assert(string && format);
-    assert(size > 0);
+    ASSERT(string && format);
+    ASSERT(size > 0);
 
     long result = _vsnwprintf_s(string, size, size - 1, format, list);
     string[size - 1] = 0;
@@ -160,7 +159,7 @@ void wchar_string_to_ascii_string(wchar_t const* src, char* dst, long source_len
 {
     long new_length = 0;
     wchar_t current_char = L'\0';
-    assert(((void*)src) != ((void*)dst));
+    ASSERT(((void*)src) != ((void*)dst));
     do
     {
         if (source_length <= 0)

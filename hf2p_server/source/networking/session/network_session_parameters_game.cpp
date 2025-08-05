@@ -33,41 +33,50 @@ char const* k_game_start_error_strings[k_session_game_start_error_count] = {
 
 const char* multiplayer_game_start_error_to_string(e_session_game_start_error start_error)
 {
-    if (start_error < _session_game_start_error_none || start_error >= k_session_game_start_error_count)
+    if (!VALID_INDEX(start_error, k_session_game_start_error_count))
+    {
         return "unknown";
+    }
     else
+    {
         return k_game_start_error_strings[start_error];
+    }
 }
 
 const char* multiplayer_game_start_status_to_string(e_session_game_start_status start_status)
 {
-    if (start_status < _session_game_start_status_none || start_status >= k_session_game_start_status_count)
+    if (!VALID_INDEX(start_status, k_session_game_start_status_count))
+    {
         return "unknown";
+    }
     else
+    {
         return k_game_start_status_strings[start_status];
+    }
 }
 
 s_network_session_parameter_game_start_status* c_network_session_parameter_game_start_status::get()
 {
-    if (this->get_allowed())
-        return &this->m_data;
-    printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::get: [%s] failed to get, unavailable\n",
-        this->get_session_description());
-    return nullptr;
+    if (get_allowed())
+    {
+        return &m_data;
+    }
+    printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::get: [%s] failed to get, unavailable\n", get_session_description());
+    return NULL;
 }
 
 bool c_network_session_parameter_game_start_status::set(s_network_session_parameter_game_start_status* start_status)
 {
-    if (this->set_allowed())
+    if (set_allowed())
     {
         if (start_status->game_start_status != m_data.game_start_status ||
             start_status->game_start_error != m_data.game_start_error ||
             start_status->player_error_mask != m_data.player_error_mask ||
             start_status->map_load_progress != m_data.map_load_progress ||
-            !this->get_allowed())
+            !get_allowed())
         {
-            this->m_data = *start_status;
-            this->set_update_required();
+            m_data = *start_status;
+            set_update_required();
         }
         anvil_log_game_start_status(start_status);
         return true;
@@ -75,41 +84,54 @@ bool c_network_session_parameter_game_start_status::set(s_network_session_parame
     else
     {
         printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::set: [%s] type %d [%s] failed to get [%s]\n",
-            this->get_session_description(), m_type, m_name, this->get_set_denied_reason());
+            get_session_description(),
+            m_parameter_type,
+            m_parameter_type_description,
+            get_set_denied_reason());
         return false;
     }
 }
 
 bool c_network_session_parameter_countdown_timer::set(e_network_game_countdown_delayed_reason delayed_reason, long countdown_timer)
 {
-    if (this->set_allowed())
+    if (set_allowed())
     {
-        this->m_data.delayed_reason = delayed_reason;
-        this->m_data.countdown_timer = countdown_timer;
-        this->set_update_required(); // TODO: set_internal method call, this gets compiled out to a redundant duplicate call
-        if (!this->get_allowed())
-            this->set_update_required();
+        m_data.delayed_reason = delayed_reason;
+        m_data.countdown_timer = countdown_timer;
+        set_update_required(); // TODO: set_internal method call, this gets compiled out to a redundant duplicate call
+        if (!get_allowed())
+        {
+            set_update_required();
+        }
         return true;
     }
     else
     {
-        printf("MP/NET/SESSION,PARAMS: %s: [%s] can't set [%s]\n", __FUNCTION__, this->get_session_description(), this->get_set_denied_reason());
+        printf("MP/NET/SESSION,PARAMS: %s: [%s] can't set [%s]\n", __FUNCTION__, get_session_description(), get_set_denied_reason());
         return false;
     }
 }
 
 long c_network_session_parameter_countdown_timer::get_countdown_timer()
 {
-    if (this->get_allowed() && this->m_data.delayed_reason != _network_game_countdown_delayed_reason_none)
-        return this->m_data.countdown_timer;
+    if (get_allowed() && m_data.delayed_reason != _network_game_countdown_delayed_reason_none)
+    {
+        return m_data.countdown_timer;
+    }
     else
+    {
         return 0;
+    }
 }
 
 e_network_game_countdown_delayed_reason c_network_session_parameter_countdown_timer::get_delayed_reason()
 {
-    if (this->get_allowed())
-        return this->m_data.delayed_reason;
+    if (get_allowed())
+    {
+        return m_data.delayed_reason;
+    }
     else
+    {
         return _network_game_countdown_delayed_reason_none;
+    }
 }

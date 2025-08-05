@@ -3,6 +3,7 @@
 #include <Patch.hpp>
 #include <objects\objects.h>
 #include <objects\scenery.h>
+#include <simulation\game_interface\simulation_game_action.h>
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <simulation\game_interface\simulation_game_items.h>
 #include <simulation\game_interface\simulation_game_projectiles.h>

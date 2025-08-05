@@ -1,6 +1,5 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <memory\bitstream.h>
 
 class c_network_time_statistics
 {
@@ -8,33 +7,44 @@ private:
 	static long const k_network_statistics_interval_count = 20;
 
 public:
-	struct s_interval // #TODO: find a better name?
+	struct s_statistics_interval
 	{
-		// names based on `m_stored_total` asserts
-		// the struct for `m_intervals` could be different?
-
 		long events;
 		long total_values;
 	};
-	static_assert(sizeof(s_interval) == 0x8);
+	static_assert(sizeof(s_statistics_interval) == 0x8);
 
 	qword m_total_events;
 	qword m_total_values;
-
-	long __time10;
-	s_interval __unknown14;
-
+	ulong m_current_interval_start_timestamp;
+	s_statistics_interval m_current_interval;
 	long m_period_duration_msec;
 	long m_interval_duration_msec;
-	real m_period_duration;
+	real m_period_inverse_seconds;
 	long m_next_interval_index;
-	s_interval m_intervals[k_network_statistics_interval_count]; // #TODO: find a better name?
-	s_interval m_stored_total;
+	s_statistics_interval m_stored_intervals[k_network_statistics_interval_count];
+	s_statistics_interval m_stored_total;
 };
 static_assert(sizeof(c_network_time_statistics) == 0xD8);
 
 class c_network_window_statistics
 {
-	byte data[0x110];
+private:
+	static long const k_network_statistics_maximum_window_size = 32;
+
+public:
+
+	struct s_statistics_window_entry
+	{
+		ulong timestamp;
+		long value;
+	};
+	static_assert(sizeof(s_statistics_window_entry) == 0x8);
+
+	long m_window_size;
+	long m_window_next_entry;
+	s_statistics_window_entry m_window_entries[k_network_statistics_maximum_window_size];
+	long m_window_total_values;
+	long m_window_aperture_msec;
 };
 static_assert(sizeof(c_network_window_statistics) == 0x110);

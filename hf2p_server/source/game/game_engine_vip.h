@@ -77,7 +77,7 @@ public:
 
 protected:
 	c_enum<long, short, 0, 500> m_score_to_win_round;         // default: 15
-	c_enum<long, short, 0, 500> m_score_unknown;              // default: 10, halo online specific
+	c_enum<long, short, 0, 500> m_early_win_score;            // default: 10, halo online specific
 	c_flags<e_vip_variant_flags, word_flags, k_vip_variant_flags> m_variant_flags;
 	c_enum<long, char, -10, 10> m_kill_points;                // default: 0
 	c_enum<long, char, -10, 10> m_takedown_points;            // default: 0
@@ -114,9 +114,9 @@ static_assert(sizeof(c_destination_zone) == 0x68);
 
 struct s_vip_globals
 {
-	c_static_array<long, 8> player_indices;
-	dword __unknown20;
-	c_static_array<s_multiplayer_object_boundary_geometry_data, 8> geometry_datas;
-	c_area_set<c_destination_zone, 12> destination_zones;
+	c_static_array<long, 8> vip_player_index;
+	long defending_team_index;
+	c_static_array<s_multiplayer_object_boundary_geometry_data, 8> vip_influence_area;
+	c_area_set<c_destination_zone, 12> zones;
 };
 static_assert(sizeof(s_vip_globals) == 0x794);

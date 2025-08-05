@@ -4,8 +4,7 @@
 #include <networking\session\network_session_parameter_types.h>
 #include <networking\transport\transport_security.h>
 
-#pragma pack(push, 8)
-struct s_network_message_parameters_update : s_network_message
+struct s_network_message_parameters_update
 {
 	s_transport_secure_identifier session_id;
 	bool initial_update;
@@ -14,9 +13,8 @@ struct s_network_message_parameters_update : s_network_message
 	byte parameters[k_network_session_parameter_type_count][0x400];
 };
 static_assert(sizeof(s_network_message_parameters_update) == 0x8C28);
-#pragma pack(pop)
 
-struct s_network_message_parameters_request : s_network_message
+struct s_network_message_parameters_request
 {
 	s_transport_secure_identifier session_id;
 	ulong64 change_request_parameters;

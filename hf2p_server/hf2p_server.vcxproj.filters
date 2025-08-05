@@ -819,12 +819,51 @@
     <ClInclude Include="source\hf2p\hf2p.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\ai\ai_actions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ai\actor_moving.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ai\actor_firing_position.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ai\actor_moving_hints.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\animations\mixing_board\channels\channel_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\network_external.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memory\member_to_static.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\survival_mode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_king.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\online\online_constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\online\online_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\async_xoverlapped.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\transport\transport_qos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\simulation\simulation_view_telemetry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\networking\messages\network_messages_out_of_band.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\messages\network_message_handler.cpp">
@@ -1142,9 +1181,6 @@
     <ClCompile Include="source\objects\crates.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\survival_mode.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1170,9 +1206,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_weapons.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\simulation\game_interface\simulation_game_engine_king.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp">

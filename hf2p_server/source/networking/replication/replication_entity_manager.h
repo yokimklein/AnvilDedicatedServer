@@ -1,7 +1,8 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <simulation\simulation_entity_database.h>
-#include <networking\replication\replication_entity_manager_view.h>
+
+class c_replication_entity_manager_view;
+class c_simulation_entity_database;
 
 enum e_replication_entity_flags
 {
@@ -11,10 +12,11 @@ enum e_replication_entity_flags
 
 	k_replication_entity_flags_count
 };
+using c_replication_entity_flags = c_flags<e_replication_entity_flags, byte, k_replication_entity_flags_count>;
 
 struct s_replication_entity_data
 {
-	c_flags<e_replication_entity_flags, byte, k_replication_entity_flags_count> flags;
+	c_replication_entity_flags flags;
 	byte seed;
 	short deletion_mask;
 };
@@ -35,9 +37,9 @@ public:
 	void delete_entity_internal(long entity_index);
 
 	c_simulation_entity_database* m_client;
-	c_static_array<c_replication_entity_manager_view*, 16> m_views;
+	c_replication_entity_manager_view* m_views[16];
 	dword m_view_mask;
-	c_static_array<s_replication_entity_data, 1024> m_entity_data;
-	long unknown_count;
+	s_replication_entity_data m_entity_data[1024];
+	long m_entity_creation_start_position;
 };
 static_assert(sizeof(c_replication_entity_manager) == 0x104C);

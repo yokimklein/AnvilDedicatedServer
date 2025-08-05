@@ -2,17 +2,26 @@
 #include <cseries\cseries.h>
 #include <memory\data.h>
 #include <simulation\game_interface\simulation_game_entities.h>
+#include <game\game_engine_event_definitions.h>
 
 constexpr short k_maximum_multiplayer_players = 16;
 constexpr short k_maximum_players = 16;
 constexpr short k_maximum_machines = 17;
 
+enum e_game_engine_queued_event_flags
+{
+	_game_engine_queued_event_valid_bit = 0,
+	_game_engine_queued_event_played_bit,
+	_game_engine_queued_event_long_delay_bit,
+
+	k_game_engine_queued_event_flags_count
+};
+
 struct s_game_engine_queued_event
 {
-	dword __time0;
-	byte_flags flags;
-	byte __data5[0x3];
-	byte __data8[0x28];
+	dword received_game_time;
+	c_flags<e_game_engine_queued_event_flags, byte, k_game_engine_queued_event_flags_count> flags;
+	s_game_engine_event_data event_data;
 };
 static_assert(sizeof(s_game_engine_queued_event) == 0x30);
 

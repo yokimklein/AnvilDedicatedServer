@@ -2,7 +2,6 @@
 #include <cseries\cseries.h>
 #include <networking\session\network_session_parameters_chunked.h>
 #include <game\game_options.h>
-#include <shell\shell.h>
 #include <text\unicode.h>
 
 struct s_saved_film_description
@@ -16,7 +15,7 @@ struct s_saved_film_description
 	long difficulty;
 	c_static_wchar_string<256> film_path;
 	c_static_wchar_string<128> film_name;
-	c_enum<e_controller_index, long, _controller_index0, k_number_of_controllers> controller_index;
+	enum e_controller_index controller_index;
 	long length_seconds;
 };
 static_assert(sizeof(s_saved_film_description) == 0x31C);

@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <assert.h>
 
+#include <memory\member_to_static.h>
+
 extern const size_t module_base;
 #define BASE_ADDRESS(ADDR) (module_base + ADDR)
 // module_base isn't instatiated in time for reference macros to use it, so we're calling GetModuleHandle directly for now
@@ -19,9 +21,11 @@ extern const size_t module_base;
 
 #define DECLFUNC(ADDR, R, CC, ...) reinterpret_cast<R(CC*)(__VA_ARGS__)>(BASE_ADDRESS(ADDR))
 #define INVOKE(ADDR, TYPE, ...) reinterpret_cast<decltype(TYPE)*>(BASE_ADDRESS(ADDR))(__VA_ARGS__)
+#define INVOKE_CLASS_MEMBER(ADDRESS, CLASS, NAME, ...) (this->*static_to_member_t<decltype(&CLASS##::##NAME)>{ .address = BASE_ADDRESS(ADDRESS) }.function)(__VA_ARGS__)
 
 #define OFFSETOF(s,m) __builtin_offsetof(s,m)
 #define NUMBEROF(_array) (sizeof(_array) / sizeof(_array[0]))
+#define IN_RANGE(value, begin, end) ((value) > (begin) && (value) < (end))
 #define IN_RANGE_INCLUSIVE(value, begin, end) (((value) >= (begin)) && ((value) <= (end)))
 #define VALID_INDEX(index, count) ((index) >= 0 && (index) < count)
 #define VALID_COUNT(index, count) ((index) >= 0 && (index) <= (count))
@@ -43,6 +47,7 @@ extern const size_t module_base;
 #define MIN(x, low) ((x) <= (low) ? (x) : (low))
 #define MAX(x, high) ((x) >= (high) ? (x) : (high))
 #define CLAMP(x, low, high) ((x) < (low) ? (low) : (x) > (high) ? (high) : (x))
+#define CLAMP_INCLUSIVE(x, low, high) ((x) <= (low) ? (low) : (x) >= (high) ? (high) : (x))
 #define CLAMP_LOWER(x, low, high) ((x) >= (high) - (low) ? (x) - (high) : (low))
 #define CLAMP_UPPER(x, low, high) ((x) <= (high) - (low) ? (x) + (low) : (high))
 
@@ -139,9 +144,9 @@ typedef char utf8;
 
 const long LONG_BITS = SIZEOF_BITS(long);
 
-#define FLAG(bit) (1 << (bit))
-#define MASK(bit) ((1 << (bit)) - 1)
-#define TEST_BIT(flags, bit) (((flags) & (1 << (bit))) != 0)
+#define FLAG(bit) (1ULL << (bit))
+#define MASK(bit) ((1ULL << (bit)) - 1)
+#define TEST_BIT(flags, bit) (((flags) & (1ULL << (bit))) != 0)
 #define TEST_FLAG(flags, bit) (flags.test((bit)))
 #define TEST_MASK(flags, mask) (((flags) & mask) != 0)
 #define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))
@@ -168,6 +173,50 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 {
 	return ((unsigned long)pointer & ((1 << alignment_bits) - 1)) == 0;
 }
+
+#if defined(_DEBUG)
+
+// TODO: PROPER ASSERTION DEFINITIONS
+#define ASSERT(STATEMENT, ...) do { assert(STATEMENT); } while (false)
+//#define ASSERT(STATEMENT, ...) do { if (!(STATEMENT)) ASSERT_EXCEPTION(STATEMENT, true, __VA_ARGS__); } while (false)
+//#define ASSERT_EXCEPTION(STATEMENT, IS_EXCEPTION, ...) \
+//do { \
+//	if (!(STATEMENT) && !handle_assert_as_exception(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
+//	{ \
+//	    display_assert(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION); \
+//	    if (!is_debugger_present() && g_catch_exceptions) \
+//	        system_abort(); \
+//	    else \
+//	        system_exit(); \
+//	} \
+//} while (false)
+
+#define ASSERT2(STATEMENT) assert(STATEMENT)
+//#define ASSERT2(STATEMENT) ASSERT_EXCEPTION2(STATEMENT, true)
+//#define ASSERT_EXCEPTION2(STATEMENT, IS_EXCEPTION, ...) \
+//do { \
+//	if (!handle_assert_as_exception(STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
+//	{ \
+//	    display_assert(STATEMENT, __FILE__, __LINE__, IS_EXCEPTION); \
+//	    if (!is_debugger_present() && g_catch_exceptions) \
+//	        system_abort(); \
+//	    else \
+//	        system_exit(); \
+//	} \
+//} while (false)
+
+#else
+
+#define ASSERT(STATEMENT, ...) do { } while (false)
+#define ASSERT_EXCEPTION(STATEMENT, ...) do { } while (false)
+
+#define ASSERT2(STATEMENT, ...) do { } while (false)
+#define ASSERT_EXCEPTION2(STATEMENT, ...) do { } while (false)
+
+#define ASSERT3(STATEMENT, ...) do { } while (false)
+#define ASSERT_EXCEPTION3(STATEMENT, ...) do { } while (false)
+
+#endif // _DEBUG
 
 extern int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size);
 extern void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size);
@@ -269,14 +318,14 @@ public:
 
 	t_type const& operator[](long index) const
 	{
-		assert(valid(index));
+		ASSERT(valid(index));
 
 		return m_storage[index];
 	}
 
 	t_type& operator[](long index)
 	{
-		assert(valid(index));
+		ASSERT(valid(index));
 
 		return m_storage[index];
 	}
@@ -285,137 +334,192 @@ protected:
 	t_type m_storage[k_count];
 };
 
-template<typename t_type, typename t_storage_type, long k_count>
-struct c_flags //: public c_flags_no_init<t_type, t_storage_type, k_count>
+template<typename t_type, long k_type_size = sizeof(t_type), long k_alignment_mask = __alignof(t_type) - 1>
+struct c_typed_opaque_data
 {
+	t_type* get()
+	{
+		ASSERT(((dword)m_opaque_storage & k_alignment_mask) == 0);
+		return reinterpret_cast<t_type*>(((dword)m_opaque_storage + k_alignment_mask) & ~k_alignment_mask);
+	}
+
+	byte m_opaque_storage[k_type_size];
+	//t_type* m_live_object;
+};
+
+template<typename t_type, typename t_storage_type, long k_count>
+struct c_flags_no_init
+{
+public:
 	static t_type const k_maximum_count = (t_type)k_count;
 	//static_assert(k_maximum_count <= SIZEOF_BITS(t_storage_type));
 
-public:
-	c_flags() :
-		m_storage(0)
+	void clear()
 	{
-
+		m_flags = 0;
 	}
 
-	c_flags(t_storage_type raw_bits) :
-		m_storage(raw_bits)
-	{
+	//void set_all()
 
+	bool test(t_type bit) const
+	{
+		ASSERT(valid_bit(bit));
+
+		return TEST_BIT(m_flags, bit);
 	}
 
-	t_storage_type get_unsafe() const
+	bool test_range(t_type start_bit, t_type end_bit) const
 	{
-		return m_storage;
-	}
-
-	void set_unsafe(t_storage_type raw_bits)
-	{
-		m_storage = raw_bits;
+		ASSERT(valid_bit(start_bit) && valid_bit(end_bit) && (start_bit <= end_bit));
+		return TEST_RANGE(m_flags, start_bit, end_bit);
 	}
 
 	void set(t_type bit, bool enable)
 	{
+		ASSERT(valid_bit(bit));
+
 		if (bit < k_maximum_count)
 		{
-			if (enable)
-				m_storage |= (1LL << bit);
-			else
-				m_storage &= ~(1LL << bit);
+			SET_BIT(m_flags, bit, enable);
 		}
 	}
 
-	void clear()
+	void toggle(t_type bit)
 	{
-		m_storage = 0;
+		ASSERT(valid_bit(bit));
+		m_flags ^= FLAG(bit);
 	}
 
-	bool is_clear()
+	//bool valid<t_type, ulong64, k_count>() const
+	//{
+	//	return (m_flags & (t_storage_type)MASK(k_maximum_count)) == 0;
+	//}
+
+	bool valid() const
 	{
-		return m_storage == 0;
+		t_storage_type mask = ~MASK(k_maximum_count); // this should be the inversion of all valid bits
+		bool result = (m_flags & mask) == 0;
+		return result;
 	}
 
 	bool is_empty() const
 	{
 #pragma warning(push)
 #pragma warning(disable : 4293)
-		return (m_storage & (MASK(SIZEOF_BITS(t_storage_type)) >> (SIZEOF_BITS(t_storage_type) - k_maximum_count))) == 0;
+		return (m_flags & (MASK(SIZEOF_BITS(t_storage_type)) >> (SIZEOF_BITS(t_storage_type) - k_maximum_count))) == 0;
 #pragma warning(pop)
 	}
 
-	bool valid_bit(t_type bit)
+	t_type count() const
 	{
-		return VALID_INDEX(0, k_maximum_count);
+		return k_maximum_count;
 	}
 
-	bool valid_bit(t_type bit) const
+	bool operator==(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa) const
 	{
-		return VALID_INDEX(0, k_maximum_count);
+		return m_flags == rsa.m_flags;
 	}
 
-	bool valid() const
+	bool operator!=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa) const
 	{
-		return (m_storage & MASK(k_maximum_count)) == 0;
+		return m_flags != rsa.m_flags;
 	}
 
-	bool test(t_type bit)
+	bool operator==(t_storage_type const& rsa) const
 	{
-		assert(valid_bit(bit));
-
-		return TEST_BIT(m_storage, static_cast<t_storage_type>(bit));
+		return m_flags == rsa;
 	}
 
-	bool test(t_type bit) const
+	bool operator!=(t_storage_type const& rsa) const
 	{
-		assert(valid_bit(bit));
-
-		return TEST_BIT(m_storage, static_cast<t_storage_type>(bit));
+		return m_flags != rsa;
 	}
 
-	bool operator==(c_flags<t_type, t_storage_type, k_maximum_count>& value)
+	t_storage_type get_unsafe() const
 	{
-		return m_storage == value.m_storage;
+		return m_flags;
 	}
 
-	bool operator==(t_type value)
+	void set_unsafe(t_storage_type new_flags)
 	{
-		return !!(m_storage & (1 << value));
+		m_flags = new_flags;
 	}
 
-	bool operator!=(t_type value)
+	c_flags_no_init<t_type, t_storage_type, k_count>* operator|=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
 	{
-		return m_storage != value;
+		m_flags |= rsa.m_flags;
+		ASSERT(valid());
+		return this;
 	}
 
-	void operator|=(t_storage_type raw_bits)
+	//c_flags_no_init<t_type, t_storage_type, k_count>* operator|=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
+	//{
+	//	m_flags |= rsa.m_flags;
+	//	ASSERT(valid());
+	//	return this;
+	//}
+
+	c_flags_no_init<t_type, t_storage_type, k_count>& operator&=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
 	{
-		m_storage |= raw_bits;
+		m_flags &= rsa.m_flags;
+		ASSERT(valid());
+		return this;
 	}
 
-	void operator&=(t_storage_type raw_bits)
+	c_flags_no_init<t_type, t_storage_type, k_count> operator~() const
 	{
-		m_storage &= raw_bits;
+		c_flags_no_init<t_type, t_storage_type, k_count> flags;
+		flags.set_unsafe(~m_flags & MASK(k_count));
+		return flags;
 	}
 
-	c_flags<t_type, t_storage_type, k_maximum_count> operator|(c_flags<t_type, t_storage_type, k_maximum_count> const& other) const
+	//c_flags_no_init<t_type, t_storage_type, k_count> operator&(t_storage_type const rsa) const
+
+	c_flags_no_init<t_type, t_storage_type, k_count> operator&(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa) const
 	{
-		return c_flags(m_storage | other.m_storage);
+		c_flags_no_init<t_type, t_storage_type, k_count> flags;
+		flags.set_unsafe(m_flags & rsa.m_flags);
+		return flags;
 	}
 
-	template <class T>
-	void operator=(T value)
+	//c_flags_no_init<t_type, t_storage_type, k_count> operator|(t_storage_type const rsa) const
+
+	c_flags_no_init<t_type, t_storage_type, k_count> operator|(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
 	{
-		m_storage = static_cast<t_storage_type>(value);
+		c_flags_no_init<t_type, t_storage_type, k_count> flags;
+		flags.set_unsafe(m_flags | rsa.m_flags);
+		return flags;
+	}
+
+	static bool valid_bit(t_type bit)
+	{
+		return VALID_INDEX(bit, k_maximum_count);
 	}
 
 	template <class T>
 	operator T () const
 	{
-		return static_cast<T>(m_storage);
+		return static_cast<T>(m_flags);
 	}
 
 protected:
-	t_storage_type m_storage;
+	t_storage_type m_flags;
+};
+
+template<typename t_type, typename t_storage_type, long k_count>
+struct c_flags :
+	public c_flags_no_init<t_type, t_storage_type, k_count>
+{
+public:
+	c_flags(t_storage_type flags)
+	{
+		this->m_flags = flags;
+	}
+
+	c_flags()
+	{
+		this->m_flags = 0;
+	}
 };
 
 template<long k_maximum_count>
@@ -425,157 +529,158 @@ struct c_static_flags_no_init
 
 	void and_(c_static_flags_no_init<k_maximum_count> const* vector_a)
 	{
-		assert(vector_a);
+		ASSERT(vector_a);
 
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			m_storage[i] &= vector_a[i];
+			m_flags[i] &= vector_a[i];
 	}
 
 	void and_not_range(c_static_flags_no_init<k_maximum_count> const* vector_a, c_static_flags_no_init<k_maximum_count> const* vector_b, long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
 		dword const* vector_a_bits = vector_a->get_bits_direct();
 		dword const* vector_b_bits = vector_b->get_bits_direct();
 
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			m_storage[i] = vector_a_bits[i] & ~vector_b_bits[i];
+			m_flags[i] = vector_a_bits[i] & ~vector_b_bits[i];
 	}
 
 	void and_range(c_static_flags_no_init<k_maximum_count> const* vector_a, c_static_flags_no_init<k_maximum_count> const* vector_b, long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
 		dword const* vector_a_bits = vector_a->get_bits_direct();
 		dword const* vector_b_bits = vector_b->get_bits_direct();
 
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			m_storage[i] = vector_a_bits[i] & vector_b_bits[i];
+			m_flags[i] = vector_a_bits[i] & vector_b_bits[i];
 	}
 
 	void clear()
 	{
-		csmemset(m_storage, 0, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+		csmemset(m_flags, 0, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
 	}
 
 	void clear_range(long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
-		csmemset(m_storage, 0, BIT_VECTOR_SIZE_IN_BYTES(count));
+		csmemset(m_flags, 0, BIT_VECTOR_SIZE_IN_BYTES(count));
 	}
 
 	void copy(c_static_flags_no_init<k_maximum_count> const* vector_a)
 	{
-		csmemcpy(m_storage, vector_a, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+		csmemcpy(m_flags, vector_a, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
 	}
 
 	long count_bits_set() const
 	{
-		return bit_vector_count_bits(m_storage, k_maximum_count);
+		return bit_vector_count_bits(m_flags, k_maximum_count);
 	}
 
 	void fill(long count, byte fill_value)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
-		csmemset(m_storage, fill_value, BIT_VECTOR_SIZE_IN_BYTES(count));
+		csmemset(m_flags, fill_value, BIT_VECTOR_SIZE_IN_BYTES(count));
 	}
 
 	dword const* get_bits_direct() const
 	{
-		return m_storage;
+		return m_flags;
 	}
 
-	dword* get_writeable_bits_direct()
+	dword* get_writeable_bits_direct() const
 	{
-		return m_storage;
+		return m_flags;
 	}
 
 	long highest_bit_set_in_range(long count) const
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
-		return bit_vector_highest_bit_set(m_storage, count);
+		return bit_vector_highest_bit_set(m_flags, count);
 	}
 
 	void invert_bits()
 	{
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			m_storage[i] = ~m_storage[i];
+			m_flags[i] = ~m_flags[i];
 
 		// no clue
-		//m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1] = (byte)m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1];
+		//m_flags[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1] = (byte)m_flags[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)-1];
 	}
 
 	bool is_clear() const
 	{
 		byte result = 1;
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			result &= m_storage[i] == 0;
+			result &= m_flags[i] == 0;
 
 		return result;
 	}
 
 	void keep_range(long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
 		for (long i = BIT_VECTOR_SIZE_IN_LONGS(count); i < BIT_VECTOR_SIZE_IN_LONGS(count); ++i)
-			m_storage[i] = 0;
+			m_flags[i] = 0;
 
-		m_storage[BIT_VECTOR_SIZE_IN_LONGS(count) - 1] &= ((count & (LONG_BITS - 1)) != 0) ? 0xFFFFFFFF >> (LONG_BITS - (count & (LONG_BITS - 1))) : 0xFFFFFFFF;
+		m_flags[BIT_VECTOR_SIZE_IN_LONGS(count) - 1] &= ((count & (LONG_BITS - 1)) != 0) ? 0xFFFFFFFF >> (LONG_BITS - (count & (LONG_BITS - 1))) : 0xFFFFFFFF;
 	}
 
 	void or_bits(dword const* bits, long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
 		for (long i = 0; i < BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count); i++)
-			m_storage[i] |= bits[i];
+			m_flags[i] |= bits[i];
 	}
 
 	void set(long index, bool enable)
 	{
-		assert(VALID_INDEX(index, k_maximum_count));
+		ASSERT(VALID_INDEX(index, k_maximum_count));
 
 		if (enable)
-			BIT_VECTOR_OR_FLAG(m_storage, index);
+			BIT_VECTOR_OR_FLAG(m_flags, index);
 		else
-			BIT_VECTOR_AND_FLAG(m_storage, index);
+			BIT_VECTOR_AND_FLAG(m_flags, index);
 	}
 
 	void set_all()
 	{
-		csmemset(m_storage, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
+		csmemset(m_flags, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(k_maximum_count));
 	}
 
 	void set_bits_direct_destructive(long count, dword const* bits)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
-		csmemcpy(m_storage, bits, BIT_VECTOR_SIZE_IN_BYTES(count));
+		csmemcpy(m_flags, bits, BIT_VECTOR_SIZE_IN_BYTES(count));
 	}
 
 	void set_range(long count)
 	{
-		assert(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
+		ASSERT(IN_RANGE_INCLUSIVE(count, 0, k_maximum_count));
 
-		csmemset(m_storage, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(count));
+		csmemset(m_flags, 0xFFFFFFFF, BIT_VECTOR_SIZE_IN_BYTES(count));
 	}
 
 	bool test(long index) const
 	{
-		assert(VALID_INDEX(index, k_maximum_count));
+		ASSERT(VALID_INDEX(index, k_maximum_count));
 
-		return BIT_VECTOR_TEST_FLAG(m_storage, index);
+		return BIT_VECTOR_TEST_FLAG(m_flags, index);
 	}
 
-	dword m_storage[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)];
+	dword m_flags[BIT_VECTOR_SIZE_IN_LONGS(k_maximum_count)];
 };
 
 template<long k_maximum_count>
-struct c_static_flags : public c_static_flags_no_init<k_maximum_count>
+struct c_static_flags :
+	public c_static_flags_no_init<k_maximum_count>
 {
 };
 
@@ -726,10 +831,10 @@ public:
 
 	void set_character(long index, char character)
 	{
-		assert(VALID_INDEX(index, k_maximum_count - 1));
+		ASSERT(VALID_INDEX(index, k_maximum_count - 1));
 
 		//long initial_length = length();
-		//assert(VALID_COUNT(index, initial_length));
+		//ASSERT(VALID_COUNT(index, initial_length));
 		//
 		//if (index >= initial_length)
 		//{
@@ -762,6 +867,8 @@ public:
 	{
 		csstrnzcpy(m_string, s, k_maximum_count);
 	}
+
+	//void set_wchar(const wchar_t* src);
 
 	void append(char const* s)
 	{
@@ -834,8 +941,8 @@ public:
 	{
 		dword current_length = length();
 
-		assert(format);
-		assert(current_length >= 0 && current_length < k_maximum_count);
+		ASSERT(format);
+		ASSERT(current_length >= 0 && current_length < k_maximum_count);
 
 		cvsnzprintf(m_string + current_length, k_maximum_count - current_length, format, list);
 
@@ -877,21 +984,21 @@ public:
 
 	bool is_equal(char const* _string) const
 	{
-		assert(_string);
+		ASSERT(_string);
 
 		return csstrnlen(_string, k_maximum_count) == length() && csmemcmp(get_string(), _string, length()) == 0;
 	}
 
 	bool starts_with(char const* _string) const
 	{
-		assert(_string);
+		ASSERT(_string);
 
 		return csmemcmp(_string, get_string(), csstrnlen(_string, k_maximum_count)) == 0;
 	}
 
 	bool ends_with(char const* _string) const
 	{
-		assert(_string);
+		ASSERT(_string);
 
 		long _length = length();
 		long suffix_length = csstrnlen(_string, k_maximum_count);
@@ -907,7 +1014,7 @@ public:
 
 	long next_index_of(char const* _string, long index) const
 	{
-		assert(_string);
+		ASSERT(_string);
 
 		long result = NONE;
 
@@ -923,7 +1030,7 @@ public:
 
 	long index_of(char const* _string) const
 	{
-		assert(_string);
+		ASSERT(_string);
 
 		return next_index_of(_string, 0);
 	}
@@ -1045,7 +1152,7 @@ extern real_rgb_color const* const& global_real_rgb_salmon;
 extern real_rgb_color const* const& global_real_rgb_violet;
 
 long bit_count(long val);
-long __fastcall index_from_mask(dword* mask, long bit_count); // first index?
+long __fastcall index_from_mask(const dword* mask, long bit_count); // first index?
 
 struct c_allocation_base
 {

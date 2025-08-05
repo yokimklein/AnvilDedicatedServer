@@ -59,7 +59,7 @@ protected:
 	c_enum<e_assault_game_type_settings, short, _assault_game_type_settings_multi_bomb, k_assault_game_type_settings> m_game_type;
 	c_enum<e_assault_enemy_bomb_waypoint_settings, short, _assault_enemy_bomb_waypoint_settings_never, k_assault_enemy_bomb_waypoint_settings> m_enemy_bomb_waypoint;
 	c_enum<long, short, 0, 50> m_score_to_win;        // default: 3
-	c_enum<long, short, 0, 50> m_score_unknown0;      // default: 2, halo online specific
+	c_enum<long, short, 0, 50> m_early_win_score;     // default: 2, halo online specific
 	c_enum<long, short, 0, 50> m_score_unknown1;      // default: 0, halo online specific
 	c_enum<long, short, 0, 50> m_score_unknown2;      // default: 0, halo online specific
 	c_enum<long, short, 0, 50> m_score_unknown3;      // default: 0, halo online specific
@@ -81,14 +81,13 @@ public:
 	//void dump_settings(s_file_reference* file) const;
 };
 
-struct s_assault_globals
+struct s_assault_globals : s_ctf_shared_globals
 {
-	s_ctf_shared_globals shared_globals;
-	c_static_array<dword, 9> __unknown164C;
-	c_static_array<word, 9> __unknown1670;
-	c_static_array<byte, 2> __unknown1682;
-	c_static_array<dword, 9> __unknown1684;
+	c_static_array<long, 9> arming_or_disarming_timer;
+	c_static_array<short, 9> bomb_reset_timer;
+	c_static_array<byte_flags, 2> bomb_flags;
+	c_static_array<long, 9> player_that_placed_bomb;
 	c_static_array<byte, 8> __unknown16A8;
-	c_static_array<word, 9> __unknown16B0;
+	c_static_array<short, 9> assault_timeout_return_second_counter;
 };
-//static_assert(sizeof(s_assault_globals) == 0x16C4);
+static_assert(sizeof(s_assault_globals) == 0x16C4);

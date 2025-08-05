@@ -693,7 +693,8 @@ __declspec(safebuffers) void __fastcall game_engine_update_player_hook()
 {
     long absolute_player_index;
     player_datum* player;
-    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(absolute_player_index) + sizeof(player));
+    c_simulation_object_update_flags flags;
+    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(absolute_player_index) + sizeof(player) + sizeof(flags));
 
     __asm
     {
@@ -709,7 +710,8 @@ __declspec(safebuffers) void __fastcall game_engine_update_player_hook()
     }
     if (!(game_time_get() % game_seconds_integer_to_ticks(5)))
     {
-        simulation_action_object_force_update(player->unit_index, _simulation_object_update_position);
+        flags.set_flag(player->unit_index, _simulation_object_update_position);
+        simulation_action_object_force_update(player->unit_index, flags);
     }
 }
 #pragma runtime_checks("", restore)

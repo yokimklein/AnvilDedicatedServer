@@ -9,27 +9,38 @@
 
 bool player_identifier_is_valid(s_player_identifier const* identifier)
 {
-	if (*(qword*)identifier != 0)
+	s_player_identifier invalid_identifier;
+	csmemset(&invalid_identifier, 0, sizeof(invalid_identifier));
+
+	if (*identifier != invalid_identifier)
+	{
 		return true;
-	else
-		return false;
+	}
+
+	return false;
 }
 
 const char* player_identifier_get_string(s_player_identifier const* identifier)
 {
 	static char identifier_str[0x18]{};
 	for (long i = 0; i < sizeof(s_player_identifier); i++)
+	{
 		sprintf_s(identifier_str + (i * 3), 4, "%02x%c", *((byte*)identifier + i), i == (sizeof(s_player_identifier) - 1) ? 0 : ':');
+	}
 	return identifier_str;
 }
 
 long player_mapping_get_input_user(datum_index player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(player_mapping_globals);
-	if (player_index == -1)
-		return -1;
+	if (player_index == NONE)
+	{
+		return NONE;
+	}
 	else
+	{
 		return player_mapping_globals->player_input_user_mapping[player_index];
+	}
 }
 
 void __fastcall player_set_facing(datum_index player_index, real_vector3d* forward)
@@ -71,7 +82,7 @@ void __fastcall player_increment_control_context(datum_index player_index)
 	TLS_DATA_GET_VALUE_REFERENCE(players);
 	player_datum* player = (player_datum*)datum_get(*players, player_index);
 	datum_index unit_index = player->unit_index;
-	if (unit_index != -1)
+	if (unit_index != NONE)
 	{
 		TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 		unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
@@ -105,8 +116,8 @@ long get_player_action_control_context_identifier_bits()
 s_machine_identifier* players_get_machine_identifier(long machine_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players_globals);
-	assert(machine_index >= 0 && machine_index < k_maximum_machines);
-	assert(TEST_BIT(players_globals->machine_valid_mask, machine_index));
+	ASSERT(machine_index >= 0 && machine_index < k_maximum_machines);
+	ASSERT(TEST_BIT(players_globals->machine_valid_mask, machine_index));
 	return &players_globals->machine_identifiers[machine_index];
 }
 
@@ -154,37 +165,37 @@ void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index
 	}
 }
 
-void player_navpoint_data_set_action(s_player_waypoint_data* waypoint, e_navpoint_action action)
+void player_navpoint_data_set_action(s_player_navpoint_data* waypoint, e_navpoint_action action)
 {
 	if (action == _navpoint_action_none)
 	{
-		waypoint->action2 = _navpoint_action_none;
-		waypoint->action1 = _navpoint_action_none;
-		waypoint->ticks = 0;
+		waypoint->next_navpoint_action = _navpoint_action_none;
+		waypoint->current_navpoint_action = _navpoint_action_none;
+		waypoint->current_navpoint_action_timer = 0;
 	}
-	else if (waypoint->action1 == _navpoint_action_none)
+	else if (waypoint->current_navpoint_action == _navpoint_action_none)
 	{
-		waypoint->action1 = action;
-		waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
+		waypoint->current_navpoint_action = action;
+		waypoint->current_navpoint_action_timer = (byte)game_seconds_to_ticks_round(0.5f);
 	}
-	else if (action == waypoint->action1.get())
+	else if (action == waypoint->current_navpoint_action.get())
 	{
-		if (action == _navpoint_action_player_damaged || waypoint->action2 != _navpoint_action_player_damaged)
+		if (action == _navpoint_action_player_damaged || waypoint->next_navpoint_action != _navpoint_action_player_damaged)
 		{
-			waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
+			waypoint->current_navpoint_action_timer = (byte)game_seconds_to_ticks_round(0.5f);
 		}
 	}
-	else if (action != waypoint->action2.get())
+	else if (action != waypoint->next_navpoint_action.get())
 	{
-		if (!waypoint->action2 || waypoint->action1 == _navpoint_action_player_damaged)
+		if (!waypoint->next_navpoint_action || waypoint->current_navpoint_action == _navpoint_action_player_damaged)
 		{
-			waypoint->action2 = action;
+			waypoint->next_navpoint_action = action;
 		}
 		else
 		{
-			waypoint->action1 = waypoint->action2;
-			waypoint->action2 = action;
-			waypoint->ticks = (byte)game_seconds_to_ticks_round(0.5f);
+			waypoint->current_navpoint_action = waypoint->next_navpoint_action;
+			waypoint->next_navpoint_action = action;
+			waypoint->current_navpoint_action_timer = (byte)game_seconds_to_ticks_round(0.5f);
 		}
 	}
 }

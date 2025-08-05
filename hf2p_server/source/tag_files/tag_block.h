@@ -70,14 +70,14 @@ public:
 
 	t_element_type& operator[](long index)
 	{
-		assert(VALID_INDEX(index, s_tag_block::count));
+		ASSERT(VALID_INDEX(index, s_tag_block::count));
 
 		return static_cast<t_element_type*>(address)[index];
 	}
 
 	t_element_type& operator[](long index) const
 	{
-		assert(VALID_INDEX(index, s_tag_block::count));
+		ASSERT(VALID_INDEX(index, s_tag_block::count));
 
 		return static_cast<t_element_type*>(address)[index];
 	}

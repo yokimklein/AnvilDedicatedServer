@@ -2,9 +2,9 @@
 
 enum e_language
 {
-	_language_invalid = -1,
+	k_first_language = 0,
 
-	_language_english,
+	_language_english = k_first_language,
 	_language_japanese,
 	_language_german,
 	_language_french,
@@ -18,7 +18,10 @@ enum e_language
 	_language_russian, // polish replaced with russian
 
 	k_language_count,
-	k_language_default = _language_english
+
+	_language_invalid = -1,
+
+	k_language_default = k_first_language
 };
 
 e_language __cdecl get_current_language();

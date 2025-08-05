@@ -10,6 +10,7 @@ enum e_life_cycle_state
 	_life_cycle_state_end_game_write_stats,
 	_life_cycle_state_leaving,
 	_life_cycle_state_joining,
+	// removed from HO
 	//_life_cycle_state_matchmaking_start,
 	//_life_cycle_state_matchmaking_find_match_client,
 	//_life_cycle_state_matchmaking_find_match,
@@ -47,7 +48,7 @@ public:
 	//void register_state_handler(e_life_cycle_state state, c_life_cycle_state_handler* handler);
 	//void deregister_state_handler(e_life_cycle_state state, c_life_cycle_state_handler* handler);
 
-private:
+protected:
 	c_enum<e_life_cycle_state, long, _life_cycle_state_none, k_life_cycle_state_count> m_current_state;
 	c_static_array<c_life_cycle_state_handler*, k_life_cycle_state_count> m_handlers;
 	c_network_session_manager* m_session_manager;
@@ -71,4 +72,3 @@ private:
 	long m_unknown4;
 };
 static_assert(sizeof(c_life_cycle_state_manager) == 0x64);
-

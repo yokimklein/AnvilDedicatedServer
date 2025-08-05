@@ -9,7 +9,7 @@ c_game_engine_base_variant* c_game_engine_base_variant::constructor()
 
 void c_game_engine_base_variant::set(c_game_engine_base_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	set_name(variant->get_name());
 	set_description(variant->get_description());

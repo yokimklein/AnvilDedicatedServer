@@ -52,10 +52,13 @@ c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* 
 }
 
 // print to console whenever a message packet is sent - this pointer is unused
+// c_network_message_type_collection::encode_message_header
 void __fastcall encode_message_header_hook(c_network_message_type_collection* _this, void*, c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
 {
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
-    c_network_message_type_collection* message_type_collection = session->m_message_gateway->m_message_type_collection;
+
+    // const cast is kind of gross but I'll justify it here as we're currently within a method of c_network_message_type_collection and we need a replacement thisptr
+    c_network_message_type_collection* message_type_collection = const_cast<c_network_message_type_collection*>(session->message_gateway()->message_types());
 
     printf("SEND: %s (%d bytes)\n", message_type_collection->get_message_type_name(message_type), message_storage_size);
     DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);

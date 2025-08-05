@@ -1,13 +1,17 @@
 #pragma once
+#include <animations/animation_data.h>
+#include <animations/mixing_board/channels/channel_base.h>
 
-class c_animation_channel_base
+class c_animation_channel : public c_channel_base
 {
-	char data[0x14];
-};
-static_assert(sizeof(c_animation_channel_base) == 0x14);
-
-class c_animation_channel : public c_animation_channel_base
-{
-	char data[0x28];
+	real m_playback_speed;
+	real m_frame_position;
+	real m_playback_ratio;
+	c_animation_id m_additional_id[2];
+	short m_additional_blend_animations[2]; // t_short_fixed<13>
+	dword_flags m_event_flags;
+	dword_flags m_future_event_flags;
+	dword_flags m_past_event_flags;
+	byte_flags m_state_flags;
 };
 static_assert(sizeof(c_animation_channel) == 0x3C);

@@ -22,7 +22,7 @@ struct s_main_game_globals
 	char game_loaded_scenario_path[260];
 
 	bool reset_in_progress;
-	bool request_level_advance;
+	bool map_advance_pending;
 	byte : 8;
 	byte : 8;
 
@@ -30,16 +30,16 @@ struct s_main_game_globals
 	c_enum<e_game_progression_level, long, _game_progression_level_none, k_game_progression_level_count> gp_level_advance_type;
 	long gp_level_block_index;
 
-	bool change_in_progress;
-	bool game_load_pending;
+	bool map_change_pending;
+	bool map_change_pending_unload;
 	byte : 8;
 	byte : 8;
 
-	dword game_loaded_time;
+	dword map_change_initiate_time;
+	dword map_change_timer;
+	game_options pending_game_options;
 
-	dword __unknown120;
-
-	game_options game_loaded_options;
+	game_options launch_game_options;
 };
 
 bool main_game_change_in_progress();

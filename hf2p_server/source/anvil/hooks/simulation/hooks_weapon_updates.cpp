@@ -3,8 +3,10 @@
 #include <Patch.hpp>
 #include <units\units.h>
 #include <items\weapons.h>
+#include <simulation\game_interface\simulation_game_action.h>
 #include <simulation\game_interface\simulation_game_weapons.h>
 #include <simulation\game_interface\simulation_game_units.h>
+#include <items\item_definitions.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -110,19 +112,19 @@ __declspec(safebuffers) void __fastcall weapon_handle_potential_inventory_item_h
 {
     datum_index weapon_index;
     datum_index item_index;
-    c_enum<e_object_type, byte, _object_type_biped, k_object_type_count>* object_type;
-    DEFINE_ORIGINAL_EBP_ESP(0x44, sizeof(weapon_index) + sizeof(item_index) + sizeof(object_type));
+    item_definition* item_definition;
+    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(weapon_index) + sizeof(item_index) + sizeof(item_definition));
     
     __asm mov ecx, original_ebp;
     __asm mov eax, [ecx - 0x30];
     __asm mov weapon_index, eax;
     __asm mov eax, [ecx - 0x24];
     __asm mov item_index, eax;
-    __asm mov eax, [ecx - 0x28];
-    __asm mov object_type, eax;
+    __asm mov eax, [ecx - 0x2C]; // 0x2C?
+    __asm mov item_definition, eax;
 
     simulation_action_weapon_state_update(weapon_index);
-    if (TEST_BIT(_object_mask_weapon, object_type->get()))
+    if (TEST_BIT(_object_mask_weapon, item_definition->object.type.get()))
     {
         simulation_action_object_update(item_index, _simulation_weapon_update_ammo);
     }
@@ -150,8 +152,8 @@ __declspec(safebuffers) void __fastcall unit_inventory_set_weapon_index_hook1()
     __asm mov ax, [eax - 2];
     __asm mov inventory_index, ax;
 
-    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_type);
-    update_flags.set_flag(unit_index, inventory_index + _simulation_unit_update_weapon1_state);
+    update_flags.set_flag(unit_index, (e_simulation_unit_update_flag)(inventory_index + _simulation_unit_update_weapon1_type));
+    update_flags.set_flag(unit_index, (e_simulation_unit_update_flag)(inventory_index + _simulation_unit_update_weapon1_state));
     simulation_action_object_update_internal(unit_index, update_flags);
     unit_inventory_cycle_weapon_set_identifier(unit_index);
 }

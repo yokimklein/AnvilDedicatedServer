@@ -2,9 +2,7 @@
 
 enum e_network_session_parameter_type
 {
-	k_network_session_parameter_type_none = -1,
-
-	_network_session_parameter_type_session_size,
+	_network_session_parameter_type_session_size = 0,
 	_network_session_parameter_type_session_mode,
 	_network_session_parameter_type_privacy_mode,
 	_network_session_parameter_type_ui_game_mode,
@@ -41,4 +39,5 @@ enum e_network_session_parameter_type
 	_network_session_parameter_type_lobby_vote_set,
 
 	k_network_session_parameter_type_count,
+	k_network_session_parameter_type_none = NONE
 };

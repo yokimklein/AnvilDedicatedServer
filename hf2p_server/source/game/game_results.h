@@ -200,6 +200,16 @@ enum e_game_results_player_vs_player_statistic
 	k_game_results_player_vs_player_statistic_count
 };
 
+enum e_game_results_event_type
+{
+	_game_results_event_type_none = 0,
+	_game_results_event_type_kill,
+	_game_results_event_type_carry,
+	_game_results_event_type_score,
+
+	k_game_results_event_type_count
+};
+
 struct s_integer_statistic_update
 {
 	word statistic;
@@ -418,12 +428,75 @@ static_assert(sizeof(s_game_results_incremental) == 0x10950);
 
 struct s_game_results_event
 {
-	byte type;
-	byte player_index;
-	byte union_storage[0x1E];
-	dword time;
+	c_enum<e_game_results_event_type, char, _game_results_event_type_none, k_game_results_event_type_count> type;
+
+	union
+	{
+#pragma pack(push, 1)
+		struct
+		{
+			/* 0x01 */ byte killing_player_index;
+			/* 0x02 */ byte dead_player_index;
+			/* 0x03 */ byte __pad3;
+
+			/* 0x04 */ real_point3d killing_player_position;
+			/* 0x10 */ real_point3d dead_player_position;
+
+			/* 0x1C */ c_enum<e_damage_reporting_type, long, _damage_reporting_type_unknown, k_damage_reporting_type_count> tracked_damage_type; // from damage reporting info
+		} kill;
+
+		struct
+		{
+			/* 0x01 */ byte player_index;
+			/* 0x02 */ byte __unknown2; // -1
+			/* 0x03 */ byte __pad3;
+
+			/* 0x04 */ real_point3d player_position;
+
+			/* 0x10 */ long carry;      // weapon_identifier?
+			/* 0x14 */ long carry_type; // e_game_results_event_carry_type
+		} carry;
+
+		struct
+		{
+			/* 0x01 */ byte player_index;
+			/* 0x02 */ byte __unknown2; // -1
+			/* 0x03 */ byte __pad3;
+
+			/* 0x04 */ real_point3d player_position;
+
+			/* 0x10 */ long score;
+			/* 0x14 */ long score_type; // e_game_results_event_score_type
+		} score;
+#pragma pack(pop)
+
+		byte event_type_storage[0x1F];
+	};
+
+	/* 0x20 */ dword time;
 };
 static_assert(sizeof(s_game_results_event) == 0x24);
+
+struct s_game_results_game_description // s_game_results_multiplayer_game_description?
+{
+	bool team_game;
+	qword game_instance;
+	c_game_variant game_variant;
+	c_static_wchar_string<32> map_variant_name;
+	e_map_id map_id;
+	c_static_string<260> scenario_path;
+	bool started;
+	dword start_time;
+	bool finished;
+	dword finish_time;
+
+	byte __unknown3CC;
+	byte __unknown3CD;
+	bool simulation_aborted;
+
+	byte __pad3CF[1];
+};
+static_assert(sizeof(s_game_results_game_description) == 0x3D0);
 
 struct c_game_results
 {
@@ -432,24 +505,7 @@ struct c_game_results
 	bool finalized;
 	// is this game result specific version of `s_game_matchmaking_options`?
 	s_game_matchmaking_options matchmaking_options;
-
-	bool team_game;
-	byte __data65[7]; // pad?
-	qword game_instance;
-	c_game_variant game_variant;
-	c_static_wchar_string<32> map_variant_name;
-	long map_id;
-	c_static_string<260> scenario_path;
-
-	bool started;
-	dword start_time;
-	bool finished;
-	dword finish_time;
-
-	byte __data24C[2];
-	bool simulation_aborted;
-	byte __data24F[1]; // pad?
-
+	s_game_results_game_description game_description;
 	c_static_array<s_game_results_player_data, 16> players;
 	c_static_array<s_game_results_team_data, 16> teams;
 	s_game_results_statistics statistics;

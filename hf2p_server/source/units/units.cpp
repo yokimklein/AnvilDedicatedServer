@@ -11,15 +11,17 @@ void __fastcall unit_set_actively_controlled(datum_index unit_index, bool active
 
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index)
 {
-    if (!game_is_predicted())
+    if (game_is_predicted())
     {
-        unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
-        word new_identifier = (unit->unit.current_weapon_set.set_identifier + 1) & 0xF;
-        assert(new_identifier != NONE);
-        unit->unit.current_weapon_set.set_identifier = new_identifier;
-        unit->unit.desired_weapon_set.set_identifier = new_identifier;
-        simulation_action_object_update(unit_index, _simulation_unit_update_desired_weapon_set);
+        return;
     }
+
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    word new_identifier = (unit->unit.current_weapon_set.set_identifier + 1) & 0xF;
+    ASSERT(new_identifier != NONE);
+    unit->unit.current_weapon_set.set_identifier = new_identifier;
+    unit->unit.desired_weapon_set.set_identifier = new_identifier;
+    simulation_action_object_update(unit_index, _simulation_unit_update_desired_weapon_set);
 }
 
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
@@ -76,20 +78,24 @@ void __fastcall unit_add_initial_loadout(datum_index unit_index)
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
-    if (slot_index < 4)
+    if (slot_index >= 4)
     {
-        datum_index equipment_index = unit->unit.equipment_object_indices[slot_index];
-        if (equipment_index != NONE)
-        {
-            unit_drop_item(unit_index, equipment_index, _unit_drop_type_delete);
-            unit->unit.equipment_object_indices[slot_index] = NONE;
-            unit->unit.equipment_pickup_time = NONE;
-            simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
-            if (unit->unit.actor_index != NONE)
-            {
-                actor_handle_equipment_delete(unit->unit.actor_index);
-            }
-        }
+        return;
+    }
+
+    datum_index equipment_index = unit->unit.equipment_object_indices[slot_index];
+    if (equipment_index == NONE)
+    {
+        return;
+    }
+
+    unit_drop_item(unit_index, equipment_index, _unit_drop_type_delete);
+    unit->unit.equipment_object_indices[slot_index] = NONE;
+    unit->unit.equipment_pickup_time = NONE;
+    simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
+    if (unit->unit.actor_index != NONE)
+    {
+        actor_handle_equipment_delete(unit->unit.actor_index);
     }
 }
 
@@ -114,9 +120,13 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
@@ -130,9 +140,13 @@ void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regr
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
@@ -149,9 +163,13 @@ void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real re
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
@@ -163,9 +181,13 @@ void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real 
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
@@ -173,6 +195,8 @@ long unit_get_current_or_last_weak_player_index(datum_index unit_index)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     if (unit->unit.player_index != NONE)
+    {
         return unit->unit.player_index;
+    }
     return unit->unit.last_weak_player_index;
 }

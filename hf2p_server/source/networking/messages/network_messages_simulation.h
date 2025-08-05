@@ -4,9 +4,9 @@
 #include <simulation\simulation_view.h>
 #include <simulation\simulation.h>
 
-struct s_network_message_view_establishment : s_network_message
+struct s_network_message_view_establishment
 {
-	c_enum<e_simulation_view_establishment_mode, long, _simulation_view_establishment_mode_none, k_simulation_view_establishment_mode_count> establishment_mode;
+	e_simulation_view_establishment_mode establishment_mode;
 	long establishment_identifier;
 	bool signature_exists;
 	long signature_size;
@@ -14,7 +14,7 @@ struct s_network_message_view_establishment : s_network_message
 };
 static_assert(sizeof(s_network_message_view_establishment) == 0x4C);
 
-struct s_network_message_player_acknowledge : s_network_message
+struct s_network_message_player_acknowledge
 {
 	ulong player_valid_mask;
 	ulong player_in_game_mask;

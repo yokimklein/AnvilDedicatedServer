@@ -5,7 +5,7 @@
 template <typename t_type, long k_payload_size>
 struct c_network_session_parameter_chunked :
 	public c_network_session_parameter_base,
-	c_generic_network_session_parameter_data<t_type>
+	public c_generic_network_session_parameter_data<t_type>
 {
 protected:
 	long m_transmitted_peer_update_chunk_indices[k_network_maximum_machines_per_session];

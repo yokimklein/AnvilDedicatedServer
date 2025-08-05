@@ -41,14 +41,14 @@ void __fastcall player_update_loadout_internal(long loadout_index, qword user_xu
 
 bool __fastcall equipment_add(long slot_index, long equipment_index)
 {
-	assert(VALID_INDEX(slot_index, 4));
+	ASSERT(VALID_INDEX(slot_index, 4));
 	return INVOKE(0xE0530, equipment_add, slot_index, equipment_index);
 }
 
 // retrieves from cached loadouts
 s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
 {
-	assert(VALID_INDEX(loadout_index, 3));
+	ASSERT(VALID_INDEX(loadout_index, 3));
 	s_api_user_loadout*(__cdecl**user_get_loadout_from_api_funcs)(qword) = (s_api_user_loadout*(__cdecl**)(qword))BASE_ADDRESS(0xEB09D4);
 	return user_get_loadout_from_api_funcs[loadout_index](user_xuid);
 }
@@ -61,12 +61,12 @@ s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xui
 
 void s_api_user_loadout::write_configuration(s_s3d_player_loadout* out_loadout)
 {
-	assert(out_loadout);
+	ASSERT(out_loadout);
 	DECLFUNC(0x303CC0, void, __thiscall, s_api_user_loadout*, s_s3d_player_loadout*)(this, out_loadout);
 }
 
 void s_api_user_customisation::write_colours(s_s3d_player_customization* out_customisation)
 {
-	assert(out_customisation);
+	ASSERT(out_customisation);
 	DECLFUNC(0x312110, void, __thiscall, s_api_user_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
 }

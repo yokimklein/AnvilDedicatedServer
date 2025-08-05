@@ -8,7 +8,7 @@ c_game_engine_king_variant* c_game_engine_king_variant::constructor()
 
 void c_game_engine_king_variant::set(c_game_engine_king_variant const* variant, bool force)
 {
-	assert(variant != NULL);
+	ASSERT(variant != NULL);
 
 	c_game_engine_base_variant::set(variant, force);
 

@@ -11,11 +11,15 @@ long player_mapping_get_player_by_input_user(e_input_user_index input_user_index
 	TLS_DATA_GET_VALUE_REFERENCE(player_mapping_globals);
 	
 	if (input_user_index == k_input_user_none)
+	{
 		return NONE;
+	}
 
 	datum_index player_index = player_mapping_globals->input_user_player_mapping[input_user_index];
 	if (player_index != NONE)
-		assert(player_mapping_globals->player_input_user_mapping[DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index)] == input_user_index);
+	{
+		ASSERT(player_mapping_globals->player_input_user_mapping[DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index)] == input_user_index);
+	}
 
 	return player_index;
 }

@@ -4,7 +4,7 @@
 
 s_multiplayer_universal_globals_definition* multiplayer_globals_try_and_get_universal_data(multiplayer_globals_definition* multiplayer_globals)
 {
-	if (multiplayer_globals != nullptr && multiplayer_globals->universal.count() > 0)
+	if (multiplayer_globals && multiplayer_globals->universal.count() > 0)
 	{
 		return &multiplayer_globals->universal[0];
 	}
@@ -21,7 +21,7 @@ string_id multiplayer_universal_data_get_weapon_selection_name_from_absolute_ind
 	}
 
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr)
+	if (universal)
 	{
 		if (absolute_index >= 0 && absolute_index < universal->weapon_selections.count())
 		{
@@ -35,7 +35,7 @@ string_id multiplayer_universal_data_get_weapon_selection_name_from_absolute_ind
 const s_multiplayer_weapon_set* multiplayer_universal_data_weapon_set_try_and_get(short absolute_index)
 {
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr && absolute_index < 0x8000 && absolute_index < universal->weapon_sets.count())
+	if (universal && absolute_index < 0x8000 && absolute_index < universal->weapon_sets.count())
 	{
 		return &universal->weapon_sets[absolute_index];
 	}
@@ -45,7 +45,7 @@ const s_multiplayer_weapon_set* multiplayer_universal_data_weapon_set_try_and_ge
 const s_multiplayer_vehicle_set* multiplayer_universal_data_vehicle_set_try_and_get(short absolute_index)
 {
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr && absolute_index < 0x8000 && absolute_index < universal->vehicle_sets.count())
+	if (universal && absolute_index < 0x8000 && absolute_index < universal->vehicle_sets.count())
 	{
 		return &universal->vehicle_sets[absolute_index];
 	}
@@ -54,11 +54,11 @@ const s_multiplayer_vehicle_set* multiplayer_universal_data_vehicle_set_try_and_
 
 string_id multiplayer_universal_data_get_weapon_set_name_from_absolute_index(short absolute_index)
 {
-	if (absolute_index == -2)
+	if (absolute_index == -2) // random weapon index ID
 		return STRING_ID(game_engine, random);
 
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr && absolute_index < 0x8000 && absolute_index < universal->weapon_sets.count())
+	if (universal && absolute_index < 0x8000 && absolute_index < universal->weapon_sets.count())
 	{
 		s_multiplayer_weapon_set* weapon_set = &universal->weapon_sets[absolute_index];
 		return weapon_set->name.get_value();
@@ -72,14 +72,14 @@ short multiplayer_universal_data_get_weapon_set_absolute_index_from_string_id(st
 	switch (name)
 	{
 		case STRING_ID(game_engine, random):
-			return -2;
+			return -2; // random weapon ID
 		case _string_id_invalid:
 		case _string_id_empty_string:
-			return -1;
+			return -1; // none weapon ID
 	}
 
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr)
+	if (universal)
 	{
 		for (short i = 0; i < universal->weapon_sets.count(); i++)
 		{
@@ -89,7 +89,7 @@ short multiplayer_universal_data_get_weapon_set_absolute_index_from_string_id(st
 			}
 		}
 	}
-	return -1;
+	return -1; // none weapon index ID
 }
 
 string_id multiplayer_universal_data_get_vehicle_set_name_from_absolute_index(short absolute_index)
@@ -97,7 +97,7 @@ string_id multiplayer_universal_data_get_vehicle_set_name_from_absolute_index(sh
 	if (absolute_index != NONE)
 	{
 		s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-		if (universal != nullptr && absolute_index < 0x8000 && absolute_index < universal->vehicle_sets.count())
+		if (universal && absolute_index < 0x8000 && absolute_index < universal->vehicle_sets.count())
 		{
 			s_multiplayer_vehicle_set* vehicle_set = &universal->vehicle_sets[absolute_index];
 			return vehicle_set->name.get_value();
@@ -112,11 +112,11 @@ short multiplayer_universal_data_get_vehicle_set_absolute_index_from_string_id(s
 	{
 		case _string_id_invalid:
 		case _string_id_empty_string:
-			return NONE;
+			return -1;
 	}
 
 	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
-	if (universal != nullptr)
+	if (universal)
 	{
 		for (short i = 0; i < universal->vehicle_sets.count(); i++)
 		{
@@ -126,5 +126,5 @@ short multiplayer_universal_data_get_vehicle_set_absolute_index_from_string_id(s
 			}
 		}
 	}
-	return NONE;
+	return -1;
 }
