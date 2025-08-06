@@ -41,6 +41,7 @@ struct s_local_state_data_peer_creating
 	bool connect_not_join;
 	qword join_nonce;
 	s_network_session_join_request join_request;
+	long : 32;
 };
 static_assert(sizeof(s_local_state_data_peer_creating) == 0x248);
 
@@ -52,6 +53,7 @@ struct s_local_state_data_peer_joining
 	bool connect_not_join;
 	qword join_nonce;
 	s_network_session_join_request join_request;
+	long : 32;
 	dword join_initiated_timestamp;
 	dword join_ping_from_host_timestamp;
 	dword join_secure_connection_timestamp;

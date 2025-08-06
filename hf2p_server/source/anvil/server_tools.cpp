@@ -16,7 +16,7 @@
 #include <game\game_engine_util.h>
 #include <tag_files\string_ids.h>
 #include <hf2p\loadouts.h>
-#include <hf2p\user.h>
+#include <anvil\user.h>
 #include <memory\tls.h>
 #include <fstream>
 #include <string>
@@ -135,12 +135,15 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            anvil_session_set_test_player_data(membership);
+            printf("Setting user sessions test data...\n");
+
+            user_sessions_for_lobby_response();
+
+            //anvil_session_set_test_player_data(membership);
             //byte* g_ui_tutorial_is_completed = (byte*)BASE_ADDRESS(0x238DCDB);
             //byte* g_ssl_user_data = (byte*)BASE_ADDRESS(0x4A34908);
             //byte* ui_tutorial_is_completed = (byte*)(g_ssl_user_data + 0x8208);
             //
-            //printf("stub\n");
             // g_ui_tutorial_is_completed
             // 0x278DCDB
 

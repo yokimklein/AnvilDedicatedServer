@@ -8,7 +8,7 @@
 #include <hf2p\hf2p_session.h>
 #include <networking\network_configuration.h>
 #include <cseries\cseries.h>
-#include <hf2p\user.h>
+#include <anvil\user.h>
 #include <game\game.h>
 #include <networking\messages\network_messages_session_protocol.h>
 #include <networking\messages\network_messages_session_membership.h>
@@ -241,7 +241,6 @@ e_network_join_refuse_reason c_network_session::can_accept_any_join_request() co
     return _network_join_refuse_reason_none;
 }
 
-// $TODO: Test this function since the refactor
 void c_network_session::join_accept(s_network_session_join_request const* join_request, transport_address const* address)
 {
     ASSERT(join_request);
@@ -290,7 +289,7 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
         s_transport_session_description session_description{};
         if (!managed_session_get_security_information(managed_session_index(), &session_description, nullptr) ||
             !m_session_membership.add_peer(session_peer_index, _network_session_peer_state_reserved, join_request->joining_peers[joining_peer_index].joining_network_version_number,
-                &join_request->joining_peers[joining_peer_index].joining_peer_address, join_request->join_party_nonce, join_request->join_nonce))
+                &join_request->joining_peers[joining_peer_index].joining_peer_address, join_request->party_nonce, join_request->join_nonce))
         {
             printf("MP/NET/SESSION,CTRL: c_network_session::join_accept: Error. [%s] host failed to create observer when adding peer [%s] at peer #%d\n",
                 get_id_string(),

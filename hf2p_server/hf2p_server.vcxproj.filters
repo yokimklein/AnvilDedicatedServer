@@ -813,7 +813,7 @@
     <ClInclude Include="source\effects\particle_states.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\hf2p\user.h">
+    <ClInclude Include="source\anvil\user.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\hf2p\hf2p.h">
@@ -1310,7 +1310,7 @@
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\hf2p\user.cpp">
+    <ClCompile Include="source\anvil\user.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\hf2p\hf2p.cpp">

@@ -16,6 +16,7 @@ struct s_network_message_join_request
 	s_transport_secure_identifier session_id;
 	long : 32;
 	s_network_session_join_request join_request;
+	long : 32;
 };
 static_assert(sizeof(s_network_message_join_request) == 0x258);
 

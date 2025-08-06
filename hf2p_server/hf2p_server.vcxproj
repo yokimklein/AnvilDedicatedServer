@@ -229,7 +229,7 @@
     <ClInclude Include="source\hf2p\podium.h" />
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
-    <ClInclude Include="source\hf2p\user.h" />
+    <ClInclude Include="source\anvil\user.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\item_definitions.h" />
     <ClInclude Include="source\items\projectiles.h" />
@@ -502,7 +502,7 @@
     <ClCompile Include="source\hf2p\hq.cpp" />
     <ClCompile Include="source\hf2p\podium.cpp" />
     <ClCompile Include="source\hf2p\loadouts.cpp" />
-    <ClCompile Include="source\hf2p\user.cpp" />
+    <ClCompile Include="source\anvil\user.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />

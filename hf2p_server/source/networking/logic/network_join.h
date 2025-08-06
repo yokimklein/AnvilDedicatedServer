@@ -82,29 +82,29 @@ struct s_joining_peer
 };
 static_assert(sizeof(s_joining_peer) == 0x18);
 
-struct s_group_session_join_request_payload
-{
-    long payload_type;
-    //union
-    //{
-    //    s_matchmaking_gather_party_properties gather_party_properties;
-    //    s_matchmaking_search_party_properties search_party_properties;
-    //};
-};
-static_assert(sizeof(s_group_session_join_request_payload) == 0x4);
+//struct s_group_session_join_request_payload
+//{
+//    long payload_type;
+//    union
+//    {
+//        s_matchmaking_gather_party_properties gather_party_properties;
+//        s_matchmaking_search_party_properties search_party_properties;
+//    };
+//};
+//static_assert(sizeof(s_group_session_join_request_payload) == 0x4);
 
 struct s_network_session_join_request
 {
     qword join_nonce;
-    qword join_party_nonce;
+    qword party_nonce;
     long joining_peer_count;
     s_joining_peer joining_peers[k_network_maximum_machines_per_session];
     long joining_player_count;
     s_joining_player joining_players[k_network_maximum_players_per_session];
     bool join_to_public_slots;
-    s_group_session_join_request_payload join_request_payload;
+    //s_group_session_join_request_payload payload;
 };
-static_assert(sizeof(s_network_session_join_request) == 0x238);
+static_assert(sizeof(s_network_session_join_request) == 0x234);
 
 struct s_networking_join_queue_entry
 {
@@ -113,9 +113,11 @@ struct s_networking_join_queue_entry
     s_network_session_join_request join_request;
     ulong time_inserted_into_the_queue;
     ulong time_client_was_last_notified;
-    long desirability;
+    long session_desirability;
 };
-static_assert(sizeof(s_networking_join_queue_entry) == 0x260);
+static_assert(sizeof(s_networking_join_queue_entry) == 0x25C);
+static_assert(OFFSETOF(s_networking_join_queue_entry, time_inserted_into_the_queue) == 0x250);
+static_assert(OFFSETOF(s_networking_join_queue_entry, time_client_was_last_notified) == 0x254);
 #pragma pack(pop)
 
 struct s_networking_join_data
@@ -140,9 +142,12 @@ struct s_networking_join_data
     e_network_join_queue_mode join_queue_mode;
     long join_queue_entry_count;
     //long number_of_peers_expected_in_membership_at_last_desiribility_calculation;
-    c_static_array<s_networking_join_queue_entry, 32> join_queue;
+    s_networking_join_queue_entry join_queue[32];
 };
-static_assert(sizeof(s_networking_join_data) == 0x4C70);
+static_assert(sizeof(s_networking_join_data) == 0x4BF0);
+static_assert(OFFSETOF(s_networking_join_data, join_queue_mode) == 0x68);
+static_assert(OFFSETOF(s_networking_join_data, join_queue_entry_count) == 0x6C);
+static_assert(OFFSETOF(s_networking_join_data, join_queue) == 0x70);
 
 class c_network_session;
 void network_join_add_join_to_queue(c_network_session* session, transport_address const* address, s_network_session_join_request const* join_request);
