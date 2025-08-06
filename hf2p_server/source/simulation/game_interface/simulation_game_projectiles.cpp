@@ -61,16 +61,16 @@ void simulation_action_projectile_attached(datum_index projectile_index, datum_i
 
 void simulation_action_projectile_detonate(long projectile_definition_index, real_point3d const* position, real_vector3d const* forward, real_vector3d const* hit_normal, float damage_scale, c_flags<e_simulation_projectile_effect_flag, uchar, k_simulation_projectile_effect_flag_count> projectile_effect_flag, c_global_material_type hit_material_type, s_location const* location, long player_index0, long player_index1, bool gamestate_index_invalid, bool valid_material_type, bool collided_with_invalid_material)
 {
-	if (!game_is_distributed() || !game_is_server() || game_is_playback() || (gamestate_index_invalid && valid_material_type))
+	if (!game_is_distributed() || !game_is_server() || game_is_playback() || (!gamestate_index_invalid && !valid_material_type))
 	{
 		return;
 	}
 
 	s_simulation_projectile_detonate_event_data event_data;
 	csmemset(&event_data, 0, sizeof(s_simulation_projectile_detonate_event_data));
-	ASSERT(hit_material_type);
-	// $TODO: I had this assertion fail when throwing a plasma grenade near 0,0,0 of reactor once - investigate further
+
 	ASSERT(hit_normal);
+
 	event_data.projectile_definition_index = projectile_definition_index;
 	event_data.position = *position;
 	event_data.forward = *forward;
@@ -89,8 +89,8 @@ void simulation_action_projectile_detonate(long projectile_definition_index, rea
 		event_data.location.cluster_reference.cluster_index = NONE;
 	}
 	event_data.hit_normal = *hit_normal;
-	event_data.player_index0 = player_index0;
-	event_data.player_index1 = player_index1;
+	event_data.player_index0 = DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index0);
+	event_data.player_index1 = DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index1);
 	simulation_event_generate_for_clients(_simulation_event_type_projectile_detonate, 0, nullptr, NONE, sizeof(event_data), &event_data);
 }
 
