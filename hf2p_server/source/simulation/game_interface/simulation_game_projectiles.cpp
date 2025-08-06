@@ -69,6 +69,7 @@ void simulation_action_projectile_detonate(long projectile_definition_index, rea
 	s_simulation_projectile_detonate_event_data event_data;
 	csmemset(&event_data, 0, sizeof(s_simulation_projectile_detonate_event_data));
 	ASSERT(hit_material_type);
+	// $TODO: I had this assertion fail when throwing a plasma grenade near 0,0,0 of reactor once - investigate further
 	ASSERT(hit_normal);
 	event_data.projectile_definition_index = projectile_definition_index;
 	event_data.position = *position;

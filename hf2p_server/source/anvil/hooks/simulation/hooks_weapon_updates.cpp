@@ -7,6 +7,7 @@
 #include <simulation\game_interface\simulation_game_weapons.h>
 #include <simulation\game_interface\simulation_game_units.h>
 #include <items\item_definitions.h>
+#include <cache\cache_files.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -112,19 +113,24 @@ __declspec(safebuffers) void __fastcall weapon_handle_potential_inventory_item_h
 {
     datum_index weapon_index;
     datum_index item_index;
-    item_definition* item_definition;
-    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(weapon_index) + sizeof(item_index) + sizeof(item_definition));
+    item_definition* item;
+    item_datum* item_datum;
+    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(weapon_index) + sizeof(item_index) + sizeof(item) + sizeof(item_datum));
     
     __asm mov ecx, original_ebp;
     __asm mov eax, [ecx - 0x30];
     __asm mov weapon_index, eax;
     __asm mov eax, [ecx - 0x24];
     __asm mov item_index, eax;
-    __asm mov eax, [ecx - 0x2C]; // 0x2C?
-    __asm mov item_definition, eax;
+    __asm mov item_datum, esi;
+    
+    // retrieve item definition from existing datum variable
+    // retrieving the item variable directly had reliability
+    // issues and would contain invalid data in certain edge cases
+    item = (item_definition*)tag_get(ITEM_TAG, item_datum->definition_index);
 
     simulation_action_weapon_state_update(weapon_index);
-    if (TEST_BIT(_object_mask_weapon, item_definition->object.type.get()))
+    if (TEST_BIT(_object_mask_weapon, item->object.type.get()))
     {
         simulation_action_object_update(item_index, _simulation_weapon_update_ammo);
     }
