@@ -581,7 +581,7 @@ void c_network_session::disconnect()
     // unregister the game server on the API
     if (game_is_dedicated_server())
     {
-        s_register_game_server_request request;
+        s_request_register_game_server request;
         s_transport_secure_address server_identifier;
         anvil_get_server_identifier(&server_identifier);
         request.secureAddr = transport_secure_address_get_string(&server_identifier);

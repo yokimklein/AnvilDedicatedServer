@@ -1,10 +1,9 @@
 #include "private_service.h"
-#include <boost\property_tree\json_parser.hpp>
-#include <boost\property_tree\ptree.hpp>
 #include <networking\transport\transport_security.h>
 #include <anvil\build_version.h>
 #include <anvil\server_tools.h>
 #include <anvil\backend\lobby.h>
+#include <anvil\backend\user.h>
 #include <combaseapi.h>
 #include <iostream>
 
@@ -165,28 +164,31 @@ void c_backend_private_service::make_request(s_backend_request& request_body, ht
     backend_data.get()->stream.async_connect(m_resolver_results, beast::bind_front_handler(&c_backend_private_service::on_connect, shared_from_this(), backend_data));
 }
 
-std::string s_register_game_server_request::to_json()
+std::string s_request_register_game_server::to_json()
 {
-    boost::property_tree::ptree out;
-    out.put("secureAddr", secureAddr);
-    std::ostringstream oss;
-    boost::property_tree::write_json(oss, out);
-    return oss.str();
+    boost::json::object out;
+    out["secureAddr"] = secureAddr;
+    return boost::json::serialize(out);
 }
 
-std::string s_update_game_server_request::to_json()
+std::string s_request_update_game_server::to_json()
 {
-    boost::property_tree::ptree out;
-    out.put("secureAddr", secureAddr);
-    out.put("serverAddr", serverAddr);
-    out.put("serverPort", serverPort);
-    out.put("playlistId", playlistId);
-    std::ostringstream oss;
-    boost::property_tree::write_json(oss, out);
-    return oss.str();
+    boost::json::object out;
+    out["secureAddr"] = secureAddr;
+    out["serverAddr"] = serverAddr;
+    out["serverPort"] = serverPort;
+    out["playlistId"] = playlistId;
+    return boost::json::serialize(out);
 }
 
-void c_backend_private_service::request_register_game_server(s_register_game_server_request& request_body)
+std::string s_request_retrieve_lobby_members::to_json()
+{
+    boost::json::object out;
+    out["lobbyId"] = lobbyId;
+    return boost::json::serialize(out);
+}
+
+void c_backend_private_service::request_register_game_server(s_request_register_game_server& request_body)
 {
     if (!m_initialised)
     {
@@ -197,10 +199,10 @@ void c_backend_private_service::request_register_game_server(s_register_game_ser
     g_lobby_info.clear_lobby_identifier();
     g_lobby_info.status = _request_status_waiting;
 
-    make_request(request_body, http::verb::put, "/PrivateService.svc/RegisterGameServer", handle_register_game_server_response);
+    make_request(request_body, http::verb::put, "/PrivateService.svc/RegisterGameServer", handle_response_register_game_server);
 }
 
-void handle_register_game_server_response(s_backend_response* response)
+void handle_response_register_game_server(s_backend_response* response)
 {
     if (response->data.contains("lobbyId"))
     {
@@ -215,7 +217,7 @@ void handle_register_game_server_response(s_backend_response* response)
     }
 }
 
-void c_backend_private_service::request_unregister_game_server(s_register_game_server_request& request_body)
+void c_backend_private_service::request_unregister_game_server(s_request_register_game_server& request_body)
 {
     if (!m_initialised)
     {
@@ -226,25 +228,70 @@ void c_backend_private_service::request_unregister_game_server(s_register_game_s
     g_lobby_info.clear_lobby_identifier();
     g_lobby_info.status = _request_status_none;
 
-    make_request(request_body, http::verb::delete_, "/PrivateService.svc/UnregisterGameServer", handle_unregister_game_server_response);
+    make_request(request_body, http::verb::delete_, "/PrivateService.svc/UnregisterGameServer", handle_response_unregister_game_server);
 }
 
-void handle_unregister_game_server_response(s_backend_response* response)
+void handle_response_unregister_game_server(s_backend_response* response)
 {
 
 }
 
-void c_backend_private_service::request_update_game_server(s_update_game_server_request& request_body)
+void c_backend_private_service::request_update_game_server(s_request_update_game_server& request_body)
 {
     if (!m_initialised)
     {
         return;
     }
 
-    make_request(request_body, http::verb::post, "/PrivateService.svc/UpdateGameServer", handle_update_game_server_response);
+    make_request(request_body, http::verb::post, "/PrivateService.svc/UpdateGameServer", handle_response_update_game_server);
 }
 
-void handle_update_game_server_response(s_backend_response* response)
+void handle_response_update_game_server(s_backend_response* response)
 {
 
+}
+
+void c_backend_private_service::request_retrieve_lobby_members(s_request_retrieve_lobby_members& request_body)
+{
+    if (!m_initialised)
+    {
+        return;
+    }
+    g_lobby_session_data.status = _request_status_waiting;
+
+    make_request(request_body, http::verb::post, "/PrivateService.svc/RetrieveLobbyMembers", handle_response_retrieve_lobby_members);
+}
+
+void handle_response_retrieve_lobby_members(s_backend_response* response)
+{
+    g_lobby_session_data.reset_user_data();
+
+    auto members = response->data.at("members").as_array();
+    long user_sessions_count = members.size();
+
+    // ensure the API hasn't returned more players than we support
+    ASSERT(user_sessions_count <= k_network_maximum_players_per_session);
+    if (user_sessions_count > k_network_maximum_players_per_session)
+    {
+        g_lobby_session_data.status = _request_status_none;
+        return;
+    }
+    
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": received [%d] user sessions\n", user_sessions_count);
+
+    for (ulong user_session_index = 0; user_session_index < members.size(); user_session_index++)
+    {
+        s_user_session& user_session = g_lobby_session_data.users[user_session_index];
+
+        user_session.valid = true;
+        user_session.user_id = members[user_session_index].at("userId").as_int64();
+
+        std::string session_id_string = members[user_session_index].at("sessionId").as_string().c_str();
+        std::wstring session_id_braced = std::format(L"{{{}}}", std::wstring(session_id_string.begin(), session_id_string.end()));
+
+        HRESULT result = CLSIDFromString(session_id_braced.c_str(), (LPCLSID)&user_session.session_id);
+        ASSERT(result == S_OK);
+    }
+
+    g_lobby_session_data.status = _request_status_received;
 }

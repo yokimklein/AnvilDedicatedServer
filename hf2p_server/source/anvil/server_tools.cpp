@@ -93,10 +93,11 @@ void anvil_session_update()
     //static bool key_held_delete = false; // used for podium taunts
 
     // $TODO: handle this for when we're not running in dedicated server mode
+    // $TODO: handle API being unreachable, just don't proceed and attempt request again every 5 seconds
     // register game server with the API prior to creating the session
     if (g_lobby_info.status == _request_status_none && !g_lobby_info.valid)
     {
-        s_register_game_server_request register_request;
+        s_request_register_game_server register_request;
         s_transport_secure_address server_identifier;
 
         anvil_get_server_identifier(&server_identifier);
@@ -137,12 +138,12 @@ void anvil_session_update()
             if (game_is_dedicated_server())
             {
                 // update server info on API
-                s_update_game_server_request update_request;
+                s_request_update_game_server update_request;
 
                 s_transport_secure_address server_identifier;
                 anvil_get_server_identifier(&server_identifier);
                 update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
-                update_request.serverAddr = "127.0.0.1"; // $TODO: pull this from somewhere //transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, false, false);
+                update_request.serverAddr = "192.168.0.181"; // $TODO: pull this from somewhere //transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, false, false);
                 update_request.serverPort = transport_security_globals.address.port;
                 update_request.playlistId = "playlist_team_slayer_small"; // $TODO: pull this from a config?
 
@@ -177,11 +178,6 @@ void anvil_session_update()
             printf("Disconnecting session...\n");
             session->disconnect();
             
-            //g_backend_private_service->request_register_game_server();
-            //g_backend_private_service->request_register_game_server();
-            //request_test();
-            //user_sessions_for_lobby_response();
-
             //anvil_session_set_test_player_data(membership);
             //byte* g_ui_tutorial_is_completed = base_address<byte*>(0x238DCDB);
             //byte* g_ssl_user_data = base_address<byte*>(0x4A34908);

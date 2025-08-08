@@ -33,5 +33,4 @@ struct s_lobby_session_data
 extern s_lobby_session_data g_lobby_session_data;
 
 qword user_xuid_from_secure_address(const s_transport_secure_address* secure_address);
-bool user_sessions_for_lobby_request();
-void user_sessions_for_lobby_response();
+bool user_sessions_request_for_lobby();

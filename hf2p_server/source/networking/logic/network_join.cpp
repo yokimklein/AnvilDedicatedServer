@@ -181,7 +181,7 @@ bool network_join_process_joins_from_queue()
 				case _request_status_none:
 					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
 						transport_secure_nonce_get_string(queue_entry.join_nonce));
-					user_sessions_for_lobby_request();
+					user_sessions_request_for_lobby();
 					return true;
 				case _request_status_waiting:
 					return true;

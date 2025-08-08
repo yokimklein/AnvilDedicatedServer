@@ -42,7 +42,7 @@ struct s_backend_request
     virtual std::string to_json() = 0;
 };
 
-struct s_register_game_server_request : s_backend_request
+struct s_request_register_game_server : s_backend_request
 {
     const char* secureAddr;
 
@@ -52,10 +52,10 @@ struct s_register_game_server_response
 {
     const char* lobbyId;
 };
-void handle_register_game_server_response(s_backend_response* response);
-void handle_unregister_game_server_response(s_backend_response* response);
+void handle_response_register_game_server(s_backend_response* response);
+void handle_response_unregister_game_server(s_backend_response* response);
 
-struct s_update_game_server_request : s_backend_request
+struct s_request_update_game_server : s_backend_request
 {
     const char* secureAddr;
     const char* serverAddr;
@@ -64,7 +64,15 @@ struct s_update_game_server_request : s_backend_request
 
     std::string to_json() override;
 };
-void handle_update_game_server_response(s_backend_response* response);
+void handle_response_update_game_server(s_backend_response* response);
+
+struct s_request_retrieve_lobby_members : s_backend_request
+{
+    const char* lobbyId;
+
+    std::string to_json() override;
+};
+void handle_response_retrieve_lobby_members(s_backend_response* response);
 
 struct s_backend_request_data
 {
@@ -95,9 +103,10 @@ public:
 
     bool initialised() const { return m_initialised; };
 
-    void request_register_game_server(s_register_game_server_request& request_body);
-    void request_unregister_game_server(s_register_game_server_request& request_body);
-    void request_update_game_server(s_update_game_server_request& request_body);
+    void request_register_game_server(s_request_register_game_server& request_body);
+    void request_unregister_game_server(s_request_register_game_server& request_body);
+    void request_update_game_server(s_request_update_game_server& request_body);
+    void request_retrieve_lobby_members(s_request_retrieve_lobby_members& request_body);
 
 private:
     c_backend_private_service(std::string_view host, std::string_view port);
