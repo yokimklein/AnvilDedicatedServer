@@ -37,6 +37,17 @@ struct s_backend_response
     json::object data;
 };
 
+struct s_backend_request
+{
+    virtual std::string to_json() = 0;
+};
+
+struct s_register_game_server_request : s_backend_request
+{
+    const char* secureAddr;
+
+    std::string to_json() override;
+};
 struct s_register_game_server_response
 {
     const char* lobbyId;
@@ -44,12 +55,16 @@ struct s_register_game_server_response
 void handle_register_game_server_response(s_backend_response* response);
 void handle_unregister_game_server_response(s_backend_response* response);
 
-struct s_register_game_server_request
+struct s_update_game_server_request : s_backend_request
 {
     const char* secureAddr;
+    const char* serverAddr;
+    long serverPort;
+    const char* playlistId;
 
-    std::string to_json();
+    std::string to_json() override;
 };
+void handle_update_game_server_response(s_backend_response* response);
 
 struct s_backend_request_data
 {
@@ -82,6 +97,7 @@ public:
 
     void request_register_game_server(s_register_game_server_request& request_body);
     void request_unregister_game_server(s_register_game_server_request& request_body);
+    void request_update_game_server(s_update_game_server_request& request_body);
 
 private:
     c_backend_private_service(std::string_view host, std::string_view port);
@@ -90,6 +106,7 @@ private:
     void on_connect(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, tcp::resolver::results_type::endpoint_type endpoint);
     void on_write(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size);
     void on_read(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size);
+    void make_request(s_backend_request& request_body, http::verb http_verb, const char* endpoint, std::function<void(s_backend_response*)> response_handler);
 
     bool m_initialised;
     net::io_context m_ioc;

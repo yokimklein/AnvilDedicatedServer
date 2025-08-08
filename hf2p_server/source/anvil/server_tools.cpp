@@ -92,16 +92,17 @@ void anvil_session_update()
     static bool key_held_pgdown = false;
     //static bool key_held_delete = false; // used for podium taunts
 
+    // $TODO: handle this for when we're not running in dedicated server mode
     // register game server with the API prior to creating the session
     if (g_lobby_info.status == _request_status_none && !g_lobby_info.valid)
     {
-        s_register_game_server_request request;
+        s_register_game_server_request register_request;
         s_transport_secure_address server_identifier;
 
         anvil_get_server_identifier(&server_identifier);
-        request.secureAddr = transport_secure_address_get_string(&server_identifier);
+        register_request.secureAddr = transport_secure_address_get_string(&server_identifier);
 
-        g_backend_private_service->request_register_game_server(request);
+        g_backend_private_service->request_register_game_server(register_request);
     }
     else if (g_lobby_info.status == _request_status_received && session->current_local_state() == _network_session_state_none)
     {
@@ -133,9 +134,21 @@ void anvil_session_update()
                 printf("\nSession failed to retrieve security info.\nServer Address: %s\n\n",
                     transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, true, false));
             }
-            // set default dedicated server state
             if (game_is_dedicated_server())
             {
+                // update server info on API
+                s_update_game_server_request update_request;
+
+                s_transport_secure_address server_identifier;
+                anvil_get_server_identifier(&server_identifier);
+                update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
+                update_request.serverAddr = "127.0.0.1"; // $TODO: pull this from somewhere //transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, false, false);
+                update_request.serverPort = transport_security_globals.address.port;
+                update_request.playlistId = "playlist_team_slayer_small"; // $TODO: pull this from a config?
+
+                g_backend_private_service->request_update_game_server(update_request);
+
+                // set default dedicated server state
                 e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
                 session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&session_state);
             }

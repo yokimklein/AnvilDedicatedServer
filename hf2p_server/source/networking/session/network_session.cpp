@@ -579,11 +579,14 @@ void c_network_session::disconnect()
     DECLFUNC(0x21CC0, void, __thiscall, c_network_session*)(this);
 
     // unregister the game server on the API
-    s_register_game_server_request request;
-    s_transport_secure_address server_identifier;
-    anvil_get_server_identifier(&server_identifier);
-    request.secureAddr = transport_secure_address_get_string(&server_identifier);
-    g_backend_private_service->request_unregister_game_server(request);
+    if (game_is_dedicated_server())
+    {
+        s_register_game_server_request request;
+        s_transport_secure_address server_identifier;
+        anvil_get_server_identifier(&server_identifier);
+        request.secureAddr = transport_secure_address_get_string(&server_identifier);
+        g_backend_private_service->request_unregister_game_server(request);
+    }
 }
 
 void c_network_session::disband_peer(long peer_index)
