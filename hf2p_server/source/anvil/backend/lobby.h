@@ -9,6 +9,8 @@ struct s_lobby_info
     void clear_lobby_identifier();
 
     std::atomic<e_request_status> status;
+    ulong failure_time;
+
     bool valid;
     s_transport_secure_identifier lobby_identifier;
 };

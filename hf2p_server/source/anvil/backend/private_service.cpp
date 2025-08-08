@@ -61,7 +61,7 @@ void c_backend_private_service::on_resolve(beast::error_code ec, tcp::resolver::
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to resolve host %s:%s [error: %d - %s]!\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to resolve host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
         return;
     }
     m_resolver_results = results;
@@ -73,7 +73,12 @@ void c_backend_private_service::on_connect(std::shared_ptr<s_backend_request_dat
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to connect to host %s:%s [error: %d - %s]!\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to connect to host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
+        
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
         return;
     }
     printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": sending request to %s:%s%s\n", m_host.data(), m_port.data(), backend_data.get()->endpoint);
@@ -85,7 +90,12 @@ void c_backend_private_service::on_write(std::shared_ptr<s_backend_request_data>
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to write! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to write! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
         return;
     }
 
@@ -96,7 +106,12 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to read response! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to read response! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
         return;
     }
 
@@ -204,6 +219,12 @@ void c_backend_private_service::request_register_game_server(s_request_register_
 
 void handle_response_register_game_server(s_backend_response* response)
 {
+    if (response->retCode != _backend_success)
+    {
+        g_lobby_info.status = _request_status_failed;
+        return;
+    }
+
     if (response->data.contains("lobbyId"))
     {
         std::string lobby_id_string = response->data.at("lobbyId").as_string().c_str();
@@ -264,14 +285,20 @@ void c_backend_private_service::request_retrieve_lobby_members(s_request_retriev
 
 void handle_response_retrieve_lobby_members(s_backend_response* response)
 {
+    if (response->retCode != _backend_success)
+    {
+        g_lobby_session_data.status = _request_status_failed;
+        return;
+    }
+
     g_lobby_session_data.reset_user_data();
 
     auto members = response->data.at("members").as_array();
-    long user_sessions_count = members.size();
+    ulong user_sessions_count = members.size();
 
     // ensure the API hasn't returned more players than we support
-    ASSERT(user_sessions_count <= k_network_maximum_players_per_session);
-    if (user_sessions_count > k_network_maximum_players_per_session)
+    ASSERT(VALID_INDEX(user_sessions_count, k_network_maximum_players_per_session));
+    if (!VALID_INDEX(user_sessions_count, k_network_maximum_players_per_session))
     {
         g_lobby_session_data.status = _request_status_none;
         return;

@@ -23,9 +23,10 @@
 #include <fstream>
 #include <string>
 #include <combaseapi.h>
+#include <networking\network_time.h>
 
-const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
-const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
+constexpr wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
+constexpr wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
 
 void enable_memory_write(void* base)
 {
@@ -54,7 +55,7 @@ void anvil_initialize()
     anvil_hooks_apply();
 }
 
-bool anvil_create_session()
+bool anvil_session_create()
 {
     printf("Creating session...\n");
     network_life_cycle_end();
@@ -93,23 +94,54 @@ void anvil_session_update()
     //static bool key_held_delete = false; // used for podium taunts
 
     // $TODO: handle this for when we're not running in dedicated server mode
-    // $TODO: handle API being unreachable, just don't proceed and attempt request again every 5 seconds
     // register game server with the API prior to creating the session
-    if (g_lobby_info.status == _request_status_none && !g_lobby_info.valid)
+    switch (g_lobby_info.status)
     {
-        s_request_register_game_server register_request;
-        s_transport_secure_address server_identifier;
+        case _request_status_none:
+        {
+            if (!g_lobby_info.valid)
+            {
+                s_request_register_game_server register_request;
+                s_transport_secure_address server_identifier;
 
-        anvil_get_server_identifier(&server_identifier);
-        register_request.secureAddr = transport_secure_address_get_string(&server_identifier);
+                anvil_get_server_identifier(&server_identifier);
+                register_request.secureAddr = transport_secure_address_get_string(&server_identifier);
 
-        g_backend_private_service->request_register_game_server(register_request);
-    }
-    else if (g_lobby_info.status == _request_status_received && session->current_local_state() == _network_session_state_none)
-    {
-        g_lobby_info.status = _request_status_none;
-        anvil_create_session();
-        logged_connection_info = false;
+                g_backend_private_service->request_register_game_server(register_request);
+            }
+            break;
+        }
+        case _request_status_received:
+        {
+            if (session->current_local_state() == _network_session_state_none)
+            {
+                g_lobby_info.status = _request_status_none;
+                anvil_session_create();
+                logged_connection_info = false;
+            }
+            break;
+        }
+        // on failure, wait 5 seconds before requesting again
+        case _request_status_failed:
+        {
+            g_lobby_info.failure_time = network_time_get();
+            g_lobby_info.status = _request_status_timeout;
+            break;
+        }
+        case _request_status_timeout:
+        {
+            if (network_time_since(g_lobby_info.failure_time) >= PRIVATE_SERVICE_REQUEST_TIMEOUT)
+            {
+                g_lobby_info.failure_time = NONE;
+                g_lobby_info.status = _request_status_none;
+            }
+            break;
+        }
+        case _request_status_waiting:
+        default:
+        {
+            return;
+        }
     }
 
     // log session connection info
@@ -126,14 +158,14 @@ void anvil_session_update()
             if (transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &secure_identifier, &secure_address))
             {
                 printf("\nSession ready to join!\nServer Address: %s\nServerID: %s\nLobbyID: %s\n\n",
-                    transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, true, false),
+                    transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false),
                     transport_secure_address_get_string(&secure_address),
                     transport_secure_identifier_get_string(&secure_identifier));
             }
             else
             {
                 printf("\nSession failed to retrieve security info.\nServer Address: %s\n\n",
-                    transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, true, false));
+                    transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false));
             }
             if (game_is_dedicated_server())
             {
@@ -143,9 +175,11 @@ void anvil_session_update()
                 s_transport_secure_address server_identifier;
                 anvil_get_server_identifier(&server_identifier);
                 update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
-                update_request.serverAddr = "192.168.0.181"; // $TODO: pull this from somewhere //transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, false, false);
+                // $TODO: pull this IP from somewhere
+                update_request.serverAddr = "192.168.0.181"; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
                 update_request.serverPort = transport_security_globals.address.port;
-                update_request.playlistId = "playlist_team_slayer_small"; // $TODO: pull this from a config?
+                // $TODO: pull this from a config?
+                update_request.playlistId = "playlist_team_slayer_small";
 
                 g_backend_private_service->request_update_game_server(update_request);
 
@@ -156,99 +190,84 @@ void anvil_session_update()
         }
     }
 
-    // once session is setup
-    if (session->established())
+    // run anvil session loop once the session is setup
+    if (!session->established())
     {
-        c_network_session_membership* membership = session->get_session_membership_for_update();
-        c_network_session_parameters* parameters = session->get_session_parameters();
+        return;
+    }
+
+    c_network_session_membership* membership = session->get_session_membership_for_update();
+    c_network_session_parameters* parameters = session->get_session_parameters();
+    
+    // debug server controls
+    if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
+    {
+        printf("Starting vote...\n");
+        anvil_session_start_voting(session);
+    }
+    else if (anvil_key_pressed(VK_HOME, &key_held_home))
+    {
+        printf("Launching session...\n");
+        parameters->m_parameters.session_mode.set(_network_session_mode_setup);
+    }
+    else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
+    {
+        printf("Disconnecting session...\n");
+        session->disconnect();
         
-        // debug server controls
-        if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
+        //anvil_session_set_test_player_data(membership);
+
+        /*
+        // load new string from text file
+        std::ifstream file("map_load.txt");
+        std::string scenario_path_str;
+        std::string map_name_str;
+        if (std::getline(file, scenario_path_str))
         {
-            printf("Starting vote...\n");
-            anvil_session_start_voting(session);
-        }
-        else if (anvil_key_pressed(VK_HOME, &key_held_home))
-        {
-            printf("Launching session...\n");
-            parameters->m_parameters.session_mode.set(_network_session_mode_setup);
-        }
-        else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
-        {
-            printf("Disconnecting session...\n");
-            session->disconnect();
-            
-            //anvil_session_set_test_player_data(membership);
-            //byte* g_ui_tutorial_is_completed = base_address<byte*>(0x238DCDB);
-            //byte* g_ssl_user_data = base_address<byte*>(0x4A34908);
-            //byte* ui_tutorial_is_completed = (byte*)(g_ssl_user_data + 0x8208);
-            //
-            // g_ui_tutorial_is_completed
-            // 0x278DCDB
-
-            // 0x4E34908 + 0x8208
-
-            /*
-            s_api_user_loadout* loadout = user_get_loadout_from_api(2, 0);
-
-            s_s3d_player_loadout player_loadout;
-            loadout->write_configuration(&player_loadout);
-
-            printf("Test loadout retrieve...\n");
-            */
-
-            /*
-            // load new string from text file
-            std::ifstream file("map_load.txt");
-            std::string scenario_path_str;
-            std::string map_name_str;
-            if (std::getline(file, scenario_path_str))
+            if (!std::getline(file, map_name_str))
             {
-                if (!std::getline(file, map_name_str))
-                {
-                    printf("no .map name provided, using -1 map id\n");
-                    anvil_launch_scenario(scenario_path_str.c_str(), nullptr);
-                }
-                else
-                {
-                    wchar_t map_name[128];
-                    ascii_string_to_wchar_string(map_name_str.c_str(), map_name, map_name_str.length(), nullptr);
-                    anvil_launch_scenario(scenario_path_str.c_str(), map_name);
-                }
+                printf("no .map name provided, using -1 map id\n");
+                anvil_launch_scenario(scenario_path_str.c_str(), nullptr);
             }
             else
             {
-                printf("map_load.txt mising scenario path line!\n");
+                wchar_t map_name[128];
+                ascii_string_to_wchar_string(map_name_str.c_str(), map_name, map_name_str.length(), nullptr);
+                anvil_launch_scenario(scenario_path_str.c_str(), map_name);
             }
-            */
-            //TLS_DATA_GET_VALUE_REFERENCE(director_globals);
-            //director_globals->infos[0].camera_mode;
-            //director_globals->infos[0].director_mode;
-            //director_globals->infos[0].director_perspective;
-            //printf("Finished.\n");
+        }
+        else
+        {
+            printf("map_load.txt mising scenario path line!\n");
+        }
+        */
+        //TLS_DATA_GET_VALUE_REFERENCE(director_globals);
+        //director_globals->infos[0].camera_mode;
+        //director_globals->infos[0].director_mode;
+        //director_globals->infos[0].director_perspective;
+        //printf("Finished.\n");
 
-            //printf("Starting session countdown...\n");
-            //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
-            //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
-            //parameters->dedicated_server_session_state.set(&session_state);
-        }
-        else if (anvil_key_pressed(VK_END, &key_held_end))
-        {
-            printf("Ending game...\n");
-            parameters->m_parameters.session_mode.set(_network_session_mode_end_game);
-        }
-        else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
-        {
-            printf("Setting test mode...\n");
-            anvil_session_set_gamemode(session, _game_engine_type_slayer, 0);
-            anvil_session_set_map(_riverworld);
-        }
+        //printf("Starting session countdown...\n");
+        //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
+        //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+        //parameters->dedicated_server_session_state.set(&session_state);
+    }
+    else if (anvil_key_pressed(VK_END, &key_held_end))
+    {
+        printf("Ending game...\n");
+        parameters->m_parameters.session_mode.set(_network_session_mode_end_game);
+    }
+    else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
+    {
+        printf("Setting test mode...\n");
+        anvil_session_set_gamemode(session, _game_engine_type_slayer, 0);
+        anvil_session_set_map(_riverworld);
+    }
 
-        // update voting
-        if (parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
-        {
-            anvil_session_update_voting(session);
-        }
+    // update voting
+    if (parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
+    {
+        anvil_session_update_voting(session);
     }
 }
 

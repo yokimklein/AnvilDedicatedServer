@@ -27,6 +27,8 @@ struct s_lobby_session_data
 	void reset_user_data();
 
 	std::atomic<e_request_status> status;
+	ulong failure_time;
+
 	s_user_session users[k_network_maximum_players_per_session];
 };
 

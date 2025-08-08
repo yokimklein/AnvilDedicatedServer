@@ -6,6 +6,7 @@
 #include <boost\asio\ip\tcp.hpp>
 #include <boost\json.hpp>
 #include <functional>
+#include <cseries\cseries.h>
 
 namespace net = boost::asio;
 namespace beast = boost::beast;
@@ -13,11 +14,16 @@ namespace http = beast::http;
 namespace json = boost::json;
 using tcp = net::ip::tcp;
 
+// 5 second cooldown between failed requests
+constexpr ulong PRIVATE_SERVICE_REQUEST_TIMEOUT = 5000;
+
 enum e_request_status
 {
     _request_status_none,
     _request_status_waiting,
     _request_status_received,
+    _request_status_failed,
+    _request_status_timeout,
 
     k_request_status_count
 };

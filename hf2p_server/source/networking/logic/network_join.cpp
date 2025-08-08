@@ -176,21 +176,46 @@ bool network_join_process_joins_from_queue()
 		if (game_is_dedicated_server())
 		{
 			// check if sessionIDs have been requested, if not request them
+			// joining peers will be held in a queue until this data is received
+			// if no data is received after 60 seconds the peer will be timed out
 			switch (g_lobby_session_data.status)
 			{
 				case _request_status_none:
+				{
 					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
 						transport_secure_nonce_get_string(queue_entry.join_nonce));
-					user_sessions_request_for_lobby();
-					return true;
-				case _request_status_waiting:
-					return true;
+
+					// returning true updates network_join_queue_update, allowing peers to be held in the queue
+					// returning false resets the join state
+					return user_sessions_request_for_lobby();
+				}
 				case _request_status_received:
-					// continue to advance join queue once we have the corresponding userIDs
+				{
+					// we can continue onto join accept now that the data has been received
 					g_lobby_session_data.status = _request_status_none;
 					break;
+				}
+				// after request failure, wait 5 seconds before sending request again
+				case _request_status_failed:
+				{
+					g_lobby_session_data.failure_time = network_time_get();
+					g_lobby_session_data.status = _request_status_timeout;
+					return true;
+				}
+				case _request_status_timeout:
+				{
+					if (network_time_since(g_lobby_session_data.failure_time) >= PRIVATE_SERVICE_REQUEST_TIMEOUT)
+					{
+						g_lobby_session_data.failure_time = NONE;
+						g_lobby_session_data.status = _request_status_none;
+					}
+					return true;
+				}
+				case _request_status_waiting:
 				default:
-					return true; // if false, join state is reset, if true network_join_queue_update is called
+				{
+					return true;
+				}
 			}
 		}
 

@@ -8,6 +8,7 @@ s_lobby_session_data g_lobby_session_data;
 
 s_lobby_session_data::s_lobby_session_data()
     : status(_request_status_none)
+    , failure_time(NONE)
     , users()
 {
     reset_user_data();
@@ -62,6 +63,7 @@ bool user_sessions_request_for_lobby()
     s_transport_secure_identifier lobby_identifier;
     if (!transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &lobby_identifier, &secure_address))
     {
+        printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_sessions_request_for_lobby: failed to retrieve lobby identifier for request!\n");
         return false;
     }
 

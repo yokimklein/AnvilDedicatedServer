@@ -39,7 +39,7 @@ extern s_anvil_session_vote_pool g_anvil_session_vote_pool;
 
 void enable_memory_write(void* base);
 void anvil_initialize();
-bool anvil_create_session();
+bool anvil_session_create();
 void anvil_session_update();
 void anvil_session_start_voting(c_network_session* session);
 void anvil_session_update_voting(c_network_session* session);
