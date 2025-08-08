@@ -77,7 +77,7 @@ void c_backend_private_service::on_connect(std::shared_ptr<s_backend_request_dat
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to connect to host %s:%s [error: %d - %s]!\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
         return;
     }
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": successfully connected to host %s:%s\n", m_host.data(), m_port.data());
+    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": sending request to %s:%s%s\n", m_host.data(), m_port.data(), backend_data.get()->endpoint);
     
     http::async_write(backend_data.get()->stream, backend_data.get()->request, beast::bind_front_handler(&c_backend_private_service::on_write, shared_from_this(), backend_data));
 }
@@ -142,6 +142,15 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
     }
 }
 
+std::string s_register_game_server_request::to_json()
+{
+    boost::property_tree::ptree out;
+    out.put("secureAddr", secureAddr);
+    std::ostringstream oss;
+    boost::property_tree::write_json(oss, out);
+    return oss.str();
+}
+
 void c_backend_private_service::request_register_game_server(s_register_game_server_request& request_body)
 {
     if (!m_initialised)
@@ -156,7 +165,8 @@ void c_backend_private_service::request_register_game_server(s_register_game_ser
     std::shared_ptr<s_backend_request_data> backend_data = std::make_shared<s_backend_request_data>(m_ioc);
     http::request<http::string_body>& request = backend_data.get()->request;
 
-    request.target("/PrivateService.svc/RegisterGameServer");
+    backend_data.get()->endpoint = "/PrivateService.svc/RegisterGameServer";
+    request.target(backend_data.get()->endpoint);
     request.method(http::verb::put);
     request.version(11);
 
@@ -172,13 +182,35 @@ void c_backend_private_service::request_register_game_server(s_register_game_ser
     backend_data.get()->stream.async_connect(m_resolver_results, beast::bind_front_handler(&c_backend_private_service::on_connect, shared_from_this(), backend_data));
 }
 
-std::string s_register_game_server_request::to_json()
+void c_backend_private_service::request_unregister_game_server(s_register_game_server_request& request_body)
 {
-    boost::property_tree::ptree out;
-    out.put("secureAddr", secureAddr);
-    std::ostringstream oss;
-    boost::property_tree::write_json(oss, out);
-    return oss.str();
+    if (!m_initialised)
+    {
+        return;
+    }
+
+    // clear lobby info
+    g_lobby_info.clear_lobby_identifier();
+    g_lobby_info.status = _request_status_none;
+
+    std::shared_ptr<s_backend_request_data> backend_data = std::make_shared<s_backend_request_data>(m_ioc);
+    http::request<http::string_body>& request = backend_data.get()->request;
+
+    backend_data.get()->endpoint = "/PrivateService.svc/UnregisterGameServer";
+    request.target(backend_data.get()->endpoint);
+    request.method(http::verb::delete_);
+    request.version(11);
+
+    request.set(http::field::host, m_host.data()/* + ":" + m_port*/);
+    request.set(http::field::user_agent, anvil_get_build_name_string());
+    request.set(http::field::content_type, "application/json");
+
+    request.body() = request_body.to_json();
+    request.prepare_payload();
+
+    backend_data.get()->response_handler = handle_unregister_game_server_response;
+
+    backend_data.get()->stream.async_connect(m_resolver_results, beast::bind_front_handler(&c_backend_private_service::on_connect, shared_from_this(), backend_data));
 }
 
 void handle_register_game_server_response(s_backend_response* response)
@@ -194,4 +226,9 @@ void handle_register_game_server_response(s_backend_response* response)
         g_lobby_info.status = _request_status_received;
         printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_lobby_info.lobby_identifier));
     }
+}
+
+void handle_unregister_game_server_response(s_backend_response* response)
+{
+
 }

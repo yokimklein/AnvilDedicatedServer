@@ -42,6 +42,7 @@ struct s_register_game_server_response
     const char* lobbyId;
 };
 void handle_register_game_server_response(s_backend_response* response);
+void handle_unregister_game_server_response(s_backend_response* response);
 
 struct s_register_game_server_request
 {
@@ -57,6 +58,7 @@ struct s_backend_request_data
         , request()
         , response()
         , buffer()
+        , endpoint()
     {
     };
 
@@ -65,6 +67,7 @@ struct s_backend_request_data
     http::response<http::string_body> response;
     beast::flat_buffer buffer;
     std::function<void(s_backend_response*)> response_handler;
+    const char* endpoint; // only exists so we can print the request endpoint, retrieving from target results in a corrupted string
 };
 
 class c_backend_private_service : public std::enable_shared_from_this<c_backend_private_service>
@@ -78,6 +81,7 @@ public:
     bool initialised() const { return m_initialised; };
 
     void request_register_game_server(s_register_game_server_request& request_body);
+    void request_unregister_game_server(s_register_game_server_request& request_body);
 
 private:
     c_backend_private_service(std::string_view host, std::string_view port);
