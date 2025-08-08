@@ -18,7 +18,7 @@ void __fastcall handle_out_of_band_message_hook(c_network_message_handler* messa
 }
 void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, const void* stub_message)
 {
-    const void* message = (const void*)BASE_ADDRESS(0x4FFB090);
+    const void* message = base_address<const void*>(0x4FFB090);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
 }
 
@@ -62,6 +62,11 @@ void __fastcall can_accept_player_join_request_hook(c_network_session* thisptr, 
     thisptr->can_accept_player_join_request(player_identifier, secure_address, peer_index, unknown);
 }
 
+void __fastcall session_disconnect_hook(c_network_session* thisptr)
+{
+    thisptr->disconnect();
+}
+
 void anvil_hooks_session_apply()
 {
     // add back missing host code by replacing existing stripped down functions
@@ -92,4 +97,30 @@ void anvil_hooks_session_apply()
     // TODO: REWRITE CALL FOR THIS, FUNCTION IS MISSING ARGUMENTS PASSED INTO IT
     // hook can_accept_player_join_request to reimplement dedicated server userid check
     //Hook(0x22F30, can_accept_player_join_request_hook).Apply();
+
+    // hook c_network_session::disconnect to add call to clear lobby info
+    Hook(0x421B29, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x421B6A, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x421CB4, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x4225FE, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x42440E, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x4256D4, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x425723, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x42AC3C, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x42AD3D, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x43E36F, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x43E8A4, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x43EA40, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x43EAA9, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44B418, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44B522, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44B538, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44B5B2, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44B659, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44D14E, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x44F42F, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x711749, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x711767, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x7AA106, session_disconnect_hook, HookFlags::IsCall).Apply();
+    Hook(0x7AAF2C, session_disconnect_hook, HookFlags::IsCall).Apply();
 }

@@ -114,7 +114,11 @@ bool game_is_dedicated_server()
 {
 	// TODO: change this with build configuration
 	// dedicated server mode should disable rendering, sound, host player
+#if defined(GAME_IS_DEDICATED_SERVER)
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool game_is_bot_client()

@@ -5,7 +5,8 @@
 #include <networking\logic\network_life_cycle.h>
 #include <iostream>
 #include <networking\network_time.h>
-#include <anvil\user.h>
+#include <anvil\backend\user.h>
+#include <game\game.h>
 
 REFERENCE_DECLARE(0x1039AF8, s_networking_join_data, g_network_join_data);
 
@@ -172,22 +173,25 @@ bool network_join_process_joins_from_queue()
 	{
 		s_networking_join_queue_entry& queue_entry = g_network_join_data.join_queue[0];
 
-		// check if sessionIDs have been requested, if not request them
-		switch (g_userid_request_status)
+		if (game_is_dedicated_server())
 		{
-			case _request_status_none:
-				printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
-					transport_secure_nonce_get_string(queue_entry.join_nonce));
-				user_sessions_for_lobby_request();
-				return true;
-			case _request_status_waiting:
-				return true;
-			case _request_status_response_received:
-				// continue to advance join queue once we have the corresponding userIDs
-				g_userid_request_status = _request_status_none;
-				break;
-			default:
-				return true; // if false, join state is reset, if true network_join_queue_update is called
+			// check if sessionIDs have been requested, if not request them
+			switch (g_lobby_session_data.status)
+			{
+				case _request_status_none:
+					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
+						transport_secure_nonce_get_string(queue_entry.join_nonce));
+					user_sessions_for_lobby_request();
+					return true;
+				case _request_status_waiting:
+					return true;
+				case _request_status_received:
+					// continue to advance join queue once we have the corresponding userIDs
+					g_lobby_session_data.status = _request_status_none;
+					break;
+				default:
+					return true; // if false, join state is reset, if true network_join_queue_update is called
+			}
 		}
 
 		// Accept first entry in the queue

@@ -8,7 +8,8 @@
 #include <hf2p\hf2p_session.h>
 #include <networking\network_configuration.h>
 #include <cseries\cseries.h>
-#include <anvil\user.h>
+#include <anvil\backend\user.h>
+#include <anvil\backend\lobby.h>
 #include <game\game.h>
 #include <networking\messages\network_messages_session_protocol.h>
 #include <networking\messages\network_messages_session_membership.h>
@@ -576,6 +577,7 @@ bool c_network_session::session_is_full(long joining_peer_count, long joining_pl
 void c_network_session::disconnect()
 {
     DECLFUNC(0x21CC0, void, __thiscall, c_network_session*)(this);
+    g_lobby_info.clear_lobby_identifier();
 }
 
 void c_network_session::disband_peer(long peer_index)

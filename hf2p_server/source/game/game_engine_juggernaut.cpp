@@ -2,7 +2,7 @@
 
 c_game_engine_juggernaut_variant* c_game_engine_juggernaut_variant::constructor()
 {
-	*(size_t*)this = BASE_ADDRESS(0xD714D0); // set vftable
+	*(size_t*)this = base_address(0xD714D0); // set vftable
 	return this;
 }
 

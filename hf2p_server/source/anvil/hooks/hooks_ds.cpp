@@ -9,7 +9,7 @@
 #include <game\game.h>
 #include <networking\network_globals.h>
 
-bool const k_add_local_player_in_dedicated_server_mode = true;
+bool const k_add_local_player_in_dedicated_server_mode = false;
 
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible

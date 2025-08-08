@@ -10,7 +10,7 @@
 
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
-	static void* simulation_event_generate_for_remote_peers_call = (void*)BASE_ADDRESS(0x7E490);
+	static void* simulation_event_generate_for_remote_peers_call = base_address<void*>(0x7E490);
 	__asm
 	{
 		push event_payload

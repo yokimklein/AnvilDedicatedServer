@@ -1,5 +1,6 @@
 #include "server_tools.h"
 #include <cseries\cseries.h>
+#include <anvil\backend\private_service.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks\hooks.h>
 #include <game\game.h>
@@ -16,10 +17,12 @@
 #include <game\game_engine_util.h>
 #include <tag_files\string_ids.h>
 #include <hf2p\loadouts.h>
-#include <anvil\user.h>
+#include <anvil\backend\user.h>
+#include <anvil\backend\lobby.h>
 #include <memory\tls.h>
 #include <fstream>
 #include <string>
+#include <combaseapi.h>
 
 const wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 const wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -41,13 +44,12 @@ void enable_memory_write(void* base)
         }
     }
 }
-
 void anvil_initialize()
 {
-    printf("%s %s\n", anvil_get_project_name_string(), anvil_get_config_string());
+    printf("%s\n", anvil_get_build_name_string());
     printf("%s\n", anvil_build_version_string());
-    printf("Base address: %p\n\n", (void*)module_base);
-    enable_memory_write((void*)module_base);
+    printf("Base address: %p\n\n", base_address<void*>());
+    enable_memory_write(base_address<void*>());
     anvil_patches_apply();
     anvil_hooks_apply();
 }
@@ -66,11 +68,21 @@ bool anvil_create_session()
     return true;
 }
 
+// #TODO: move to anvil\session_control.h
 void anvil_session_update()
 {
-    if (!life_cycle_globals.initialized) return;
+    if (!life_cycle_globals.initialized)
+    {
+        return;
+    }
 
-    c_network_session* network_session = life_cycle_globals.state_manager.get_active_squad_session();
+    // $TODO: Move this to an anvil_backend_initialize() function called from the game executable
+    if (!g_backend_private_service)
+    {
+        c_backend_private_service::initialise();
+    }
+
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
 
     static bool logged_connection_info = true;
     static bool key_held_home = false;
@@ -79,8 +91,21 @@ void anvil_session_update()
     static bool key_held_pgup = false;
     static bool key_held_pgdown = false;
     //static bool key_held_delete = false; // used for podium taunts
-    if (network_session->current_local_state() == _network_session_state_none)
+
+    // register game server with the API prior to creating the session
+    if (g_lobby_info.status == _request_status_none && !g_lobby_info.valid)
     {
+        s_register_game_server_request request;
+        s_transport_secure_address server_identifier;
+
+        anvil_get_server_identifier(&server_identifier);
+        request.secureAddr = transport_secure_address_get_string(&server_identifier);
+
+        g_backend_private_service->request_register_game_server(request);
+    }
+    else if (g_lobby_info.status == _request_status_received && session->current_local_state() == _network_session_state_none)
+    {
+        g_lobby_info.status = _request_status_none;
         anvil_create_session();
         logged_connection_info = false;
     }
@@ -89,8 +114,8 @@ void anvil_session_update()
     if (!logged_connection_info)
     {
         // wait for the managed session to create & for the session to establish
-        s_online_managed_session* managed_session = &online_session_manager_globals.managed_sessions[network_session->managed_session_index()];
-        if (managed_session->flags.test(_online_managed_session_created_bit) && network_session->established())
+        s_online_managed_session* managed_session = &online_session_manager_globals.managed_sessions[session->managed_session_index()];
+        if (managed_session->flags.test(_online_managed_session_created_bit) && session->established())
         {
             logged_connection_info = true;
             char address_str[0x100];
@@ -98,7 +123,7 @@ void anvil_session_update()
             s_transport_secure_address secure_address = {};
             if (transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &secure_identifier, &secure_address))
             {
-                printf("\nSession ready to join!\nServer Address: %s\nSecure Address: %s\nSecure Identifier: %s\n\n",
+                printf("\nSession ready to join!\nServer Address: %s\nServerID: %s\nLobbyID: %s\n\n",
                     transport_address_to_string(&transport_security_globals.address, nullptr, address_str, 0x100, true, false),
                     transport_secure_address_get_string(&secure_address),
                     transport_secure_identifier_get_string(&secure_identifier));
@@ -112,21 +137,22 @@ void anvil_session_update()
             if (game_is_dedicated_server())
             {
                 e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
-                network_session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&session_state);
+                session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&session_state);
             }
         }
     }
+
     // once session is setup
-    if (network_session->established())
+    if (session->established())
     {
-        c_network_session_membership* membership = network_session->get_session_membership_for_update();
-        c_network_session_parameters* parameters = network_session->get_session_parameters();
+        c_network_session_membership* membership = session->get_session_membership_for_update();
+        c_network_session_parameters* parameters = session->get_session_parameters();
         
         // debug server controls
         if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
         {
             printf("Starting vote...\n");
-            anvil_session_start_voting(network_session);
+            anvil_session_start_voting(session);
         }
         else if (anvil_key_pressed(VK_HOME, &key_held_home))
         {
@@ -135,13 +161,17 @@ void anvil_session_update()
         }
         else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
         {
-            printf("Setting user sessions test data...\n");
-
-            user_sessions_for_lobby_response();
+            printf("Disconnecting session...\n");
+            session->disconnect();
+            
+            //g_backend_private_service->request_register_game_server();
+            //g_backend_private_service->request_register_game_server();
+            //request_test();
+            //user_sessions_for_lobby_response();
 
             //anvil_session_set_test_player_data(membership);
-            //byte* g_ui_tutorial_is_completed = (byte*)BASE_ADDRESS(0x238DCDB);
-            //byte* g_ssl_user_data = (byte*)BASE_ADDRESS(0x4A34908);
+            //byte* g_ui_tutorial_is_completed = base_address<byte*>(0x238DCDB);
+            //byte* g_ssl_user_data = base_address<byte*>(0x4A34908);
             //byte* ui_tutorial_is_completed = (byte*)(g_ssl_user_data + 0x8208);
             //
             // g_ui_tutorial_is_completed
@@ -201,14 +231,14 @@ void anvil_session_update()
         else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
         {
             printf("Setting test mode...\n");
-            anvil_session_set_gamemode(network_session, _game_engine_type_slayer, 0);
+            anvil_session_set_gamemode(session, _game_engine_type_slayer, 0);
             anvil_session_set_map(_riverworld);
         }
 
         // update voting
         if (parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
         {
-            anvil_session_update_voting(network_session);
+            anvil_session_update_voting(session);
         }
     }
 }
@@ -611,30 +641,14 @@ void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
     }
 
     long scnr_path_address = (long)g_tutorial_scenario_path.get_string();
-    memcpy((void*)BASE_ADDRESS(0x33AB0D), &scnr_path_address, 4);
-    memcpy((void*)BASE_ADDRESS(0x33AB58), &scnr_path_address, 4);
+    memcpy(base_address<void*>(0x33AB0D), &scnr_path_address, 4);
+    memcpy(base_address<void*>(0x33AB58), &scnr_path_address, 4);
 
     long map_name_address = (long)g_tutorial_map_name.get_string();
-    memcpy((void*)BASE_ADDRESS(0xDD176), &map_name_address, 4);
+    memcpy(base_address<void*>(0xDD176), &map_name_address, 4);
 
     printf("anvil_launch_scenario(): launching %s (%ls)\n", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
     hq_start_tutorial_level();
-}
-
-// TODO: use this to retrieve a secure address from the API matchmaking service
-void anvil_get_dedicated_secure_address(s_transport_secure_address* secure_address)
-{
-    // cdbeb834-c1a4-9a4d-8dda-f540f378d644
-    byte temp_address[16] = { 0x34, 0xb8, 0xbe, 0xcd, 0xa4, 0xc1, 0x4d, 0x9a, 0x8d, 0xda, 0xf5, 0x40, 0xf3, 0x78, 0xd6, 0x44 };
-    memcpy(secure_address, temp_address, sizeof(s_transport_secure_address));
-}
-
-// TODO: above, but retrieve the lobby/party ID
-void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure_identifier)
-{
-    // 379bd202-9787-bd4a-ad96-a89bae9c7e4a
-    byte temp_identifier[16] = { 0x02, 0xd2, 0x9b, 0x37, 0x87, 0x97, 0x4a, 0xbd, 0xad, 0x96, 0xa8, 0x9b, 0xae, 0x9c, 0x7e, 0x4a };
-    memcpy(secure_identifier, temp_identifier, sizeof(s_transport_secure_identifier));
 }
 
 void anvil_boot_peer(long peer_index)

@@ -182,7 +182,7 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_first || hook_type == _hook_stack_frame_cleanup)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
+        insert_hook_copy_instructions(inserted_code + code_offset, base_address<void*>(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
@@ -223,26 +223,26 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     if (hook_type == _hook_execute_replaced_last || hook_type == _hook_stack_frame_increase)
     {
         // copy & format the instructions we're replacing into our new code block
-        insert_hook_copy_instructions(inserted_code + code_offset, (void*)BASE_ADDRESS(start_address), length, redirect_oob_jumps);
+        insert_hook_copy_instructions(inserted_code + code_offset, base_address<void*>(start_address), length, redirect_oob_jumps);
         code_offset += length;
     }
 
     // return
-    size_t return_offset = (BASE_ADDRESS(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
+    size_t return_offset = (base_address(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
     memcpy(&return_code[1], &return_offset, sizeof(return_offset));
     memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
     code_offset += sizeof(return_code);
 
     // write jump to inserted function
-    size_t jump_offset = ((size_t)(inserted_code)-BASE_ADDRESS(start_address) - sizeof(jump_code));
+    size_t jump_offset = ((size_t)(inserted_code)-base_address(start_address) - sizeof(jump_code));
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
-    memcpy((void*)BASE_ADDRESS(start_address), jump_code, sizeof(jump_code));
+    memcpy(base_address<void*>(start_address), jump_code, sizeof(jump_code));
 
     if (hook_type != _hook_replace_no_nop)
     {
         // nop the bytes leftover between the original overwritten instructions and the return point for sanity
         // makes looking at the modified disassembly less chaotic
-        memset((void*)(BASE_ADDRESS(start_address) + sizeof(jump_code)), 0x90, length - sizeof(jump_code));
+        nop_region(start_address + sizeof(jump_code), length - sizeof(jump_code));
     }
 }
 
@@ -251,7 +251,7 @@ void increase_esp_offsets(size_t function_start, size_t function_end, size_t off
 {
     size_t i = 0;
     size_t length = function_end - function_start;
-    size_t base_function = BASE_ADDRESS(function_start);
+    size_t base_function = base_address(function_start);
     do
     {
         void* function_address = (void*)(base_function + i);
@@ -335,7 +335,7 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
 {
     size_t i = 0;
     size_t length = function_end - function_start;
-    size_t base_function = BASE_ADDRESS(function_start);
+    size_t base_function = base_address(function_start);
     do
     {
         void* instruction_address = (void*)(base_function + i);
@@ -439,7 +439,7 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
 {
     size_t bytes_to_overwrite = 0;
     size_t length = function_end - function_start;
-    size_t base_function = BASE_ADDRESS(function_start);
+    size_t base_function = base_address(function_start);
     do
     {
         void* instruction_address = (void*)(base_function + bytes_to_overwrite);
@@ -458,7 +458,7 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
 
 void nop_region(size_t address, size_t length)
 {
-    memset((void*)BASE_ADDRESS(address), 0x90, length);
+    memset(base_address<void*>(address), 0x90, length);
 }
 
 void hook_function(size_t function_address, size_t length, void* hook_function)
@@ -472,14 +472,14 @@ void hook_function(size_t function_address, size_t length, void* hook_function)
     nop_region(function_address, length);
 
     // write jump to hook function
-    size_t jump_offset = ((size_t)(hook_function)-BASE_ADDRESS(function_address) - sizeof(jump_code));
+    size_t jump_offset = ((size_t)(hook_function)-base_address(function_address) - sizeof(jump_code));
     memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
-    memcpy((void*)BASE_ADDRESS(function_address), jump_code, sizeof(jump_code));
+    memcpy(base_address<void*>(function_address), jump_code, sizeof(jump_code));
 }
 
 //void patch_bytes(size_t address, char* bytes, size_t length)
 //{
-//    memcpy((void*)BASE_ADDRESS(address), bytes, length);
+//    memcpy(base_address<void*>(address), bytes, length);
 //}
 
 void anvil_patches_apply()

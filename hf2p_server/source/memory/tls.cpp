@@ -1,12 +1,13 @@
 #include "tls.h"
 #include <windows.h>
 
+// $TODO: pull latest tls from donkey
 s_thread_local_storage* get_tls()
 {
 	static dword tls_index = 'NOGO';
 	if (tls_index == 'NOGO')
 	{
-		byte* module_base_byte = reinterpret_cast<byte*>(module_base);
+		byte* module_base_byte = base_address<byte*>();
 		PIMAGE_DOS_HEADER dos_header = reinterpret_cast<PIMAGE_DOS_HEADER>(module_base_byte);
 		PIMAGE_NT_HEADERS nt_headers = reinterpret_cast<PIMAGE_NT_HEADERS>(module_base_byte + dos_header->e_lfanew);
 		PIMAGE_TLS_DIRECTORY tls_directory = reinterpret_cast<PIMAGE_TLS_DIRECTORY>(module_base_byte + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);

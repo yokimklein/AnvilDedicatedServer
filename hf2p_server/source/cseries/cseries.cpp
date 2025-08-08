@@ -9,8 +9,16 @@
 #include <string.h>
 #include <text\unicode.h>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 // TODO: remove this
-const size_t module_base = (size_t)GetModuleHandle(NULL);
+//const size_t module_base = (size_t)GetModuleHandle(NULL);
+
+inline size_t base_address_impl(size_t address)
+{
+    return (size_t)GetModuleHandle(NULL) + address;
+}
 
 // ms23 addresses
 //REFERENCE_DECLARE(0x0189CD54, real_argb_color const* const, global_real_argb_white);

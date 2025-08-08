@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -77,11 +77,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -90,7 +90,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -105,11 +105,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ISPROXY;WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ISPROXY;WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -118,7 +118,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -135,11 +135,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -150,7 +150,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -172,6 +172,8 @@
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\animations\mixing_board\channels\channel_base.h" />
+    <ClInclude Include="source\anvil\backend\lobby.h" />
+    <ClInclude Include="source\anvil\backend\private_service.h" />
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
@@ -229,7 +231,7 @@
     <ClInclude Include="source\hf2p\podium.h" />
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
-    <ClInclude Include="source\anvil\user.h" />
+    <ClInclude Include="source\anvil\backend\user.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\item_definitions.h" />
     <ClInclude Include="source\items\projectiles.h" />
@@ -326,7 +328,7 @@
     <ClInclude Include="source\game\game_engine_vip_traits.h" />
     <ClInclude Include="source\game\game_progression.h" />
     <ClInclude Include="source\game\multiplayer_definitions.h" />
-    <ClInclude Include="source\anvil\backend.h" />
+    <ClInclude Include="source\anvil\backend\backend.h" />
     <ClInclude Include="source\math\integer_math.h" />
     <ClInclude Include="source\game\game_results.h" />
     <ClInclude Include="source\game\player_control.h" />
@@ -447,6 +449,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ai\actors.cpp" />
+    <ClCompile Include="source\anvil\backend\lobby.cpp" />
+    <ClCompile Include="source\anvil\backend\private_service.cpp" />
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
@@ -502,7 +506,7 @@
     <ClCompile Include="source\hf2p\hq.cpp" />
     <ClCompile Include="source\hf2p\podium.cpp" />
     <ClCompile Include="source\hf2p\loadouts.cpp" />
-    <ClCompile Include="source\anvil\user.cpp" />
+    <ClCompile Include="source\anvil\backend\user.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
@@ -538,7 +542,7 @@
     <ClCompile Include="source\networking\network_time.cpp" />
     <ClCompile Include="source\scenario\scenario_map_variant.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks.cpp" />
-    <ClCompile Include="source\anvil\backend.cpp" />
+    <ClCompile Include="source\anvil\backend\backend.cpp" />
     <ClCompile Include="source\anvil\build_version.cpp" />
     <ClCompile Include="source\cseries\cseries.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />

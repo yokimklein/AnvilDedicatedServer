@@ -1,8 +1,8 @@
 #include "transport_endpoint_winsock.h"
-#include <winsock2.h>
-#include <iphlpapi.h>
-#include <stdio.h>
-#pragma comment(lib, "IPHLPAPI.lib")
+//#include <winsock2.h>
+//#include <iphlpapi.h>
+//#include <stdio.h>
+//#pragma comment(lib, "IPHLPAPI.lib")
 
 // TODO: nuke this shit 
 /*

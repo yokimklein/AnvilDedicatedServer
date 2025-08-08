@@ -5,23 +5,29 @@
 #include <math\integer_math.h>
 #include <math\real_math.h>
 
-#include <stdarg.h> 
-#include <windows.h>
+#include <stdarg.h>
 #include <assert.h>
 
 #include <memory\member_to_static.h>
 
-extern const size_t module_base;
-#define BASE_ADDRESS(ADDR) (module_base + ADDR)
+extern inline size_t base_address_impl(size_t address);
+
+template<typename k_return_type = size_t>
+k_return_type base_address(size_t address = 0)
+{
+	return (k_return_type)(base_address_impl(address));
+}
+
+//#define BASE_ADDRESS(ADDR) (module_base + ADDR)
 // module_base isn't instatiated in time for reference macros to use it, so we're calling GetModuleHandle directly for now
 #define BASE_ADDRESS_REFERENCE(ADDR)((size_t)GetModuleHandle(NULL) + ADDR)
 
 #define _STRCONCAT(x, y) x ## y
 #define STRCONCAT(x, y) _STRCONCAT(x, y)
 
-#define DECLFUNC(ADDR, R, CC, ...) reinterpret_cast<R(CC*)(__VA_ARGS__)>(BASE_ADDRESS(ADDR))
-#define INVOKE(ADDR, TYPE, ...) reinterpret_cast<decltype(TYPE)*>(BASE_ADDRESS(ADDR))(__VA_ARGS__)
-#define INVOKE_CLASS_MEMBER(ADDRESS, CLASS, NAME, ...) (this->*static_to_member_t<decltype(&CLASS##::##NAME)>{ .address = BASE_ADDRESS(ADDRESS) }.function)(__VA_ARGS__)
+#define DECLFUNC(ADDR, R, CC, ...) base_address<R(CC*)(__VA_ARGS__)>(ADDR)
+#define INVOKE(ADDR, TYPE, ...) base_address<decltype(TYPE)*>(ADDR)(__VA_ARGS__)
+#define INVOKE_CLASS_MEMBER(ADDRESS, CLASS, NAME, ...) (this->*static_to_member_t<decltype(&CLASS##::##NAME)>{ .address = base_address(ADDRESS) }.function)(__VA_ARGS__)
 
 #define OFFSETOF(s,m) __builtin_offsetof(s,m)
 #define NUMBEROF(_array) (sizeof(_array) / sizeof(_array[0]))
@@ -39,9 +45,9 @@ extern const size_t module_base;
 #define BIT_VECTOR_OR_FLAG(BIT_VECTOR, BIT) (BIT_VECTOR[BIT >> 5] |= (1 << (BIT & (LONG_BITS - 1))))
 #define BIT_VECTOR_AND_FLAG(BIT_VECTOR, BIT) (BIT_VECTOR[BIT >> 5] &= ~(1 << (BIT & (LONG_BITS - 1))))
 
-#define REFERENCE_DECLARE(address, type, name) type& name = *reinterpret_cast<type*>(BASE_ADDRESS_REFERENCE(address))
-#define REFERENCE_DECLARE_ARRAY(address, type, name, count) type(&name)[count] = *reinterpret_cast<type(*)[count]>(BASE_ADDRESS_REFERENCE(address))
-#define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *reinterpret_cast<c_static_array<type, count>*>(BASE_ADDRESS_REFERENCE(address))
+#define REFERENCE_DECLARE(address, type, name) type& name = *base_address<type*>(address)
+#define REFERENCE_DECLARE_ARRAY(address, type, name, count) type(&name)[count] = *base_address<type(*)[count]>(address)
+#define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *base_address<c_static_array<type, count>*>(address)
 
 #define FLOOR(a, b) ((a) <= (b) ? (b) : (a))
 #define MIN(x, low) ((x) <= (low) ? (x) : (low))
@@ -145,7 +151,8 @@ typedef char utf8;
 const long LONG_BITS = SIZEOF_BITS(long);
 
 #define FLAG(bit) (1ULL << (bit))
-#define MASK(bit) ((1ULL << (bit)) - 1)
+//#define MASK(bit) ((1ULL << (bit)) - 1)
+#define MASK(bit) ( (FLAG((bit)-1)) | ((bit) <= 1 ? 0 : ( (FLAG((bit)-1) - 1) )) )
 #define TEST_BIT(flags, bit) (((flags) & (1ULL << (bit))) != 0)
 #define TEST_FLAG(flags, bit) (flags.test((bit)))
 #define TEST_MASK(flags, mask) (((flags) & mask) != 0)
@@ -390,11 +397,6 @@ public:
 		m_flags ^= FLAG(bit);
 	}
 
-	//bool valid<t_type, ulong64, k_count>() const
-	//{
-	//	return (m_flags & (t_storage_type)MASK(k_maximum_count)) == 0;
-	//}
-
 	bool valid() const
 	{
 		t_storage_type mask = ~MASK(k_maximum_count); // this should be the inversion of all valid bits
@@ -404,10 +406,7 @@ public:
 
 	bool is_empty() const
 	{
-#pragma warning(push)
-#pragma warning(disable : 4293)
 		return (m_flags & (MASK(SIZEOF_BITS(t_storage_type)) >> (SIZEOF_BITS(t_storage_type) - k_maximum_count))) == 0;
-#pragma warning(pop)
 	}
 
 	t_type count() const

@@ -7,6 +7,7 @@
 #include <simulation\game_interface\simulation_game_projectiles.h>
 #include <simulation\game_interface\simulation_game_items.h>
 #include <tag_files\tag_groups.h>
+#include <intrin.h>
 
 object_datum* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
@@ -224,7 +225,6 @@ void* object_get_and_verify_type(datum_index object_index, dword object_type_mas
 	}
 
 	object_datum* object = object_header->datum;
-
 	// $TODO:
 	if (!_bittest((long*)&object_type_mask, object->object.object_identifier.m_type.get()))
 	{

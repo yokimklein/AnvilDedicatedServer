@@ -1,9 +1,9 @@
 #include "transport_security.h"
 #include <networking\transport\transport_shim.h>
 #include <stdio.h>
-#include <anvil\server_tools.h>
-#include <winsock.h>
+#include <anvil\backend\lobby.h>
 #include <game\game.h>
+#include <WinSock2.h>
 
 REFERENCE_DECLARE(0x4EBE9D0, s_transport_security_globals, transport_security_globals);
 REFERENCE_DECLARE(0x49C1060, s_transport_secure_address const, g_session_secure_address);
@@ -155,7 +155,7 @@ void transport_secure_address_generate(s_transport_secure_address* secure_addres
     ASSERT(secure_address);
     if (game_is_dedicated_server())
     {
-        anvil_get_dedicated_secure_address(secure_address);
+        anvil_get_server_identifier(secure_address);
     }
     else
     {

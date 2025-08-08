@@ -420,7 +420,7 @@ void anvil_hooks_simulation_events_apply()
 
     // simulation_action_projectile_detonate
     hook_function(0x4667D0, 0x86, projectile_detonate_effects_and_damage);
-    memset((void*)BASE_ADDRESS(0x467250), 0x08, 1); // remove unnecessary cleanup bytes handled by fastcall
+    csmemset(base_address<void*>(0x467250), 0x08, 1); // remove unnecessary cleanup bytes handled by fastcall
 
     // simulation_action_projectile_impact_raw
     add_variable_space_to_stack_frame(0x463930, 0x465667, 12); // add extra 12 bytes of variable space to projectile_collision

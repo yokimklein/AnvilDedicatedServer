@@ -290,7 +290,7 @@ uint32_t hashlittle(const void* key, size_t length, uint32_t initval)
     u.ptr = key;
     if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
         const uint32_t* k = (const uint32_t*)key;         /* read 32-bit chunks */
-        const uint8_t* k8;
+        //const uint8_t* k8;
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
         while (length > 12)
@@ -477,7 +477,7 @@ void hashlittle2(
     u.ptr = key;
     if (HASH_LITTLE_ENDIAN && ((u.i & 0x3) == 0)) {
         const uint32_t* k = (const uint32_t*)key;         /* read 32-bit chunks */
-        const uint8_t* k8;
+        //const uint8_t* k8;
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
         while (length > 12)
@@ -656,7 +656,7 @@ uint32_t hashbig(const void* key, size_t length, uint32_t initval)
     u.ptr = key;
     if (HASH_BIG_ENDIAN && ((u.i & 0x3) == 0)) {
         const uint32_t* k = (const uint32_t*)key;         /* read 32-bit chunks */
-        const uint8_t* k8;
+        //const uint8_t* k8;
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
         while (length > 12)
@@ -786,7 +786,7 @@ void driver1()
         h = hashlittle(&buf[0], 1, h);
     }
     time(&z);
-    if (z - a > 0) printf("time %d %.8x\n", z - a, h);
+    if (z - a > 0) printf("time %lld %.8x\n", z - a, h);
 }
 
 /* check that every input bit changes every output bit half the time */

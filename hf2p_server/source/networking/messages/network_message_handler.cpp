@@ -551,7 +551,7 @@ void c_network_message_handler::handle_player_acknowledge(c_network_channel* cha
 
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-	static void* handle_synchronous_update_call = (void*)BASE_ADDRESS(0x25860);
+	static void* handle_synchronous_update_call = base_address<void*>(0x25860);
 	__asm
 	{
 		mov ecx, channel

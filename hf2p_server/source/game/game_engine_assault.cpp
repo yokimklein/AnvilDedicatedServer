@@ -2,7 +2,7 @@
 
 c_game_engine_assault_variant* c_game_engine_assault_variant::constructor()
 {
-	*(size_t*)this = BASE_ADDRESS(0xD714A0); // set vftable
+	*(size_t*)this = base_address(0xD714A0); // set vftable
 	return this;
 }
 

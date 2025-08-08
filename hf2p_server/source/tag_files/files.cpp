@@ -9,7 +9,7 @@ s_file_reference* file_reference_create(s_file_reference* reference, short locat
 
 s_file_reference* file_reference_agnostic_create(s_file_reference* reference, short location)
 {
-    memset(reference, 0, sizeof(s_file_reference));
+    csmemset(reference, 0, sizeof(s_file_reference));
     reference->signature = 'filo';
     reference->location = location;
     return reference;

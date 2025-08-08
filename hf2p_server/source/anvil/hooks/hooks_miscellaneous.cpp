@@ -37,9 +37,11 @@ __declspec(safebuffers) void __fastcall c_simulation_player_taunt_request_event_
 
 long __cdecl exceptions_update_hook()
 {
-    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *(PEXCEPTION_POINTERS*)BASE_ADDRESS(0x106DEC8);
+    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *base_address<PEXCEPTION_POINTERS*>(0x106DEC8);
     if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
+    {
         return 0;
+    }
 
     return exceptions_update();
 }

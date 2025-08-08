@@ -2,6 +2,7 @@
 #include <cseries\cseries.h>
 #include <stdio.h>
 #include <cache\cache_files.h>
+#include <cstdlib>
 
 #define ASSERT_STRING_ID(NAMESPACE, STRING) string_id_get_string_const(STRING_ID(NAMESPACE, STRING)); ASSERT(csstrcmp(NAMESPACE##_##STRING, #STRING) == 0)
 #define ASSERT_STRING_ID_TAGS(STRING, EXPECTED_STRING) { long id_##STRING = string_id_retrieve(EXPECTED_STRING); if (id_##STRING != _string_id_invalid) { tags_##STRING = string_id_get_string_const(id_##STRING); ASSERT(csstrcmp(tags_##STRING, EXPECTED_STRING) == 0); } }

@@ -51,9 +51,6 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
 void anvil_log_game_start_status(s_network_session_parameter_game_start_status* start_status);
 bool anvil_key_pressed(long vkey, bool* key_held);
 
-void anvil_get_dedicated_secure_address(s_transport_secure_address* secure_address);
-void anvil_get_dedicated_secure_identifier(s_transport_secure_identifier* secure_identifier);
-
 // admin tools
 void anvil_boot_peer(long peer_index);
 void anvil_power_sister(long peer_index);

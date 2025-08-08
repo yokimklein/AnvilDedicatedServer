@@ -4,6 +4,7 @@
 #include <simulation\game_interface\simulation_game_events.h>
 #include <anvil\server_tools.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <winuser.rh>
 
 REFERENCE_DECLARE(0x4A2973C, long, g_player_podium_count);
 REFERENCE_DECLARE_ARRAY(0x4A29740, s_player_podium, g_player_podiums, k_maximum_multiplayer_players);

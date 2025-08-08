@@ -3,9 +3,14 @@
 #include <game\game.h>
 
 #define PROJECT_NAME "Anvil Station"
-#define BUILD_CONFIG_DS "Dedicated Server"
-#define BUILD_CONFIG_GS "Game Server"
-#define BUILD_CONFIG_GC "Game Client"
+
+#if defined(GAME_IS_DEDICATED_SERVER)
+#define BUILD_CONFIG "Dedicated Server"
+#else
+#define BUILD_CONFIG "Game Server"
+//#define BUILD_CONFIG "Game Client"
+#endif
+
 #ifdef _DEBUG
 #define BUILD_TYPE "Debug"
 #else
@@ -20,14 +25,15 @@ const char* anvil_build_version_string()
 const char* anvil_get_config_string()
 {
 	// TODO "Game Client" once the client build config is added
-	if (game_is_dedicated_server())
-		return BUILD_CONFIG_DS;
-	else
-		return BUILD_CONFIG_GS;
-	//return BUILD_CONFIG_GC;
+	return BUILD_CONFIG;
 }
 
 const char* anvil_get_project_name_string()
 {
 	return PROJECT_NAME;
+}
+
+const char* anvil_get_build_name_string()
+{
+	return PROJECT_NAME " " BUILD_CONFIG;
 }

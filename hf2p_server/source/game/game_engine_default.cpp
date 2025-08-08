@@ -3,7 +3,7 @@
 
 c_game_engine_base_variant* c_game_engine_base_variant::constructor()
 {
-	*(size_t*)this = BASE_ADDRESS(0xD71410); // set vftable
+	*(size_t*)this = base_address(0xD71410); // set vftable
 	return this;
 };
 

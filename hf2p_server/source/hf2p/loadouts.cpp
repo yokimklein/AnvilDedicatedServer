@@ -48,8 +48,8 @@ bool __fastcall equipment_add(long slot_index, long equipment_index)
 // retrieves from cached loadouts
 s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
 {
-	ASSERT(VALID_INDEX(loadout_index, 3));
-	s_api_user_loadout*(__cdecl**user_get_loadout_from_api_funcs)(qword) = (s_api_user_loadout*(__cdecl**)(qword))BASE_ADDRESS(0xEB09D4);
+	ASSERT(VALID_INDEX(loadout_index, k_maximum_loadouts));
+	s_api_user_loadout*(__cdecl**user_get_loadout_from_api_funcs)(qword) = (s_api_user_loadout*(__cdecl**)(qword))base_address(0xEB09D4);
 	return user_get_loadout_from_api_funcs[loadout_index](user_xuid);
 }
 

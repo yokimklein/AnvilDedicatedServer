@@ -2,7 +2,7 @@
 
 c_game_engine_ctf_variant* c_game_engine_ctf_variant::constructor()
 {
-	*(size_t*)this = BASE_ADDRESS(0xD71470); // set vftable
+	*(size_t*)this = base_address(0xD71470); // set vftable
 	return this;
 }
 

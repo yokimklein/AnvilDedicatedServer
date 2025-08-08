@@ -2,7 +2,7 @@
 
 c_game_engine_slayer_variant* c_game_engine_slayer_variant::constructor()
 {
-	*(size_t*)this = BASE_ADDRESS(0xD71500); // set vftable
+	*(size_t*)this = base_address(0xD71500); // set vftable
 	return this;
 }
 

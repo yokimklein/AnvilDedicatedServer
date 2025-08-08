@@ -1,6 +1,7 @@
 #include "transport_shim.h"
-#include <anvil\server_tools.h>
+#include <anvil\backend\lobby.h>
 #include <game\game.h>
+#include <combaseapi.h>
 
 REFERENCE_DECLARE(0x49C0260, s_xnet_shim_table, g_xnet_shim_table);
 
@@ -104,7 +105,7 @@ void XNetCreateKey(s_transport_secure_identifier* out_secure_identifier)
 {
 	if (game_is_dedicated_server())
 	{
-		anvil_get_dedicated_secure_identifier(out_secure_identifier);
+		anvil_get_lobby_identifier(out_secure_identifier);
 	}
 	else
 	{

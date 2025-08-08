@@ -321,7 +321,7 @@
     <ClInclude Include="source\anvil\dllproxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\backend.h">
+    <ClInclude Include="source\anvil\backend\backend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\anvil\build_version.h">
@@ -813,9 +813,6 @@
     <ClInclude Include="source\effects\particle_states.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\user.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\hf2p\hf2p.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -859,6 +856,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\simulation\simulation_view_telemetry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend\private_service.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend\user.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend\lobby.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -959,7 +965,7 @@
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\backend.cpp">
+    <ClCompile Include="source\anvil\backend\backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\build_version.cpp">
@@ -1310,10 +1316,16 @@
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\user.cpp">
+    <ClCompile Include="source\hf2p\hf2p.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\hf2p\hf2p.cpp">
+    <ClCompile Include="source\anvil\backend\private_service.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend\user.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend\lobby.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
