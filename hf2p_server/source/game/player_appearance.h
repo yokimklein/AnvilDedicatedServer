@@ -474,6 +474,9 @@ static_assert(sizeof(s_player_appearance) == 0x660);
 
 struct s_s3d_player_loadout
 {
+	bool operator==(s_s3d_player_loadout other) const { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_s3d_player_loadout other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 	c_enum<e_gender, byte, _gender_male, k_gender_count> gender;
 	c_enum<e_armor, byte, _armor_air_assault, k_armor_count> armor_suit;
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> primary_weapon;
@@ -524,6 +527,9 @@ struct s_s3d_player_customization
 		padding()
 	{
 	};
+
+	bool operator==(s_s3d_player_customization other) const { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_s3d_player_customization other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
 
 	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
 	bool override_api_data;

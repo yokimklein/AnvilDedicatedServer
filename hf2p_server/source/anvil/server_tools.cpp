@@ -531,87 +531,58 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     c_network_session_membership* membership = session->get_session_membership_for_update();
     const s_network_session_player* player = membership->get_player(player_index);
     const s_network_session_peer* peer = membership->get_peer(player->peer_index);
-    
-    /*
-    // if the player's xuid is unassigned 
-    // temp peer name check, we're currently relying on this to assign the right user id so we need to wait until the first peer properties update comes in and sets this
-    if (configuration->user_xuid == 0 && peer->properties.peer_name.length() > 0)
-    {
-        // dedi host loadout
-        if (player->peer_index == membership->host_peer_index() && game_is_dedicated_server())
-        {
-            //configuration->user_xuid = USER_SYSTEM;
-            //player->controller_index = 0;
-            configuration->s3d_player_customization.colors[_armor_color_primary] = 0x0F0F0F;
-            configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x05286E;
-            configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFF640A;
-            configuration->s3d_player_customization.colors[_armor_color_lights] = 0xFF640A;
-            configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFF640A;
-            configuration->s3d_player_container.loadouts[0].armor_suit = _armor_pilot;
-            configuration->s3d_player_container.loadouts[0].primary_weapon = _dmr_v2;
-            configuration->s3d_player_container.loadouts[0].secondary_weapon = _magnum_v1;
-            configuration->s3d_player_container.loadouts[0].tactical_packs[0] = _concussive_blast;
-            configuration->s3d_player_container.loadouts[0].tactical_packs[1] = _invisibility;
-            configuration->s3d_player_container.loadouts[0].tactical_packs[2] = _hologram;
-            configuration->s3d_player_container.loadouts[0].tactical_packs[3] = _powerdrain;
-            configuration->s3d_player_customization.override_api_data = true;
-            configuration->s3d_player_container.override_api_data = true;
-            wchar_t service_tag[5] = L"HOST";
-            configuration->player_appearance.service_tag.set(service_tag);
-            player_data_updated = true;
-        }
-        else
-        {
-            wchar_t player_list[16][16] = { L"zzVertigo", L"ilikemyname", L"Twister", L"Yokim" }; // player nicknames
-            qword user_ids[16] = { 1724964179, 1724964187, 1724964203, 1724964208 };
-            for (size_t i = 0; i < NUMBEROF(user_ids); i++)
-            {
-                // if a match is found
-                if (peer->properties.peer_name.is_equal(player_list[i]))
-                {
-                    configuration->user_xuid = user_ids[i];
-                    // set dev service tag
-                    if (i == 0)
-                    {
-                        wchar_t service_tag[5] = L"DEV";
-                        configuration->player_appearance.service_tag.set(service_tag);
-                    }
-                    player_data_updated = true;
-                    break;
-                }
-            }
-        }
-    }
-    */
+
+    // $TODO: the peer should say when it needs a configuration update, only call this function when that update number has changed
     if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)
     {
-        // assign player name based on peer name - TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
-        configuration->player_name.set(peer->properties.peer_name.get_string());
+        // assign player name based on peer name - $TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
+        if (!configuration->player_name.is_equal(peer->properties.peer_name.get_string()))
+        {
+            configuration->player_name.set(peer->properties.peer_name.get_string());
+            player_data_updated = true;
+        }
 
         s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation)
         {
-            customisation->write_colours(&configuration->s3d_player_customization);
+            s_s3d_player_customization player_customisation;
+            customisation->write_colours(&player_customisation);
+            if (configuration->s3d_player_customization != player_customisation)
+            {
+                configuration->s3d_player_customization = player_customisation;
+                player_data_updated = true;
+            }
         }
         else
         {
-            printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user customisation from API for user [%lld]!\n", configuration->user_xuid);
+            //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user customisation from API for user [%lld]!\n", configuration->user_xuid);
         }
         for (long i = 0; i < k_maximum_loadouts; i++)
         {
             s_api_user_loadout* loadout = user_get_loadout_from_api(configuration->user_xuid, i);
             if (loadout)
             {
-                loadout->write_configuration(&configuration->s3d_player_container.loadouts[i]);
+                s_s3d_player_loadout player_loadout;
+                loadout->write_configuration(&player_loadout);
+
+                if (configuration->s3d_player_container.loadouts[i] != player_loadout)
+                {
+                    configuration->s3d_player_container.loadouts[i] = player_loadout;
+                    player_data_updated = true;
+                }
             }
             else
             {
-                printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
+                //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
             }
         }
         // TODO: modifiers
         //configuration->s3d_player_container.modifiers[0].modifier_values[_enable_nemesis_mechanics] = true;
         //configuration->s3d_player_container.modifiers[0].modifier_values[_grenade_warning] = false;
+    }
+
+    if (player_data_updated)
+    {
         membership->increment_update();
     }
 
