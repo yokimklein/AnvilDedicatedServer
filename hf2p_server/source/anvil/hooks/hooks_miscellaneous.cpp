@@ -183,6 +183,7 @@ void anvil_hooks_miscellaneous_apply()
     Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
     
     // $TODO: may not be required with backend being disabled?
+    // $TODO: why is this happening? Are we missing data which the clients need?
     // Fix host crashing when killed by a player when not connected to the API
     Hook(0x33B1E0, sub_718BF0_hook, HookFlags::IsCall).Apply();
     Patch::NopFill(Pointer::Base(0x33B1E5), 3);

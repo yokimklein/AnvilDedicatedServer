@@ -1,14 +1,13 @@
 #include "user.h"
 #include <networking\transport\transport_security.h>
-#include <anvil\backend\private_service.h>
+#include <anvil\backend\backend_services.h>
 #include <combaseapi.h>
 #include <stdio.h>
 
 s_lobby_session_data g_lobby_session_data;
 
 s_lobby_session_data::s_lobby_session_data()
-    : status(_request_status_none)
-    , failure_time(NONE)
+    : valid(false)
     , users()
 {
     reset_user_data();
@@ -16,6 +15,7 @@ s_lobby_session_data::s_lobby_session_data()
 
 void s_lobby_session_data::reset_user_data()
 {
+    valid = false;
     csmemset(users, 0, sizeof(users));
 }
 
@@ -69,7 +69,7 @@ bool user_sessions_request_for_lobby()
 
     s_request_retrieve_lobby_members request;
     request.lobbyId = transport_secure_identifier_get_string(&lobby_identifier);
-    g_backend_private_service->request_retrieve_lobby_members(request);
+    c_backend_services::request_retrieve_lobby_members(request);
 
     return true;
 }

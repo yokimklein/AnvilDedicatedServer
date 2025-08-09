@@ -3,8 +3,7 @@
 s_lobby_info g_lobby_info;
 
 s_lobby_info::s_lobby_info()
-    : status(_request_status_none)
-    , failure_time(NONE)
+    : s_request_info()
     , valid(false)
     , lobby_identifier()
 {

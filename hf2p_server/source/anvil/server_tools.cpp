@@ -1,6 +1,6 @@
 #include "server_tools.h"
 #include <cseries\cseries.h>
-#include <anvil\backend\private_service.h>
+#include <anvil\backend\backend_services.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks\hooks.h>
 #include <game\game.h>
@@ -72,19 +72,7 @@ bool anvil_session_create()
 // #TODO: move to anvil\session_control.h
 void anvil_session_update()
 {
-    if (!life_cycle_globals.initialized)
-    {
-        return;
-    }
-
-    // $TODO: Move this to an anvil_backend_initialize() function called from the game executable
-    if (!g_backend_private_service)
-    {
-        c_backend_private_service::initialise();
-    }
-
-    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
-
+    // $TODO: move these debug keys somewhere better
     static bool logged_connection_info = true;
     static bool key_held_home = false;
     static bool key_held_end = false;
@@ -93,55 +81,27 @@ void anvil_session_update()
     static bool key_held_pgdown = false;
     //static bool key_held_delete = false; // used for podium taunts
 
-    // $TODO: handle this for when we're not running in dedicated server mode
-    // register game server with the API prior to creating the session
-    switch (g_lobby_info.status)
+    if (!life_cycle_globals.initialized)
     {
-        case _request_status_none:
-        {
-            if (!g_lobby_info.valid)
-            {
-                s_request_register_game_server register_request;
-                s_transport_secure_address server_identifier;
+        return;
+    }
 
-                anvil_get_server_identifier(&server_identifier);
-                register_request.secureAddr = transport_secure_address_get_string(&server_identifier);
+    c_backend_services::update();
 
-                g_backend_private_service->request_register_game_server(register_request);
-            }
-            break;
-        }
-        case _request_status_received:
-        {
-            if (session->current_local_state() == _network_session_state_none)
-            {
-                g_lobby_info.status = _request_status_none;
-                anvil_session_create();
-                logged_connection_info = false;
-            }
-            break;
-        }
-        // on failure, wait 5 seconds before requesting again
-        case _request_status_failed:
-        {
-            g_lobby_info.failure_time = network_time_get();
-            g_lobby_info.status = _request_status_timeout;
-            break;
-        }
-        case _request_status_timeout:
-        {
-            if (network_time_since(g_lobby_info.failure_time) >= PRIVATE_SERVICE_REQUEST_TIMEOUT)
-            {
-                g_lobby_info.failure_time = NONE;
-                g_lobby_info.status = _request_status_none;
-            }
-            break;
-        }
-        case _request_status_waiting:
-        default:
-        {
-            return;
-        }
+    // Wait until we're connected to the API before proceeding
+    // $TODO: handle disconnects, and attempt to reconnect
+    if (!c_backend_services::ready())
+    {
+        return;
+    }
+
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+
+    // If there's no session, create one once we have a lobby from the API
+    if (session->disconnected() && g_lobby_info.valid)
+    {
+        anvil_session_create();
+        logged_connection_info = false;
     }
 
     // log session connection info
@@ -176,12 +136,12 @@ void anvil_session_update()
                 anvil_get_server_identifier(&server_identifier);
                 update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
                 // $TODO: pull this IP from somewhere
-                update_request.serverAddr = "192.168.0.181"; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
+                update_request.serverAddr = "127.0.0.1"; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
                 update_request.serverPort = transport_security_globals.address.port;
                 // $TODO: pull this from a config?
                 update_request.playlistId = "playlist_team_slayer_small";
 
-                g_backend_private_service->request_update_game_server(update_request);
+                c_backend_services::request_update_game_server(update_request);
 
                 // set default dedicated server state
                 e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
@@ -214,9 +174,8 @@ void anvil_session_update()
     {
         printf("Disconnecting session...\n");
         session->disconnect();
-        
+    
         //anvil_session_set_test_player_data(membership);
-
         /*
         // load new string from text file
         std::ifstream file("map_load.txt");
@@ -241,12 +200,6 @@ void anvil_session_update()
             printf("map_load.txt mising scenario path line!\n");
         }
         */
-        //TLS_DATA_GET_VALUE_REFERENCE(director_globals);
-        //director_globals->infos[0].camera_mode;
-        //director_globals->infos[0].director_mode;
-        //director_globals->infos[0].director_perspective;
-        //printf("Finished.\n");
-
         //printf("Starting session countdown...\n");
         //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
         //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
@@ -538,7 +491,14 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         // assign player name based on peer name - $TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
         if (!configuration->player_name.is_equal(peer->properties.peer_name.get_string()))
         {
-            configuration->player_name.set(peer->properties.peer_name.get_string());
+            if (player->peer_index != membership->host_peer_index())
+            {
+                configuration->player_name.set(peer->properties.peer_name.get_string());
+            }
+            else
+            {
+                configuration->player_name.set(L"DECEMBER");
+            }
             player_data_updated = true;
         }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <networking\transport\transport_security.h>
-#include <anvil\backend\private_service.h>
+#include <anvil\backend\backend_services.h>
 #include <simulation\simulation.h>
 #include <atomic>
 
@@ -21,14 +21,12 @@ struct s_user_session
 	s_transport_secure_address session_id;
 };
 
-struct s_lobby_session_data
+struct s_lobby_session_data : s_request_info
 {
 	s_lobby_session_data();
 	void reset_user_data();
 
-	std::atomic<e_request_status> status;
-	ulong failure_time;
-
+	bool valid;
 	s_user_session users[k_network_maximum_players_per_session];
 };
 

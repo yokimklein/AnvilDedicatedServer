@@ -11,6 +11,7 @@
 #include <fstream>
 #include <networking\network_time.h>
 #include <game\player_mapping.h>
+//#include <format>
 
 char const* network_session_peer_states[k_network_session_peer_state_count] =
 {
@@ -610,7 +611,7 @@ void c_network_session_membership::build_membership_update(long peer_index, cons
     }
     message->checksum = fast_checksum<s_network_session_shared_membership>(fast_checksum_new(), membership);
 
-    //std::ofstream wf("membership_update.bin", std::ios::out | std::ios::binary);
+    //std::ofstream wf(std::format("membership_updates\\membership_update_{}.bin", message->update_number), std::ios::out | std::ios::binary);
     //wf.write((char*)membership, sizeof(s_network_session_shared_membership));
     //wf.close();
 }

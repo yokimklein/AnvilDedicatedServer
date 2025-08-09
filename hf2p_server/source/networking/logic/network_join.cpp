@@ -178,44 +178,37 @@ bool network_join_process_joins_from_queue()
 			// check if sessionIDs have been requested, if not request them
 			// joining peers will be held in a queue until this data is received
 			// if no data is received after 60 seconds the peer will be timed out
-			switch (g_lobby_session_data.status)
-			{
-				case _request_status_none:
-				{
-					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
-						transport_secure_nonce_get_string(queue_entry.join_nonce));
 
-					// returning true updates network_join_queue_update, allowing peers to be held in the queue
-					// returning false resets the join state
-					return user_sessions_request_for_lobby();
-				}
-				case _request_status_received:
+			// returning true updates network_join_queue_update, allowing peers to be held in the queue
+			// returning false resets the join state
+
+			if (g_lobby_session_data.status == _request_status_none)
+			{
+				if (!user_sessions_request_for_lobby())
 				{
-					// we can continue onto join accept now that the data has been received
-					g_lobby_session_data.status = _request_status_none;
-					break;
+					// reset the join state if request fails
+					return false;
 				}
-				// after request failure, wait 5 seconds before sending request again
-				case _request_status_failed:
+				// hold in queue until we have valid data from the request
+				printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
+					transport_secure_nonce_get_string(queue_entry.join_nonce));
+				return true;
+			}
+			else if (g_lobby_session_data.status == _request_status_received)
+			{
+				g_lobby_session_data.status = _request_status_none;
+
+				// reset join if session data returned invalid, otherwise continue to join accept
+				if (!g_lobby_session_data.valid)
 				{
-					g_lobby_session_data.failure_time = network_time_get();
-					g_lobby_session_data.status = _request_status_timeout;
-					return true;
+					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: session data returned invalid!\n");
+					return false;
 				}
-				case _request_status_timeout:
-				{
-					if (network_time_since(g_lobby_session_data.failure_time) >= PRIVATE_SERVICE_REQUEST_TIMEOUT)
-					{
-						g_lobby_session_data.failure_time = NONE;
-						g_lobby_session_data.status = _request_status_none;
-					}
-					return true;
-				}
-				case _request_status_waiting:
-				default:
-				{
-					return true;
-				}
+			}
+			else
+			{
+				// continue to hold in queue
+				return true;
 			}
 		}
 

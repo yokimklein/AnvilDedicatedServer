@@ -858,7 +858,7 @@
     <ClInclude Include="source\simulation\simulation_view_telemetry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\backend\private_service.h">
+    <ClInclude Include="source\anvil\backend\backend_services.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\anvil\backend\user.h">
@@ -1322,7 +1322,7 @@
     <ClCompile Include="source\hf2p\hf2p.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\anvil\backend\private_service.cpp">
+    <ClCompile Include="source\anvil\backend\backend_services.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\backend\user.cpp">

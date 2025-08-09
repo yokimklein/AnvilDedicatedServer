@@ -101,11 +101,12 @@ struct s_network_session_peer
 	qword party_nonce;
 	qword join_nonce;
 	c_static_flags<k_network_maximum_players_per_session> player_mask;
-	long pad;
 	// something here in other engine versions for finding the player index for each user
 	// long user_player_indices[k_number_of_users];
 };
 static_assert(sizeof(s_network_session_peer) == 0xE0);
+static_assert(0x00 == OFFSETOF(s_network_session_peer, secure_address));
+static_assert(0x10 == OFFSETOF(s_network_session_peer, connection_state));
 static_assert(0x20 == OFFSETOF(s_network_session_peer, properties));
 static_assert(0xD8 == OFFSETOF(s_network_session_peer, player_mask));
 
@@ -135,6 +136,7 @@ struct s_network_session_player
 	long unknown3;
 };
 static_assert(sizeof(s_network_session_player) == 0xB98);
+static_assert(0x0C == OFFSETOF(s_network_session_player, peer_index));
 static_assert(0x20 == OFFSETOF(s_network_session_player, configuration));
 
 struct s_local_session_peer
@@ -166,8 +168,19 @@ struct s_network_session_shared_membership
 	long unknown3;
 };
 static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
+static_assert(0x00 == OFFSETOF(s_network_session_shared_membership, update_number));
+static_assert(0x04 == OFFSETOF(s_network_session_shared_membership, leader_peer_index));
+static_assert(0x08 == OFFSETOF(s_network_session_shared_membership, host_peer_index));
+static_assert(0x0C == OFFSETOF(s_network_session_shared_membership, private_slot_count));
+static_assert(0x10 == OFFSETOF(s_network_session_shared_membership, public_slot_count));
+static_assert(0x14 == OFFSETOF(s_network_session_shared_membership, friends_only));
+static_assert(0x15 == OFFSETOF(s_network_session_shared_membership, are_slots_locked));
+static_assert(0x1C == OFFSETOF(s_network_session_shared_membership, peer_valid_mask));
 static_assert(0x20 == OFFSETOF(s_network_session_shared_membership, peers));
+static_assert(0xF00 == OFFSETOF(s_network_session_shared_membership, player_count));
+static_assert(0xF04 == OFFSETOF(s_network_session_shared_membership, player_valid_mask));
 static_assert(0xF08 == OFFSETOF(s_network_session_shared_membership, players));
+static_assert(0xC888 == OFFSETOF(s_network_session_shared_membership, player_sequence_number));
 
 class c_network_session;
 struct s_network_message_membership_update;

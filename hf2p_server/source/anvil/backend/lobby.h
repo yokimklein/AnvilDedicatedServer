@@ -1,15 +1,12 @@
 #pragma once
 #include <atomic>
 #include <networking\transport\transport_security.h>
-#include <anvil\backend\private_service.h>
+#include <anvil\backend\backend_services.h>
 
-struct s_lobby_info
+struct s_lobby_info : s_request_info
 {
     s_lobby_info();
     void clear_lobby_identifier();
-
-    std::atomic<e_request_status> status;
-    ulong failure_time;
 
     bool valid;
     s_transport_secure_identifier lobby_identifier;

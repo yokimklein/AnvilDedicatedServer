@@ -585,7 +585,7 @@ void c_network_session::disconnect()
         s_transport_secure_address server_identifier;
         anvil_get_server_identifier(&server_identifier);
         request.secureAddr = transport_secure_address_get_string(&server_identifier);
-        g_backend_private_service->request_unregister_game_server(request);
+        c_backend_services::request_unregister_game_server(request);
     }
 }
 
