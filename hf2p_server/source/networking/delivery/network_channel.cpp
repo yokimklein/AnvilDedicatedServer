@@ -139,7 +139,7 @@ void c_network_channel::close(e_network_channel_closure_reason closure_reason)
 	ASSERT(allocated());
 	ASSERT(!closed());
 
-	printf("MP/NET/CHANNEL,CTRL: c_network_channel::close: Closing channel. Reason %s.", get_closure_reason_string(closure_reason));
+	printf("MP/NET/CHANNEL,CTRL: c_network_channel::close: Closing channel. Reason %s.\n", get_closure_reason_string(closure_reason));
 
 	if (connected() && closure_reason != _network_channel_reason_connect_reinitiated)
 	{

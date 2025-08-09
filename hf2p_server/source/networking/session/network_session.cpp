@@ -601,7 +601,8 @@ void c_network_session::disband_peer(long peer_index)
     }
 
     printf("MP/NET/SESSION,CTRL: c_network_session::disband_peer: [%s] disbanding peer [%s]\n", get_id_string(), get_peer_description(peer_index));
-    s_network_message_session_disband disband_message = {};
+    s_network_message_session_disband disband_message;
+    csmemset(&disband_message, 0, sizeof(disband_message));
     get_session_id(&disband_message.session_id);
     long observer_index = m_session_membership.get_observer_channel_index(peer_index);
     if (observer_index != NONE)
@@ -1153,32 +1154,31 @@ void c_network_session::process_pending_joins()
             qword join_nonce = membership->get_join_nonce(peer_index);
             long peer_creation_timestamp = membership->get_creation_timestamp(peer_index);
 
-            if (join_nonce_is_from_clone_join_or_is_hosts(join_nonce))
+            if (!join_nonce_is_from_clone_join_or_is_hosts(join_nonce) && membership->get_peer_connection_state(peer_index) == _network_session_peer_state_disconnected)
             {
-                if (membership->get_peer_connection_state(peer_index) == _network_session_peer_state_disconnected)
+                printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] failed because the peer disconnect, removing\n",
+                    get_id_string(),
+                    transport_secure_nonce_get_string(join_nonce));
+
+                abort_pending_join(join_nonce);
+                continue;
+            }
+
+            if (!join_nonce_is_from_clone_join_or_is_hosts(join_nonce) &&
+                membership->get_peer_connection_state(peer_index) < _network_session_peer_state_established &&
+                pending_join_timeout != NONE)
+            {
+                ulong time_since_creation = network_time_since(peer_creation_timestamp);
+                if (time_since_creation >= pending_join_timeout)
                 {
-                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] failed because the peer disconnect, removing\n",
+                    printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] timed out (%d msec > %d msec), removing\n",
                         get_id_string(),
-                        transport_secure_nonce_get_string(join_nonce));
+                        transport_secure_nonce_get_string(join_nonce),
+                        network_time_since(peer_creation_timestamp),
+                        pending_join_timeout);
 
                     abort_pending_join(join_nonce);
-                }
-            }
-            else
-            {
-                if (membership->get_peer_connection_state(peer_index) < _network_session_peer_state_established && pending_join_timeout != NONE)
-                {
-                    ulong time_since_creation = network_time_since(peer_creation_timestamp);
-                    if (time_since_creation >= pending_join_timeout)
-                    {
-                        printf("MP/NET/SESSION,CTRL: c_network_session::process_pending_joins: Warning. [%s] pending joins for [%s] timed out (%d msec > %d msec), removing\n",
-                            get_id_string(),
-                            transport_secure_nonce_get_string(join_nonce),
-                            network_time_since(peer_creation_timestamp),
-                            pending_join_timeout);
-
-                        abort_pending_join(join_nonce);
-                    }
+                    continue;
                 }
             }
         }
