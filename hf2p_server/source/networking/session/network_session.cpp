@@ -1271,6 +1271,7 @@ void c_network_session::check_to_send_membership_update()
                             {
                                 // add the current player to the host peer's player mask && set the current player's peer index to host's
                                 shared_membership.peers[shared_membership.host_peer_index].player_mask.set(shared_player_index, true);
+                                shared_membership.players[shared_player_index].peer_index = shared_membership.host_peer_index;
                             }
                         }
                         
