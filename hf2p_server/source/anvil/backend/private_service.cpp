@@ -38,7 +38,7 @@ void c_backend_private_service::initialise()
 {
     if (g_backend_private_service)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": backend already initialised!\n");
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": backend already initialised!\n");
         return;
     }
 
@@ -51,7 +51,7 @@ void c_backend_private_service::start_resolve()
 {
     if (m_initialised)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": already initialised - cannot start resolve again!\n");
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": already initialised - cannot start resolve again!\n");
         return;
     }
     g_backend_private_service.get()->m_resolver.async_resolve(m_host.data(), m_port.data(), beast::bind_front_handler(&c_backend_private_service::on_resolve, shared_from_this()));
@@ -61,19 +61,19 @@ void c_backend_private_service::on_resolve(beast::error_code ec, tcp::resolver::
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to resolve host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to resolve host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
         return;
     }
     m_resolver_results = results;
     m_initialised = true;
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": successfully resolved host %s:%s\n", m_host.data(), m_port.data());
+    printf("ONLINE/HTTP,STUB_LOG_FILTER: " __FUNCTION__ ": successfully resolved host %s:%s\n", m_host.data(), m_port.data());
 }
 
 void c_backend_private_service::on_connect(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, tcp::resolver::results_type::endpoint_type endpoint)
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to connect to host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to connect to host %s:%s! [error: %d - %s]\n", m_host.data(), m_port.data(), ec.value(), ec.message().c_str());
         
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -81,7 +81,7 @@ void c_backend_private_service::on_connect(std::shared_ptr<s_backend_request_dat
 
         return;
     }
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": sending request to %s:%s%s\n", m_host.data(), m_port.data(), backend_data.get()->endpoint);
+    printf("ONLINE/CLIENT/REQUEST,JSON: " __FUNCTION__ ": sending request to %s:%s%s\n", m_host.data(), m_port.data(), backend_data.get()->endpoint);
     
     http::async_write(backend_data.get()->stream, backend_data.get()->request, beast::bind_front_handler(&c_backend_private_service::on_write, shared_from_this(), backend_data));
 }
@@ -90,7 +90,7 @@ void c_backend_private_service::on_write(std::shared_ptr<s_backend_request_data>
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to write! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to write! [error: %d - %s]\n", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -106,7 +106,7 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
 {
     if (ec)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to read response! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to read response! [error: %d - %s]\n", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -129,7 +129,10 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
                 response.retCode = (e_backend_return_codes)obj.at("retCode").as_int64();
                 if (response.retCode != _backend_success)
                 {
-                    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": response returned failed retCode! [%d]!\n", response.retCode);
+                    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response returned failed retCode! [%d]!\n", response.retCode);
+                    s_backend_response failure_response;
+                    failure_response.retCode = response.retCode;
+                    backend_data.get()->response_handler(&failure_response);
                 }
                 else
                 {
@@ -144,7 +147,10 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
     }
     catch (const std::exception& e)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to parse JSON! [%s]!\n", e.what());
+        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": failed to parse JSON! [%s]!\n", e.what());
+        s_backend_response failure_response;
+        failure_response.retCode = _backend_unhandled_error;
+        backend_data.get()->response_handler(&failure_response);
     }
 
     // close connection
@@ -152,7 +158,7 @@ void c_backend_private_service::on_read(std::shared_ptr<s_backend_request_data> 
 
     if (ec && ec != beast::errc::not_connected)
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to shutdown connection! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to shutdown connection! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
     }
 }
 
@@ -234,7 +240,7 @@ void handle_response_register_game_server(s_backend_response* response)
         
         g_lobby_info.valid = true;
         g_lobby_info.status = _request_status_received;
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_lobby_info.lobby_identifier));
+        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_lobby_info.lobby_identifier));
     }
 }
 
@@ -293,6 +299,7 @@ void handle_response_retrieve_lobby_members(s_backend_response* response)
 
     g_lobby_session_data.reset_user_data();
 
+    // $TODO: json fails to parse when more than 1 member is returned
     auto members = response->data.at("members").as_array();
     ulong user_sessions_count = members.size();
 
@@ -304,7 +311,7 @@ void handle_response_retrieve_lobby_members(s_backend_response* response)
         return;
     }
     
-    printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": received [%d] user sessions\n", user_sessions_count);
+    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received [%d] user sessions\n", user_sessions_count);
 
     for (ulong user_session_index = 0; user_session_index < members.size(); user_session_index++)
     {
