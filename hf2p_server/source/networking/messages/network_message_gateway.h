@@ -18,8 +18,11 @@ public:
 	const c_network_message_type_collection* message_types() const { return m_message_types; };
 
 	bool send_message_directed(transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, void const* message);
+	void send_all_pending_messages();
 
 private:
+	static bool __fastcall read_packet_header(c_bitstream* packet);
+
 	bool m_initialized;
 	c_network_link* m_link;
 	const c_network_message_type_collection* m_message_types;

@@ -17,6 +17,20 @@ enum e_bitstream_state
 
 class c_bitstream
 {
+public:
+	bool was_writing() const;
+	bool would_overflow(long size_in_bits) const;
+	void write_accumulator_to_memory(qword value, long size_in_bits);
+	void write_bit_internal(bool value);
+	void write_bool(const char* debug_string, bool value);
+	void finish_writing(long* bits_wasted);
+	void reset(long state);
+	bool begin_consistency_check();
+	bool read_bool(const char* debug_string);
+	void finish_reading();
+	bool reading() const;
+	bool writing() const;
+
 private:
 	static long const k_bitstream_maximum_position_stack_size = 4;
 

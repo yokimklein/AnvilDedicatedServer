@@ -83,7 +83,11 @@ public:
 		decode_t* decode_function,
 		compare_t* compare_function,
 		dispose_t* dispose_function);
+
 	void encode_message_header(c_bitstream* stream, e_network_message_type message_type, long message_storage_size);
+	bool decode_message_header(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size) const;
+	bool __cdecl decode_message(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size, void* message_storage) const;
+	void __cdecl dispose_message(e_network_message_type message_type, long message_storage_size, void* message_storage) const;
 
 protected:
 	s_network_message_type m_message_types[k_network_message_type_count];

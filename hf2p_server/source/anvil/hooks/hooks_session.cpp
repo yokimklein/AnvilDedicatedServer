@@ -8,6 +8,7 @@
 #include <networking\session\network_managed_session.h>
 #include <networking\transport\transport_shim.h>
 #include <game\game_engine_spawning.h>
+#include <networking\messages\network_message_gateway.h>
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, transport_address const* address, e_network_message_type message_type, long unused2, const void* message)
@@ -67,6 +68,11 @@ void __fastcall session_disconnect_hook(c_network_session* thisptr)
     thisptr->disconnect();
 }
 
+void __fastcall send_all_pending_messages_hook(c_network_message_gateway* thisptr)
+{
+    thisptr->send_all_pending_messages();
+}
+
 void anvil_hooks_session_apply()
 {
     // add back missing host code by replacing existing stripped down functions
@@ -123,4 +129,7 @@ void anvil_hooks_session_apply()
     Hook(0x311767, session_disconnect_hook, HookFlags::IsCall).Apply();
     Hook(0x3AA106, session_disconnect_hook, HookFlags::IsCall).Apply();
     Hook(0x3AAF2C, session_disconnect_hook, HookFlags::IsCall).Apply();
+
+    // hook c_network_message_gateway::send_all_pending_messages to attempt to fix stack overflow
+    Hook(0x23480, send_all_pending_messages_hook).Apply();
 }

@@ -19,10 +19,12 @@ enum e_network_packet_mode
 
 class c_network_channel;
 class c_network_out_of_band_consumer;
+class c_bitstream;
 class c_network_link
 {
 public:
 	static c_network_channel* __fastcall get_associated_channel(transport_address const* address);
+	void send_out_of_band(const c_bitstream* game_data, const transport_address* address, long* out_size_on_wire);
 
 	struct s_link_packet
 	{

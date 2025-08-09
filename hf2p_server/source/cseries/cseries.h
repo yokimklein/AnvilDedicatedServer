@@ -148,7 +148,14 @@ typedef char utf8;
 
 #define SIZEOF_BITS(value) 8 * sizeof(value)
 
+const long CHAR_BYTES = sizeof(char);
+const long SHORT_BYTES = sizeof(short);
+const long LONG_BYTES = sizeof(long);
+const long QWORD_BYTES = sizeof(qword);
+const long CHAR_BITS = SIZEOF_BITS(char);
+const long SHORT_BITS = SIZEOF_BITS(short);
 const long LONG_BITS = SIZEOF_BITS(long);
+const long QWORD_BITS = SIZEOF_BITS(qword);
 
 #define FLAG(bit) (1ULL << (bit))
 //#define MASK(bit) ((1ULL << (bit)) - 1)

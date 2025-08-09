@@ -97,3 +97,57 @@ void c_network_message_type_collection::encode_message_header(c_bitstream* strea
 {
 	DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(this, stream, message_type, message_storage_size);
 }
+
+bool c_network_message_type_collection::decode_message_header(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size) const
+{
+	ASSERT(packet);
+	ASSERT(message_type);
+	ASSERT(message_storage_size);
+
+	return DECLFUNC(0x38830, bool, __thiscall, const c_network_message_type_collection*, c_bitstream*, e_network_message_type*, long*)(this, packet, message_type, message_storage_size);
+}
+
+bool __cdecl c_network_message_type_collection::decode_message(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size, void* message_storage) const
+{
+	ASSERT(packet);
+	ASSERT(message_type);
+	ASSERT(message_storage_size);
+	ASSERT(message_storage);
+
+	if (decode_message_header(packet, message_type, message_storage_size))
+	{
+		const s_network_message_type* type_definition = &m_message_types[*message_type];
+
+		ASSERT(*message_type >= 0 && *message_type < k_network_message_type_count);
+		ASSERT(type_definition->initialized);
+		ASSERT(*message_storage_size >= 0 && *message_storage_size <= k_network_message_maximum_size);
+		ASSERT(*message_storage_size >= type_definition->message_size);
+		ASSERT(*message_storage_size <= type_definition->message_size_maximum);
+
+		csmemset(message_storage, 0, *message_storage_size);
+
+		if (TEST_BIT(type_definition->flags, 1))
+		{
+			return true;
+		}
+
+		ASSERT(type_definition->decode_function);
+		return type_definition->decode_function(packet, *message_storage_size, message_storage);
+	}
+
+	return false;
+}
+
+void __cdecl c_network_message_type_collection::dispose_message(e_network_message_type message_type, long message_storage_size, void* message_storage) const
+{
+	const s_network_message_type* type_definition = &m_message_types[message_type];
+
+	ASSERT(message_type >= 0 && message_type < k_network_message_type_count);
+	ASSERT(message_storage_size);
+	ASSERT(message_storage);
+
+	if (type_definition->dispose_function)
+	{
+		type_definition->dispose_function(message_storage_size, message_storage);
+	}
+}
