@@ -867,6 +867,9 @@
     <ClInclude Include="source\anvil\backend\lobby.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\session_control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1326,6 +1329,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\backend\lobby.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\memory\bitstream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

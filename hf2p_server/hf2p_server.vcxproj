@@ -189,6 +189,7 @@
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
+    <ClInclude Include="source\anvil\session_control.h" />
     <ClInclude Include="source\cache\cache_files.h" />
     <ClInclude Include="source\camera\camera.h" />
     <ClInclude Include="source\camera\camera_globals.h" />
@@ -514,6 +515,7 @@
     <ClCompile Include="source\main\main.cpp" />
     <ClCompile Include="source\math\matrix_math.cpp" />
     <ClCompile Include="source\math\real_math.cpp" />
+    <ClCompile Include="source\memory\bitstream.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\hashtable.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
