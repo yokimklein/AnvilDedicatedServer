@@ -173,7 +173,10 @@
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\animations\mixing_board\channels\channel_base.h" />
     <ClInclude Include="source\anvil\backend\lobby.h" />
-    <ClInclude Include="source\anvil\backend\backend_services.h" />
+    <ClInclude Include="source\anvil\backend\backend.h" />
+    <ClInclude Include="source\anvil\backend\services\authorization_service.h" />
+    <ClInclude Include="source\anvil\backend\services\endpoints_service.h" />
+    <ClInclude Include="source\anvil\backend\services\private_service.h" />
     <ClInclude Include="source\anvil\config.h" />
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
@@ -330,7 +333,7 @@
     <ClInclude Include="source\game\game_engine_vip_traits.h" />
     <ClInclude Include="source\game\game_progression.h" />
     <ClInclude Include="source\game\multiplayer_definitions.h" />
-    <ClInclude Include="source\anvil\backend\backend.h" />
+    <ClInclude Include="source\anvil\backend\uri_map.h" />
     <ClInclude Include="source\math\integer_math.h" />
     <ClInclude Include="source\game\game_results.h" />
     <ClInclude Include="source\game\player_control.h" />
@@ -452,7 +455,10 @@
   <ItemGroup>
     <ClCompile Include="source\ai\actors.cpp" />
     <ClCompile Include="source\anvil\backend\lobby.cpp" />
-    <ClCompile Include="source\anvil\backend\backend_services.cpp" />
+    <ClCompile Include="source\anvil\backend\backend.cpp" />
+    <ClCompile Include="source\anvil\backend\services\authorization_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\endpoints_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\private_service.cpp" />
     <ClCompile Include="source\anvil\config.cpp" />
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
@@ -546,7 +552,7 @@
     <ClCompile Include="source\networking\network_time.cpp" />
     <ClCompile Include="source\scenario\scenario_map_variant.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks.cpp" />
-    <ClCompile Include="source\anvil\backend\backend.cpp" />
+    <ClCompile Include="source\anvil\backend\uri_map.cpp" />
     <ClCompile Include="source\anvil\build_version.cpp" />
     <ClCompile Include="source\cseries\cseries.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />

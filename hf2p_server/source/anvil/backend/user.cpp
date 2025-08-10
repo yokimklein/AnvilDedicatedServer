@@ -1,6 +1,6 @@
 #include "user.h"
 #include <networking\transport\transport_security.h>
-#include <anvil\backend\backend_services.h>
+#include <anvil\backend\services\private_service.h>
 #include <combaseapi.h>
 #include <stdio.h>
 
@@ -67,9 +67,7 @@ bool user_sessions_request_for_lobby()
         return false;
     }
 
-    s_request_retrieve_lobby_members request;
-    request.lobbyId = transport_secure_identifier_get_string(&lobby_identifier);
-    c_backend_services::request_retrieve_lobby_members(request);
+    c_backend::private_service::retrieve_lobby_members::request(transport_secure_identifier_get_string(&lobby_identifier));
 
     return true;
 }

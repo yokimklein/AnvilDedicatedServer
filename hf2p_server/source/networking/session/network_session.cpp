@@ -10,6 +10,7 @@
 #include <cseries\cseries.h>
 #include <anvil\backend\user.h>
 #include <anvil\backend\lobby.h>
+#include <anvil\backend\services\private_service.h>
 #include <game\game.h>
 #include <networking\messages\network_messages_session_protocol.h>
 #include <networking\messages\network_messages_session_membership.h>
@@ -581,11 +582,9 @@ void c_network_session::disconnect()
     // unregister the game server on the API
     if (game_is_dedicated_server())
     {
-        s_request_register_game_server request;
         s_transport_secure_address server_identifier;
         anvil_get_server_identifier(&server_identifier);
-        request.secureAddr = transport_secure_address_get_string(&server_identifier);
-        c_backend_services::request_unregister_game_server(request);
+        c_backend::private_service::unregister_game_server::request(transport_secure_address_get_string(&server_identifier));
     }
 }
 

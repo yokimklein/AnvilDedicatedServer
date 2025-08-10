@@ -1,129 +1,393 @@
 #include "backend.h"
-#include <cstdarg>
+#include <networking\transport\transport_security.h>
+#include <anvil\build_version.h>
+#include <anvil\server_tools.h>
+#include <anvil\backend\lobby.h>
+#include <anvil\backend\user.h>
+#include <anvil\config.h>
+#include <combaseapi.h>
+#include <iostream>
+#include <networking\network_time.h>
 
-// API logging based on Matt's implementation in HaloToolz
-std::unordered_map<std::string, const char*> backend_hashmap
+#include <anvil\backend\services\private_service.h>
+#include <anvil\backend\services\endpoints_service.h>
+#include <anvil\backend\services\authorization_service.h>
+
+s_request_info::s_request_info()
+    : status(_request_status_none)
+    , failure_time(NONE)
 {
-	{ "f96526423b3c473eb3350716b74634b1", "FriendsService" },
-	{ "7804a9f0c48f4e68bc3b16e9933e58e4", "SubscriptionAdd" },
-	{ "dec87cc927e7495582b7adc34f0860d8", "SubscriptionRemove" },
-	{ "0c9bf0e3062445a0a73330230e85c0ac", "GetSubscriptions" },
+}
 
-	{ "a74f776492be448295798ba5c74ab4eb", "GameStatisticsService" },
-	{ "9223379eafaf410d87d67443eaccd6d6", "CheckNewUserChallenges" },
-	{ "a5b78a034b7440b3a50f37f6c06602d2", "GetUserChallenges" },
-	{ "80d708a9f90345ec97f50bb4d7bbdc57", "GetChallengeSlots" },
-	{ "975c93760e80490dab77353e475fbf1a", "RerollSlot" },
-	{ "e116f6a8e3f34405803cb440562fab9c", "GetChallengeSlotInstances" },
-	{ "3c214f66f0d446948981f6cf264236d5", "GetChallengeInstances" },
-	{ "5c84448cf8374e60afef20c28252dc66", "GetChallengeDefinitions" },
-	{ "697218622fb0441293559baddd764c2e", "ActivateChallenges" },
-	{ "3f721e32ed8940bf8a63a59bfc451781", "DeactivateChallenges" },
+std::shared_ptr<c_backend> g_backend_services;
 
-	{ "e4b95cd8156947828b12000f80474850", "HeartbeatService" },
-	{ "461d92357a0d43628f01ddd7e075e6ea", "GetServicesStatus" },
-	{ "f152c44779c9442b841ed401c012a35a", "GetHeartbeatStatus" },
-	{ "852b0ea5ac8444fca71bb4d86f96a20d", "GetDate" },
-
-	{ "8a30791a119a4a2cb6db7f496132dff3", "MessagingService" },
-	{ "27d1f8c2eb7b4d2fb67562e20cda99d4", "JoinChannels" },
-	{ "c62ab4fd430642688323647ff442fc26", "LeaveChannels" },
-	{ "a244b7f4b0cd49259e931dd28be75c90", "Send" },
-	{ "2d3844a2559b4268a984f96fc5d8014e", "SendServiceMessage" },
-	{ "a48546b55a1446c7acce1061545ed196", "Receive" },
-
-	{ "9c1aaae299da4b9db7e9583dc8b0b2f2", "VivoxService" },
-	{ "e50fd076ce5f4b16955486b6cffeecd5", "Login" },
-
-	{ "caa11c5e19dc42c38b67cf4acda5db44", "PresenceService" },
-	{ "d3116e1e6b2b4157b21dd98582ee85db", "PresenceDisconnect" },
-	{ "be1c65d830d445ba93f33dfeca6419ed", "PresenceConnect" },
-	{ "4a2ae7db19f94cbc82af96f0c35bf95c", "PresenceGetUsersPresence" },
-	{ "05c8d2d966dd4948b438066de594ccf7", "PartyJoin" },
-	{ "9d17002ac24b4cecb1ac321dcdf7c495", "PartyLeave" },
-	{ "21ceed397c454e38bb19526b7751bf83", "PartyKick" },
-	{ "3f70ac03ffc24443bf229eab2d16a6c1", "PartySetGameData" },
-	{ "5e7d3efa99c147d7a05dbea0d4629c63", "PartyGetStatus" },
-	{ "d592dc7d4cf64ee8a398dbf08f210b52", "PartyGetStatusVersion" },
-	{ "c0858270a5ad414ca7ff5075adcb2c6d", "CustomGameStart" },
-	{ "553c7026b6c3445f9305690f347bb90c", "CustomGameStop" },
-	{ "2313549188154d409cc401cb8cc6eee6", "MatchmakeStart" },
-	{ "90439d26ddbe46bfb6ef8827441c24c5", "MatchmakeStop" },
-	{ "8acbd061727e421bba5bef015c18e2e2", "MatchmakeGetStatus" },
-	{ "724a87acdaa9410e9702ec220a8f0680", "ReportOnlineStats" },
-	{ "7f1c2580473f4a17951e8129dca74adf", "GetPlaylistStat" },
-	{ "ab323f1083ad4caa8658bda7912fc4a6", "GetPlaylistStatVersion" },
-
-	{ "b4d15f136196431a998e01903c605367", "SessionControlService" },
-	{ "cc6882b588d94b7a843de5289f05355b", "ClientGetStatus" },
-	{ "a743cb48398e43dc8edbcc465ea52673", "GetSessionBasicData" },
-	{ "0a490cb9c5e145be9a7ceb7c098caf9a", "GetSessionChain" },
-
-	{ "ee3aec5524854d6e918307d24a14623d", "TitleResourceService" },
-	{ "c3bf25f34b72499ca307c6e4431c79c1", "GetTitleConfiguration" },
-	{ "8daf1363deae4319a8beecda0490b9f9", "GetTitleConfigRaw" },
-	{ "a37bdcfd61fe48efaab11586255fdd54", "GetTitleTagsPatchConfiguration" },
-
-	{ "d7e31cf042024b22ac09d2a42c0403cb", "UserStorageService" },
-	{ "1275b0dfa4ed4d9bacd8bb37bdc9fac4", "SetPrivateData" },
-	{ "ab52a321ea8d4a78a61f10620d74e2d1", "GetPrivateData" },
-	{ "69d967acb77e455987e230d6e8b5b1c0", "SetPublicData" },
-	{ "dbcbbedf8eb748b19766e1f7e25e6e46", "GetPublicData" },
-
-	{ "416c82d428394df6a1bb9897f7d248b2", "UserService" },
-	{ "aebaa08921984fe19ce6562850b34281", "SignOut" },
-	{ "28635cd91941462aac4d0c36497e00f1", "GetUsersByNickname" },
-	{ "fd9a7e1d508242be9effaf969860fba8", "NicknameChange" },
-	{ "fba12d422e6b447ea7f3d9a19a6964bb", "GetUsersBaseData" },
-	{ "f6cf5fa595f2496290875288874a3396", "GetUsersPrimaryStates" },
-	{ "9e18f0339c27412c89551072bfb60fb6", "GetUserStates" },
-	{ "f4278d2a42314dfbaa5f0e3d3e196dfa", "GetTransactionHistory" },
-	{ "751112d775824326b45cdf038296df88", "ApplyExternalOffer" },
-	{ "a9681a7e8685475599c406b8747739ee", "ApplyOfferAndGetTransactionHistory" },
-	{ "c5f3082e2d584d53abcb0ff0a9ad81cf", "ApplyOfferListAndGetTransactionHistory" },
-	{ "85aa11207964476da0eeee10c54bbed4", "ApplyOffer" },
-	{ "ff7dfbec3141480783455955980d8084", "ApplyOfferList" },
-	{ "7f561c33e3bb492693f8c6c8ede19bb4", "GetItemOffers" },
-	{ "872c55a7fb1d4c848e14d96f7e78fc03", "GetShop" },
-
-	{ "89dffc06f9fc43eba2bd9271d22a609b", "ClanService" },
-	{ "a2e33ce546ed4cefaf71533fc5fd07c4", "ClanCreate" },
-	{ "20baf94d9482443cb75876344d492369", "ClanGetBaseData" },
-	{ "611f172a9eca4816905ebbdd7d8e55d0", "ClanGetMembership" },
-	{ "a1a2b7c387a0488fa6f72847959a4ba6", "ClanJoin" },
-	{ "24223c8811154233ba26ac82dc01f0c4", "ClanKick" },
-	{ "f1a64d6e121543eca2b4b3ae7ed9fdeb", "ClanLeave" },
-	{ "044d42867b7e431e85ae58e868e1cf96", "ClanGetByName" },
-
-	{ "ca7ce17947c14aaa9adff2cabd8e8fdc", "ArbitraryStorageService" },
-	{ "0cfbb05ba5fa4ac3a2d8760b59c78276", "WriteDiagnosticsData" },
-	{ "920e14f21b584d7280f18c8fe4a90257", "WriteADFPack" },
-
-	{ "EndpointsDispatcherService", "EndpointsDispatcherService" },
-	{ "GetAuthorizationEndpointsAndDate", "GetAuthorizationEndpointsAndDate" },
-
-	{ "AuthorizationService", "AuthorizationService" },
-	{ "Enqueue", "Enqueue" },
-	{ "Dequeue", "Dequeue" },
-	{ "RefreshTokens", "RefreshTokens" },
-
+s_backend_request_data::s_backend_request_data(net::io_context& ioc)
+    : stream(ioc)
+    , request()
+    , response()
+    , buffer()
+    , endpoint()
+    , resolved()
+{
 };
 
-// Takes in an obfuscated URI and overwrites it with the deobfuscated version
-void backend_deobfuscate_uri(char* uri, long uri_size)
+c_backend::resolved_endpoint::resolved_endpoint()
+    : m_resolved(false)
+    , m_host()
+    , m_port()
+    , m_resolver_results()
 {
-	// find and isolate the service and resource names
-	std::string uri_str(uri);
-	long first = uri_str.find('/');
-	long last = uri_str.find(".svc/");
-	std::string service = uri_str.substr(first + 1, last - 1);
-	std::string resource = uri_str.substr(last + 5, uri_str.length() - last);
+};
 
-	if (backend_hashmap.find(service) != backend_hashmap.end())
-		service = backend_hashmap.at(service);
-	if (backend_hashmap.find(resource) != backend_hashmap.end())
-		resource = backend_hashmap.at(resource);
+void c_backend::resolved_endpoint::resolve(e_resolved_endpoints type, std::string host, std::string port)
+{
+    if (m_resolved)
+    {
+        return;
+    }
 
-	// rebuild the URI with the deobfuscated names
-	snprintf(uri, uri_size, "/%s.svc/%s", service.c_str(), resource.c_str());
+    m_host = host;
+    m_port = port;
+
+    g_backend_services.get()->resolve(type);
+}
+
+void c_backend::resolve(e_resolved_endpoints endpoint_type)
+{
+    resolved_endpoint& endpoint = m_endpoint_storage[endpoint_type];
+
+    g_backend_services.get()->m_resolver.async_resolve
+    (
+        endpoint.m_host.c_str(),
+        endpoint.m_port.c_str(),
+        beast::bind_front_handler
+        (
+            &c_backend::on_resolve,
+            shared_from_this(),
+            endpoint_type
+        )
+    );
+}
+
+void c_backend::on_resolve(e_resolved_endpoints endpoint_type, beast::error_code ec, tcp::resolver::results_type results)
+{
+    resolved_endpoint& endpoint = m_endpoint_storage[endpoint_type];
+
+    // $TODO: handle resolution timeouts?
+    if (ec)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to resolve host %s:%s! [error: %d - %s]\n", endpoint.m_host.c_str(), endpoint.m_port.c_str(), ec.value(), ec.message().c_str());
+        return;
+    }
+    endpoint.m_resolver_results = results;
+    endpoint.m_resolved = true;
+    printf("ONLINE/HTTP,STUB_LOG_FILTER: " __FUNCTION__ ": successfully resolved host %s:%s\n", endpoint.m_host.c_str(), endpoint.m_port.c_str());
+}
+
+c_backend::c_backend()
+    : m_ioc()
+    // keeps ioc alive when there's no immediate async work
+    , m_work_guard(boost::asio::make_work_guard(m_ioc))
+    , m_resolver(m_ioc)
+    , m_endpoint_storage()
+{
+    m_thread = std::thread([this]()
+    {
+        m_ioc.run();
+    });
+}
+
+c_backend::~c_backend()
+{
+    // allow run() to exit once all work is done
+    m_work_guard.reset();
+    m_ioc.stop();
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
+}
+
+bool c_backend::initialised()
+{
+    return g_backend_services != NULL;
+};
+
+bool c_backend::ready()
+{
+    // $TODO: title service
+    // ready once all service endpoints are resolved
+    return private_service::endpoint().m_resolved
+        && endpoints_service::endpoint().m_resolved
+        && authorization_service::endpoint().m_resolved;
+};
+
+void c_backend::initialise()
+{
+    if (g_backend_services)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": backend already initialised!\n");
+        return;
+    }
+    g_backend_services = std::shared_ptr<c_backend>(new c_backend());
+
+    auto& endpoint_storage = g_backend_services.get()->m_endpoint_storage;
+    c_backend::private_service::initialise(&endpoint_storage[_endpoint_private]);
+    c_backend::endpoints_service::initialise(&endpoint_storage[_endpoint_eds]);
+    c_backend::authorization_service::initialise(&endpoint_storage[_endpoint_authorization]);
+
+    endpoints_service::endpoint().resolve(_endpoint_eds, g_anvil_configuration["endpoints_dispatcher_domain"], g_anvil_configuration["endpoints_dispatcher_port"]);
+    private_service::endpoint().resolve(_endpoint_private, g_anvil_configuration["private_service_domain"], g_anvil_configuration["private_service_port"]);
+}
+
+void s_request_info::update_request(std::function<bool()> send_request, std::function<void()> received_response)
+{
+    switch (status)
+    {
+        case _request_status_none:
+        {
+            // if a request was sent, set the status to waiting
+            if (send_request && send_request())
+            {
+                status = _request_status_waiting;
+            }
+            break;
+        }
+        case _request_status_received:
+        {
+            // allow overriding of received response
+            if (received_response)
+            {
+                received_response();
+            }
+            else
+            {
+                status = _request_status_none;
+            }
+            break;
+        }
+        // on failure, wait 5 seconds before requesting again
+        case _request_status_failed:
+        {
+            failure_time = network_time_get();
+            status = _request_status_timeout;
+            break;
+        }
+        case _request_status_timeout:
+        {
+            if (network_time_since(failure_time) >= SERVICE_REQUEST_REFRESH_INTERVAL)
+            {
+                failure_time = NONE;
+                status = _request_status_none;
+            }
+            break;
+        }
+        case _request_status_waiting:
+        default:
+        {
+            return;
+        }
+    }
+}
+
+void c_backend::update()
+{
+    // $TODO: Move this to an anvil_backend_initialize() function called from the game executable
+    if (!initialised())
+    {
+        initialise();
+    }
+
+    // $TODO: handle this for when we're not running in dedicated server mode
+    // These requests will only fire as the pragma tells them to, and if they fail they will try again every 5 seconds
+
+    // Services below require a connection to the private service
+    if (private_service::endpoint().m_resolved)
+    {
+        g_lobby_session_data.update_request([]
+        {
+            // Request send is handled in network_join, this is just to update the timeout
+            return false;
+        },
+        []
+        {
+            // empty to allow network join to handle received itself
+        });
+    }
+
+    // Services below require a connection to the endpoint service
+    if (!endpoints_service::endpoint().m_resolved)
+    {
+        return;
+    }
+
+    // retrieve authorisation endpoint from API
+    endpoints_service::m_eds_request_info.update_request([]
+    {
+        // Request EDS if we haven't yet
+        if (endpoints_service::m_authorization_endpoint_valid)
+        {
+            return false;
+        }
+        endpoints_service::get_authorization_endpoints_and_date::request();
+        return true;
+    });
+
+    // Services below require a connection to the authorization service
+    if (!authorization_service::endpoint().m_resolved)
+    {
+        return;
+    }
+
+    // Register game server with API once we're connected to the auth service
+    g_lobby_info.update_request([]
+    {
+        // Don't request if we already have valid lobby info
+        if (g_lobby_info.valid)
+        {
+            return false;
+        }
+
+        s_transport_secure_address server_identifier;
+        anvil_get_server_identifier(&server_identifier);
+        private_service::register_game_server::request(transport_secure_address_get_string(&server_identifier));
+        return true;
+    });
+}
+
+void c_backend::on_connect(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, tcp::resolver::results_type::endpoint_type endpoint)
+{
+    backend_data.get()->stream.expires_never();
+
+    if (ec)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to connect to host %s:%s! [error: %d - %s]\n",
+            backend_data.get()->resolved->m_host.c_str(),
+            backend_data.get()->resolved->m_port.c_str(),
+            ec.value(),
+            ec.message().c_str());
+        
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
+        return;
+    }
+
+    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    http::async_write(backend_data.get()->stream, backend_data.get()->request, beast::bind_front_handler(&c_backend::on_write, shared_from_this(), backend_data));
+}
+
+void c_backend::on_write(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size)
+{
+    backend_data.get()->stream.expires_never();
+
+    if (ec)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to write! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
+        return;
+    }
+
+    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    http::async_read(backend_data.get()->stream, backend_data.get()->buffer, backend_data.get()->response, beast::bind_front_handler(&c_backend::on_read, shared_from_this(), backend_data));
+}
+
+void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size)
+{
+    backend_data.get()->stream.expires_never();
+
+    if (ec)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to read response! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+
+        s_backend_response failure_response;
+        failure_response.retCode = (e_backend_return_codes)ec.value();
+        backend_data.get()->response_handler(&failure_response);
+
+        return;
+    }
+
+    // parse json
+    s_backend_response response;
+    const auto& response_body = backend_data.get()->response.body();
+    try
+    {
+        json::value jv = json::parse(response_body);
+    
+        if (jv.is_object())
+        {
+            const auto& obj = jv.as_object();
+            if (obj.contains("retCode"))
+            {
+                response.retCode = (e_backend_return_codes)obj.at("retCode").as_int64();
+                if (response.retCode != _backend_success)
+                {
+                    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response returned failed retCode! [%d]!\n", response.retCode);
+                    s_backend_response failure_response;
+                    failure_response.retCode = response.retCode;
+                    backend_data.get()->response_handler(&failure_response);
+                }
+                else
+                {
+                    if (obj.contains("data"))
+                    {
+                        response.data = obj.at("data").as_object();
+                        backend_data.get()->response_handler(&response);
+                    }
+                }
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": failed to parse JSON! [%s]\n%s\n", e.what(), response_body.c_str());
+        s_backend_response failure_response;
+        failure_response.retCode = _backend_unhandled_error;
+        backend_data.get()->response_handler(&failure_response);
+    }
+
+    // close connection
+    backend_data.get()->stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+    if (ec && ec != beast::errc::not_connected)
+    {
+        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to shutdown connection! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
+    }
+}
+
+void c_backend::make_request(s_backend_request& request_body, http::verb http_verb, std::string_view endpoint, std::function<void(s_backend_response*)> response_handler, resolved_endpoint& resolved_endpoint, bool use_auth_token)
+{
+    if (!resolved_endpoint.m_resolved)
+    {
+        return;
+    }
+
+    std::shared_ptr<s_backend_request_data> backend_data = std::make_shared<s_backend_request_data>(g_backend_services->m_ioc);
+    http::request<http::string_body>& request = backend_data.get()->request;
+
+    backend_data.get()->endpoint = endpoint;
+    backend_data.get()->resolved = &resolved_endpoint;
+    request.target(backend_data.get()->endpoint);
+    request.method(http_verb);
+    request.version(11);
+    request.set(http::field::host, resolved_endpoint.m_host + ":" + resolved_endpoint.m_port);
+    request.set(http::field::user_agent, anvil_get_build_name_string());
+    request.set(http::field::content_type, "application/json");
+    if (use_auth_token)
+    {
+        request.set("USER_CONTEXT", authorization_service::m_authorisation_token);
+    }
+    request.body() = request_body.to_json();
+    request.prepare_payload();
+    backend_data.get()->response_handler = response_handler;
+
+    printf("ONLINE/CLIENT/REQUEST,JSON: " __FUNCTION__ ": sending request to %s:%s%s\n", resolved_endpoint.m_host.c_str(), resolved_endpoint.m_port.c_str(), backend_data.get()->endpoint.c_str());
+
+    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    backend_data.get()->stream.async_connect(resolved_endpoint.m_resolver_results, beast::bind_front_handler(&c_backend::on_connect, g_backend_services->shared_from_this(), backend_data));
 }

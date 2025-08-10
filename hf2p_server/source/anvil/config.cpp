@@ -10,6 +10,8 @@ std::map<std::string, std::string> g_anvil_configuration =
     { "endpoints_dispatcher_port", "11705" },
     { "private_service_domain", "prv.svc.anvilstation.net" },
     { "private_service_port", "11001" },
+    { "account", "account" },
+    { "sign-in-code", "sign-in-code" },
 };
 
 void anvil_load_configuration()

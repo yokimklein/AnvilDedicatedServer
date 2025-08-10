@@ -1,6 +1,7 @@
 #include "server_tools.h"
 #include <cseries\cseries.h>
-#include <anvil\backend\backend_services.h>
+#include <anvil\backend\backend.h>
+#include <anvil\backend\services\private_service.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks\hooks.h>
 #include <game\game.h>
@@ -89,11 +90,11 @@ void anvil_session_update()
         return;
     }
 
-    c_backend_services::update();
+    c_backend::update();
 
     // Wait until we're connected to the API before proceeding
     // $TODO: handle disconnects, and attempt to reconnect
-    if (!c_backend_services::ready())
+    if (!c_backend::ready())
     {
         return;
     }
@@ -133,17 +134,16 @@ void anvil_session_update()
             if (game_is_dedicated_server())
             {
                 // update server info on API
-                s_request_update_game_server update_request;
-
                 s_transport_secure_address server_identifier;
                 anvil_get_server_identifier(&server_identifier);
-                update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
-                // $TODO: pull this IP from somewhere
-                update_request.serverAddr = g_anvil_configuration["server_address"]; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
-                update_request.serverPort = transport_security_globals.address.port;
-                update_request.playlistId = g_anvil_configuration["playlist_id"];
-
-                c_backend_services::request_update_game_server(update_request);
+                c_backend::private_service::update_game_server::request
+                (
+                    transport_secure_address_get_string(&server_identifier),
+                    // $TODO: pull this IP from somewhere
+                    g_anvil_configuration["server_address"], //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
+                    transport_security_globals.address.port,
+                    g_anvil_configuration["playlist_id"]
+                );
 
                 // set default dedicated server state
                 e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
