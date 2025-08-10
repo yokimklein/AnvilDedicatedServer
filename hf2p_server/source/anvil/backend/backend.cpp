@@ -52,6 +52,14 @@ void c_backend::resolved_endpoint::resolve(e_resolved_endpoints type, std::strin
     g_backend_services.get()->resolve(type);
 }
 
+void c_backend::resolve(e_resolved_endpoints endpoint_type, std::string host, std::string port)
+{
+    resolved_endpoint& endpoint = m_endpoint_storage[endpoint_type];
+    endpoint.m_host = host;
+    endpoint.m_port = port;
+    resolve(endpoint_type);
+}
+
 void c_backend::resolve(e_resolved_endpoints endpoint_type)
 {
     resolved_endpoint& endpoint = m_endpoint_storage[endpoint_type];
@@ -115,11 +123,13 @@ bool c_backend::initialised()
 
 bool c_backend::ready()
 {
-    // $TODO: title service
     // ready once all service endpoints are resolved
-    return private_service::endpoint().m_resolved
-        && endpoints_service::endpoint().m_resolved
-        && authorization_service::endpoint().m_resolved;
+    bool ready = true;
+    for (long endpoint_type = 0; endpoint_type < k_resolved_endpoints_count; endpoint_type++)
+    {
+        ready &= g_backend_services->m_endpoint_storage[endpoint_type].m_resolved;
+    }
+    return ready;
 };
 
 void c_backend::initialise()

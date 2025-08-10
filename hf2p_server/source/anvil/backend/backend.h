@@ -50,6 +50,7 @@ enum e_resolved_endpoints
     _endpoint_eds,
     _endpoint_authorization,
     _endpoint_private,
+    _endpoint_title_server,
 
     k_resolved_endpoints_count
 };
@@ -108,6 +109,7 @@ public:
 
     static void update();
 
+    void resolve(e_resolved_endpoints endpoint_type, std::string host, std::string port);
     void resolve(e_resolved_endpoints endpoint_type);
 
 private:

@@ -190,8 +190,7 @@ void c_backend::authorization_service::dequeue::response(s_backend_response* res
             }
         }
 
-        // $TODO: resolve title server here? need a generic endpoint that's shared between the services here?
-        //c_backend::title_service::endpoint().resolve(_endpoint_title_server, title_server_endpoint.IP, std::format("{}", title_server_endpoint.Port));
+        g_backend_services->resolve(_endpoint_title_server, title_server_endpoint.IP, std::format("{}", title_server_endpoint.Port));
 
         m_session_state = _backend_session_online;
         m_status.status = _request_status_received;
