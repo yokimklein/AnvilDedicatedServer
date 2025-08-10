@@ -46,6 +46,17 @@ void c_backend::private_service::register_game_server::request(std::string secur
     );
 };
 
+typedef c_backend::private_service::register_game_server::s_response s_response_register_game_server;
+s_response_register_game_server tag_invoke(boost::json::value_to_tag<s_response_register_game_server>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_response_register_game_server response
+    {
+        obj.at("lobbyId").as_string().c_str()
+    };
+    return response;
+};
+
 void c_backend::private_service::register_game_server::response(s_backend_response* response)
 {
     if (response->retCode != _backend_success)
@@ -54,18 +65,15 @@ void c_backend::private_service::register_game_server::response(s_backend_respon
         return;
     }
 
-    const auto& data = response->data.as_object();
-    if (data.contains("lobbyId"))
-    {
-        std::string lobby_id_string = data.at("lobbyId").as_string().c_str();
-        std::wstring lobby_id_braced = std::format(L"{{{}}}", std::wstring(lobby_id_string.begin(), lobby_id_string.end()));
-        HRESULT result = CLSIDFromString(lobby_id_braced.c_str(), (LPCLSID)&g_lobby_info.lobby_identifier);
-        ASSERT(result == S_OK);
+    s_response body = boost::json::value_to<s_response>(response->data);
 
-        g_lobby_info.status = _request_status_received;
-        g_lobby_info.valid = true;
-        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_lobby_info.lobby_identifier));
-    }
+    std::wstring lobby_id_braced = std::format(L"{{{}}}", std::wstring(body.lobbyId.begin(), body.lobbyId.end()));
+    HRESULT result = CLSIDFromString(lobby_id_braced.c_str(), (LPCLSID)&g_lobby_info.lobby_identifier);
+    ASSERT(result == S_OK);
+
+    g_lobby_info.status = _request_status_received;
+    g_lobby_info.valid = true;
+    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_lobby_info.lobby_identifier));
 }
 
 std::string c_backend::private_service::unregister_game_server::s_request::to_json()
@@ -172,6 +180,29 @@ void c_backend::private_service::retrieve_lobby_members::request(std::string lob
     );
 }
 
+typedef c_backend::private_service::retrieve_lobby_members::s_response::s_member s_member;
+s_member tag_invoke(boost::json::value_to_tag<s_member>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_member member
+    {
+        obj.at("userId").as_uint64(),
+        obj.at("sessionId").as_string().c_str(),
+    };
+    return member;
+}
+
+typedef c_backend::private_service::retrieve_lobby_members::s_response s_response_retrieve_lobby_members;
+s_response_retrieve_lobby_members tag_invoke(boost::json::value_to_tag<s_response_retrieve_lobby_members>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_response_retrieve_lobby_members response
+    {
+        boost::json::value_to<std::vector<s_member>>(obj.at("members"))
+    };
+    return response;
+};
+
 void c_backend::private_service::retrieve_lobby_members::response(s_backend_response* response)
 {
     if (response->retCode != _backend_success)
@@ -181,10 +212,8 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
         return;
     }
 
-    // $TODO: json fails to parse sometimes?
-    const auto& data = response->data.as_object();
-    auto members = data.at("members").as_array();
-    ulong user_sessions_count = members.size();
+    s_response body = boost::json::value_to<s_response>(response->data);
+    ulong user_sessions_count = body.members.size();
 
     // ensure the API hasn't returned more players than we support
     if (!VALID_INDEX(user_sessions_count, k_network_maximum_players_per_session))
@@ -199,16 +228,15 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
 
     s_user_session users[k_network_maximum_players_per_session];
     csmemset(users, 0, sizeof(users));
-    for (ulong user_session_index = 0; user_session_index < members.size(); user_session_index++)
+
+    for (ulong user_session_index = 0; user_session_index < user_sessions_count; user_session_index++)
     {
         s_user_session& user_session = users[user_session_index];
+        s_response::s_member& member = body.members[user_session_index];
 
         user_session.valid = true;
-        user_session.user_id = members[user_session_index].at("userId").as_int64();
-
-        std::string session_id_string = members[user_session_index].at("sessionId").as_string().c_str();
-        std::wstring session_id_braced = std::format(L"{{{}}}", std::wstring(session_id_string.begin(), session_id_string.end()));
-
+        user_session.user_id = member.userId;
+        std::wstring session_id_braced = std::format(L"{{{}}}", std::wstring(member.sessionId.begin(), member.sessionId.end()));
         HRESULT result = CLSIDFromString(session_id_braced.c_str(), (LPCLSID)&user_session.session_id);
         ASSERT(result == S_OK);
     }

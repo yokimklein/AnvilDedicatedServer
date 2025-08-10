@@ -56,6 +56,17 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::request
     );
 }
 
+typedef c_backend::endpoints_service::get_authorization_endpoints_and_date::s_response s_response_get_endpoints;
+s_response_get_endpoints tag_invoke(boost::json::value_to_tag<s_response_get_endpoints>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_response_get_endpoints response
+    {
+        boost::json::value_to<std::vector<s_endpoint_response>>(obj.at("Endpoints"))
+    };
+    return response;
+};
+
 void c_backend::endpoints_service::get_authorization_endpoints_and_date::response(s_backend_response* response)
 {
     if (response->retCode != _backend_success)
@@ -64,16 +75,8 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
         return;
     }
 
-    const auto& data = response->data.as_object();
-    if (!data.contains("Endpoints"))
-    {
-        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response returned no endpoints array!\n");
-        m_eds_request_info.status = _request_status_failed;
-        return;
-    }
-
-    auto endpoints = boost::json::value_to<std::vector<s_endpoint_response>>(data.at("Endpoints"));
-    long endpoints_count = endpoints.size();
+    s_response body = boost::json::value_to<s_response>(response->data);
+    long endpoints_count = body.Endpoints.size();
 
     if (endpoints_count == 0)
     {
@@ -83,8 +86,8 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
     }
 
     // Use first default endpoint, or use the first endpoint
-    s_endpoint_response& authorisation_endpoint = endpoints[0];
-    for (auto& endpoint : endpoints)
+    s_endpoint_response& authorisation_endpoint = body.Endpoints[0];
+    for (auto& endpoint : body.Endpoints)
     {
         if (endpoint.IsDefault)
         {
@@ -92,16 +95,11 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
             break;
         }
     }
+
     // resolve auth service now we have the IP & port
     c_backend::authorization_service::endpoint().resolve(_endpoint_authorization, authorisation_endpoint.IP, std::format("{}", authorisation_endpoint.Port));
+
     m_authorization_endpoint_valid = true;
     m_eds_request_info.status = _request_status_received;
-
     printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received %d endpoints, using [%s]\n", endpoints_count, authorisation_endpoint.Name.c_str());
-
-    // don't currently need this
-    //if (data.contains("DateTime"))
-    //{
-    //    qword date_time = data.at("DateTime").as_uint64();
-    //}
 }

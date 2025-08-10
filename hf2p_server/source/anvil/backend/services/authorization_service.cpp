@@ -24,7 +24,7 @@ void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, s_s
 }
 
 typedef c_backend::authorization_service::enqueue::s_response::s_token s_token;
-c_backend::authorization_service::enqueue::s_response::s_token tag_invoke(boost::json::value_to_tag<s_token>, boost::json::value const& jv)
+s_token tag_invoke(boost::json::value_to_tag<s_token>, boost::json::value const& jv)
 {
     auto const& obj = jv.as_object();
     s_token token
@@ -84,39 +84,36 @@ void c_backend::authorization_service::enqueue::request()
     );
 }
 
+typedef c_backend::authorization_service::enqueue::s_response s_response_enqueue;
+s_response_enqueue tag_invoke(boost::json::value_to_tag<s_response_enqueue>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_response_enqueue response
+    {
+        static_cast<long>(obj.at("Position").as_int64()),
+        boost::json::value_to<s_token>(obj.at("Token"))
+    };
+    return response;
+};
+
 void c_backend::authorization_service::enqueue::response(s_backend_response* response)
 {
     if (response->retCode == _backend_success)
     {
-        const auto& data = response->data.as_object();
-        if (!data.contains("Token"))
+        s_response body = boost::json::value_to<s_response>(response->data);
+
+        if (body.Position != 0 || body.Token.State != 2)
         {
-            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response did not contain Token!\n");
+            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": API attempted to hold game server in the login queue - this should never happen!\n");
         }
         else
         {
-            s_token token = boost::json::value_to<s_token>(response->data.at("Token"));
-            if (!data.contains("Position"))
-            {
-                printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response did not contain Position!\n");
-            }
-            else
-            {
-                long position = static_cast<long>(response->data.at("Position").as_int64());
-                if (position != 0 || token.State != 2)
-                {
-                    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": API attempted to hold game server in the login queue - this should never happen!\n");
-                }
-                else
-                {
-                    m_authorisation_token = token.Token;
-                    m_last_token_refresh = network_time_get();
-                    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": enqueue successful\n");
-                    m_session_state = _backend_session_authenticating;
-                    m_status.status = _request_status_received;
-                    return;
-                }
-            }
+            m_authorisation_token = body.Token.Token;
+            m_last_token_refresh = network_time_get();
+            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": enqueue successful\n");
+            m_session_state = _backend_session_authenticating;
+            m_status.status = _request_status_received;
+            return;
         }
     }
 
@@ -156,10 +153,11 @@ void c_backend::authorization_service::dequeue::request()
     );
 }
 
-c_backend::authorization_service::dequeue::s_response tag_invoke(boost::json::value_to_tag<c_backend::authorization_service::dequeue::s_response>, boost::json::value const& jv)
+typedef c_backend::authorization_service::dequeue::s_response s_response_dequeue;
+s_response_dequeue tag_invoke(boost::json::value_to_tag<s_response_dequeue>, boost::json::value const& jv)
 {
     auto const& obj = jv.as_object();
-    c_backend::authorization_service::dequeue::s_response response
+    s_response_dequeue response
     {
         obj.at("AuthorizationToken").as_string().c_str(),
         obj.at("DiagnosticToken").as_string().c_str(),
@@ -234,10 +232,11 @@ void c_backend::authorization_service::refresh_tokens::request()
     );
 }
 
-c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh tag_invoke(boost::json::value_to_tag<c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh>, boost::json::value const& jv)
+typedef c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh s_token_refresh;
+s_token_refresh tag_invoke(boost::json::value_to_tag<s_token_refresh>, boost::json::value const& jv)
 {
     auto const& obj = jv.as_object();
-    c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh refresh
+    s_token_refresh refresh
     {
         obj.at("OldValue").as_string().c_str(),
         obj.at("NewValue").as_string().c_str(),
@@ -245,11 +244,12 @@ c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh ta
     return refresh;
 }
 
-c_backend::authorization_service::refresh_tokens::s_response tag_invoke(boost::json::value_to_tag<c_backend::authorization_service::refresh_tokens::s_response>, boost::json::value const& jv)
+typedef c_backend::authorization_service::refresh_tokens::s_response s_response_refresh_tokens;
+s_response_refresh_tokens tag_invoke(boost::json::value_to_tag<s_response_refresh_tokens>, boost::json::value const& jv)
 {
-    c_backend::authorization_service::refresh_tokens::s_response response
+    s_response_refresh_tokens response
     {
-        boost::json::value_to<std::vector<c_backend::authorization_service::refresh_tokens::s_response::s_token_refresh>>(jv)
+        boost::json::value_to<std::vector<s_token_refresh>>(jv)
     };
     return response;
 }

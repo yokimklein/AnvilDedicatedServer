@@ -18,6 +18,11 @@ public:
         };
         static void request(std::string secureAddr);
 
+        struct s_response
+        {
+            std::string lobbyId;
+        };
+
     protected:
         static void response(s_backend_response* response);
     };
@@ -65,6 +70,17 @@ public:
             std::string to_json() override;
         };
         static void request(std::string lobbyId);
+
+        struct s_response
+        {
+            struct s_member
+            {
+                qword userId;
+                std::string sessionId;
+            };
+
+            std::vector<s_member> members;
+        };
 
     protected:
         static void response(s_backend_response* response);
