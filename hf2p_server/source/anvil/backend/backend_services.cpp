@@ -4,6 +4,7 @@
 #include <anvil\server_tools.h>
 #include <anvil\backend\lobby.h>
 #include <anvil\backend\user.h>
+#include <anvil\config.h>
 #include <combaseapi.h>
 #include <iostream>
 #include <networking\network_time.h>
@@ -47,12 +48,10 @@ c_backend_services::c_backend_services()
     , m_authorisation_token()
     , m_diagnostics_token()
 {
-    // $TODO: grab these from config, use macros as a fallback?
-    // EndpointsDispatcher::SetDomainAndPort contain the globals
-    m_endpoints[_endpoint_eds].host = ENDPOINTS_DISPATCHER_DOMAIN;
-    m_endpoints[_endpoint_eds].port = ENDPOINTS_DISPATCHER_PORT;
-    m_endpoints[_endpoint_private].host = PRIVATE_SERVICE_DOMAIN;
-    m_endpoints[_endpoint_private].port = PRIVATE_SERVICE_PORT;
+    m_endpoints[_endpoint_eds].host = g_anvil_configuration["endpoints_dispatcher_domain"];
+    m_endpoints[_endpoint_eds].port = g_anvil_configuration["endpoints_dispatcher_port"];
+    m_endpoints[_endpoint_private].host = g_anvil_configuration["private_service_domain"];
+    m_endpoints[_endpoint_private].port = g_anvil_configuration["private_service_port"];
 
     m_thread = std::thread([this]()
     {

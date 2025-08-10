@@ -24,6 +24,7 @@
 #include <string>
 #include <combaseapi.h>
 #include <networking\network_time.h>
+#include <anvil\config.h>
 
 constexpr wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 constexpr wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -53,6 +54,8 @@ void anvil_initialize()
     enable_memory_write(base_address<void*>());
     anvil_patches_apply();
     anvil_hooks_apply();
+
+    anvil_load_configuration();
 }
 
 bool anvil_session_create()
@@ -136,10 +139,9 @@ void anvil_session_update()
                 anvil_get_server_identifier(&server_identifier);
                 update_request.secureAddr = transport_secure_address_get_string(&server_identifier);
                 // $TODO: pull this IP from somewhere
-                update_request.serverAddr = "127.0.0.1"; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
+                update_request.serverAddr = g_anvil_configuration["server_address"]; //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
                 update_request.serverPort = transport_security_globals.address.port;
-                // $TODO: pull this from a config?
-                update_request.playlistId = "playlist_team_slayer_small";
+                update_request.playlistId = g_anvil_configuration["playlist_id"];
 
                 c_backend_services::request_update_game_server(update_request);
 

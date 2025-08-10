@@ -8,6 +8,8 @@
 #include <functional>
 #include <cseries\cseries.h>
 
+// $TODO: https
+
 namespace net = boost::asio;
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -22,12 +24,6 @@ constexpr ulong SERVICE_REQUEST_TIMEOUT_INTERVAL = 15000;
 
 // refresh every 2 minutes
 constexpr ulong BACKEND_TOKEN_REFRESH_INTERVAL = 120000;
-
-// $TODO: pull from config
-constexpr std::string_view ENDPOINTS_DISPATCHER_DOMAIN = "127.0.0.1";
-constexpr std::string_view ENDPOINTS_DISPATCHER_PORT = "11705";
-constexpr std::string_view PRIVATE_SERVICE_DOMAIN = "127.0.0.1";
-constexpr std::string_view PRIVATE_SERVICE_PORT = "11001";
 
 enum e_request_status
 {
