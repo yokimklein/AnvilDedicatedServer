@@ -61,7 +61,7 @@ struct s_request_info
     s_request_info();
 
     // if send_request returns true, a request was sent
-    void update_request(std::function<bool()> send_request, std::function<void()> received_response = NULL);
+    void update_request(std::function<bool()> send_request = NULL, std::function<void()> received_response = NULL);
 
     std::atomic<e_request_status> status;
     ulong failure_time;
@@ -70,7 +70,7 @@ struct s_request_info
 struct s_backend_response
 {
     e_backend_return_codes retCode = _backend_unhandled_error;
-    json::object data;
+    json::value data;
 };
 
 struct s_backend_request
@@ -151,3 +151,22 @@ struct s_backend_request_data
     std::string endpoint; // only exists so we can print the request endpoint, retrieving from target results in a corrupted string
     const c_backend::resolved_endpoint* resolved;
 };
+
+struct s_endpoint_response
+{
+    std::string Name;
+    std::string IP;
+    long Port;
+    long Protocol;
+    bool IsDefault;
+};
+s_endpoint_response tag_invoke(boost::json::value_to_tag<s_endpoint_response>, boost::json::value const& jv);
+
+// $TODO: Anvil's API ignores this struct
+struct s_versions
+{
+    std::string ServiceName;
+    int Version;
+    int MinorVersion;
+};
+void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, s_versions const& version);

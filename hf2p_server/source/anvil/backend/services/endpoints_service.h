@@ -12,14 +12,6 @@ public:
     public:
         struct s_request : s_backend_request
         {
-            // $TODO: Anvil's API doesn't actually read the request body
-            struct s_versions
-            {
-                std::string ServiceName;
-                int Version;
-                int MinorVersion;
-            };
-
             std::string provider;
             std::vector<s_versions> versions;
 
@@ -29,15 +21,7 @@ public:
 
         struct s_response
         {
-            struct s_authorization_endpoint
-            {
-                std::string Name;
-                std::string IP;
-                long Port;
-                long Protocol;
-                bool IsDefault;
-            };
-            std::vector<s_authorization_endpoint> Endpoints;
+            std::vector<s_endpoint_response> Endpoints;
             qword DateTime;
         };
     protected:

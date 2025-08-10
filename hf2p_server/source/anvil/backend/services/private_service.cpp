@@ -54,9 +54,10 @@ void c_backend::private_service::register_game_server::response(s_backend_respon
         return;
     }
 
-    if (response->data.contains("lobbyId"))
+    const auto& data = response->data.as_object();
+    if (data.contains("lobbyId"))
     {
-        std::string lobby_id_string = response->data.at("lobbyId").as_string().c_str();
+        std::string lobby_id_string = data.at("lobbyId").as_string().c_str();
         std::wstring lobby_id_braced = std::format(L"{{{}}}", std::wstring(lobby_id_string.begin(), lobby_id_string.end()));
         HRESULT result = CLSIDFromString(lobby_id_braced.c_str(), (LPCLSID)&g_lobby_info.lobby_identifier);
         ASSERT(result == S_OK);
@@ -181,7 +182,8 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
     }
 
     // $TODO: json fails to parse sometimes?
-    auto members = response->data.at("members").as_array();
+    const auto& data = response->data.as_object();
+    auto members = data.at("members").as_array();
     ulong user_sessions_count = members.size();
 
     // ensure the API hasn't returned more players than we support

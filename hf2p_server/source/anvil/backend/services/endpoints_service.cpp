@@ -13,35 +13,6 @@ c_backend::resolved_endpoint& c_backend::endpoints_service::endpoint()
     return *m_endpoint;
 }
 
-typedef c_backend::endpoints_service::get_authorization_endpoints_and_date::s_request::s_versions s_versions;
-void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, s_versions const& version)
-{
-    boost::json::object out;
-    out["ServiceName"] = version.ServiceName;
-    out["Version"] = version.Version;
-    out["MinorVersion"] = version.MinorVersion;
-    json_value = std::move(out);
-}
-
-typedef c_backend::endpoints_service::get_authorization_endpoints_and_date::s_response::s_authorization_endpoint s_authorization_endpoint;
-c_backend::endpoints_service::get_authorization_endpoints_and_date::s_response::s_authorization_endpoint tag_invoke
-(
-    boost::json::value_to_tag<s_authorization_endpoint>,
-    boost::json::value const& jv
-)
-{
-    auto const& obj = jv.as_object();
-    s_authorization_endpoint endpoint
-    {
-        obj.at("Name").as_string().c_str(),
-        obj.at("IP").as_string().c_str(),
-        static_cast<int>(obj.at("Port").as_int64()),
-        static_cast<int>(obj.at("Protocol").as_int64()),
-        obj.at("IsDefault").as_bool()
-    };
-    return endpoint;
-}
-
 std::string c_backend::endpoints_service::get_authorization_endpoints_and_date::s_request::to_json()
 {
     boost::json::object out;
@@ -59,7 +30,7 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::request
 
     s_request request_body;
     request_body.provider = "";
-    s_request::s_versions versions[3];
+    s_versions versions[3];
     versions[0].ServiceName = "AuthorizationService";
     versions[0].Version = 4;
     versions[0].MinorVersion = 14;
@@ -93,14 +64,15 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
         return;
     }
 
-    if (!response->data.contains("Endpoints"))
+    const auto& data = response->data.as_object();
+    if (!data.contains("Endpoints"))
     {
         printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response returned no endpoints array!\n");
         m_eds_request_info.status = _request_status_failed;
         return;
     }
 
-    auto endpoints = boost::json::value_to<std::vector<s_authorization_endpoint>>(response->data.at("Endpoints"));
+    auto endpoints = boost::json::value_to<std::vector<s_endpoint_response>>(data.at("Endpoints"));
     long endpoints_count = endpoints.size();
 
     if (endpoints_count == 0)
@@ -111,7 +83,7 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
     }
 
     // Use first default endpoint, or use the first endpoint
-    s_authorization_endpoint& authorisation_endpoint = endpoints[0];
+    s_endpoint_response& authorisation_endpoint = endpoints[0];
     for (auto& endpoint : endpoints)
     {
         if (endpoint.IsDefault)
@@ -128,8 +100,8 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
     printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received %d endpoints, using [%s]\n", endpoints_count, authorisation_endpoint.Name.c_str());
 
     // don't currently need this
-    //if (response->data.contains("DateTime"))
+    //if (data.contains("DateTime"))
     //{
-    //    qword date_time = response->data.at("DateTime").as_uint64();
+    //    qword date_time = data.at("DateTime").as_uint64();
     //}
 }

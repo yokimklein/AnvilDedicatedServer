@@ -155,14 +155,10 @@ void s_request_info::update_request(std::function<bool()> send_request, std::fun
         }
         case _request_status_received:
         {
-            // allow overriding of received response
+            status = _request_status_none;
             if (received_response)
             {
                 received_response();
-            }
-            else
-            {
-                status = _request_status_none;
             }
             break;
         }
@@ -190,6 +186,7 @@ void s_request_info::update_request(std::function<bool()> send_request, std::fun
     }
 }
 
+// $TODO: split up into service update methods
 void c_backend::update()
 {
     // $TODO: Move this to an anvil_backend_initialize() function called from the game executable
@@ -211,7 +208,8 @@ void c_backend::update()
         },
         []
         {
-            // empty to allow network join to handle received itself
+            // Keep on received to allow network join to update this
+            g_lobby_session_data.status = _request_status_received;
         });
     }
 
@@ -238,6 +236,41 @@ void c_backend::update()
     {
         return;
     }
+
+    // Request enqueue if we're offline
+    authorization_service::enqueue::m_status.update_request([]
+    {
+        if (authorization_service::m_session_state == _backend_session_offline)
+        {
+            authorization_service::enqueue::request();
+            return true;
+        }
+        return false;
+    },
+    []
+    {
+        // On received, send dequeue
+        authorization_service::dequeue::request();
+    });
+    // Update dequeue status, send is handled in enqueue response
+    authorization_service::dequeue::m_status.update_request();
+
+    // Services below require authentication
+    if (authorization_service::m_session_state != _backend_session_online)
+    {
+        return;
+    }
+
+    // Refresh tokens every 2 minutes
+    authorization_service::refresh_tokens::m_status.update_request([]
+    {
+        if (network_time_since(authorization_service::m_last_token_refresh) >= BACKEND_TOKEN_REFRESH_INTERVAL)
+        {
+            authorization_service::refresh_tokens::request();
+            return true;
+        }
+        return false;
+    });
 
     // Register game server with API once we're connected to the auth service
     g_lobby_info.update_request([]
@@ -336,7 +369,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
                 {
                     if (obj.contains("data"))
                     {
-                        response.data = obj.at("data").as_object();
+                        response.data = obj.at("data");
                         backend_data.get()->response_handler(&response);
                     }
                 }
@@ -390,4 +423,27 @@ void c_backend::make_request(s_backend_request& request_body, http::verb http_ve
 
     backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
     backend_data.get()->stream.async_connect(resolved_endpoint.m_resolver_results, beast::bind_front_handler(&c_backend::on_connect, g_backend_services->shared_from_this(), backend_data));
+}
+
+s_endpoint_response tag_invoke(boost::json::value_to_tag<s_endpoint_response>, boost::json::value const& jv)
+{
+    auto const& obj = jv.as_object();
+    s_endpoint_response endpoint
+    {
+        obj.at("Name").as_string().c_str(),
+        obj.at("IP").as_string().c_str(),
+        static_cast<int>(obj.at("Port").as_int64()),
+        static_cast<int>(obj.at("Protocol").as_int64()),
+        obj.at("IsDefault").as_bool()
+    };
+    return endpoint;
+}
+
+void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, s_versions const& version)
+{
+    boost::json::object out;
+    out["ServiceName"] = version.ServiceName;
+    out["Version"] = version.Version;
+    out["MinorVersion"] = version.MinorVersion;
+    json_value = std::move(out);
 }
