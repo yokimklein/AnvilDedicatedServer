@@ -316,7 +316,17 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                 }
                 case _instance_booster:
                 {
-                    // $TODO: booster logic
+                    std::vector<s_modifier> modifiers;
+                    auto results = instance.get_properties({ "NAME", "MODIFIERS" });
+                    auto modifiers_list = results.get_object_list("MODIFIERS");
+
+                    for (auto& modifier : modifiers_list)
+                    {
+                        auto value_results = modifier.get_properties({ "NAME", "VALUE" });
+                        modifiers.push_back({ value_results.get_string("NAME"), value_results.get_float("VALUE") });
+                    }
+
+                    g_backend_data_cache.boosters.insert({ instance.name, modifiers });
                     break;
                 }
                 case _instance_consumable:

@@ -17,6 +17,27 @@ void s_backend_data_cache::clear_title_instances()
     colours.clear();
 }
 
+s_modifier::s_modifier(e_modifiers modifier, float value)
+{
+    this->modifier = modifier;
+    this->value = value;
+}
+s_modifier::s_modifier(std::string modifier, float value)
+{
+    this->modifier = (e_modifiers)NONE;
+    this->value = value;
+
+    // convert string name to index
+    for (long i = 0; i < k_modifiers_count; i++)
+    {
+        if (modifier == modifier_get_name((e_modifiers)i))
+        {
+            this->modifier = (e_modifiers)i;
+            break;
+        }
+    }
+}
+
 s_cached_armor_item::s_cached_armor_item(s_title_instance& instance)
     : gender_armor()
     , race_id(NONE)
@@ -123,19 +144,6 @@ s_cached_armor_item::s_cached_armor_item(s_title_instance& instance)
 
     for (ulong modifier_index = 0; modifier_index < list.size(); modifier_index++)
     {
-        long modifier = NONE;
-        for (long i = 0; i < k_modifiers_count; i++)
-        {
-            if (list[modifier_index] == modifier_get_name((e_modifiers)i))
-            {
-                modifier = i;
-                break;
-            }
-        }
-        if (modifier == NONE)
-        {
-            continue;
-        }
-        modifiers.push_back({ (e_modifiers)modifier, values[modifier_index] });
+        modifiers.push_back({ list[modifier_index], values[modifier_index] });
     }
 };
