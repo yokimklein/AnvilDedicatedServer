@@ -6,6 +6,8 @@
 #include <iostream>
 #include <networking\network_time.h>
 #include <anvil\backend\user.h>
+#include <anvil\backend\services\private_service.h>
+#include <anvil\backend\cache.h>
 #include <game\game.h>
 
 REFERENCE_DECLARE(0x1039AF8, s_networking_join_data, g_network_join_data);
@@ -182,7 +184,7 @@ bool network_join_process_joins_from_queue()
 			// returning true updates network_join_queue_update, allowing peers to be held in the queue
 			// returning false resets the join state
 
-			if (g_lobby_session_data.status == _request_status_none)
+			if (c_backend::private_service::retrieve_lobby_members::m_status.status == _request_status_none)
 			{
 				if (!user_sessions_request_for_lobby())
 				{
@@ -194,12 +196,12 @@ bool network_join_process_joins_from_queue()
 					transport_secure_nonce_get_string(queue_entry.join_nonce));
 				return true;
 			}
-			else if (g_lobby_session_data.status == _request_status_received)
+			else if (c_backend::private_service::retrieve_lobby_members::m_status.status == _request_status_received)
 			{
-				g_lobby_session_data.status = _request_status_none;
+				c_backend::private_service::retrieve_lobby_members::m_status.status = _request_status_none;
 
 				// reset join if session data returned invalid, otherwise continue to join accept
-				if (!g_lobby_session_data.valid)
+				if (!g_backend_data_cache.lobby_session.valid)
 				{
 					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: session data returned invalid!\n");
 					return false;

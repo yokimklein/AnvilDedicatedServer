@@ -1,18 +1,16 @@
 #include "lobby.h"
-
-s_lobby_info g_lobby_info;
+#include <anvil\backend\cache.h>
 
 s_lobby_info::s_lobby_info()
-    : s_request_info()
-    , valid(false)
+    : valid(false)
     , lobby_identifier()
 {
 }
 
 void s_lobby_info::clear_lobby_identifier()
 {
-    g_lobby_info.valid = false;
-    csmemset(&g_lobby_info.lobby_identifier, 0, sizeof(g_lobby_info.lobby_identifier));
+    valid = false;
+    csmemset(&lobby_identifier, 0, sizeof(lobby_identifier));
 }
 
 void anvil_get_server_identifier(s_transport_secure_address* secure_address)
@@ -25,5 +23,5 @@ void anvil_get_server_identifier(s_transport_secure_address* secure_address)
 
 void anvil_get_lobby_identifier(s_transport_secure_identifier* secure_identifier)
 {
-    *secure_identifier = g_lobby_info.lobby_identifier;
+    *secure_identifier = g_backend_data_cache.lobby_info.lobby_identifier;
 }

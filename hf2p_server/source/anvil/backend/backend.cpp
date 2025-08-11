@@ -1,24 +1,14 @@
 #include "backend.h"
-#include <networking\transport\transport_security.h>
 #include <anvil\build_version.h>
-#include <anvil\server_tools.h>
-#include <anvil\backend\lobby.h>
-#include <anvil\backend\user.h>
-#include <anvil\config.h>
-#include <combaseapi.h>
 #include <iostream>
 #include <networking\network_time.h>
-
+#include <anvil\config.h>
 #include <anvil\backend\services\private_service.h>
 #include <anvil\backend\services\endpoints_service.h>
 #include <anvil\backend\services\authorization_service.h>
 #include <anvil\backend\services\user_storage_service.h>
-
-s_request_info::s_request_info()
-    : status(_request_status_none)
-    , failure_time(NONE)
-{
-}
+#include <anvil\backend\services\title_resource_service.h>
+#include <anvil\backend\cache.h>
 
 std::shared_ptr<c_backend> g_backend_services;
 
@@ -147,55 +137,10 @@ void c_backend::initialise()
     c_backend::endpoints_service::initialise(&endpoint_storage[_endpoint_eds]);
     c_backend::authorization_service::initialise(&endpoint_storage[_endpoint_authorization]);
     c_backend::user_storage_service::initialise(&endpoint_storage[_endpoint_title_server]);
+    c_backend::title_resource_service::initialise(&endpoint_storage[_endpoint_title_server]);
 
     endpoints_service::endpoint().resolve(_endpoint_eds, g_anvil_configuration["endpoints_dispatcher_domain"], g_anvil_configuration["endpoints_dispatcher_port"]);
     private_service::endpoint().resolve(_endpoint_private, g_anvil_configuration["private_service_domain"], g_anvil_configuration["private_service_port"]);
-}
-
-void s_request_info::update_request(std::function<bool()> send_request, std::function<void()> received_response)
-{
-    switch (status)
-    {
-        case _request_status_none:
-        {
-            // if a request was sent, set the status to waiting
-            if (send_request && send_request())
-            {
-                status = _request_status_waiting;
-            }
-            break;
-        }
-        case _request_status_received:
-        {
-            status = _request_status_none;
-            if (received_response)
-            {
-                received_response();
-            }
-            break;
-        }
-        // on failure, wait 5 seconds before requesting again
-        case _request_status_failed:
-        {
-            failure_time = network_time_get();
-            status = _request_status_timeout;
-            break;
-        }
-        case _request_status_timeout:
-        {
-            if (network_time_since(failure_time) >= SERVICE_REQUEST_REFRESH_INTERVAL)
-            {
-                failure_time = NONE;
-                status = _request_status_none;
-            }
-            break;
-        }
-        case _request_status_waiting:
-        default:
-        {
-            return;
-        }
-    }
 }
 
 // $TODO: split up into service update methods
@@ -213,7 +158,7 @@ void c_backend::update()
     // Services below require a connection to the private service
     if (private_service::endpoint().m_resolved)
     {
-        g_lobby_session_data.update_request([]
+        private_service::retrieve_lobby_members::m_status.update_request([]
         {
             // Request send is handled in network_join, this is just to update the timeout
             return false;
@@ -221,9 +166,13 @@ void c_backend::update()
         []
         {
             // Keep on received to allow network join to update this
-            g_lobby_session_data.status = _request_status_received;
+            private_service::retrieve_lobby_members::m_status.status = _request_status_received;
         });
+
+        private_service::unregister_game_server::m_status.update_request();
+        private_service::update_game_server::m_status.update_request();
     }
+
 
     // Services below require a connection to the endpoint service
     if (!endpoints_service::endpoint().m_resolved)
@@ -232,7 +181,7 @@ void c_backend::update()
     }
 
     // retrieve authorisation endpoint from API
-    endpoints_service::m_eds_request_info.update_request([]
+    endpoints_service::get_authorization_endpoints_and_date::m_status.update_request([]
     {
         // Request EDS if we haven't yet
         if (endpoints_service::m_authorization_endpoint_valid)
@@ -285,10 +234,10 @@ void c_backend::update()
     });
 
     // Register game server with API once we're connected to the auth service
-    g_lobby_info.update_request([]
+    private_service::register_game_server::m_status.update_request([]
     {
         // Don't request if we already have valid lobby info
-        if (g_lobby_info.valid)
+        if (g_backend_data_cache.lobby_info.valid)
         {
             return false;
         }

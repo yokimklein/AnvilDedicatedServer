@@ -1,5 +1,6 @@
 #pragma once
 #include <anvil\backend\backend.h>
+#include <anvil\backend\request_info.h>
 
 enum e_user_storage_container
 {

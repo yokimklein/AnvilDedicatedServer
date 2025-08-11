@@ -6,7 +6,7 @@ constexpr long k_maximum_loadouts = 3;
 
 struct s_api_user_loadout
 {
-	void write_configuration(s_s3d_player_loadout* out_loadout);
+	//void write_configuration(s_s3d_player_loadout* out_loadout);
 
 	c_static_flags<32> flags;
 	c_static_string<32> armour_suit;
@@ -23,7 +23,7 @@ static_assert(sizeof(s_api_user_loadout) == 0x124);
 
 struct s_api_user_customisation
 {
-	void write_colours(s_s3d_player_customization* out_customisation);
+	//void write_colours(s_s3d_player_customization* out_customisation);
 
 	long loadout_index;
 	c_static_string<32> account_label;
@@ -43,5 +43,5 @@ void __fastcall player_update_loadout(datum_index player_index, player_datum* pl
 void __fastcall player_update_loadout_internal(long loadout_index, qword user_xuid);
 // equipment_index from multiplayer_globals > Universal > Equipment
 bool __fastcall equipment_add(long slot_index, long equipment_index);
-s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index);
-s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xuid);
+//s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index);
+//s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xuid);

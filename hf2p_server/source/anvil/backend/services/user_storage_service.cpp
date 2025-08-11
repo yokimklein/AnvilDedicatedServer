@@ -1,4 +1,6 @@
 #include "user_storage_service.h"
+#include <hf2p\loadouts.h>
+#include <anvil\backend\backend.h>
 
 const char* k_user_storage_container_names[k_user_storage_container_count] =
 {
@@ -67,7 +69,8 @@ s_user_id tag_invoke(boost::json::value_to_tag<s_user_id>, boost::json::value co
     auto const& obj = jv.as_object();
     s_user_id refresh
     {
-        obj.at("Id").as_int64()
+        // Fails to parse when using as_uint64?
+        static_cast<qword>(obj.at("Id").as_int64())
     };
     return refresh;
 }
@@ -107,6 +110,15 @@ s_response_get_public_data tag_invoke(boost::json::value_to_tag<s_response_get_p
     return response;
 };
 
+// $TODO: need to remember which container was requested for response
+// $TODO: need to be able to fire multiple requests at once, could put them in a vector?
+// create GetPublicData request queue which stores container name type, status, this is what ticks update in backend.cpp
+// 
+// /TitleResourceService.svc/GetTitleConfiguration
+// /ee3aec5524854d6e918307d24a14623d.svc/c3bf25f34b72499ca307c6e4431c79c1
+// $TODO: grab TIs next to use to convert loadouts, only bother processing and caching armour, weapon, grenade, support, tactical, colours & scoring events
+// ARMOR_ITEM, WEAPON, GRENADE, BOOSTER, CONSUMABLE, COLOR, SCORING_EVENT
+
 void c_backend::user_storage_service::get_public_data::response(s_backend_response* response)
 {
     if (response->retCode == _backend_success)
@@ -114,6 +126,8 @@ void c_backend::user_storage_service::get_public_data::response(s_backend_respon
         s_response body = boost::json::value_to<s_response>(response->data);
 
         // $TODO: convert data here
+        s_api_user_loadout loadout;
+        s_api_user_customisation customisation;
 
          m_status.status = _request_status_received;
          return;

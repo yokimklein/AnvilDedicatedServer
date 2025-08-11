@@ -172,11 +172,14 @@
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\animations\mixing_board\channels\channel_base.h" />
+    <ClInclude Include="source\anvil\backend\cache.h" />
     <ClInclude Include="source\anvil\backend\lobby.h" />
     <ClInclude Include="source\anvil\backend\backend.h" />
+    <ClInclude Include="source\anvil\backend\request_info.h" />
     <ClInclude Include="source\anvil\backend\services\authorization_service.h" />
     <ClInclude Include="source\anvil\backend\services\endpoints_service.h" />
     <ClInclude Include="source\anvil\backend\services\private_service.h" />
+    <ClInclude Include="source\anvil\backend\services\title_resource_service.h" />
     <ClInclude Include="source\anvil\backend\services\user_storage_service.h" />
     <ClInclude Include="source\anvil\config.h" />
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
@@ -455,11 +458,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ai\actors.cpp" />
+    <ClCompile Include="source\anvil\backend\cache.cpp" />
     <ClCompile Include="source\anvil\backend\lobby.cpp" />
     <ClCompile Include="source\anvil\backend\backend.cpp" />
+    <ClCompile Include="source\anvil\backend\request_info.cpp" />
     <ClCompile Include="source\anvil\backend\services\authorization_service.cpp" />
     <ClCompile Include="source\anvil\backend\services\endpoints_service.cpp" />
     <ClCompile Include="source\anvil\backend\services\private_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\title_resource_service.cpp" />
     <ClCompile Include="source\anvil\backend\services\user_storage_service.cpp" />
     <ClCompile Include="source\anvil\config.cpp" />
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />

@@ -1,10 +1,8 @@
 #include "user.h"
 #include <networking\transport\transport_security.h>
 #include <anvil\backend\services\private_service.h>
-#include <combaseapi.h>
+#include <anvil\backend\cache.h>
 #include <stdio.h>
-
-s_lobby_session_data g_lobby_session_data;
 
 s_lobby_session_data::s_lobby_session_data()
     : valid(false)
@@ -39,7 +37,7 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
     // search for matching sessionID in user sessions cache and return userID
     for (ulong user_session_index = 0; user_session_index < k_network_maximum_players_per_session; user_session_index++)
     {
-        s_user_session& user_session = g_lobby_session_data.users[user_session_index];
+        s_user_session& user_session = g_backend_data_cache.lobby_session.users[user_session_index];
         if (user_session.valid && user_session.session_id == *secure_address)
         {
             return user_session.user_id;
@@ -53,7 +51,7 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
 
 bool user_sessions_request_for_lobby()
 {
-    if (g_lobby_session_data.status != _request_status_none)
+    if (c_backend::private_service::retrieve_lobby_members::m_status.status != _request_status_none)
     {
         printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_sessions_request_for_lobby: tried to send user sessions request before previous request has received a response!\n");
         return false;

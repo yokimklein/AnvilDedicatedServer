@@ -45,6 +45,7 @@ bool __fastcall equipment_add(long slot_index, long equipment_index)
 	return INVOKE(0xE0530, equipment_add, slot_index, equipment_index);
 }
 
+/* - These user storage related functions are from Saber's backend, which we've since disabled so these no longer work
 // retrieves from cached loadouts
 s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
 {
@@ -70,3 +71,4 @@ void s_api_user_customisation::write_colours(s_s3d_player_customization* out_cus
 	ASSERT(out_customisation);
 	DECLFUNC(0x312110, void, __thiscall, s_api_user_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
 }
+*/

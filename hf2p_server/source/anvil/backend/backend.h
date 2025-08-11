@@ -16,25 +16,11 @@ namespace http = beast::http;
 namespace json = boost::json;
 using tcp = net::ip::tcp;
 
-// 5 second cooldown between failed requests
-constexpr ulong SERVICE_REQUEST_REFRESH_INTERVAL = 5000;
-
 // Fail async task if nothing is heard back within 15 seconds
 constexpr ulong SERVICE_REQUEST_TIMEOUT_INTERVAL = 15000;
 
 // refresh every 2 minutes
 constexpr ulong BACKEND_TOKEN_REFRESH_INTERVAL = 120000;
-
-enum e_request_status
-{
-    _request_status_none,
-    _request_status_waiting,
-    _request_status_received,
-    _request_status_failed,
-    _request_status_timeout,
-
-    k_request_status_count
-};
 
 enum e_backend_return_codes
 {
@@ -53,19 +39,6 @@ enum e_resolved_endpoints
     _endpoint_title_server,
 
     k_resolved_endpoints_count
-};
-
-// $TODO: move instances of this to service classes
-// actually just move the entire globals
-struct s_request_info
-{
-    s_request_info();
-
-    // if send_request returns true, a request was sent
-    void update_request(std::function<bool()> send_request = NULL, std::function<void()> received_response = NULL);
-
-    std::atomic<e_request_status> status;
-    ulong failure_time;
 };
 
 struct s_backend_response
@@ -100,6 +73,7 @@ public:
     class endpoints_service;
     class authorization_service;
     class user_storage_service;
+    class title_resource_service;
 
     ~c_backend();
 

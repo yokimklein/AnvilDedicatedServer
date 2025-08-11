@@ -885,6 +885,15 @@
     <ClInclude Include="source\anvil\backend\services\user_storage_service.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\backend\services\title_resource_service.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend\cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\backend\request_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1362,6 +1371,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\anvil\backend\services\user_storage_service.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend\services\title_resource_service.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend\cache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\anvil\backend\request_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

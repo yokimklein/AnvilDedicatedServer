@@ -5,9 +5,9 @@
 #include <anvil\backend\services\user_storage_service.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks\hooks.h>
+#include <hf2p\hq.h>
 #include <game\game.h>
 #include <game\game_engine_simulation.h>
-#include <hf2p\hq.h>
 #include <interface\user_interface_networking.h>
 #include <interface\user_interface_session.h>
 #include <iostream>
@@ -24,9 +24,9 @@
 #include <memory\tls.h>
 #include <fstream>
 #include <string>
-#include <combaseapi.h>
 #include <networking\network_time.h>
 #include <anvil\config.h>
+#include <anvil\backend\cache.h>
 
 constexpr wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 constexpr wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
@@ -103,7 +103,7 @@ void anvil_session_update()
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
 
     // If there's no session, create one once we have a lobby from the API
-    if (session->disconnected() && g_lobby_info.valid)
+    if (session->disconnected() && g_backend_data_cache.lobby_info.valid)
     {
         anvil_session_create();
         logged_connection_info = false;
@@ -508,6 +508,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             player_data_updated = true;
         }
 
+        /* $TODO: once we have TIs and user public data
         s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation)
         {
@@ -542,6 +543,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
                 //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
             }
         }
+        */
         // TODO: modifiers
         //configuration->s3d_player_container.modifiers[0].modifier_values[_enable_nemesis_mechanics] = true;
         //configuration->s3d_player_container.modifiers[0].modifier_values[_grenade_warning] = false;

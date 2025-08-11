@@ -71,7 +71,7 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
 {
     if (response->retCode != _backend_success)
     {
-        m_eds_request_info.status = _request_status_failed;
+        m_status.status = _request_status_failed;
         return;
     }
 
@@ -81,7 +81,7 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
     if (endpoints_count == 0)
     {
         printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received 0 endpoints!\n");
-        m_eds_request_info.status = _request_status_failed;
+        m_status.status = _request_status_failed;
         return;
     }
 
@@ -100,6 +100,6 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
     c_backend::authorization_service::endpoint().resolve(_endpoint_authorization, authorisation_endpoint.IP, std::format("{}", authorisation_endpoint.Port));
 
     m_authorization_endpoint_valid = true;
-    m_eds_request_info.status = _request_status_received;
+    m_status.status = _request_status_received;
     printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received %d endpoints, using [%s]\n", endpoints_count, authorisation_endpoint.Name.c_str());
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <anvil\backend\backend.h>
+#include <anvil\backend\request_info.h>
 
 class c_backend::private_service
 {
@@ -10,6 +11,8 @@ public:
     class register_game_server
     {
     public:
+        inline static s_request_info m_status;
+
         struct s_request : s_backend_request
         {
             std::string secureAddr;
@@ -30,6 +33,8 @@ public:
     class unregister_game_server
     {
     public:
+        inline static s_request_info m_status;
+
         struct s_request : s_backend_request
         {
             std::string secureAddr;
@@ -45,6 +50,8 @@ public:
     class update_game_server
     {
     public:
+        inline static s_request_info m_status;
+
         struct s_request : s_backend_request
         {
             std::string secureAddr;
@@ -63,6 +70,8 @@ public:
     class retrieve_lobby_members
     {
     public:
+        inline static s_request_info m_status;
+
         struct s_request : s_backend_request
         {
             std::string lobbyId;
