@@ -2,6 +2,145 @@
 #include <anvil\backend\cache.h>
 #include <networking\network_time.h>
 
+s_title_instance::s_properties::s_search_results s_title_instance::get_properties(std::vector<std::string> prop_names)
+{
+    // $TODO: order found_props by prop_names order?
+    std::vector<std::string> search_list = prop_names;
+    s_title_instance::s_properties::s_search_results found_props;
+
+    for (auto& prop : props)
+    {
+        bool found = false;
+        long found_index = NONE;
+        for (ulong prop_index = 0; prop_index < search_list.size(); prop_index++)
+        {
+            auto& prop_name = search_list[prop_index];
+            if (prop.name == prop_name)
+            {
+                found_props.results.push_back(prop);
+                found = true;
+                found_index = prop_index;
+                break;
+            }
+        }
+
+        // Remove found index from search list, no point in searching for it again
+        if (found)
+        {
+            search_list.erase(search_list.begin() + found_index);
+            found = false;
+            found_index = NONE;
+        }
+    }
+
+    return found_props;
+}
+
+s_title_instance::s_properties* const s_title_instance::s_properties::s_search_results::get_property(const char* name)
+{
+    for (ulong prop_index = 0; prop_index < results.size(); prop_index++)
+    {
+        if (results[prop_index].name == name)
+        {
+            return &results[prop_index];
+        }
+    }
+    return NULL;
+}
+
+long s_title_instance::s_properties::s_search_results::get_integer(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return 0;
+    }
+    ASSERT(prop->type == _title_property_integer);
+    return std::get<long>(prop->value);
+}
+
+bool s_title_instance::s_properties::s_search_results::get_boolean(const char* name)
+{
+    return get_integer(name) == 1 ? true : false;
+}
+
+float s_title_instance::s_properties::s_search_results::get_float(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return 0.0f;
+    }
+    ASSERT(prop->type == _title_property_float);
+    return std::get<float>(prop->value);
+}
+
+std::string s_title_instance::s_properties::s_search_results::get_string(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return "";
+    }
+    ASSERT(prop->type == _title_property_string);
+    return std::get<std::string>(prop->value);
+}
+
+long64 s_title_instance::s_properties::s_search_results::get_long(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return 0LL;
+    }
+    ASSERT(prop->type == _title_property_long);
+    return std::get<long64>(prop->value);
+}
+
+std::vector<long> s_title_instance::s_properties::s_search_results::get_integer_list(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return {};
+    }
+    ASSERT(prop->type == _title_property_integer_list);
+    return std::get<std::vector<long>>(prop->value);
+}
+
+std::vector<std::string> s_title_instance::s_properties::s_search_results::get_string_list(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return {};
+    }
+    ASSERT(prop->type == _title_property_string_list);
+    return std::get<std::vector<std::string>>(prop->value);
+}
+
+std::vector<s_title_instance> s_title_instance::s_properties::s_search_results::get_object_list(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return {};
+    }
+    ASSERT(prop->type == _title_property_object_list);
+    return std::get<std::vector<s_title_instance>>(prop->value);
+}
+
+std::vector<float> s_title_instance::s_properties::s_search_results::get_float_list(const char* name)
+{
+    s_title_instance::s_properties* const prop = get_property(name);
+    if (!prop)
+    {
+        return {};
+    }
+    ASSERT(prop->type == _title_property_float_list);
+    return std::get<std::vector<float>>(prop->value);
+}
+
 void c_backend::title_resource_service::initialise(c_backend::resolved_endpoint* endpoint)
 {
     if (endpoint)
@@ -131,8 +270,13 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
             {
                 case _instance_armor_item:
                 {
-                    s_armor_item armor(instance);
+                    s_cached_armor_item armor(instance);
                     g_backend_data_cache.armor_items.insert({ instance.name, armor });
+                    break;
+                }
+                case _instance_weapon:
+                {
+                    //g_backend_data_cache.weapons.insert({ instance.name, armor });
                     break;
                 }
                 default:

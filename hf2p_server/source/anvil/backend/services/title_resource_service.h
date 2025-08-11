@@ -98,6 +98,23 @@ struct s_title_instance
 {
     struct s_properties
     {
+        struct s_search_results
+        {
+            s_title_instance::s_properties* const get_property(const char* name);
+
+            long get_integer(const char* name);
+            bool get_boolean(const char* name);
+            float get_float(const char* name);
+            std::string get_string(const char* name);
+            long64 get_long(const char* name);
+            std::vector<long> get_integer_list(const char* name);
+            std::vector<std::string> get_string_list(const char* name);
+            std::vector<s_title_instance> get_object_list(const char* name);
+            std::vector<float> get_float_list(const char* name);
+
+            std::vector<s_title_instance::s_properties> results;
+        };
+
         std::string name;
         e_title_property_types type;
         std::variant
@@ -112,6 +129,9 @@ struct s_title_instance
             /*floatList*/ std::vector<float>
             >value;
     };
+
+    // $NOTE: this will return props in the order in which they appear in the TI, not in the order of the search parameters!
+    s_properties::s_search_results get_properties(std::vector<std::string> prop_names);
 
     std::string name;
     std::string className;

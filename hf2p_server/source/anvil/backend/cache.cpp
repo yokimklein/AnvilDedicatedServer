@@ -12,8 +12,11 @@ void s_backend_data_cache::clear_title_instances()
     armor_items.clear();
 }
 
-s_armor_item::s_armor_item(s_title_instance& instance)
-    : can_colour_regions()
+s_cached_armor_item::s_cached_armor_item(s_title_instance& instance)
+    : gender_armor()
+    , race_id(NONE)
+    , modifiers()
+    , can_colour_regions()
 {
     // name to index conversion via globals
     s_game_globals* game_globals = scenario_try_and_get_game_globals();
@@ -28,60 +31,32 @@ s_armor_item::s_armor_item(s_title_instance& instance)
         return;
     }
 
-    race_id = NONE;
-    std::string_view armor_name = "";
-    std::string_view modifiers_values = "";
-    std::string_view modifiers_list = "";
-
-    // Get relevant properties
-    for (auto& prop : instance.props)
+    // s_properties_search_results
+    std::vector<std::string> search_for_props =
     {
-        if (race_id == NONE && prop.name == "RACE_ID")
-        {
-            race_id = std::get<long>(prop.value);
-            continue;
-        }
-        if (armor_name == "" && prop.name == "NAME")
-        {
-            armor_name = std::get<std::string>(prop.value);
-            continue;
-        }
-        if (modifiers_values == "" && prop.name == "ARMOR_MODIFIERS_VALUES")
-        {
-            modifiers_values = std::get<std::string>(prop.value);
-            continue;
-        }
-        if (modifiers_list == "" && prop.name == "ARMOR_MODIFIERS_LIST")
-        {
-            modifiers_list = std::get<std::string>(prop.value);
-            continue;
-        }
-        if (prop.name == "CAN_CUSTOMIZE_PRIMARY")
-        {
-            can_colour_regions[_armor_color_primary] = std::get<long>(prop.value) == 1 ? true : false;
-            continue;
-        }
-        if (prop.name == "CAN_CUSTOMIZE_SECONDARY")
-        {
-            can_colour_regions[_armor_color_secondary] = std::get<long>(prop.value) == 1 ? true : false;
-            continue;
-        }
-        if (prop.name == "CAN_CUSTOMIZE_VISOR")
-        {
-            can_colour_regions[_armor_color_visor] = std::get<long>(prop.value) == 1 ? true : false;
-            continue;
-        }
-        if (prop.name == "CAN_CUSTOMIZE_LIGHTS")
-        {
-            can_colour_regions[_armor_color_lights] = std::get<long>(prop.value) == 1 ? true : false;
-            continue;
-        }
-        if (prop.name == "CAN_CUSTOMIZE_HOLOGRAM")
-        {
-            can_colour_regions[_armor_color_holo] = std::get<long>(prop.value) == 1 ? true : false;
-            continue;
-        }
-    }
+        "NAME",
+        "RACE_ID",
+        "ARMOR_MODIFIERS_VALUES",
+        "ARMOR_MODIFIERS_LIST",
+        "CAN_CUSTOMIZE_PRIMARY",
+        "CAN_CUSTOMIZE_SECONDARY",
+        "CAN_CUSTOMIZE_VISOR",
+        "CAN_CUSTOMIZE_LIGHTS",
+        "CAN_CUSTOMIZE_HOLOGRAM"
+    };
+
+    s_title_instance::s_properties::s_search_results properties = instance.get_properties(search_for_props);
+
+    std::string armor_name = properties.get_string("NAME");
+    race_id = properties.get_integer("RACE_ID");
+    std::string modifiers_values = properties.get_string("ARMOR_MODIFIERS_VALUES");
+    std::string modifiers_list = properties.get_string("ARMOR_MODIFIERS_LIST");
+    can_colour_regions[_armor_color_primary] = properties.get_boolean("CAN_CUSTOMIZE_PRIMARY");
+    can_colour_regions[_armor_color_secondary] = properties.get_boolean("CAN_CUSTOMIZE_SECONDARY");
+    can_colour_regions[_armor_color_visor] = properties.get_boolean("CAN_CUSTOMIZE_VISOR");
+    can_colour_regions[_armor_color_lights] = properties.get_boolean("CAN_CUSTOMIZE_LIGHTS");
+    can_colour_regions[_armor_color_holo] = properties.get_boolean("CAN_CUSTOMIZE_HOLOGRAM");
+
     if (race_id == NONE || armor_name == "")
     {
         return;
