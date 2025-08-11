@@ -8,6 +8,9 @@
 #include <networking\logic\network_session_interface.h>
 #include <game\game.h>
 #include <networking\network_globals.h>
+#include <scenario\scenario.h>
+#include <game\multiplayer_definitions.h>
+#include <anvil\backend\cache.h>
 
 bool const k_add_local_player_in_dedicated_server_mode = false;
 
@@ -74,6 +77,24 @@ bool __fastcall network_session_interface_get_local_user_identifier_hook(s_playe
     return (!game_is_dedicated_server() || k_add_local_player_in_dedicated_server_mode) && network_session_interface_get_local_user_identifier(player_identifier);
 }
 
+// Set the wp event xp rewards on scenario load
+__declspec(safebuffers) void __fastcall anvil_scenario_tags_scoring_events()
+{
+    s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
+
+    ulong maximum_wp_events = runtime->earn_wp_events.count();
+    for (auto& scoring_event : g_backend_data_cache.scoring_events)
+    {
+        ulong event_index = scoring_event.event_index;
+
+        if (VALID_INDEX(event_index, maximum_wp_events))
+        {
+            s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
+            wp_event.earned_wp = static_cast<short>(scoring_event.xp_reward);
+        }
+    }
+}
+
 void anvil_hooks_ds_apply()
 {
     // add anvil_session_update to network_update after network_session_interface_update
@@ -98,9 +119,28 @@ void anvil_hooks_ds_apply()
     // set dedicated server session state back to waiting for players when c_life_cycle_state_handler_in_game::exit is called
     insert_hook(0x4EB7B, 0x4EB82, c_life_cycle_state_handler_in_game__exit_hook, _hook_execute_replaced_first);
 
-    // TODO: hook hf2p_tick and disable everything but the heartbeat service, and reimplement whatever ms23 was doing, do the same for game_startup_internal & game_shutdown_internal
-    // TODO: hook network_session_interface_get_local_user_identifier in c_network_session::create_host_session to add back !game_is_dedicated_server() check
-    // TODO: set wp event xp rewards at runtime when retrieving title instances from the API - right now we're just doing this in tags
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server (check if this is the same progress used for voting)
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
+
+    // disable saber's backend, we're using our own now
+    if (game_is_dedicated_server())
+    {
+        // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards
+        // remove call to hf2p_initialize in scenario_load
+        insert_hook(0x7E978, 0x7E9AD, anvil_scenario_tags_scoring_events, _hook_replace);
+
+        // remove 13 hf2p service update calls in hf2p_game_update
+        nop_region(0x2B0C51, 65);
+
+        // remove call to game_shield_initialize in hf2p_security_initialize - this will crash unless hf2p_initialize is disabled
+        // this prevents the game from exiting when no username and signincode launch args are supplied
+        nop_region(0x2B0226, 5);
+        // $TODO: replace above with removing hf2p_game_initialize?
+
+        // remove call to hf2p_client_dispose in game_dispose
+        nop_region(0x95D9F, 5);
+
+        // remove call to heartbeat update in main_loop_pregame
+        nop_region(0x96067, 5);
+    }
 }

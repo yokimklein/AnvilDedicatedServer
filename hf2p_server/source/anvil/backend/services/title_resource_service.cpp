@@ -262,8 +262,10 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
         ulong maximum_weapons = 0;
         ulong maximum_grenades = 0;
         ulong maximum_consumables = 0;
+        ulong maximum_wp_events = 0;
         s_game_globals* game_globals = scenario_try_and_get_game_globals();
         s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
+        s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
         if (universal)
         {
             maximum_weapons = universal->weapon_selections.count();
@@ -272,6 +274,10 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
         if (game_globals)
         {
             maximum_grenades = game_globals->grenades.count();
+        }
+        if (runtime)
+        {
+            maximum_wp_events = runtime->earn_wp_events.count();
         }
 
         // Process TIs into data cache
@@ -353,6 +359,23 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                         (static_cast<ulong>(blue) << 0);
 
                     g_backend_data_cache.colours.insert({ instance.name, colour });
+                    break;
+                }
+                case _instance_scoring_event:
+                {
+                    auto results = instance.get_properties({ "SCORING_EVENT_ID", "SCORING_REWARD_WP" });
+                    ulong event_index = results.get_integer("SCORING_EVENT_ID");
+                    short event_reward = static_cast<short>(results.get_integer("SCORING_REWARD_WP"));
+
+                    if (VALID_INDEX(event_index, maximum_wp_events))
+                    {
+                        // cache data to use on map reload
+                        g_backend_data_cache.scoring_events.push_back({ event_index, event_reward });
+
+                        // set data immediately
+                        s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
+                        wp_event.earned_wp = static_cast<short>(event_reward);
+                    }
                     break;
                 }
                 default:

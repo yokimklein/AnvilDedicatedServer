@@ -212,24 +212,4 @@ void anvil_hooks_miscellaneous_apply()
 
     // load string ids
     insert_hook(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
-
-    if (game_is_dedicated_server())
-    {
-        // disable saber's backend, we're using our own now
-        // remove call to hf2p_initialize in scenario_load
-        nop_region(0x7E981, 5);
-        // remove 13 hf2p service update calls in hf2p_game_update
-        nop_region(0x2B0C51, 65);
-
-        // remove call to game_shield_initialize in hf2p_security_initialize - this will crash unless hf2p_initialize is disabled
-        // this prevents the game from exiting when no username and signincode launch args are supplied
-        nop_region(0x2B0226, 5);
-        // $TODO: replace above with removing hf2p_game_initialize?
-
-        // remove call to hf2p_client_dispose in game_dispose
-        nop_region(0x95D9F, 5);
-
-        // remove call to heartbeat update in main_loop_pregame
-        nop_region(0x96067, 5);
-    }
 }

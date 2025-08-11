@@ -1,6 +1,7 @@
 #pragma once
 #include <tag_files\tag_block.h>
 #include <tag_files\tag_groups.h>
+#include <game\game_engine_event_definitions.h>
 
 struct s_multiplayer_universal_globals_definition;
 struct s_multiplayer_runtime_globals_definition;
@@ -77,6 +78,88 @@ static_assert(0x9C == OFFSETOF(s_multiplayer_universal_globals_definition, weapo
 static_assert(0xA8 == OFFSETOF(s_multiplayer_universal_globals_definition, vehicle_sets));
 static_assert(0xB4 == OFFSETOF(s_multiplayer_universal_globals_definition, podium_animations));
 static_assert(0xC0 == OFFSETOF(s_multiplayer_universal_globals_definition, halo3_game_engine_settings));
+
+template<tag ...k_group_tags>
+struct s_multiplayer_globals_tag_reference : s_tag_reference
+{
+};
+
+struct s_multiplayer_constants;
+struct s_game_engine_status_response;
+struct s_multiplayer_runtime_globals_definition
+{
+	c_typed_tag_reference<BIPED_TAG> editor_biped;
+	c_typed_tag_reference<SCENERY_TAG> editor_helper;
+	c_typed_tag_reference<WEAPON_TAG> flag;
+	c_typed_tag_reference<WEAPON_TAG> ball;
+	c_typed_tag_reference<WEAPON_TAG> assault_bomb;
+	c_typed_tag_reference<CRATE_TAG> vip_influence_area;
+	c_typed_tag_reference<MULTILINGUAL_UNICODE_STRING_LIST_TAG> in_game_text;
+
+	// gameplay modifier tags
+	c_typed_tag_reference<PROJECTILE_TAG> plant_plasma_on_death_projectile;
+	c_typed_tag_reference<EFFECT_TAG> vehicle_autoflip_effect;
+	c_typed_tag_reference<EFFECT_TAG> safety_booster_effect;
+
+	// `player_spawn`
+	// int32 sound_index = player_has_gameplay_modifier(_gameplay_modifier_respawn_modifier) ? runtime_data->modifier_respawn_sound.index : runtime_data->default_respawn_sound.index
+	c_typed_tag_reference<SOUND_TAG> default_respawn_sound;
+	c_typed_tag_reference<SOUND_TAG> modifier_respawn_sound;
+
+	c_typed_tag_block<s_multiplayer_globals_tag_reference<SOUND_TAG>> sounds;
+	c_typed_tag_block<s_multiplayer_globals_tag_reference<SOUND_LOOPING_TAG>> looping_sounds;
+
+	c_typed_tag_block<s_multiplayer_event_response_definition> earn_wp_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> general_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> flavor_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> slayer_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> ctf_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> oddball_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> king_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> vip_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> juggernaut_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> territories_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> assault_events;
+	c_typed_tag_block<s_multiplayer_event_response_definition> infection_events;
+
+	long maximum_frag_count;
+	long maximum_plasma_count;
+
+	c_typed_tag_block<s_multiplayer_constants> multiplayer_constants;
+	c_typed_tag_block<s_game_engine_status_response> state_responses;
+
+	c_typed_tag_reference<BITMAP_TAG> scoreboard_emblem_bitmap;
+	c_typed_tag_reference<BITMAP_TAG> scoreboard_dead_emblem_bitmap;
+
+	c_typed_tag_reference<SHADER_HALOGRAM_TAG> hill_shader;
+
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> pregame_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> ctf_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> slayer_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> oddball_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> king_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> sandbox_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> vip_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> juggernaut_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> territories_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> assault_intro_message;
+	c_typed_tag_reference<CHUD_DEFINITION_TAG> infection_intro_message;
+
+	// new since ms23
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> biped_interpolation_defaults;
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> vehicle_interpolation_defaults;
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> crate_interpolation_defaults;
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> item_interpolation_defaults;
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> projectile_interpolation_defaults;
+	c_typed_tag_reference<SIMULATION_INTERPOLATION_TAG> object_interpolation_defaults;
+
+	c_typed_tag_reference<SOUND_LOOPING_TAG> music_first_place;
+	c_typed_tag_reference<SOUND_LOOPING_TAG> music_second_place;
+	c_typed_tag_reference<SOUND_LOOPING_TAG> music_third_place;
+	c_typed_tag_reference<SOUND_LOOPING_TAG> music_post_match;
+};
+static_assert(sizeof(s_multiplayer_runtime_globals_definition) == 0x308);
+static_assert(0xD8 == OFFSETOF(s_multiplayer_runtime_globals_definition, earn_wp_events));
 
 struct s_multiplayer_weapon_selection
 {

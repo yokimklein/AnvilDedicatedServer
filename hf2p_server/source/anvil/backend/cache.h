@@ -29,6 +29,12 @@ struct s_cached_armor_item
     bool can_colour_regions[k_armor_colors_count];
 };
 
+struct s_cached_scoring_event
+{
+    ulong event_index;
+    short xp_reward;
+};
+
 struct s_backend_data_cache
 {
     void clear_title_instances();
@@ -46,7 +52,6 @@ struct s_backend_data_cache
     std::map<std::string, std::vector<s_modifier>> boosters;
     std::map<std::string, e_tactical_package> consumables;
     std::map<std::string, ulong> colours;
-
-    // scoring event - set this directly in runtime tags, no need to cache
+    std::vector<s_cached_scoring_event> scoring_events;
 };
 extern s_backend_data_cache g_backend_data_cache;
