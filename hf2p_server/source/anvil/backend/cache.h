@@ -37,10 +37,9 @@ struct s_backend_data_cache
     s_lobby_session_data lobby_session;
 
     std::map<std::string, s_cached_armor_item> armor_items;
-    // $TODO: logic for these
     std::map<std::string, e_weapon> weapons;
     std::map<std::string, e_grenade> grenades;
-    std::map<std::string, s_modifier> boosters;
+    std::map<std::string, s_modifier> boosters; // $TODO:
     std::map<std::string, e_tactical_package> consumables;
     std::map<std::string, ulong> colours;
 

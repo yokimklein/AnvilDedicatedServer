@@ -10,6 +10,11 @@ s_backend_data_cache g_backend_data_cache;
 void s_backend_data_cache::clear_title_instances()
 {
     armor_items.clear();
+    weapons.clear();
+    grenades.clear();
+    boosters.clear();
+    consumables.clear();
+    colours.clear();
 }
 
 s_cached_armor_item::s_cached_armor_item(s_title_instance& instance)

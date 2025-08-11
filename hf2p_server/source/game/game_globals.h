@@ -176,11 +176,23 @@ struct s_game_globals_difficulty_information
 };
 static_assert(sizeof(s_game_globals_difficulty_information) == 0x284);
 
+struct s_game_globals_grenade
+{
+	short maximum_count;
+	byte pad;
+	c_typed_tag_reference<EFFECT_TAG> throwing_effect;
+	long unused[4];
+	c_typed_tag_reference<ITEM_TAG> item;
+	c_typed_tag_reference<PROJECTILE_TAG> projectile;
+};
+static_assert(sizeof(s_game_globals_grenade) == 0x44);
+
 struct s_game_globals
 {
 	byte data[0x120];
 	c_typed_tag_block<s_game_globals_difficulty_information> difficulty;
-	byte data2[0x84];
+	c_typed_tag_block<s_game_globals_grenade> grenades;
+	byte data2[0x78];
 	c_typed_tag_reference<MULTIPLAYER_GLOBALS_TAG> multiplayer_globals;
 	c_typed_tag_reference<SURVIVAL_MODE_GLOBALS_TAG> survival_globals;
 	c_typed_tag_reference<HF2P_GLOBALS_TAG> armor_globals;

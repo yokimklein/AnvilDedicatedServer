@@ -211,10 +211,11 @@ enum e_weapon // non-original name
 // IDs are based on globals\globals.globals > Grenades
 enum e_grenade
 {
-	_frag_grenade,
-	_plasma_grenade,
-	_claymore_grenade,
-	_firebomb_grenade, // tag missing in ms29
+	_grenade_none = NONE,
+	_grenade_frag = 0,
+	_grenade_plasma,
+	_grenade_claymore,
+	_grenade_firebomb, // tag missing in ms29
 
 	k_grenade_count
 };
@@ -481,7 +482,7 @@ struct s_s3d_player_loadout
 	c_enum<e_armor, byte, _armor_air_assault, k_armor_count> armor_suit;
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> primary_weapon;
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> secondary_weapon;
-	c_enum<e_grenade, byte, _frag_grenade, k_grenade_count> grenade;
+	c_enum<e_grenade, byte, _grenade_frag, k_grenade_count> grenade;
 	c_enum<e_support_package, byte, k_support_package_count, k_support_package_count> support_pack; // title instance ID + 1
 	c_enum<e_tactical_package, byte, _tactical_package_empty, k_tactical_package_count> tactical_packs[4];
 };

@@ -1,6 +1,9 @@
 #include "title_resource_service.h"
 #include <anvil\backend\cache.h>
 #include <networking\network_time.h>
+#include <scenario\scenario.h>
+#include <game\game_globals.h>
+#include <game\multiplayer_definitions.h>
 
 s_title_instance::s_properties::s_search_results s_title_instance::get_properties(std::vector<std::string> prop_names)
 {
@@ -53,7 +56,7 @@ long s_title_instance::s_properties::s_search_results::get_integer(const char* n
     s_title_instance::s_properties* const prop = get_property(name);
     if (!prop)
     {
-        return 0;
+        return NONE;
     }
     ASSERT(prop->type == _title_property_integer);
     return std::get<long>(prop->value);
@@ -253,6 +256,24 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
     {
         s_response body = boost::json::value_to<s_response>(response->data);
 
+        g_backend_data_cache.clear_title_instances();
+
+        // Pull maximum indices from tags to check if TI IDs are valid
+        ulong maximum_weapons = 0;
+        ulong maximum_grenades = 0;
+        ulong maximum_consumables = 0;
+        s_game_globals* game_globals = scenario_try_and_get_game_globals();
+        s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
+        if (universal)
+        {
+            maximum_weapons = universal->weapon_selections.count();
+            maximum_consumables = universal->equipment.count();
+        }
+        if (game_globals)
+        {
+            maximum_grenades = game_globals->grenades.count();
+        }
+
         // Process TIs into data cache
         for (s_title_instance& instance : body.instances)
         {
@@ -265,6 +286,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     break;
                 }
             }
+
             // process instances
             switch (instance_type)
             {
@@ -276,7 +298,51 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                 }
                 case _instance_weapon:
                 {
-                    //g_backend_data_cache.weapons.insert({ instance.name, armor });
+                    ulong weapon = instance.get_properties({ "ID" }).get_integer("ID");
+                    if (VALID_INDEX(weapon, maximum_weapons))
+                    {
+                        g_backend_data_cache.weapons.insert({ instance.name, (e_weapon)weapon });
+                    }
+                    break;
+                }
+                case _instance_grenade:
+                {
+                    ulong grenade = instance.get_properties({ "ID" }).get_integer("ID");
+                    if (VALID_INDEX(grenade, maximum_grenades))
+                    {
+                        g_backend_data_cache.grenades.insert({ instance.name, (e_grenade)grenade });
+                    }
+                    break;
+                }
+                case _instance_booster:
+                {
+                    // $TODO: booster logic
+                    break;
+                }
+                case _instance_consumable:
+                {
+                    ulong consumable = instance.get_properties({ "CONSUMABLE_INDEX" }).get_integer("CONSUMABLE_INDEX");
+                    if (VALID_INDEX(consumable, maximum_consumables))
+                    {
+                        g_backend_data_cache.consumables.insert({ instance.name, (e_tactical_package)consumable });
+                    }
+                    break;
+                }
+                case _instance_color:
+                {
+                    // convert RGB bytes to 32-bit ARGB
+                    auto results = instance.get_properties({ "COLOR_R", "COLOR_G", "COLOR_B" });
+                    byte red = static_cast<byte>(results.get_integer("COLOR_R"));
+                    byte green = static_cast<byte>(results.get_integer("COLOR_G"));
+                    byte blue = static_cast<byte>(results.get_integer("COLOR_B"));
+
+                    ulong colour =
+                        (static_cast<ulong>(255) << 24) |
+                        (static_cast<ulong>(red) << 16) |
+                        (static_cast<ulong>(green) << 8) |
+                        (static_cast<ulong>(blue) << 0);
+
+                    g_backend_data_cache.colours.insert({ instance.name, colour });
                     break;
                 }
                 default:
