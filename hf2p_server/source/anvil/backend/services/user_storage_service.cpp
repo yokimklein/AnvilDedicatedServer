@@ -1,6 +1,8 @@
 #include "user_storage_service.h"
 #include <hf2p\loadouts.h>
 #include <anvil\backend\backend.h>
+#include <iostream>
+#include <anvil\backend\cache.h>
 
 const char* k_user_storage_container_names[k_user_storage_container_count] =
 {
@@ -38,7 +40,7 @@ std::string c_backend::user_storage_service::get_public_data::s_request::to_json
     return boost::json::serialize(out);
 }
 
-void c_backend::user_storage_service::get_public_data::request(std::vector<qword> user_ids, e_user_storage_container container)
+void c_backend::user_storage_service::get_public_data::request(qword* user_ids, long user_count, e_user_storage_container container)
 {
     ASSERT(VALID_INDEX(container, k_user_storage_container_count));
     if (!m_endpoint->m_resolved || !VALID_INDEX(container, k_user_storage_container_count))
@@ -48,12 +50,12 @@ void c_backend::user_storage_service::get_public_data::request(std::vector<qword
 
     s_request request_body;
     request_body.containerName = k_user_storage_container_names[container];
-    for (qword& user_id : user_ids)
+    for (long user_index = 0; user_index < user_count; user_index++)
     {
-        request_body.users.push_back({ user_id });
+        request_body.users.push_back({ user_ids[user_index]});
     }
 
-    c_backend::make_request
+    ulong request_identifier = c_backend::make_request
     (
         request_body,
         http::verb::post,
@@ -62,6 +64,12 @@ void c_backend::user_storage_service::get_public_data::request(std::vector<qword
         *m_endpoint,
         true
     );
+
+    if (request_identifier != NONE)
+    {
+        std::lock_guard<std::mutex> lock(m_request_queue_mutex);
+        m_request_queue.insert({ request_identifier, container });
+    }
 }
 
 s_user_id tag_invoke(boost::json::value_to_tag<s_user_id>, boost::json::value const& jv)
@@ -110,24 +118,62 @@ s_response_get_public_data tag_invoke(boost::json::value_to_tag<s_response_get_p
     return response;
 };
 
-// $TODO: need to remember which container was requested for response
-// $TODO: need to be able to fire multiple requests at once, could put them in a vector?
-// create GetPublicData request queue which stores container name type, status, this is what ticks update in backend.cpp
-// 
-// /TitleResourceService.svc/GetTitleConfiguration
-// /ee3aec5524854d6e918307d24a14623d.svc/c3bf25f34b72499ca307c6e4431c79c1
-// $TODO: grab TIs next to use to convert loadouts, only bother processing and caching armour, weapon, grenade, support, tactical, colours & scoring events
-// ARMOR_ITEM, WEAPON, GRENADE, BOOSTER, CONSUMABLE, COLOR, SCORING_EVENT
-
 void c_backend::user_storage_service::get_public_data::response(s_backend_response* response)
 {
-    if (response->retCode == _backend_success)
+    if (response->retCode == _backend_success && response->request_identifier != NONE)
     {
         s_response body = boost::json::value_to<s_response>(response->data);
 
-        // $TODO: convert data here
-        s_api_user_loadout loadout;
-        s_api_user_customisation customisation;
+        // retrieve container type from queue and remove entry
+        std::lock_guard<std::mutex> lock(m_request_queue_mutex);
+        e_user_storage_container container_type = m_request_queue[response->request_identifier];
+        m_request_queue.erase(response->request_identifier);
+
+        switch (container_type)
+        {
+            case _container_spartan0:
+            case _container_spartan1:
+            case _container_spartan2:
+            {
+                for (auto& user : body.body)
+                {
+                    // If the size is different to what we're expecting, ignore it
+                    ASSERT(user.PerUserData.Data.size() == sizeof(s_backend_loadout));
+                    if (user.PerUserData.Data.size() != sizeof(s_backend_loadout))
+                    {
+                        continue;
+                    }
+                    s_backend_loadout loadout;
+                    memcpy(&loadout, user.PerUserData.Data.data(), user.PerUserData.Data.size());
+                    loadout.null_terminate_buffers(); // make sure all strings are null terminated in case of corruption
+
+                    // $NOTE: this works so long as the spartan containers in e_user_storage_container match with the loadout indices
+                    g_backend_data_cache.loadout_cache(user.User.Id, &loadout, container_type);
+                }
+                break;
+            }
+            case _container_customizations:
+            {
+                for (auto& user : body.body)
+                {
+                    // If the size is different to what we're expecting, ignore it
+                    ASSERT(user.PerUserData.Data.size() == sizeof(s_backend_customisation));
+                    if (user.PerUserData.Data.size() != sizeof(s_backend_customisation))
+                    {
+                        continue;
+                    }
+                    s_backend_customisation customisation;
+                    memcpy(&customisation, user.PerUserData.Data.data(), user.PerUserData.Data.size());
+                    customisation.null_terminate_buffers(); // make sure all strings are null terminated in case of corruption
+                    g_backend_data_cache.customisation_cache(user.User.Id, &customisation);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        // version number increment signifies a change, except the API currently doesn't increment it
 
          m_status.status = _request_status_received;
          return;

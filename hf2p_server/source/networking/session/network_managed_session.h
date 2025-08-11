@@ -193,7 +193,7 @@ c_managed_session_status_flags managed_session_get_status(long index);
 bool managed_session_is_master_session(long index);
 void managed_session_reset_session(long index, bool recreating_session);
 void managed_session_remove_players(long index, qword const* xuids, long xuid_count);
-void remove_from_player_list(s_online_session_player* players, long player_count, qword const* xuids, long xuid_count);
+void __fastcall remove_from_player_list(s_online_session_player* players, long player_count, qword const* xuids, long xuid_count);
 void managed_session_reset_players_add_status(long index);
 void managed_session_add_players(long index, qword const* xuids, bool const* xuids_left_game, long xuid_count);
 void add_to_player_list(s_online_session_player* players, long player_count, qword const* xuids, bool const* xuids_left_game, long xuid_count);

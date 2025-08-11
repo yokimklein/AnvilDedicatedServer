@@ -5,16 +5,96 @@
 #include <cache\cache_files.h>
 #include <hf2p\hf2p_definitions.h>
 
-s_backend_data_cache g_backend_data_cache;
+c_backend_data_cache g_backend_data_cache;
 
-void s_backend_data_cache::clear_title_instances()
+s_cached_public_data::s_cached_public_data()
+    : loadouts()
+    , customisation()
 {
-    armor_items.clear();
-    weapons.clear();
-    grenades.clear();
-    boosters.clear();
-    consumables.clear();
-    colours.clear();
+
+}
+
+void c_backend_data_cache::clear_title_instances()
+{
+    m_armor_items.clear();
+    m_weapons.clear();
+    m_grenades.clear();
+    m_boosters.clear();
+    m_consumables.clear();
+    m_colours.clear();
+}
+
+void c_backend_data_cache::user_data_remove(qword user_id)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    // check if user exists in public data map
+    if (m_public_data.find(user_id) == m_public_data.end())
+    {
+        return;
+    }
+    m_public_data.erase(user_id);
+}
+
+s_backend_loadout* const c_backend_data_cache::loadout_get(qword user_id, long loadout_index)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    if (m_public_data.find(user_id) == m_public_data.end())
+    {
+        return NULL;
+    }
+
+    return &m_public_data[user_id].loadouts[loadout_index];
+}
+
+void c_backend_data_cache::loadout_cache(qword user_id, s_backend_loadout* const loadout, long loadout_index)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    // assign to existing entry if it exists
+    if (m_public_data.find(user_id) != m_public_data.end())
+    {
+        m_public_data[user_id].loadouts[loadout_index] = *loadout;
+    }
+    // create entry if one doesn't exist
+    else
+    {
+        s_cached_public_data public_data;
+        public_data.loadouts[loadout_index] = *loadout;
+        m_public_data.insert_or_assign(user_id, public_data);
+    }
+}
+
+s_backend_customisation* const c_backend_data_cache::customisation_get(qword user_id)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    // check if user exists in loadouts map
+    if (m_public_data.find(user_id) == m_public_data.end())
+    {
+        return NULL;
+    }
+
+    return &m_public_data[user_id].customisation;
+}
+
+void c_backend_data_cache::customisation_cache(qword user_id, s_backend_customisation* const customisation)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    // assign to existing entry if it exists
+    if (m_public_data.find(user_id) != m_public_data.end())
+    {
+        m_public_data[user_id].customisation = *customisation;
+    }
+    // create entry if one doesn't exist
+    else
+    {
+        s_cached_public_data public_data;
+        public_data.customisation = *customisation;
+        m_public_data.insert_or_assign(user_id, public_data);
+    }
 }
 
 s_modifier::s_modifier(e_modifiers modifier, float value)

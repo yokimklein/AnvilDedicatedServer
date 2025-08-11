@@ -15,6 +15,7 @@
 #include <networking\messages\network_messages_session_protocol.h>
 #include <networking\messages\network_messages_session_membership.h>
 #include <game\player_mapping.h>
+#include <anvil\backend\services\user_storage_service.h>
 
 char const* k_session_type_strings[k_network_session_type_count] = {
     "none",
@@ -320,6 +321,14 @@ void c_network_session::join_accept(s_network_session_join_request const* join_r
                 player_config.client.user_selected_team_index = _game_team_none;
                 player_config.client.selected_loadout_index = NONE;
                 player_config.host.user_xuid = user_xuid_from_secure_address(&join_request->joining_peers[joining_peer_index].joining_peer_address);
+
+                // request all player containers
+                qword user_ids[] = { player_config.host.user_xuid };
+                for (long container_index = 0; container_index < k_user_storage_container_count; container_index++)
+                {
+                    c_backend::user_storage_service::get_public_data::request(user_ids, NUMBEROF(user_ids), (e_user_storage_container)container_index);
+                }
+
                 player_config.host.team_index = _game_team_none;
                 player_config.host.assigned_team_index = _game_team_none;
 

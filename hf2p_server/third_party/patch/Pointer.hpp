@@ -3,7 +3,7 @@
 #pragma once
 #include <string>
 #include <stdint.h>
-#include <Windows.h>
+#include <Windows.h> // $TODO: replace this file because good lord it's including Windows.h everywhere
 #include <sstream>
 
 enum HookFlags : int

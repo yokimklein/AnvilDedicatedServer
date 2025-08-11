@@ -1,6 +1,7 @@
 #include "hooks_ds.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
+#include <anvil\backend\services\user_storage_service.h>
+#include <Patch.hpp> // can't have this above user storage service as it includes Windows.h
 #include <anvil\server_tools.h>
 #include <networking\session\network_session_parameters_game.h>
 #include <networking\transport\transport_security.h>
@@ -11,10 +12,12 @@
 #include <scenario\scenario.h>
 #include <game\multiplayer_definitions.h>
 #include <anvil\backend\cache.h>
+#include <networking\session\network_managed_session.h>
 
 bool const k_add_local_player_in_dedicated_server_mode = false;
 
 // runtime checks need to be disabled for these, make sure to write them within the pragmas
+// also don't use the standard library in inserted hooks, it can mess up the function prologue and break variable access
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
 // TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
 #pragma runtime_checks("", off)
@@ -56,6 +59,30 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__exit_ho
         session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);
     }
 }
+
+// request all player containers for all players in session in case loadouts have been updated since joining & prior to game starting
+__declspec(safebuffers) void __cdecl c_life_cycle_state_handler_start_game__enter_hook()
+{
+    c_network_session* session;
+    __asm
+    {
+        mov session, eax
+    }
+
+    const c_network_session_membership* membership = session->get_session_membership();
+
+    qword user_ids[k_network_maximum_players_per_session];
+
+    for (long player_index = membership->get_first_player(); player_index != NONE; player_index = membership->get_next_player(player_index))
+    {
+        user_ids[player_index] = membership->get_player(player_index)->configuration.host.user_xuid;
+    }
+    
+    for (long container_index = 0; container_index < k_user_storage_container_count; container_index++)
+    {
+        c_backend::user_storage_service::get_public_data::request(user_ids, membership->get_player_count(), (e_user_storage_container)container_index);
+    }
+}
 #pragma runtime_checks("", restore)
 
 bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_network_session_parameter_game_start_status* thisptr, void* unused, s_network_session_parameter_game_start_status* start_status)
@@ -83,7 +110,7 @@ __declspec(safebuffers) void __fastcall anvil_scenario_tags_scoring_events()
     s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
 
     ulong maximum_wp_events = runtime->earn_wp_events.count();
-    for (auto& scoring_event : g_backend_data_cache.scoring_events)
+    for (auto& scoring_event : g_backend_data_cache.m_scoring_events)
     {
         ulong event_index = scoring_event.event_index;
 
@@ -92,6 +119,16 @@ __declspec(safebuffers) void __fastcall anvil_scenario_tags_scoring_events()
             s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
             wp_event.earned_wp = static_cast<short>(scoring_event.xp_reward);
         }
+    }
+}
+
+// Hook usercall
+__declspec(naked) void remove_from_player_list_hook(s_online_session_player* players, long unused, qword const* xuids, long xuid_count)
+{
+    __asm
+    {
+        mov edx, k_network_maximum_players_per_session // add back missing parameter
+        jmp remove_from_player_list
     }
 }
 
@@ -123,24 +160,35 @@ void anvil_hooks_ds_apply()
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
 
     // disable saber's backend, we're using our own now
-    if (game_is_dedicated_server())
-    {
-        // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards
-        // remove call to hf2p_initialize in scenario_load
-        insert_hook(0x7E978, 0x7E9AD, anvil_scenario_tags_scoring_events, _hook_replace);
+    // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards
+    // remove call to hf2p_initialize in scenario_load
+    insert_hook(0x7E978, 0x7E9AD, anvil_scenario_tags_scoring_events, _hook_replace);
 
-        // remove 13 hf2p service update calls in hf2p_game_update
-        nop_region(0x2B0C51, 65);
+    // remove 13 hf2p service update calls in hf2p_game_update
+    nop_region(0x2B0C51, 65);
 
-        // remove call to game_shield_initialize in hf2p_security_initialize - this will crash unless hf2p_initialize is disabled
-        // this prevents the game from exiting when no username and signincode launch args are supplied
-        nop_region(0x2B0226, 5);
-        // $TODO: replace above with removing hf2p_game_initialize?
+    // remove call to game_shield_initialize in hf2p_security_initialize - this will crash unless hf2p_initialize is disabled
+    // this prevents the game from exiting when no username and signincode launch args are supplied
+    nop_region(0x2B0226, 5);
+    // $TODO: replace above with removing hf2p_game_initialize?
 
-        // remove call to hf2p_client_dispose in game_dispose
-        nop_region(0x95D9F, 5);
+    // remove call to hf2p_client_dispose in game_dispose
+    nop_region(0x95D9F, 5);
 
-        // remove call to heartbeat update in main_loop_pregame
-        nop_region(0x96067, 5);
-    }
+    // remove call to heartbeat update in main_loop_pregame
+    nop_region(0x96067, 5);
+
+    // hook remove_from_player_list to remove leaving players from the public data cache
+    Hook(0x286F4, remove_from_player_list_hook, HookFlags::IsCall).Apply();
+    Hook(0x29567, remove_from_player_list_hook, HookFlags::IsCall).Apply();
+    Hook(0x30EE3, remove_from_player_list_hook, HookFlags::IsCall).Apply();
+    Hook(0x31AA9, remove_from_player_list_hook, HookFlags::IsCall).Apply();
+    // fix stack for remove_from_player_list hook
+    nop_region(0x286F9, 3);
+    nop_region(0x2956C, 3);
+    nop_region(0x30EFB, 3);
+    nop_region(0x31AB7, 3);
+
+    // Request public data on game start (hook end of c_life_cycle_state_handler_start_game::enter)
+    insert_hook(0x4C40F, 0x4C415, c_life_cycle_state_handler_start_game__enter_hook);
 }

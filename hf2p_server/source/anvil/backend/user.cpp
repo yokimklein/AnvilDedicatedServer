@@ -37,7 +37,7 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
     // search for matching sessionID in user sessions cache and return userID
     for (ulong user_session_index = 0; user_session_index < k_network_maximum_players_per_session; user_session_index++)
     {
-        s_user_session& user_session = g_backend_data_cache.lobby_session.users[user_session_index];
+        s_user_session& user_session = g_backend_data_cache.m_lobby_session.users[user_session_index];
         if (user_session.valid && user_session.session_id == *secure_address)
         {
             return user_session.user_id;

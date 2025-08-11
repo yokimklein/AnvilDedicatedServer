@@ -237,7 +237,7 @@ void c_backend::update()
     private_service::register_game_server::m_status.update_request([]
     {
         // Don't request if we already have valid lobby info
-        if (g_backend_data_cache.lobby_info.valid)
+        if (g_backend_data_cache.m_lobby_info.valid)
         {
             return false;
         }
@@ -252,7 +252,7 @@ void c_backend::update()
     title_resource_service::get_title_configuration::m_status.update_request([]
     {
         // $TODO: re-request interval? check last update time?
-        if (g_backend_data_cache.valid)
+        if (g_backend_data_cache.m_valid)
         {
             return false;
         }
@@ -320,6 +320,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
 
     // parse json
     s_backend_response response;
+    response.request_identifier = backend_data.get()->request_identifier;
     const auto& response_body = backend_data.get()->response.body();
     try
     {
@@ -366,11 +367,11 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
     }
 }
 
-void c_backend::make_request(s_backend_request& request_body, http::verb http_verb, std::string_view endpoint, std::function<void(s_backend_response*)> response_handler, resolved_endpoint& resolved_endpoint, bool use_auth_token)
+ulong c_backend::make_request(s_backend_request& request_body, http::verb http_verb, std::string_view endpoint, std::function<void(s_backend_response*)> response_handler, resolved_endpoint& resolved_endpoint, bool use_auth_token)
 {
     if (!resolved_endpoint.m_resolved)
     {
-        return;
+        return NONE;
     }
 
     std::shared_ptr<s_backend_request_data> backend_data = std::make_shared<s_backend_request_data>(g_backend_services->m_ioc);
@@ -391,11 +392,28 @@ void c_backend::make_request(s_backend_request& request_body, http::verb http_ve
     request.body() = request_body.to_json();
     request.prepare_payload();
     backend_data.get()->response_handler = response_handler;
+    backend_data.get()->request_identifier = g_backend_services->increment_request_number();
 
     printf("ONLINE/CLIENT/REQUEST,JSON: " __FUNCTION__ ": sending request to %s:%s%s\n", resolved_endpoint.m_host.c_str(), resolved_endpoint.m_port.c_str(), backend_data.get()->endpoint.c_str());
 
     backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
     backend_data.get()->stream.async_connect(resolved_endpoint.m_resolver_results, beast::bind_front_handler(&c_backend::on_connect, g_backend_services->shared_from_this(), backend_data));
+
+    return backend_data.get()->request_identifier;
+}
+
+ulong c_backend::increment_request_number()
+{
+    // ensure increment doesn't ever become NONE as we treat this as a fail
+    if (m_last_request_number == NONE)
+    {
+        m_last_request_number = 0;
+    }
+    else
+    {
+        m_last_request_number++;
+    }
+    return m_last_request_number;
 }
 
 s_endpoint_response tag_invoke(boost::json::value_to_tag<s_endpoint_response>, boost::json::value const& jv)

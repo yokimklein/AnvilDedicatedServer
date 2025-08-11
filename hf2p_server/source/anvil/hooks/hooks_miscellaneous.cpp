@@ -128,7 +128,7 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
 
 #pragma runtime_checks("", off)
 // fastcall which user cleans up 4 bytes
-void __fastcall sub_718BF0_hook(long loadout_index, s_api_user_loadout* loadout, s_api_user_customisation* user_customisation)
+void __fastcall sub_718BF0_hook(long loadout_index, s_backend_loadout* loadout, s_backend_customisation* user_customisation)
 {
     // Check if loadout is valid before calling first
     // If a player kills the local player and no API loadout information for the killer exists, the pointer is null and can crash

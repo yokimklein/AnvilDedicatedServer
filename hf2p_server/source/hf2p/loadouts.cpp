@@ -8,6 +8,54 @@
 #include <game\multiplayer_definitions.h>
 #include <tag_files\string_ids.h>
 
+s_backend_loadout::s_backend_loadout()
+{
+	armour_suit = "armor_uninitialized";
+	primary_weapon = "primary_weapon_uninitialized";
+	secondary_weapon = "secondary_weapon_uninitialized";
+	grenade = "grenade_uninitialized";
+	booster.clear();
+	for (long consumable_index = 0; consumable_index < NUMBEROF(consumables); consumable_index++)
+	{
+		consumables[consumable_index].clear();
+	}
+}
+
+void s_backend_loadout::null_terminate_buffers()
+{
+	armour_suit.null_terminate_buffer();
+	primary_weapon.null_terminate_buffer();
+	secondary_weapon.null_terminate_buffer();
+	grenade.null_terminate_buffer();
+	booster.null_terminate_buffer();
+	for (long consumable_index = 0; consumable_index < NUMBEROF(consumables); consumable_index++)
+	{
+		consumables[consumable_index].null_terminate_buffer();
+	}
+}
+
+s_backend_customisation::s_backend_customisation()
+{
+	loadout_index = 0;
+	account_label.clear();
+	emblem.clear();
+	colours[_armor_color_primary] = "color_primary_uninitialized";
+	colours[_armor_color_secondary] = "color_secondary_uninitialized";
+	colours[_armor_color_visor] = "color_visor_uninitialized";
+	colours[_armor_color_lights] = "color_lights_uninitialized";
+	colours[_armor_color_holo] = "color_holo_uninitialized";
+}
+
+void s_backend_customisation::null_terminate_buffers()
+{
+	account_label.null_terminate_buffer();
+	emblem.null_terminate_buffer();
+	for (long colour_index = 0; colour_index < NUMBEROF(colours); colour_index++)
+	{
+		colours[colour_index].null_terminate_buffer();
+	}
+}
+
 //void __fastcall hf2p_set_ui_loadouts(qword* player_xuid, s_s3d_player_container* player_container)
 //{
 //	INVOKE(0x304390, hf2p_set_ui_loadouts, player_xuid, player_container);
@@ -47,28 +95,28 @@ bool __fastcall equipment_add(long slot_index, long equipment_index)
 
 /* - These user storage related functions are from Saber's backend, which we've since disabled so these no longer work
 // retrieves from cached loadouts
-s_api_user_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
+s_backend_loadout* user_get_loadout_from_api(qword user_xuid, long loadout_index)
 {
 	ASSERT(VALID_INDEX(loadout_index, k_maximum_loadouts));
-	s_api_user_loadout*(__cdecl**user_get_loadout_from_api_funcs)(qword) = (s_api_user_loadout*(__cdecl**)(qword))base_address(0xEB09D4);
+	s_backend_loadout*(__cdecl**user_get_loadout_from_api_funcs)(qword) = (s_backend_loadout*(__cdecl**)(qword))base_address(0xEB09D4);
 	return user_get_loadout_from_api_funcs[loadout_index](user_xuid);
 }
 
 // retrieves from cached customisations
-s_api_user_customisation* __cdecl user_get_customisation_from_api(qword user_xuid)
+s_backend_customisation* __cdecl user_get_customisation_from_api(qword user_xuid)
 {
 	return INVOKE(0xE0890, user_get_customisation_from_api, user_xuid);
 }
 
-void s_api_user_loadout::write_configuration(s_s3d_player_loadout* out_loadout)
+void s_backend_loadout::write_configuration(s_s3d_player_loadout* out_loadout)
 {
 	ASSERT(out_loadout);
-	DECLFUNC(0x303CC0, void, __thiscall, s_api_user_loadout*, s_s3d_player_loadout*)(this, out_loadout);
+	DECLFUNC(0x303CC0, void, __thiscall, s_backend_loadout*, s_s3d_player_loadout*)(this, out_loadout);
 }
 
-void s_api_user_customisation::write_colours(s_s3d_player_customization* out_customisation)
+void s_backend_customisation::write_colours(s_s3d_player_customization* out_customisation)
 {
 	ASSERT(out_customisation);
-	DECLFUNC(0x312110, void, __thiscall, s_api_user_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
+	DECLFUNC(0x312110, void, __thiscall, s_backend_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
 }
 */

@@ -31,7 +31,7 @@ void c_backend::private_service::register_game_server::request(std::string secur
     }
 
     // remove old lobby ID and set status to waiting
-    g_backend_data_cache.lobby_info.clear_lobby_identifier();
+    g_backend_data_cache.m_lobby_info.clear_lobby_identifier();
 
     s_request request_body;
     request_body.secureAddr = secureAddr;
@@ -69,12 +69,12 @@ void c_backend::private_service::register_game_server::response(s_backend_respon
     s_response body = boost::json::value_to<s_response>(response->data);
 
     std::wstring lobby_id_braced = std::format(L"{{{}}}", std::wstring(body.lobbyId.begin(), body.lobbyId.end()));
-    HRESULT result = CLSIDFromString(lobby_id_braced.c_str(), (LPCLSID)&g_backend_data_cache.lobby_info.lobby_identifier);
+    HRESULT result = CLSIDFromString(lobby_id_braced.c_str(), (LPCLSID)&g_backend_data_cache.m_lobby_info.lobby_identifier);
     ASSERT(result == S_OK);
 
     m_status.status = _request_status_received;
-    g_backend_data_cache.lobby_info.valid = true;
-    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_backend_data_cache.lobby_info.lobby_identifier));
+    g_backend_data_cache.m_lobby_info.valid = true;
+    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_backend_data_cache.m_lobby_info.lobby_identifier));
 }
 
 std::string c_backend::private_service::unregister_game_server::s_request::to_json()
@@ -92,7 +92,7 @@ void c_backend::private_service::unregister_game_server::request(std::string sec
     }
 
     // clear lobby info
-    g_backend_data_cache.lobby_info.clear_lobby_identifier();
+    g_backend_data_cache.m_lobby_info.clear_lobby_identifier();
     m_status.status = _request_status_none;
 
     s_request request_body;
@@ -218,7 +218,7 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
     if (response->retCode != _backend_success)
     {
         m_status.status = _request_status_failed;
-        g_backend_data_cache.lobby_session.reset_user_data();
+        g_backend_data_cache.m_lobby_session.reset_user_data();
         return;
     }
 
@@ -230,7 +230,7 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
     {
         printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received too many user sessions! [%d out of max %d]\n", user_sessions_count, k_network_maximum_players_per_session);
         m_status.status = _request_status_none;
-        g_backend_data_cache.lobby_session.reset_user_data();
+        g_backend_data_cache.m_lobby_session.reset_user_data();
         return;
     }
 
@@ -251,7 +251,7 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
         ASSERT(result == S_OK);
     }
 
-    g_backend_data_cache.lobby_session.valid = true;
-    csmemcpy(g_backend_data_cache.lobby_session.users, users, sizeof(g_backend_data_cache.lobby_session.users));
+    g_backend_data_cache.m_lobby_session.valid = true;
+    csmemcpy(g_backend_data_cache.m_lobby_session.users, users, sizeof(g_backend_data_cache.m_lobby_session.users));
     m_status.status = _request_status_received;
 }

@@ -5,6 +5,7 @@
 #include <boost\asio\connect.hpp>
 #include <boost\asio\ip\tcp.hpp>
 #include <boost\json.hpp>
+#include <atomic>
 #include <functional>
 #include <cseries\cseries.h>
 
@@ -43,6 +44,8 @@ enum e_resolved_endpoints
 
 struct s_backend_response
 {
+    ulong request_identifier = NONE;
+
     e_backend_return_codes retCode = _backend_unhandled_error;
     json::value data;
 };
@@ -93,12 +96,14 @@ private:
     void on_connect(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, tcp::resolver::results_type::endpoint_type endpoint);
     void on_write(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size);
     void on_read(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, std::size_t size);
-    static void make_request(s_backend_request& request_body, http::verb http_verb, std::string_view endpoint, std::function<void(s_backend_response*)> response_handler, resolved_endpoint& resolved_endpoint, bool use_auth_token = true);
+    static ulong make_request(s_backend_request& request_body, http::verb http_verb, std::string_view endpoint, std::function<void(s_backend_response*)> response_handler, resolved_endpoint& resolved_endpoint, bool use_auth_token = true);
+    ulong increment_request_number();
 
     net::io_context m_ioc;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> m_work_guard;
     std::thread m_thread;
     tcp::resolver m_resolver;
+    std::atomic<ulong> m_last_request_number = NONE;
 
     // $TODO: find a better solution
     // Ideally I would store these as statics in the services, but I've been running into memory related crashes when I do this
@@ -121,6 +126,7 @@ struct s_backend_request_data
     std::function<void(s_backend_response*)> response_handler;
     std::string endpoint; // only exists so we can print the request endpoint, retrieving from target results in a corrupted string
     const c_backend::resolved_endpoint* resolved;
+    ulong request_identifier = NONE;
 };
 
 struct s_endpoint_response

@@ -23,5 +23,5 @@ void anvil_get_server_identifier(s_transport_secure_address* secure_address)
 
 void anvil_get_lobby_identifier(s_transport_secure_identifier* secure_identifier)
 {
-    *secure_identifier = g_backend_data_cache.lobby_info.lobby_identifier;
+    *secure_identifier = g_backend_data_cache.m_lobby_info.lobby_identifier;
 }

@@ -299,7 +299,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                 case _instance_armor_item:
                 {
                     s_cached_armor_item armor(instance);
-                    g_backend_data_cache.armor_items.insert({ instance.name, armor });
+                    g_backend_data_cache.m_armor_items.insert({ instance.name, armor });
                     break;
                 }
                 case _instance_weapon:
@@ -307,7 +307,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     ulong weapon = instance.get_properties({ "ID" }).get_integer("ID");
                     if (VALID_INDEX(weapon, maximum_weapons))
                     {
-                        g_backend_data_cache.weapons.insert({ instance.name, (e_weapon)weapon });
+                        g_backend_data_cache.m_weapons.insert({ instance.name, (e_weapon)weapon });
                     }
                     break;
                 }
@@ -316,7 +316,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     ulong grenade = instance.get_properties({ "ID" }).get_integer("ID");
                     if (VALID_INDEX(grenade, maximum_grenades))
                     {
-                        g_backend_data_cache.grenades.insert({ instance.name, (e_grenade)grenade });
+                        g_backend_data_cache.m_grenades.insert({ instance.name, (e_grenade)grenade });
                     }
                     break;
                 }
@@ -332,7 +332,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                         modifiers.push_back({ value_results.get_string("NAME"), value_results.get_float("VALUE") });
                     }
 
-                    g_backend_data_cache.boosters.insert({ instance.name, modifiers });
+                    g_backend_data_cache.m_boosters.insert({ instance.name, modifiers });
                     break;
                 }
                 case _instance_consumable:
@@ -340,7 +340,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     ulong consumable = instance.get_properties({ "CONSUMABLE_INDEX" }).get_integer("CONSUMABLE_INDEX");
                     if (VALID_INDEX(consumable, maximum_consumables))
                     {
-                        g_backend_data_cache.consumables.insert({ instance.name, (e_tactical_package)consumable });
+                        g_backend_data_cache.m_consumables.insert({ instance.name, (e_tactical_package)consumable });
                     }
                     break;
                 }
@@ -358,7 +358,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                         (static_cast<ulong>(green) << 8) |
                         (static_cast<ulong>(blue) << 0);
 
-                    g_backend_data_cache.colours.insert({ instance.name, colour });
+                    g_backend_data_cache.m_colours.insert({ instance.name, colour });
                     break;
                 }
                 case _instance_scoring_event:
@@ -370,7 +370,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     if (VALID_INDEX(event_index, maximum_wp_events))
                     {
                         // cache data to use on map reload
-                        g_backend_data_cache.scoring_events.push_back({ event_index, event_reward });
+                        g_backend_data_cache.m_scoring_events.push_back({ event_index, event_reward });
 
                         // set data immediately
                         s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
@@ -385,8 +385,8 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
             }
         }
 
-        g_backend_data_cache.last_update = network_time_get();
-        g_backend_data_cache.valid = true;
+        g_backend_data_cache.m_last_update = network_time_get();
+        g_backend_data_cache.m_valid = true;
         m_status.status = _request_status_received;
         return;
     }

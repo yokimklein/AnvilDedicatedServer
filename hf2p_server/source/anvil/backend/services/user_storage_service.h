@@ -1,6 +1,7 @@
 #pragma once
 #include <anvil\backend\backend.h>
 #include <anvil\backend\request_info.h>
+#include <map>
 
 enum e_user_storage_container
 {
@@ -35,7 +36,7 @@ public:
 
             std::string to_json() override;
         };
-        static void request(std::vector<qword> user_ids, e_user_storage_container container);
+        static void request(qword* user_ids, long user_count, e_user_storage_container container);
 
         struct s_response
         {
@@ -54,8 +55,12 @@ public:
 
             std::vector<s_public_data> body; // 'body' doesn't exist in response, its just a naked object
         };
+
     protected:
         static void response(s_backend_response* response);
+
+        inline static std::map<ulong, e_user_storage_container> m_request_queue;
+        inline static std::mutex m_request_queue_mutex;
     };
 
 private:

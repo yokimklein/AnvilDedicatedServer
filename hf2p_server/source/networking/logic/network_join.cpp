@@ -201,7 +201,7 @@ bool network_join_process_joins_from_queue()
 				c_backend::private_service::retrieve_lobby_members::m_status.status = _request_status_none;
 
 				// reset join if session data returned invalid, otherwise continue to join accept
-				if (!g_backend_data_cache.lobby_session.valid)
+				if (!g_backend_data_cache.m_lobby_session.valid)
 				{
 					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: session data returned invalid!\n");
 					return false;

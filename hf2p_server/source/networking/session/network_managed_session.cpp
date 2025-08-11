@@ -3,6 +3,7 @@
 #include <networking\session\network_session.h>
 #include <iostream>
 #include <networking\network_time.h>
+#include <anvil\backend\cache.h>
 
 REFERENCE_DECLARE(0x3EAB120, s_online_session_manager_globals, online_session_manager_globals);
 
@@ -246,7 +247,7 @@ void managed_session_remove_players(long index, qword const* xuids, long xuid_co
 	managed_session->time_of_last_failure = 0;
 }
 
-void remove_from_player_list(s_online_session_player* players, long player_count, qword const* xuids, long xuid_count)
+void __fastcall remove_from_player_list(s_online_session_player* players, long player_count, qword const* xuids, long xuid_count)
 {
 	ASSERT(players);
 	ASSERT(player_count > 0);
@@ -254,6 +255,12 @@ void remove_from_player_list(s_online_session_player* players, long player_count
 
 	for (long xuid_index = 0; xuid_index < xuid_count; xuid_index++)
 	{
+		// remove player entry from public data cache
+		if (xuids[xuid_index] != NONE)
+		{
+			g_backend_data_cache.user_data_remove(xuids[xuid_index]);
+		}
+
 		long player_index = 0;
 		for (player_index = 0; player_index < player_count; player_index++)
 		{

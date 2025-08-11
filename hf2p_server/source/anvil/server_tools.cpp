@@ -103,7 +103,7 @@ void anvil_session_update()
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
 
     // If there's no session, create one once we have a lobby from the API
-    if (session->disconnected() && g_backend_data_cache.lobby_info.valid)
+    if (session->disconnected() && g_backend_data_cache.m_lobby_info.valid)
     {
         anvil_session_create();
         logged_connection_info = false;
@@ -175,11 +175,8 @@ void anvil_session_update()
     }
     else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
     {
-        //printf("Disconnecting session...\n");
-        //session->disconnect();
-    
-        std::vector<qword> user_ids = { 1754553261 };
-        c_backend::user_storage_service::get_public_data::request(user_ids, _container_spartan0);
+        printf("Disconnecting session...\n");
+        session->disconnect();
 
         //anvil_session_set_test_player_data(membership);
         /*
@@ -322,7 +319,7 @@ void anvil_session_update_voting(c_network_session* session)
         {
             // loop through each player and gather their vote selections
             char option_votes[2] = {};
-            for (long i = membership->get_first_player(); i != -1; i = membership->get_next_player(i))
+            for (long i = membership->get_first_player(); i != NONE; i = membership->get_next_player(i))
             {
                 // if vote selection is valid
                 if (g_anvil_vote_selections[i] > _player_vote_none && g_anvil_vote_selections[i] < k_player_vote_selection_count)
@@ -509,7 +506,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         }
 
         /* $TODO: once we have TIs and user public data
-        s_api_user_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
+        s_backend_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
         if (customisation)
         {
             s_s3d_player_customization player_customisation;
@@ -526,7 +523,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         }
         for (long i = 0; i < k_maximum_loadouts; i++)
         {
-            s_api_user_loadout* loadout = user_get_loadout_from_api(configuration->user_xuid, i);
+            s_backend_loadout* loadout = user_get_loadout_from_api(configuration->user_xuid, i);
             if (loadout)
             {
                 s_s3d_player_loadout player_loadout;
