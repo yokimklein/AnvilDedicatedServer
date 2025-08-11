@@ -21,12 +21,10 @@ std::string c_backend::title_resource_service::get_title_configuration::s_reques
     return boost::json::serialize(out);
 }
 
-typedef c_backend::title_resource_service::s_title_instance s_title_instance;
-typedef c_backend::title_resource_service::s_title_instance::s_properties s_properties;
-s_properties tag_invoke(boost::json::value_to_tag<s_properties>, boost::json::value const& jv)
+s_title_instance::s_properties tag_invoke(boost::json::value_to_tag<s_title_instance::s_properties>, boost::json::value const& jv)
 {
     auto const& obj = jv.as_object();
-    s_properties prop;
+    s_title_instance::s_properties prop;
     prop.name = obj.at("name").as_string().c_str();
     prop.type = static_cast<e_title_property_types>(obj.at("type").as_int64());
 
@@ -72,7 +70,7 @@ s_title_instance tag_invoke(boost::json::value_to_tag<s_title_instance>, boost::
         !obj.at("name").is_null() ? obj.at("name").as_string().c_str() : "",
         obj.at("className").as_string().c_str(),
         boost::json::value_to<std::vector<std::string>>(obj.at("parents")),
-        boost::json::value_to<std::vector<s_properties>>(obj.at("props"))
+        boost::json::value_to<std::vector<s_title_instance::s_properties>>(obj.at("props"))
     };
     return title_instance;
 };
@@ -116,7 +114,33 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
     {
         s_response body = boost::json::value_to<s_response>(response->data);
 
-        // $TODO: Process TIs here into data cache
+        // Process TIs into data cache
+        for (s_title_instance& instance : body.instances)
+        {
+            // Find instance type
+            long instance_type = _instance_invalid;
+            for (instance_type = _instance_invalid; instance_type < k_title_instance_game_class_count; instance_type++)
+            {
+                if (instance.className == K_TITLE_INSTANCE_GAME_CLASS[instance_type])
+                {
+                    break;
+                }
+            }
+            // process instances
+            switch (instance_type)
+            {
+                case _instance_armor_item:
+                {
+                    s_armor_item armor(instance);
+                    g_backend_data_cache.armor_items.insert({ instance.name, armor });
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
+            }
+        }
 
         g_backend_data_cache.last_update = network_time_get();
         g_backend_data_cache.valid = true;

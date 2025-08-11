@@ -540,3 +540,5 @@ struct s_s3d_player_customization
 	byte padding[4];
 };
 static_assert(sizeof(s_s3d_player_customization) == 0x1C);
+
+const char* __fastcall modifier_get_name(e_modifiers modifier);

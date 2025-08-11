@@ -517,6 +517,7 @@
     <ClCompile Include="source\game\game_time.cpp" />
     <ClCompile Include="source\game\game_options.cpp" />
     <ClCompile Include="source\game\multiplayer_definitions.cpp" />
+    <ClCompile Include="source\game\player_appearance.cpp" />
     <ClCompile Include="source\game\player_mapping.cpp" />
     <ClCompile Include="source\hf2p\hf2p.cpp" />
     <ClCompile Include="source\hf2p\hf2p_session.cpp" />

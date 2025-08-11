@@ -1382,5 +1382,8 @@
     <ClCompile Include="source\anvil\backend\request_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\player_appearance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
