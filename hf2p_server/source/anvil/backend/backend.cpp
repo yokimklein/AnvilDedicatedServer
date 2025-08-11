@@ -247,6 +247,18 @@ void c_backend::update()
         private_service::register_game_server::request(transport_secure_address_get_string(&server_identifier));
         return true;
     });
+
+    // Request title instances if our cache is stale
+    title_resource_service::get_title_configuration::m_status.update_request([]
+    {
+        // $TODO: re-request interval? check last update time?
+        if (g_backend_data_cache.valid)
+        {
+            return false;
+        }
+        title_resource_service::get_title_configuration::request();
+        return true;
+    });
 }
 
 void c_backend::on_connect(std::shared_ptr<s_backend_request_data> backend_data, beast::error_code ec, tcp::resolver::results_type::endpoint_type endpoint)

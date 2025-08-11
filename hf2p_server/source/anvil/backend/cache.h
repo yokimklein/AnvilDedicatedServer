@@ -1,9 +1,13 @@
 #pragma once
+#include <cseries\cseries.h>
 #include <anvil\backend\user.h>
 #include <anvil\backend\lobby.h>
 
 struct s_backend_data_cache
 {
+    bool valid = false;
+    qword last_update = NONE;
+
     s_lobby_info lobby_info;
     s_lobby_session_data lobby_session;
 
