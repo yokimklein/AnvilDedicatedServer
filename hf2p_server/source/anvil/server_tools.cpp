@@ -2,6 +2,7 @@
 #include <cseries\cseries.h>
 #include <anvil\backend\backend.h>
 #include <anvil\backend\services\private_service.h>
+#include <anvil\backend\services\user_storage_service.h>
 #include <anvil\build_version.h>
 #include <anvil\hooks\hooks.h>
 #include <game\game.h>
@@ -174,9 +175,12 @@ void anvil_session_update()
     }
     else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
     {
-        printf("Disconnecting session...\n");
-        session->disconnect();
+        //printf("Disconnecting session...\n");
+        //session->disconnect();
     
+        std::vector<qword> user_ids = { 1754553261 };
+        c_backend::user_storage_service::get_public_data::request(user_ids, _container_spartan0);
+
         //anvil_session_set_test_player_data(membership);
         /*
         // load new string from text file

@@ -99,7 +99,7 @@ public:
     class private_service;
     class endpoints_service;
     class authorization_service;
-    //class title_service;
+    class user_storage_service;
 
     ~c_backend();
 
@@ -130,11 +130,6 @@ private:
     // Ideally I would store these as statics in the services, but I've been running into memory related crashes when I do this
     // seems to be an issue with the DLL memory mismatching with the EXE
     resolved_endpoint m_endpoint_storage[k_resolved_endpoints_count];
-
-    //std::unique_ptr<private_service> m_private_service;
-    //std::unique_ptr<endpoints_service> m_endpoints_service;
-    //std::unique_ptr<authorization_service> m_authorization_service;
-    //class title_service;
 };
 extern std::shared_ptr<c_backend> g_backend_services;
 

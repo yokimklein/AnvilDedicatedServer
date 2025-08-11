@@ -12,6 +12,7 @@
 #include <anvil\backend\services\private_service.h>
 #include <anvil\backend\services\endpoints_service.h>
 #include <anvil\backend\services\authorization_service.h>
+#include <anvil\backend\services\user_storage_service.h>
 
 s_request_info::s_request_info()
     : status(_request_status_none)
@@ -145,6 +146,7 @@ void c_backend::initialise()
     c_backend::private_service::initialise(&endpoint_storage[_endpoint_private]);
     c_backend::endpoints_service::initialise(&endpoint_storage[_endpoint_eds]);
     c_backend::authorization_service::initialise(&endpoint_storage[_endpoint_authorization]);
+    c_backend::user_storage_service::initialise(&endpoint_storage[_endpoint_title_server]);
 
     endpoints_service::endpoint().resolve(_endpoint_eds, g_anvil_configuration["endpoints_dispatcher_domain"], g_anvil_configuration["endpoints_dispatcher_port"]);
     private_service::endpoint().resolve(_endpoint_private, g_anvil_configuration["private_service_domain"], g_anvil_configuration["private_service_port"]);

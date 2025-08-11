@@ -177,6 +177,7 @@
     <ClInclude Include="source\anvil\backend\services\authorization_service.h" />
     <ClInclude Include="source\anvil\backend\services\endpoints_service.h" />
     <ClInclude Include="source\anvil\backend\services\private_service.h" />
+    <ClInclude Include="source\anvil\backend\services\user_storage_service.h" />
     <ClInclude Include="source\anvil\config.h" />
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
@@ -459,6 +460,7 @@
     <ClCompile Include="source\anvil\backend\services\authorization_service.cpp" />
     <ClCompile Include="source\anvil\backend\services\endpoints_service.cpp" />
     <ClCompile Include="source\anvil\backend\services\private_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\user_storage_service.cpp" />
     <ClCompile Include="source\anvil\config.cpp" />
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
