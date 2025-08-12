@@ -47,3 +47,13 @@ s_multiplayer_runtime_globals_definition* scenario_multiplayer_globals_try_and_g
 	}
 	return NULL;
 }
+
+long multiplayer_globals_get_equipment_count()
+{
+	s_multiplayer_universal_globals_definition* universal = scenario_multiplayer_globals_try_and_get_universal_data();
+	if (!universal)
+	{
+		return 0;
+	}
+	return universal->equipment.count();
+}

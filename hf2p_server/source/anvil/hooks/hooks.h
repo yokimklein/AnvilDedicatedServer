@@ -11,6 +11,7 @@
     original_esp += 0x40 + 0x08 + (long)variable_space + 0x10 + 0x10;           \
     original_ebp = (long)original_esp + (long)original_sp;
 
+// $TODO: split some of these up into flags, this is a bit messy
 enum e_hook_type
 {
     _hook_replace, // overwrite original code section with inserted code
@@ -18,7 +19,8 @@ enum e_hook_type
     _hook_execute_replaced_last, // executes replaced section after inserted code
     _hook_replace_no_nop, // don't nop code section & don't run original code section, useful for if original section still needs to be accessed
     _hook_stack_frame_increase,
-    _hook_stack_frame_cleanup // NOTE: ensure you cleanup after the function epilogue but before the return - best practice is to hook the entire epilogue region
+    _hook_stack_frame_cleanup, // NOTE: ensure you cleanup after the function epilogue but before the return - best practice is to hook the entire epilogue region
+    _hook_replace_no_preserve // replaces instructions without preserving or restoring registers
 };
 
 void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);

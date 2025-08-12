@@ -52,7 +52,7 @@ __declspec(safebuffers) void __fastcall player_spawn_hook3()
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook2()
+__declspec(safebuffers) void __fastcall unit_handle_equipment_energy_cost_hook2()
 {
     unit_datum* unit;
     __asm mov unit, ebx;
@@ -361,7 +361,7 @@ void anvil_hooks_player_updates_apply()
     insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
 
     // sync equipment cooldown reset
-    insert_hook(0x42D3ED, 0x42D3F2, equipment_handle_energy_cost_hook2, _hook_execute_replaced_first); // sets cooldown after use
+    //insert_hook(0x42D3ED, 0x42D3F2, unit_handle_equipment_energy_cost_hook2, _hook_execute_replaced_first); // sets cooldown after use (No longer required, function was rewritten)
     insert_hook(0xB80BA, 0xB80C8, players_update_after_game_hook2, _hook_replace); // updates tick countdown
 
     // sync spawn timer

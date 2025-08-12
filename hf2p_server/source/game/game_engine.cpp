@@ -170,10 +170,7 @@ void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, lon
 	player_datum* player = (player_datum*)datum_get(*players, player_index);
 	
 	player->respawn_timer_countdown_ticks = timer_ticks;
-
-	MIN(game_ticks_to_seconds_ceil(timer_ticks), 0);
-
-	player->respawn_timer_countdown_seconds = CLAMP_INCLUSIVE(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
+	player->respawn_timer_countdown_seconds = CLAMP(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }
 
@@ -242,7 +239,6 @@ void __fastcall update_player_navpoint_data(datum_index player_index)
 	}
 	if (waypoint->total_time_to_respawn_in_ticks != 0)
 	{
-		// TODO: MAX uses GTE, original only uses GT
 		waypoint->current_time_to_respawn_in_ticks = MAX(waypoint->current_time_to_respawn_in_ticks - 1, 0);
 		if (waypoint->current_time_to_respawn_in_ticks == 0)
 		{

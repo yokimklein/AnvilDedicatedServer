@@ -3,6 +3,7 @@
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_vehicles.h>
+#include <simulation\game_interface\simulation_game_engine_player.h>
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
 {
@@ -110,7 +111,7 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
     }
     camo_regrowth = FLOOR(camo_regrowth, game_tick_length());
     camo_regrowth = 1.0f / camo_regrowth;
-    unit->unit.active_camouflage_regrowth = MIN(camo_regrowth, unit->unit.active_camouflage_regrowth);
+    unit->unit.active_camouflage_regrowth = MIN(unit->unit.active_camouflage_regrowth, camo_regrowth);
     real camo_delta = unit->unit.active_camouflage - camouflage_decay;
     unit->unit.active_camouflage = camo_delta;
     if (unit->unit.flags.test(_unit_flags_camo) && camo_delta < 0.05f)
@@ -199,4 +200,88 @@ long unit_get_current_or_last_weak_player_index(datum_index unit_index)
         return unit->unit.player_index;
     }
     return unit->unit.last_weak_player_index;
+}
+
+long __fastcall unit_get_equipment_consumable_slot(datum_index unit_index, long equipment_definition_index)
+{
+    // these checks didn't originally exist, but I feel like they should
+    if (unit_index == NONE)
+    {
+        return NONE;
+    }
+    if (equipment_definition_index == NONE)
+    {
+        return NONE;
+    }
+
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+
+    for (long consumable_slot = 0; consumable_slot < k_consumable_slots; consumable_slot++)
+    {
+        datum_index equipment_index = unit->unit.equipment_object_indices[consumable_slot];
+        if (equipment_index == NONE)
+        {
+            continue;
+        }
+
+        object_datum* equipment = (object_datum*)object_get_and_verify_type(equipment_index, _object_mask_equipment);
+        if (equipment->definition_index != equipment_definition_index)
+        {
+            continue;
+        }
+
+        return consumable_slot;
+    }
+    return NONE;
+}
+
+void __fastcall unit_handle_equipment_energy_cost(datum_index unit_index, long equipment_definition_index)
+{
+    if (game_is_multiplayer() && game_is_predicted())
+    {
+        return;
+    }
+
+    if (unit_index == NONE)
+    {
+        return;
+    }
+
+    unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
+    if (unit->unit.player_index == NONE)
+    {
+        return;
+    }
+
+    long consumable_slot = unit_get_equipment_consumable_slot(unit_index, equipment_definition_index);
+    if (consumable_slot < 0)
+    {
+        return;
+    }
+
+    TLS_DATA_GET_VALUE_REFERENCE(players);
+    player_datum* player = (player_datum*)datum_get(*players, unit->unit.player_index);
+    if (!player_has_consumable(player, consumable_slot))
+    {
+        return;
+    }
+
+    float energy_regeneration_rate = 1.0f;
+    if (unit->unit.consumable_energy_restored_game_time != NONE)
+    {
+        energy_regeneration_rate = static_cast<float>(unit->unit.consumable_energy_restored_game_time - game_time_get());
+        energy_regeneration_rate /= static_cast<float>(player_get_energy_regeneration_duration(player, unit->unit.consumable_energy_level));
+    }
+    unit->unit.consumable_energy_level -= player_get_consumable_cost(player, consumable_slot);
+    unit->unit.consumable_energy_restored_game_time = player_get_consumable_energy_restored_game_time(player, unit->unit.consumable_energy_level, energy_regeneration_rate);
+    simulation_action_object_update<e_simulation_unit_update_flag>(unit_index, _simulation_unit_update_consumable_energy);
+
+    // nullsub here calls player_get_loadout_consumable, dedi related perhaps?
+
+    float cooldown_boost = player_get_modifier_value_real(player, _cooldown_boost, 0.0f) + 1.0f;
+    float cooldown_init = player_get_consumable_cooldown_init(player, consumable_slot);
+    float cooldown = player_get_consumable_cooldown(player, consumable_slot);
+    player_set_consumable_cooldown(player, cooldown * cooldown_boost, cooldown_init * cooldown_boost);
+    simulation_action_object_update<e_simulation_unit_update_flag>(unit_index, _simulation_unit_update_equipment_charges);
+    simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_consumable_supression);
 }

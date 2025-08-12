@@ -337,10 +337,16 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                 }
                 case _instance_consumable:
                 {
-                    ulong consumable = instance.get_properties({ "CONSUMABLE_INDEX" }).get_integer("CONSUMABLE_INDEX");
-                    if (VALID_INDEX(consumable, maximum_consumables))
+                    auto results = instance.get_properties({ "CONSUMABLE_INDEX", "ENERGY_COST", "COOLDOWN", "COOLDOWN_INIT" });
+                    ulong consumable_index = results.get_integer("CONSUMABLE_INDEX");
+                    if (VALID_INDEX(consumable_index, maximum_consumables))
                     {
-                        g_backend_data_cache.m_consumables.insert({ instance.name, (e_tactical_package)consumable });
+                        s_cached_consumable consumable;
+                        consumable.consumable_index = (e_consumables)consumable_index;
+                        consumable.costs.energy_cost = results.get_integer("ENERGY_COST");
+                        consumable.costs.cooldown = static_cast<float>(results.get_integer("COOLDOWN"));
+                        consumable.costs.cooldown_init = static_cast<float>(results.get_integer("COOLDOWN_INIT"));
+                        g_backend_data_cache.m_consumables.insert({ instance.name, consumable });
                     }
                     break;
                 }

@@ -165,12 +165,23 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
 
     // initialise our new code block
     long inserted_code_size = sizeof(return_code);
-    if (hook_type != _hook_replace && hook_type != _hook_replace_no_nop)
+    if ((hook_type != _hook_replace && hook_type != _hook_replace_no_preserve) && hook_type != _hook_replace_no_nop)
+    {
         inserted_code_size += length;
+    }
     if (hook_type == _hook_stack_frame_increase || hook_type == _hook_stack_frame_cleanup)
+    {
         inserted_code_size += sizeof(sub_esp_code);
+    }
     else
-        inserted_code_size += sizeof(call_code) + sizeof(preserve_registers) + sizeof(restore_registers);
+    {
+        inserted_code_size += sizeof(call_code);
+    }
+    if (hook_type != _hook_replace_no_preserve)
+    {
+        inserted_code_size += sizeof(preserve_registers) + sizeof(restore_registers);
+    }
+
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
     if (inserted_code == NULL)
@@ -204,9 +215,12 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     }
     else
     {
-        // preserve registers across call
-        memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
-        code_offset += sizeof(preserve_registers);
+        if (hook_type != _hook_replace_no_preserve)
+        {
+            // preserve registers across call
+            memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
+            code_offset += sizeof(preserve_registers);
+        }
 
         // call inserted function
         size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
@@ -214,9 +228,12 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
         memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
         code_offset += sizeof(call_code);
 
-        // restore registers
-        memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
-        code_offset += sizeof(restore_registers);
+        if (hook_type != _hook_replace_no_preserve)
+        {
+            // restore registers
+            memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
+            code_offset += sizeof(restore_registers);
+        }
     }
 
 

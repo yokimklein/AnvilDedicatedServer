@@ -409,3 +409,19 @@ enum e_navpoint_action;
 void player_navpoint_data_set_action(s_player_navpoint_data* waypoint, e_navpoint_action action);
 void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index);
 void __fastcall player_delete(datum_index player_index);
+
+// consumable costs & cooldowns
+s_s3d_player_loadout* player_get_loadout(player_datum* player);
+const s_s3d_player_loadout* player_get_loadout(const player_datum* player);
+bool player_has_consumable(const player_datum* player, long consumable_slot);
+long __fastcall player_get_consumable_cost(const player_datum* player, long consumable_slot);
+bool _fastcall player_can_use_consumable(const player_datum* player, long consumable_slot);
+long player_get_energy_regeneration_duration(const player_datum* player, long energy_level);
+long player_get_consumable_energy_restored_game_time(const player_datum* player, long energy_level, real energy_regeneration_rate);
+const real* player_get_loadout_modifiers(const player_datum* player);
+long player_get_modifier_value_integer(const player_datum* player, e_modifiers modifier_index, long default_value);
+real player_get_modifier_value_real(const player_datum* player, e_modifiers modifier_index, real default_value);
+real player_get_consumable_cooldown_init(const player_datum* player, long consumable_slot);
+real player_get_consumable_cooldown(const player_datum* player, long consumable_slot);
+void player_set_consumable_cooldown(player_datum* player, real cooldown, real cooldown_init);
+long player_get_energy_regeneration_count(const player_datum* player);

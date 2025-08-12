@@ -31,6 +31,19 @@ struct s_cached_armor_item
     bool can_colour_regions[k_armor_colors_count];
 };
 
+struct s_cached_consumable_costs
+{
+    long energy_cost = 0;
+    float cooldown = 0.0f;
+    float cooldown_init = 0.0f;
+};
+
+struct s_cached_consumable
+{
+    e_consumables consumable_index;
+    s_cached_consumable_costs costs;
+};
+
 struct s_cached_scoring_event
 {
     ulong event_index;
@@ -51,6 +64,8 @@ class c_backend_data_cache
 {
 public:
     void clear_title_instances();
+    void refresh_consumable_costs();
+    void refresh_scoring_events();
 
     s_cached_public_data* const public_data_get(qword user_id);
     void user_data_remove(qword user_id);
@@ -66,14 +81,16 @@ public:
     s_lobby_session_data m_lobby_session;
 
     // Title instances
-    // $TODO: WHEN USING THESE TO SERIALIZE LOADOUTS, MAKE SURE YOU CHECK THAT THE INDICES AREN'T -1 BEFORE YOU USE THEM!! (except for weapons, that's okay)
     std::map<std::string, s_cached_armor_item> m_armor_items;
     std::map<std::string, e_weapon> m_weapons;
     std::map<std::string, e_grenade> m_grenades;
     std::map<std::string, std::vector<s_modifier>> m_boosters;
-    std::map<std::string, e_tactical_package> m_consumables;
+    std::map<std::string, s_cached_consumable> m_consumables;
     std::map<std::string, ulong> m_colours;
     std::vector<s_cached_scoring_event> m_scoring_events;
+
+    // refreshed on map load, size of multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
+    std::vector<s_cached_consumable_costs> m_consumable_costs;
 
 private:
     // cached public data - private behind a mutex as this is written to by the backend thread, and cleared by the game thread

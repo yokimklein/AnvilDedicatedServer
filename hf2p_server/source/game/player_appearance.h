@@ -3,6 +3,7 @@
 #include <text\unicode.h>
 
 constexpr long k_maximum_loadouts = 3; // 5 in earlier builds
+constexpr long k_consumable_slots = 4;
 
 enum e_gender
 {
@@ -347,9 +348,9 @@ enum e_modifiers
 };
 
 // IDs are based on multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
-enum e_tactical_package
+enum e_consumables
 {
-	_tactical_package_empty,
+	_consumable_none,
 	_jammer,
 	_powerdrain,
 	_invisibility,
@@ -377,7 +378,7 @@ enum e_tactical_package
 	_bubbleshield_tutorial,
 	_consumable_vision_tutorial,
 
-	k_tactical_package_count
+	k_consumables_count
 };
 
 enum e_emblem_info_flags
@@ -486,7 +487,7 @@ struct s_s3d_player_loadout
 	c_enum<e_weapon, byte, _weapon_random, k_weapon_count> secondary_weapon;
 	c_enum<e_grenade, byte, _grenade_frag, k_grenade_count> grenade;
 	c_enum<e_support_package, byte, k_support_package_count, k_support_package_count> support_pack; // title instance ID + 1
-	c_enum<e_tactical_package, byte, _tactical_package_empty, k_tactical_package_count> tactical_packs[4];
+	c_enum<e_consumables, byte, _consumable_none, k_consumables_count> consumables[k_consumable_slots];
 };
 static_assert(sizeof(s_s3d_player_loadout) == 0xA);
 

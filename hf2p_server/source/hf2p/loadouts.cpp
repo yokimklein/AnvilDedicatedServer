@@ -128,9 +128,9 @@ void s_backend_loadout::write_loadout(s_s3d_player_loadout* out_loadout, s_s3d_p
 	out_loadout->secondary_weapon = g_backend_data_cache.m_weapons[secondary_weapon.get_string()];
 	out_loadout->grenade = g_backend_data_cache.m_grenades[grenade.get_string()];
 	out_loadout->support_pack = _support_package_none; // $TODO: I still have no idea if this does anything in game, maybe it's used for the loadout popups?
-	for (long consumable_index = 0; consumable_index < NUMBEROF(out_loadout->tactical_packs); consumable_index++)
+	for (long consumable_index = 0; consumable_index < NUMBEROF(out_loadout->consumables); consumable_index++)
 	{
-		out_loadout->tactical_packs[consumable_index] = g_backend_data_cache.m_consumables[consumables[consumable_index].get_string()];
+		out_loadout->consumables[consumable_index] = g_backend_data_cache.m_consumables[consumables[consumable_index].get_string()].consumable_index;
 	}
 
 	// $NOTE: I'm treating modifiers as additive if multiple of the same type are used, though maybe they originally only used the highest?

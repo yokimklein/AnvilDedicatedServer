@@ -14,9 +14,15 @@ struct multiplayer_globals_definition
 };
 static_assert(sizeof(multiplayer_globals_definition) == 0x18);
 
+struct s_multiplayer_energy_regeneration
+{
+	long duration;
+	long energy_level;
+};
+static_assert(sizeof(s_multiplayer_energy_regeneration) == 0x8);
+
 struct s_multiplayer_customized_model_character;
 struct s_multiplayer_equipment;
-struct s_multiplayer_energy_regeneration;
 struct s_multiplayer_weapon_selection;
 struct s_multiplayer_vehicle_selection;
 struct s_multiplayer_grenade_selection;

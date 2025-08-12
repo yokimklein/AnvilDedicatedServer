@@ -10,7 +10,6 @@
 #include <game\game.h>
 #include <networking\network_globals.h>
 #include <scenario\scenario.h>
-#include <game\multiplayer_definitions.h>
 #include <anvil\backend\cache.h>
 #include <networking\session\network_managed_session.h>
 
@@ -105,21 +104,10 @@ bool __fastcall network_session_interface_get_local_user_identifier_hook(s_playe
 }
 
 // Set the wp event xp rewards on scenario load
-__declspec(safebuffers) void __fastcall anvil_scenario_tags_scoring_events()
+__declspec(safebuffers) void __fastcall anvil_scenario_tags_load_title_instances()
 {
-    s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
-
-    ulong maximum_wp_events = runtime->earn_wp_events.count();
-    for (auto& scoring_event : g_backend_data_cache.m_scoring_events)
-    {
-        ulong event_index = scoring_event.event_index;
-
-        if (VALID_INDEX(event_index, maximum_wp_events))
-        {
-            s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
-            wp_event.earned_wp = static_cast<short>(scoring_event.xp_reward);
-        }
-    }
+    g_backend_data_cache.refresh_consumable_costs();
+    g_backend_data_cache.refresh_scoring_events();
 }
 
 // Hook usercall
@@ -129,6 +117,21 @@ __declspec(naked) void remove_from_player_list_hook(s_online_session_player* pla
     {
         mov edx, k_network_maximum_players_per_session // add back missing parameter
         jmp remove_from_player_list
+    }
+}
+
+// Replace get from saber's backend TI cache with a function call which gets our own
+// used for updating the equipment costs on the HUD
+__declspec(naked) void chud_update_user_data_hook()
+{
+    __asm
+    {
+        mov ecx, [ebp-0x0C] // player datum
+        mov edx, esi // consumable_slot
+        call player_get_consumable_cost
+        // set return to edx where original code expects it to be
+        mov edx, eax
+        ret
     }
 }
 
@@ -160,9 +163,9 @@ void anvil_hooks_ds_apply()
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
 
     // disable saber's backend, we're using our own now
-    // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards
+    // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards & consumable costs
     // remove call to hf2p_initialize in scenario_load
-    insert_hook(0x7E978, 0x7E9AD, anvil_scenario_tags_scoring_events, _hook_replace);
+    insert_hook(0x7E978, 0x7E9AD, anvil_scenario_tags_load_title_instances, _hook_replace);
 
     // remove 13 hf2p service update calls in hf2p_game_update
     nop_region(0x2B0C51, 65);
@@ -191,4 +194,9 @@ void anvil_hooks_ds_apply()
 
     // Request public data on game start (hook end of c_life_cycle_state_handler_start_game::enter)
     insert_hook(0x4C40F, 0x4C415, c_life_cycle_state_handler_start_game__enter_hook);
+
+    // Replace saber's backend for getting consumable TI data
+    insert_hook(0x3AF851, 0x3AF857, chud_update_user_data_hook, _hook_replace_no_preserve);
+    hook_function(0x42D290, 0x169, unit_handle_equipment_energy_cost);
+    hook_function(0xBF840, 0x62, player_can_use_consumable);
 }

@@ -316,3 +316,7 @@ void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regr
 void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real regrowth_seconds, long camouflage_end_time);
 void __fastcall unit_active_camouflage_set_maximum(datum_index unit_index, real camouflage_maximum);
 long unit_get_current_or_last_weak_player_index(datum_index unit_index);
+
+// handle equipment costs and cooldown without saber's backend
+long __fastcall unit_get_equipment_consumable_slot(datum_index unit_index, long equipment_definition_index);
+void __fastcall unit_handle_equipment_energy_cost(datum_index unit_index, long equipment_definition_index);

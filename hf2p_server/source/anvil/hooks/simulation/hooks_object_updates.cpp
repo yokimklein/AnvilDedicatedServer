@@ -267,13 +267,13 @@ __declspec(safebuffers) void __fastcall unit_update_energy_hook()
 }
 
 // preserve unit_index variable
-__declspec(naked) void equipment_handle_energy_cost_hook0()
+__declspec(naked) void unit_handle_equipment_energy_cost_hook0()
 {
     __asm mov [ebp + 4], ecx;
     __asm retn;
 }
 
-__declspec(safebuffers) void __fastcall equipment_handle_energy_cost_hook1()
+__declspec(safebuffers) void __fastcall unit_handle_equipment_energy_cost_hook1()
 {
     datum_index unit_index;
     DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(unit_index));
@@ -800,11 +800,12 @@ void anvil_hooks_object_updates_apply()
     // sync unit energy levels
     insert_hook(0x41B600, 0x41B606, unit_update_energy_hook, _hook_execute_replaced_first);
 
-    // sync energy costs / energy levels decreasing when throwing an equipment
-    add_variable_space_to_stack_frame(0x42D290, 0x42D3F9, 4); // Add 4 bytes of variable space to the stack frame
-    insert_hook(0x42D2A4, 0x42D2A9, equipment_handle_energy_cost_hook0, _hook_execute_replaced_last); // preserve unit_index
-    insert_hook(0x42D392, 0x42D398, equipment_handle_energy_cost_hook1, _hook_execute_replaced_first); // unit energy
-    insert_hook(0x42D3F2, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+    // No longer need these, unit_handle_equipment_energy_cost was rewritten
+    //// sync energy costs / energy levels decreasing when throwing an equipment
+    //add_variable_space_to_stack_frame(0x42D290, 0x42D3F9, 4); // Add 4 bytes of variable space to the stack frame
+    //insert_hook(0x42D2A4, 0x42D2A9, equipment_handle_energy_cost_hook0, _hook_execute_replaced_last); // preserve unit_index
+    //insert_hook(0x42D392, 0x42D398, equipment_handle_energy_cost_hook1, _hook_execute_replaced_first); // unit energy
+    //insert_hook(0x42D3F2, 0x42D3F8, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
     // sync hologram camo
     insert_hook(0x42C56E, 0x42C578, unit_set_hologram_hook, _hook_execute_replaced_first);

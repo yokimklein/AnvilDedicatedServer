@@ -4,6 +4,7 @@
 #include <game\game_globals.h>
 #include <cache\cache_files.h>
 #include <hf2p\hf2p_definitions.h>
+#include <game\multiplayer_definitions.h>
 
 c_backend_data_cache g_backend_data_cache;
 
@@ -41,6 +42,41 @@ void c_backend_data_cache::clear_title_instances()
     m_boosters.clear();
     m_consumables.clear();
     m_colours.clear();
+}
+
+void c_backend_data_cache::refresh_consumable_costs()
+{
+    m_consumable_costs.clear();
+
+    long equipment_count = multiplayer_globals_get_equipment_count();
+    if (equipment_count <= 0)
+    {
+        return;
+    }
+    m_consumable_costs.resize(equipment_count);
+
+    // on map load, clear costs and pre allocate vector
+    for (auto& cached_consumable : m_consumables)
+    {
+        s_cached_consumable& consumable = cached_consumable.second;
+        m_consumable_costs[consumable.consumable_index] = consumable.costs;
+    }
+}
+
+void c_backend_data_cache::refresh_scoring_events()
+{
+    s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
+    ulong maximum_wp_events = runtime->earn_wp_events.count();
+    for (auto& scoring_event : g_backend_data_cache.m_scoring_events)
+    {
+        ulong event_index = scoring_event.event_index;
+
+        if (VALID_INDEX(event_index, maximum_wp_events))
+        {
+            s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
+            wp_event.earned_wp = static_cast<short>(scoring_event.xp_reward);
+        }
+    }
 }
 
 s_cached_public_data* const c_backend_data_cache::public_data_get(qword user_id)

@@ -488,20 +488,31 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     const s_network_session_player* player = membership->get_player(player_index);
     const s_network_session_peer* peer = membership->get_peer(player->peer_index);
 
-    if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)
+    // test dedi player loadout
+    if (player->peer_index == membership->host_peer_index())
+    {
+        configuration->player_name.set(L"DECEMBER");
+        configuration->user_xuid = USER_SYSTEM;
+        configuration->player_appearance.service_tag.set(L"1225");
+        configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scout;
+        configuration->s3d_player_customization.colors[_armor_color_primary] = 0x00000000;
+        configuration->s3d_player_customization.colors[_armor_color_secondary] = 0x00000000;
+        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFFFFFFFF;
+        configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFFFFFFFF;
+        configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFFFFFFFF;
+        configuration->s3d_player_container.loadouts[0].consumables[0] = _tripmine;
+        configuration->s3d_player_container.loadouts[0].consumables[1] = _consumable_vision;
+        configuration->s3d_player_container.loadouts[0].consumables[2] = _deployable_cover;
+        configuration->s3d_player_container.loadouts[0].consumables[3] = _hologram;
+        configuration->s3d_player_container.loadouts[0].secondary_weapon = _energy_sword;
+        player_data_updated = true;
+    }
+    else if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)
     {
         // assign player name based on peer name - $TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
         if (!configuration->player_name.is_equal(peer->properties.peer_name.get_string()))
         {
-            if (player->peer_index != membership->host_peer_index())
-            {
-                configuration->player_name.set(peer->properties.peer_name.get_string());
-            }
-            else
-            {
-                configuration->player_name.set(L"DECEMBER");
-                configuration->player_appearance.service_tag.set(L"1225");
-            }
+            configuration->player_name.set(peer->properties.peer_name.get_string());
             player_data_updated = true;
         }
 
