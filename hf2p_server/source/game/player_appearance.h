@@ -2,7 +2,7 @@
 #include <cseries\cseries.h>
 #include <text\unicode.h>
 
-constexpr long k_player_configuration_maximum_loadouts = 3; // 5 in earlier builds
+constexpr long k_maximum_loadouts = 3; // 5 in earlier builds
 
 enum e_gender
 {
@@ -435,34 +435,36 @@ enum e_player_color_index
 	k_default_emblem_background_color = _player_color_02,
 };
 
+struct s_emblem_info_unknown_offset0
+{
+	short __unknown0;
+	short __unknown2;
+	short alpha_blend_mode;
+	short __unknown6;
+	short __unknown8;
+	short __unknownA;
+	short __unknownC;
+	byte __unknownE;
+	byte __unknownF;
+};
+struct s_emblem_info_unknown
+{
+	s_emblem_info_unknown_offset0 __unknown0[50];
+	long __unknown320;
+};
 struct s_emblem_info
 {
-	s_emblem_info() :
-		foreground_emblem_index(),
-		background_emblem_index(),
-		emblem_info_flags(),
-		primary_color_index(),
-		secondary_color_index(),
-		background_color_index(),
-		pad(0)
-	{
-	}
-
-	byte foreground_emblem_index;
-	byte background_emblem_index;
-	c_flags<e_emblem_info_flags, byte, k_emblem_info_flags_count> emblem_info_flags;
-	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> primary_color_index;
-	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> secondary_color_index;
-	c_enum<e_player_color_index, char, _player_color_none, k_player_color_index_count> background_color_index;
-	word pad;
-
-	byte __pad8[0x648];
+	s_emblem_info_unknown __unknown0[2];
+	ulong __unknown0_checksums[2];
 };
 static_assert(sizeof(s_emblem_info) == 0x650);
 
 #pragma pack(push, 4)
 struct s_player_appearance
 {
+	bool operator==(s_player_appearance other) const { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_player_appearance other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 	byte flags; // gender
 	byte player_model_choice; // 0 - male spartan, 1 - elite
 	byte pad1[2];
@@ -508,11 +510,14 @@ struct s_s3d_player_container
 	{
 	};
 
+	bool operator==(s_s3d_player_container other) const { return csmemcmp(this, &other, sizeof(*this)) == 0; };
+	bool operator!=(s_s3d_player_container other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
+
 	// when true, scaleform menus will display the player's loadout as it is set on the game server rather than the API
 	bool override_api_data;
-	s_s3d_player_loadout loadouts[k_player_configuration_maximum_loadouts];
+	s_s3d_player_loadout loadouts[k_maximum_loadouts];
 	byte pad[1];
-	s_s3d_player_modifiers modifiers[k_player_configuration_maximum_loadouts];
+	s_s3d_player_modifiers modifiers[k_maximum_loadouts];
 };
 static_assert(sizeof(s_s3d_player_container) == 0x494);
 #pragma pack(pop)

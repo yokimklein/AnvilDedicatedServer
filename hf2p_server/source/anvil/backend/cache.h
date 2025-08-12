@@ -22,8 +22,8 @@ struct s_modifier
 
 struct s_cached_armor_item
 {
+    s_cached_armor_item();
     s_cached_armor_item(s_title_instance& instance);
-
 
     std::vector<e_armor> gender_armor;
     long race_id;
@@ -41,6 +41,8 @@ struct s_cached_public_data
 {
     s_cached_public_data();
 
+    void write_configuration(s_s3d_player_container* out_container, s_s3d_player_customization* out_customisation, s_player_appearance* out_appearance);
+
     s_backend_loadout loadouts[k_maximum_loadouts];
     s_backend_customisation customisation;
 };
@@ -50,6 +52,7 @@ class c_backend_data_cache
 public:
     void clear_title_instances();
 
+    s_cached_public_data* const public_data_get(qword user_id);
     void user_data_remove(qword user_id);
     s_backend_loadout* const loadout_get(qword user_id, long loadout_index);
     void loadout_cache(qword user_id, s_backend_loadout* const loadout, long loadout_index);

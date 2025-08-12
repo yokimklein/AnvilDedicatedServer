@@ -7,6 +7,7 @@
 #include <hf2p\hf2p_definitions.h>
 #include <game\multiplayer_definitions.h>
 #include <tag_files\string_ids.h>
+#include <anvil\backend\cache.h>
 
 s_backend_loadout::s_backend_loadout()
 {
@@ -107,16 +108,51 @@ s_backend_customisation* __cdecl user_get_customisation_from_api(qword user_xuid
 {
 	return INVOKE(0xE0890, user_get_customisation_from_api, user_xuid);
 }
-
-void s_backend_loadout::write_configuration(s_s3d_player_loadout* out_loadout)
+*/
+void s_backend_loadout::write_loadout(s_s3d_player_loadout* out_loadout, s_s3d_player_modifiers* out_modifiers)
 {
 	ASSERT(out_loadout);
-	DECLFUNC(0x303CC0, void, __thiscall, s_backend_loadout*, s_s3d_player_loadout*)(this, out_loadout);
+	ASSERT(out_modifiers);
+	// replaced saber's with our own
+	//DECLFUNC(0x303CC0, void, __thiscall, s_backend_loadout*, s_s3d_player_loadout*)(this, out_loadout);
+
+	// reset values
+	csmemset(out_loadout, 0, sizeof(s_s3d_player_loadout));
+	csmemset(out_modifiers, 0, sizeof(s_s3d_player_modifiers));
+
+	out_loadout->gender = flags.test(0) ? _gender_female : _gender_male;
+
+	s_cached_armor_item& armor_item = g_backend_data_cache.m_armor_items[armour_suit.get_string()];
+	out_loadout->armor_suit = armor_item.gender_armor[out_loadout->gender];
+	out_loadout->primary_weapon = g_backend_data_cache.m_weapons[primary_weapon.get_string()];
+	out_loadout->secondary_weapon = g_backend_data_cache.m_weapons[secondary_weapon.get_string()];
+	out_loadout->grenade = g_backend_data_cache.m_grenades[grenade.get_string()];
+	out_loadout->support_pack = _support_package_none; // $TODO: I still have no idea if this does anything in game, maybe it's used for the loadout popups?
+	for (long consumable_index = 0; consumable_index < NUMBEROF(out_loadout->tactical_packs); consumable_index++)
+	{
+		out_loadout->tactical_packs[consumable_index] = g_backend_data_cache.m_consumables[consumables[consumable_index].get_string()];
+	}
+
+	// $NOTE: I'm treating modifiers as additive if multiple of the same type are used, though maybe they originally only used the highest?
+	for (s_modifier modifier : armor_item.modifiers)
+	{
+		out_modifiers->modifier_values[modifier.modifier] += modifier.value;
+	}
+	for (s_modifier modifier : g_backend_data_cache.m_boosters[booster.get_string()])
+	{
+		out_modifiers->modifier_values[modifier.modifier] += modifier.value;
+	}
 }
 
-void s_backend_customisation::write_colours(s_s3d_player_customization* out_customisation)
+void s_backend_customisation::write_customisation(s_s3d_player_customization* out_customisation)
 {
 	ASSERT(out_customisation);
-	DECLFUNC(0x312110, void, __thiscall, s_backend_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
+	// replaced saber's with our own
+	//DECLFUNC(0x312110, void, __thiscall, s_backend_customisation*, ulong[k_armor_colors_count])(this, out_customisation->colors);
+
+	for (long colour_index = 0; colour_index < k_armor_colors_count; colour_index++)
+	{
+		out_customisation->colors[colour_index] = g_backend_data_cache.m_colours[colours[colour_index].get_string()];
+	}
+	out_customisation->active_loadout_index = static_cast<byte>(loadout_index);
 }
-*/

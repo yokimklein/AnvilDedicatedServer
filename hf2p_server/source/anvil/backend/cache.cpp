@@ -14,6 +14,25 @@ s_cached_public_data::s_cached_public_data()
 
 }
 
+void s_cached_public_data::write_configuration(s_s3d_player_container* out_container, s_s3d_player_customization* out_customisation, s_player_appearance* out_appearance)
+{
+    ASSERT(out_container);
+    ASSERT(out_customisation);
+    ASSERT(out_appearance);
+
+    for (long loadout_index = 0; loadout_index < k_maximum_loadouts; loadout_index++)
+    {
+        loadouts[loadout_index].write_loadout(&out_container->loadouts[loadout_index], &out_container->modifiers[loadout_index]);
+    }
+
+    customisation.write_customisation(out_customisation);
+
+    e_gender gender = out_container->loadouts[out_customisation->active_loadout_index].gender.get();
+    SET_BIT(out_appearance->flags, 0, gender == _gender_female);
+    out_appearance->player_model_choice = 0; // $TODO:
+    out_appearance->service_tag = L""; // $TODO:
+}
+
 void c_backend_data_cache::clear_title_instances()
 {
     m_armor_items.clear();
@@ -22,6 +41,18 @@ void c_backend_data_cache::clear_title_instances()
     m_boosters.clear();
     m_consumables.clear();
     m_colours.clear();
+}
+
+s_cached_public_data* const c_backend_data_cache::public_data_get(qword user_id)
+{
+    std::lock_guard<std::mutex> lock(m_public_data_mutex);
+
+    if (m_public_data.find(user_id) == m_public_data.end())
+    {
+        return NULL;
+    }
+
+    return &m_public_data[user_id];
 }
 
 void c_backend_data_cache::user_data_remove(qword user_id)
@@ -116,6 +147,15 @@ s_modifier::s_modifier(std::string modifier, float value)
             break;
         }
     }
+}
+
+s_cached_armor_item::s_cached_armor_item()
+    : gender_armor()
+    , race_id(NONE)
+    , modifiers()
+    , can_colour_regions()
+{
+
 }
 
 s_cached_armor_item::s_cached_armor_item(s_title_instance& instance)

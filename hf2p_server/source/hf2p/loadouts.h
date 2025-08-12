@@ -2,13 +2,11 @@
 #include <memory\data.h>
 #include <game\player_appearance.h>
 
-constexpr long k_maximum_loadouts = 3;
-
 struct s_backend_loadout
 {
 	s_backend_loadout();
 
-	//void write_configuration(s_s3d_player_loadout* out_loadout);
+	void write_loadout(s_s3d_player_loadout* out_loadout, s_s3d_player_modifiers* out_modifiers);
 	void null_terminate_buffers();
 
 	c_static_flags<32> flags;
@@ -25,7 +23,7 @@ struct s_backend_customisation
 {
 	s_backend_customisation();
 
-	//void write_colours(s_s3d_player_customization* out_customisation);
+	void write_customisation(s_s3d_player_customization* out_customisation);
 	void null_terminate_buffers();
 
 	long loadout_index;

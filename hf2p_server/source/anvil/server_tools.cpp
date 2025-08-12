@@ -488,7 +488,6 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     const s_network_session_player* player = membership->get_player(player_index);
     const s_network_session_peer* peer = membership->get_peer(player->peer_index);
 
-    // $TODO: the peer should say when it needs a configuration update, only call this function when that update number has changed
     if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)
     {
         // assign player name based on peer name - $TODO: THIS IS TEMPORARY, RETRIEVE THIS FROM API W/ USER ID INSTEAD
@@ -501,49 +500,43 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
             else
             {
                 configuration->player_name.set(L"DECEMBER");
+                configuration->player_appearance.service_tag.set(L"1225");
             }
             player_data_updated = true;
         }
 
-        /* $TODO: once we have TIs and user public data
-        s_backend_customisation* customisation = user_get_customisation_from_api(configuration->user_xuid);
-        if (customisation)
+        // $TODO: track public data by version number, increment when received from API
+        // update when changed, would be much better than constantly writing and comparing configs
+        s_cached_public_data* public_data = g_backend_data_cache.public_data_get(configuration->user_xuid);
+        if (public_data)
         {
+            s_s3d_player_container player_container;
+            csmemset(&player_container, 0, sizeof(player_container));
+
             s_s3d_player_customization player_customisation;
-            customisation->write_colours(&player_customisation);
+            csmemset(&player_customisation, 0, sizeof(player_customisation));
+
+            s_player_appearance player_appearance;
+            csmemset(&player_appearance, 0, sizeof(player_appearance));
+
+            public_data->write_configuration(&player_container, &player_customisation, &player_appearance);
+
+            if (configuration->s3d_player_container != player_container)
+            {
+                configuration->s3d_player_container = player_container;
+                player_data_updated = true;
+            }
             if (configuration->s3d_player_customization != player_customisation)
             {
                 configuration->s3d_player_customization = player_customisation;
                 player_data_updated = true;
             }
-        }
-        else
-        {
-            //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user customisation from API for user [%lld]!\n", configuration->user_xuid);
-        }
-        for (long i = 0; i < k_maximum_loadouts; i++)
-        {
-            s_backend_loadout* loadout = user_get_loadout_from_api(configuration->user_xuid, i);
-            if (loadout)
+            if (configuration->player_appearance != player_appearance)
             {
-                s_s3d_player_loadout player_loadout;
-                loadout->write_configuration(&player_loadout);
-
-                if (configuration->s3d_player_container.loadouts[i] != player_loadout)
-                {
-                    configuration->s3d_player_container.loadouts[i] = player_loadout;
-                    player_data_updated = true;
-                }
-            }
-            else
-            {
-                //printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: anvil_assign_player_loadout: failed to retrieve user loadout '%d' from API for user [%lld]!\n", i, configuration->user_xuid);
+                configuration->player_appearance = player_appearance;
+                player_data_updated = true;
             }
         }
-        */
-        // TODO: modifiers
-        //configuration->s3d_player_container.modifiers[0].modifier_values[_enable_nemesis_mechanics] = true;
-        //configuration->s3d_player_container.modifiers[0].modifier_values[_grenade_warning] = false;
     }
 
     if (player_data_updated)
