@@ -116,18 +116,35 @@ static_assert(sizeof(c_network_session_parameter_session_size) == 0x40);
 
 struct s_network_session_remote_session_join_data
 {
-	e_join_remote_state join_state;
-	e_join_type join_to;
+	// these 2 unknowns used to contain the commented unused fields below, but saber removed 2 of them so it's impossible
+	// to know which the remaining are they aren't referenced in code anywhere anyway so we're not bleeding for them
+	long unused00;
+	long unused04;
+	//e_join_remote_state join_state; // unused
+	//e_join_type join_from; // unused
+	//e_join_type join_to; // unused
+	//e_networking_join_destination_squad join_target; // unused
+
 	qword join_nonce;
 	e_transport_platform platform;
 	s_transport_secure_identifier session_id;
 	s_transport_secure_key session_key;
 	s_transport_secure_address host_secure_address;
 	e_network_session_class session_class;
-	e_life_cycle_join_result join_result;
+	e_life_cycle_join_result join_result; // unused
 	bool join_to_public_slots;
 };
-static_assert(sizeof(s_network_session_remote_session_join_data) == 0x50);
+static_assert(sizeof(s_network_session_remote_session_join_data) == 0x50); // confirmed
+//static_assert(OFFSETOF(s_network_session_remote_session_join_data, join_state) == 0x00/*TODO*/);
+//static_assert(OFFSETOF(s_network_session_remote_session_join_data, join_to) == 0x00/*TODO*/);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, join_nonce) == 0x08);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, platform) == 0x10);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, session_id) == 0x14);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, session_key) == 0x24);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, host_secure_address) == 0x34);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, session_class) == 0x44);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, join_result) == 0x48);
+static_assert(OFFSETOF(s_network_session_remote_session_join_data, join_to_public_slots) == 0x4C);
 
 class c_network_session_parameter_requested_remote_join_data : public c_network_session_parameter_base, c_generic_network_session_parameter_data<s_network_session_remote_session_join_data>
 {

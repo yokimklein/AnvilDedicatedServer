@@ -7,6 +7,7 @@
 // reach replaced this with get_network_protocol_version()
 constexpr long k_network_protocol_version = 9; // H3 is 7, ODST is 8
 
+// $TODO: static assert verify the offsets
 struct s_network_message_join_request
 {
 	ushort protocol;
@@ -14,9 +15,7 @@ struct s_network_message_join_request
 	long minimum_network_version;
 	long current_network_version;
 	s_transport_secure_identifier session_id;
-	long : 32;
 	s_network_session_join_request join_request;
-	long : 32;
 };
 static_assert(sizeof(s_network_message_join_request) == 0x258);
 

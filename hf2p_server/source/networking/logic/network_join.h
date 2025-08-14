@@ -67,20 +67,19 @@ enum e_join_local_state
     k_join_local_state_count
 };
 
-#pragma pack(push, 4)
-struct s_joining_player
+struct s_network_session_join_request_player
 {
     s_player_identifier joining_peer_player_id;
 };
-static_assert(sizeof(s_joining_player) == sizeof(s_player_identifier));
+static_assert(sizeof(s_network_session_join_request_player) == sizeof(s_player_identifier));
 
-struct s_joining_peer
+struct s_network_session_join_request_peer
 {
     s_transport_secure_address joining_peer_address;
     long joining_network_version_number;
     long user_player_index;
 };
-static_assert(sizeof(s_joining_peer) == 0x18);
+static_assert(sizeof(s_network_session_join_request_peer) == 0x18);
 
 //struct s_group_session_join_request_payload
 //{
@@ -98,27 +97,33 @@ struct s_network_session_join_request
     qword join_nonce;
     qword party_nonce;
     long joining_peer_count;
-    s_joining_peer joining_peers[k_network_maximum_machines_per_session];
+    s_network_session_join_request_peer joining_peers[k_network_maximum_machines_per_session];
     long joining_player_count;
-    s_joining_player joining_players[k_network_maximum_players_per_session];
+    s_network_session_join_request_player joining_players[k_network_maximum_players_per_session];
     bool join_to_public_slots;
-    //s_group_session_join_request_payload payload;
+    // alignment leaves 7 bytes of padding here
+    //s_group_session_join_request_payload payload; // likely removed since ms23
 };
-static_assert(sizeof(s_network_session_join_request) == 0x234);
+static_assert(sizeof(s_network_session_join_request) == 0x238);
+static_assert(OFFSETOF(s_network_session_join_request, join_nonce) == 0x00);
+static_assert(OFFSETOF(s_network_session_join_request, party_nonce) == 0x08);
+static_assert(OFFSETOF(s_network_session_join_request, joining_peer_count) == 0x10);
+static_assert(OFFSETOF(s_network_session_join_request, joining_peers) == 0x14);
+static_assert(OFFSETOF(s_network_session_join_request, join_to_public_slots) == 0x230); // $TODO: confirm this
 
 struct s_networking_join_queue_entry
 {
     transport_address address;
-    qword join_nonce;
-    s_network_session_join_request join_request;
+    s_network_session_join_request join_request; // need offs
     ulong time_inserted_into_the_queue;
     ulong time_client_was_last_notified;
-    long session_desirability;
+    long desirability; // entirely unused now
 };
-static_assert(sizeof(s_networking_join_queue_entry) == 0x25C);
+static_assert(sizeof(s_networking_join_queue_entry) == 0x260);
+static_assert(OFFSETOF(s_networking_join_queue_entry, address) == 0x00);
+//static_assert(OFFSETOF(s_networking_join_queue_entry, join_request) == 0x18); // not referenced in code in ms29, but it's offset would be sizeof(transport_address) aligned to 8 bytes
 static_assert(OFFSETOF(s_networking_join_queue_entry, time_inserted_into_the_queue) == 0x250);
 static_assert(OFFSETOF(s_networking_join_queue_entry, time_client_was_last_notified) == 0x254);
-#pragma pack(pop)
 
 struct s_networking_join_data
 {
@@ -144,7 +149,13 @@ struct s_networking_join_data
     //long number_of_peers_expected_in_membership_at_last_desiribility_calculation;
     s_networking_join_queue_entry join_queue[32];
 };
-static_assert(sizeof(s_networking_join_data) == 0x4BF0);
+static_assert(sizeof(s_networking_join_data) == 0x4C70);
+static_assert(OFFSETOF(s_networking_join_data, disable_joins) == 0x00);
+static_assert(OFFSETOF(s_networking_join_data, local_join_state) == 0x04);
+static_assert(OFFSETOF(s_networking_join_data, local_join_result) == 0x08);
+static_assert(OFFSETOF(s_networking_join_data, timeout_start_time) == 0x0C);
+static_assert(OFFSETOF(s_networking_join_data, client_already_joining) == 0x10);
+static_assert(OFFSETOF(s_networking_join_data, queued_squad_join) == 0x18);
 static_assert(OFFSETOF(s_networking_join_data, join_queue_mode) == 0x68);
 static_assert(OFFSETOF(s_networking_join_data, join_queue_entry_count) == 0x6C);
 static_assert(OFFSETOF(s_networking_join_data, join_queue) == 0x70);
