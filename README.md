@@ -11,8 +11,7 @@ A modification for Halo Online build 11.1.604673 cert_ms29 which restores missin
 We're looking for new developers to help us with the reverse engineering efforts. If you're interested and familiar with IDA & C++, [come talk to us!](https://discord.gg/hetx7ekZJQ)
 
 ## Work is in progress!
-Whilst slayer is playable in a mostly stable state, desyncs are present alongside some general jank-iness, and other gamemodes are not supported. Please bare this in mind!<br/>
-Parts of the codebase are also long overdue for a cleanup.<br/>
+Slayer is now fully playable! However other gamemodes are currently not supported. We're working to restore these as soon as possible. Please report any issues/bugs found to [our issues page.](https://github.com/yokimklein/AnvilDedicatedServer/issues)<br/>
 <br/>
 There currently isn't a way to join a server without connecting to our closed source game API. If you would like to test this on your own, you will have to call the hf2p_join_game function on your client manually:
 ```cpp
@@ -27,14 +26,16 @@ void __fastcall hf2p_join_game(long ip_address, short port, s_transport_secure_i
 - END: Returns an active game to the main menu/lobby
 
 ## Quick setup
-1) Build hf2p_dedicated_server.dll & hf2p_launcher.exe
-2) Place the files in the same folder as halo_online.exe
-3) Run hf2p_launcher.exe to boot the game with the dll injected
-4) A console window should appear alongside the game, open it
-5) Once the game has loaded, the server will create a lobby on port 11774 ready to join
-6) The server IP, secure address & secure ID will be printed to the console which clients must provide in order to connect
-7) Once the game start status is 'ready' in the console you can press PAGE DOWN to begin a map vote
-8) Once the map vote has concluded the launch countdown will begin and the game will start
+This guide is outdated. Please contact Yokim in the [discord server](https://discord.gg/hetx7ekZJQ) for support.
+Project now uses Twister's [ProxyDLL project](https://github.com/twist84/ProxyDll).
+1) ~~Build hf2p_dedicated_server.dll & hf2p_launcher.exe~~
+2) ~~Place the files in the same folder as halo_online.exe~~
+3) ~~Run hf2p_launcher.exe to boot the game with the dll injected~~
+4) ~~A console window should appear alongside the game, open it~~
+5) ~~Once the game has loaded, the server will create a lobby on port 11774 ready to join~~
+6) ~~The server IP, secure address & secure ID will be printed to the console which clients must provide in order to connect~~
+7) ~~Once the game start status is 'ready' in the console you can press PAGE DOWN to begin a map vote~~
+8) ~~Once the map vote has concluded the launch countdown will begin and the game will start~~
 
 ## Special thanks & credits
 - [@twist84](https://github.com/twist84) for reversing many of game's structures used in this project and allowing me to use code from [ManagedDonkey](https://github.com/twist84/ManagedDonkey)
