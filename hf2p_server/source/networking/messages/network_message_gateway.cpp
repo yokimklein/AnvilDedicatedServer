@@ -36,7 +36,10 @@ void c_network_message_gateway::send_all_pending_messages()
 
 			e_network_message_type message_type;
 			long message_storage_size = 0;
-			byte message_storage[k_network_message_maximum_size]{}; // $TODO: make this static memory? test if stack overflow occurs in rewrite
+			// This was made static to avoid a stack overflow crash that would occur when >1 peer disconnects at the same time
+			// HO's k_network_message_maximum_size is 4x larger than H3 and 2x as large as MCC
+			// In many other places in the code base, this temporary storage was made static, but it seems they missed it here
+			static byte message_storage[k_network_message_maximum_size]{};
 
 			while (m_outgoing_packet.read_bool("has_message"))
 			{
