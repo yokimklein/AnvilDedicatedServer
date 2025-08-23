@@ -63,9 +63,11 @@ struct s_cached_public_data
 class c_backend_data_cache
 {
 public:
-    void clear_title_instances();
-    void refresh_consumable_costs();
-    void refresh_scoring_events();
+    static void clear_title_instances();
+    static void refresh_consumable_costs();
+    static void refresh_scoring_events();
+    static void reset_earned_wp_events();
+    static void cache_wp_event(s_game_engine_event_data* event_data);
 
     s_cached_public_data* const public_data_get(qword user_id);
     void user_data_remove(qword user_id);
@@ -91,6 +93,9 @@ public:
 
     // refreshed on map load, size of multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
     std::vector<s_cached_consumable_costs> m_consumable_costs;
+
+    // reset on map load
+    std::vector<ulong> m_earned_wp_events[k_network_maximum_players_per_session];
 
 private:
     // cached public data - private behind a mutex as this is written to by the backend thread, and cleared by the game thread

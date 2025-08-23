@@ -36,30 +36,30 @@ void s_cached_public_data::write_configuration(s_s3d_player_container* out_conta
 
 void c_backend_data_cache::clear_title_instances()
 {
-    m_armor_items.clear();
-    m_weapons.clear();
-    m_grenades.clear();
-    m_boosters.clear();
-    m_consumables.clear();
-    m_colours.clear();
+    g_backend_data_cache.m_armor_items.clear();
+    g_backend_data_cache.m_weapons.clear();
+    g_backend_data_cache.m_grenades.clear();
+    g_backend_data_cache.m_boosters.clear();
+    g_backend_data_cache.m_consumables.clear();
+    g_backend_data_cache.m_colours.clear();
 }
 
 void c_backend_data_cache::refresh_consumable_costs()
 {
-    m_consumable_costs.clear();
+    g_backend_data_cache.m_consumable_costs.clear();
 
     long equipment_count = multiplayer_globals_get_equipment_count();
     if (equipment_count <= 0)
     {
         return;
     }
-    m_consumable_costs.resize(equipment_count);
+    g_backend_data_cache.m_consumable_costs.resize(equipment_count);
 
     // on map load, clear costs and pre allocate vector
-    for (auto& cached_consumable : m_consumables)
+    for (auto& cached_consumable : g_backend_data_cache.m_consumables)
     {
         s_cached_consumable& consumable = cached_consumable.second;
-        m_consumable_costs[consumable.consumable_index] = consumable.costs;
+        g_backend_data_cache.m_consumable_costs[consumable.consumable_index] = consumable.costs;
     }
 }
 
@@ -76,6 +76,35 @@ void c_backend_data_cache::refresh_scoring_events()
             s_multiplayer_event_response_definition& wp_event = runtime->earn_wp_events[event_index];
             wp_event.earned_wp = static_cast<short>(scoring_event.xp_reward);
         }
+    }
+}
+
+void c_backend_data_cache::reset_earned_wp_events()
+{
+    s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
+    ulong maximum_wp_events = runtime->earn_wp_events.count();
+    for (long player_index = 0; player_index < k_network_maximum_players_per_session; player_index++)
+    {
+        g_backend_data_cache.m_earned_wp_events[player_index].clear();
+        g_backend_data_cache.m_earned_wp_events[player_index].resize(maximum_wp_events);
+    }
+}
+
+void c_backend_data_cache::cache_wp_event(s_game_engine_event_data* event_data)
+{
+    s_multiplayer_runtime_globals_definition* runtime = scenario_multiplayer_globals_try_and_get_runtime_data();
+    long event_index = NONE;
+    for (long wp_event_index = 0; wp_event_index < runtime->earn_wp_events.count(); wp_event_index++)
+    {
+        if (runtime->earn_wp_events[wp_event_index].event_id.get_value() == event_data->event_name)
+        {
+            event_index = wp_event_index;
+            break;
+        }
+    }
+    if (event_data->cause_player_index != NONE && event_index != NONE)
+    {
+        g_backend_data_cache.m_earned_wp_events[DATUM_INDEX_TO_ABSOLUTE_INDEX(event_data->cause_player_index)][event_index]++;
     }
 }
 

@@ -10,7 +10,6 @@
 #include <simulation\simulation_queue_global_events.h>
 #include <game\game.h>
 #include <game\game_engine_util.h>
-#include <Patch.hpp>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -358,90 +357,90 @@ __declspec(safebuffers) void __fastcall teleporter_teleport_object_hook()
 void anvil_hooks_player_updates_apply()
 {
     // sync equipment charges on spawn
-    insert_hook(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
+    hook::insert(0xBB093, 0xBB098, player_spawn_hook1, _hook_execute_replaced_first);
 
     // sync equipment cooldown reset
-    //insert_hook(0x42D3ED, 0x42D3F2, unit_handle_equipment_energy_cost_hook2, _hook_execute_replaced_first); // sets cooldown after use (No longer required, function was rewritten)
-    insert_hook(0xB80BA, 0xB80C8, players_update_after_game_hook2, _hook_replace); // updates tick countdown
+    //hook::insert(0x42D3ED, 0x42D3F2, unit_handle_equipment_energy_cost_hook2, _hook_execute_replaced_first); // sets cooldown after use (No longer required, function was rewritten)
+    hook::insert(0xB80BA, 0xB80C8, players_update_after_game_hook2, _hook_replace); // updates tick countdown
 
     // sync spawn timer
-    insert_hook(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first);
-    hook_function(0xC7700, 0x62, game_engine_player_set_spawn_timer);
+    hook::insert(0xBB435, 0xBB43B, player_spawn_hook2, _hook_execute_replaced_first);
+    hook::function(0xC7700, 0x62, game_engine_player_set_spawn_timer);
 
     // sync early respawn
-    insert_hook(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first);
-    insert_hook(0xFA088, 0xFA08F, game_engine_setup_player_for_respawn_hook, _hook_execute_replaced_first);
-    insert_hook(0xFC021, 0xFC028, objective_game_player_forced_base_respawn_hook, _hook_execute_replaced_first);
-    insert_hook(0x1C9FA4, 0x1C9FB0, player_killed_player_perform_respawn_on_kill_check_hook, _hook_execute_replaced_first); // inlined game_engine_reset_player_respawn_timer
-    insert_hook(0xFBB7E, 0xFBB86, game_engine_reset_player_respawn_timers_hook, _hook_execute_replaced_first);
+    hook::insert(0xBB459, 0xBB460, player_spawn_hook3, _hook_execute_replaced_first);
+    hook::insert(0xFA088, 0xFA08F, game_engine_setup_player_for_respawn_hook, _hook_execute_replaced_first);
+    hook::insert(0xFC021, 0xFC028, objective_game_player_forced_base_respawn_hook, _hook_execute_replaced_first);
+    hook::insert(0x1C9FA4, 0x1C9FB0, player_killed_player_perform_respawn_on_kill_check_hook, _hook_execute_replaced_first); // inlined game_engine_reset_player_respawn_timer
+    hook::insert(0xFBB7E, 0xFBB86, game_engine_reset_player_respawn_timers_hook, _hook_execute_replaced_first);
 
     // update spectating player
-    hook_function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
+    hook::function(0x68B40, 0x80, c_simulation_player_respawn_request_event_definition__apply_game_event);
 
     // sync loadout index
-    insert_hook(0xBAF22, 0xBAF29, player_update_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
-    insert_hook(0xE05A8, 0xE05AF, player_update_loadout_hook2, _hook_replace); // add player_index argument back to call in equipment_add
-    hook_function(0xE0660, 0x40, player_update_loadout);
-    insert_hook(0xB5259, 0xB532D, player_reset_hook, _hook_replace); // replace inlined player_update_loadout, added new since ms23
+    hook::insert(0xBAF22, 0xBAF29, player_update_loadout_hook1, _hook_replace); // add player_index argument back to call in player_spawn
+    hook::insert(0xE05A8, 0xE05AF, player_update_loadout_hook2, _hook_replace); // add player_index argument back to call in equipment_add
+    hook::function(0xE0660, 0x40, player_update_loadout);
+    hook::insert(0xB5259, 0xB532D, player_reset_hook, _hook_replace); // replace inlined player_update_loadout, added new since ms23
 
     // sync player netdebug data
-    insert_hook(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);
+    hook::insert(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);
 
     // sync player active in game flag
-    hook_function(0x54A70, 0x68, simulation_queue_player_event_apply_set_activation);
+    hook::function(0x54A70, 0x68, simulation_queue_player_event_apply_set_activation);
 
     // sync spectating player after boot
-    hook_function(0x54AE0, 0x43, game_engine_boot_player_safe); // UNTESTED!!
+    hook::function(0x54AE0, 0x43, game_engine_boot_player_safe); // UNTESTED!!
 
     // sync player booting
-    hook_function(0xCCB20, 0xF5, game_engine_boot_player);
+    hook::function(0xCCB20, 0xF5, game_engine_boot_player);
 
     // sync vehicle entrance ban after hijack
-    hook_function(0xBFB90, 0x79, player_notify_vehicle_ejection_finished); // set ban time
-    insert_hook(0xB80FE, 0xB8112, players_update_after_game_hook3, _hook_replace); // countdown ban ticks
+    hook::function(0xBFB90, 0x79, player_notify_vehicle_ejection_finished); // set ban time
+    hook::insert(0xB80FE, 0xB8112, players_update_after_game_hook3, _hook_replace); // countdown ban ticks
 
     // sync telefrag
-    insert_hook(0xB80A6, 0xB80AD, players_update_after_game_hook1, _hook_execute_replaced_last); // countdown blocking ticks
+    hook::insert(0xB80A6, 0xB80AD, players_update_after_game_hook1, _hook_execute_replaced_last); // countdown blocking ticks
 
     // sync revenge
-    insert_hook(0xF8FCB, 0xF8FD2, game_engine_player_killed_hook1, _hook_execute_replaced_first); // inlined player_set_revenge_shield_boost
+    hook::insert(0xF8FCB, 0xF8FD2, game_engine_player_killed_hook1, _hook_execute_replaced_first); // inlined player_set_revenge_shield_boost
 
     // sync betrayal grief
-    insert_hook(0x1B0248, 0x1B024E, c_game_statborg__record_player_death_hook1, _hook_execute_replaced_first); // inlined game_engine_respond_to_betrayal
-    insert_hook(0xC96E5, 0xC96EF, game_engine_update_player_hook2, _hook_execute_replaced_first);
+    hook::insert(0x1B0248, 0x1B024E, c_game_statborg__record_player_death_hook1, _hook_execute_replaced_first); // inlined game_engine_respond_to_betrayal
+    hook::insert(0xC96E5, 0xC96EF, game_engine_update_player_hook2, _hook_execute_replaced_first);
 
     // sync waypoint actions
-    insert_hook(0xFA0B9, 0xFA1B4, game_engine_player_fired_weapon_hook, _hook_replace); // set weapon fire waypoint
-    insert_hook(0xF8E00, 0xF8EEB, game_engine_player_damaged_player_hook, _hook_replace); // set damaged player waypoint
-    hook_function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
+    hook::insert(0xFA0B9, 0xFA1B4, game_engine_player_fired_weapon_hook, _hook_replace); // set weapon fire waypoint
+    hook::insert(0xF8E00, 0xF8EEB, game_engine_player_damaged_player_hook, _hook_replace); // set damaged player waypoint
+    hook::function(0xCC9D0, 0xAF, update_player_navpoint_data); // sync countdown ticks
 
     // sync player traits
-    insert_hook(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace); // shield vitality traits
-    Patch(0xC9C7F, { 0xE9, 0xE0, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90 }).Apply(); // redirect jump to end of loop 0x4C9D64
-    insert_hook(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first); // sync all player traits on rejoin
-    hook_function(0x11E050, 0x111, game_engine_apply_appearance_traits); // sync appearance traits
-    hook_function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
-    hook_function(0x11E170, 0x51, game_engine_apply_sensors_traits); // sync sensor traits
-    hook_function(0x11DD50, 0xA8, game_engine_apply_shield_vitality_traits); // sync shield vitality traits
-    hook_function(0x11DE00, 0x111, game_engine_apply_weapons_traits); // sync weapon traits
+    hook::insert(0xC9C41, 0xC9C7F, game_engine_update_after_game_update_state_hook3, _hook_replace); // shield vitality traits
+    patch::bytes(0xC9C7F, { 0xE9, 0xE0, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90 }); // redirect jump to end of loop 0x4C9D64
+    hook::insert(0xFA663, 0xFA66A, game_engine_player_rejoined_hook, _hook_execute_replaced_first); // sync all player traits on rejoin
+    hook::function(0x11E050, 0x111, game_engine_apply_appearance_traits); // sync appearance traits
+    hook::function(0x11DF20, 0xFD, game_engine_apply_movement_traits); // sync movement traits
+    hook::function(0x11E170, 0x51, game_engine_apply_sensors_traits); // sync sensor traits
+    hook::function(0x11DD50, 0xA8, game_engine_apply_shield_vitality_traits); // sync shield vitality traits
+    hook::function(0x11DE00, 0x111, game_engine_apply_weapons_traits); // sync weapon traits
     
     // sync lives remaining
-    insert_hook(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
-    insert_hook(0xF917F, 0xF91A7, game_engine_player_killed_hook2, _hook_replace);
+    hook::insert(0xC9D51, 0xC9D58, game_engine_update_after_game_update_state_hook4, _hook_execute_replaced_first);
+    hook::insert(0xF917F, 0xF91A7, game_engine_player_killed_hook2, _hook_replace);
 
     // sync player sitting out
-    insert_hook(0xCB1DD, 0xCB1E5, game_engine_update_player_sitting_out_hook, _hook_execute_replaced_first);
+    hook::insert(0xCB1DD, 0xCB1E5, game_engine_update_player_sitting_out_hook, _hook_execute_replaced_first);
 
     // update everything on player swap
-    insert_hook(0xB5544, 0xB554E, game_engine_player_changed_indices_hook1, _hook_execute_replaced_first);
-    insert_hook(0xB558C, 0xB5597, game_engine_player_changed_indices_hook2, _hook_execute_replaced_first);
+    hook::insert(0xB5544, 0xB554E, game_engine_player_changed_indices_hook1, _hook_execute_replaced_first);
+    hook::insert(0xB558C, 0xB5597, game_engine_player_changed_indices_hook2, _hook_execute_replaced_first);
 
     // update everything on player delete
-    insert_hook(0xB5737, 0xB573C, player_delete_hook, _hook_execute_replaced_last); // inlined game_engine_player_deleted
+    hook::insert(0xB5737, 0xB573C, player_delete_hook, _hook_execute_replaced_last); // inlined game_engine_player_deleted
     
     // sync player active
-    insert_hook(0xFA5D1, 0xFA5D6, game_engine_player_left_hook, _hook_execute_replaced_first);
+    hook::insert(0xFA5D1, 0xFA5D6, game_engine_player_left_hook, _hook_execute_replaced_first);
 
     // sync player aiming vectors
-    insert_hook(0x11867D, 0x118682, teleporter_teleport_object_hook, _hook_execute_replaced_first);
+    hook::insert(0x11867D, 0x118682, teleporter_teleport_object_hook, _hook_execute_replaced_first);
 }

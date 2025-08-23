@@ -91,9 +91,13 @@ void c_game_statborg::stats_reset_for_round_switch()
 			player_stats->statistics[_statborg_entry_in_game_total_score] += in_round_score;
 			game_results_statistic_set(i, _game_team_none, _statborg_entry_rounds_won, player_stats->statistics[_statborg_entry_in_game_total_score]);
 			if (game_is_finished())
+			{
 				player_stats->statistics[_statborg_entry_finalised] = true;
+			}
 			else
+			{
 				player_stats->statistics[_statborg_entry_in_round_score] = 0;
+			}
 			simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_player0 + i));
 		}
 	}

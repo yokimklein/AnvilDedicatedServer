@@ -1,5 +1,7 @@
 #include "game_results.h"
 
+REFERENCE_DECLARE(0x3FC2750, c_game_results, g_current_game_results);
+
 void __cdecl game_results_notify_player_indices_changed()
 {
 	INVOKE(0xCDBA0, game_results_notify_player_indices_changed);
@@ -27,3 +29,25 @@ void __fastcall game_results_statistic_increment(long player_absolute_index, e_g
 	__asm add esp, 8; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
+
+bool game_results_get_game_finalized()
+{
+	if (!g_current_game_results.finish_reason)
+	{
+		return false;
+	}
+	if (!g_current_game_results.initialized)
+	{
+		return false;
+	}
+	return true;
+}
+
+c_game_results* game_results_get_final_results()
+{
+	if (game_results_get_game_finalized())
+	{
+		return &g_current_game_results;
+	}
+	return NULL;
+}

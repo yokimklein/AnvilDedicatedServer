@@ -1,6 +1,5 @@
 #include "hooks_object_deletion.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
 #include <memory\data.h>
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <objects\object_scripting.h>
@@ -28,8 +27,8 @@ void __fastcall object_scripting_clear_all_function_variables_hook(datum_index o
 void anvil_hooks_object_deletion_apply()
 {
     // add simulation_action_object_delete back to object_delete
-    Hook(0x3FE1BE, object_scripting_clear_all_function_variables_hook, HookFlags::IsCall).Apply();
+    hook::call(0x3FE1BE, object_scripting_clear_all_function_variables_hook);
 
     // deleted dropped inventory items
-    insert_hook(0x484186, 0x48418D, item_in_unit_inventory_hook2, _hook_execute_replaced_first);
+    hook::insert(0x484186, 0x48418D, item_in_unit_inventory_hook2, _hook_execute_replaced_first);
 }

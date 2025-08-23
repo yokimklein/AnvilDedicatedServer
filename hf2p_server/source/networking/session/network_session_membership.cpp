@@ -11,6 +11,7 @@
 #include <fstream>
 #include <networking\network_time.h>
 #include <game\player_mapping.h>
+#include <cseries\cseries_windows.h>
 //#include <format>
 
 char const* network_session_peer_states[k_network_session_peer_state_count] =
@@ -189,6 +190,7 @@ s_network_session_player* c_network_session_membership::add_player_internal(long
     player->player_sequence_number = m_baseline.player_sequence_number;
     player->left_game = player_left_game;
     player->controller_index = k_no_controller;
+    player->join_time = system_seconds(); // New field to Anvil (non-original)
     if (peer_index != NONE)
     {
         s_network_session_peer* player_peer = get_peer(peer_index);
@@ -971,6 +973,11 @@ bool c_network_session_membership::is_host() const
         return host_peer_index() == m_local_peer_index;
     }
     return false;
+}
+
+bool c_network_session_membership::peer_property_flag_test(e_peer_property_flag_test_type test_type, e_network_session_peer_properties_status_flags flag) const
+{
+    return INVOKE_CLASS_MEMBER(0x32890, c_network_session_membership, peer_property_flag_test, test_type, flag);
 }
 
 // user_player_indices doesn't exist in HO so I'm unsure if this method does either

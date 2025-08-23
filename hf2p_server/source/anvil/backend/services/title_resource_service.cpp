@@ -256,7 +256,7 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
     {
         s_response body = boost::json::value_to<s_response>(response->data);
 
-        g_backend_data_cache.clear_title_instances();
+        c_backend_data_cache::clear_title_instances();
 
         // Pull maximum indices from tags to check if TI IDs are valid
         ulong maximum_weapons = 0;

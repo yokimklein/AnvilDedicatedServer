@@ -117,12 +117,6 @@
     <ClInclude Include="source\simulation\simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="third_party\patch\Patch.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\patch\Pointer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\networking\network_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -894,6 +888,12 @@
     <ClInclude Include="source\anvil\backend\request_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\data_mining\data_mining.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\cseries_windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -951,12 +951,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\simulation\simulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\patch\Patch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\patch\Pointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\networking\network_utilities.cpp">
@@ -1383,6 +1377,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\player_appearance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_state_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\data_mining\data_mining.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\cseries_windows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

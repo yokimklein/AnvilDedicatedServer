@@ -116,6 +116,8 @@ void c_backend::private_service::unregister_game_server::response(s_backend_resp
         m_status.status = _request_status_failed;
         return;
     }
+
+    m_status.status = _request_status_received;
 }
 
 std::string c_backend::private_service::update_game_server::s_request::to_json()
@@ -159,6 +161,8 @@ void c_backend::private_service::update_game_server::response(s_backend_response
         m_status.status = _request_status_failed;
         return;
     }
+
+    m_status.status = _request_status_received;
 }
 
 std::string c_backend::private_service::retrieve_lobby_members::s_request::to_json()
@@ -253,5 +257,67 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
 
     g_backend_data_cache.m_lobby_session.valid = true;
     csmemcpy(g_backend_data_cache.m_lobby_session.users, users, sizeof(g_backend_data_cache.m_lobby_session.users));
+    m_status.status = _request_status_received;
+}
+
+void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, c_backend::private_service::submit_game_statistics::s_request::s_medal const& medal)
+{
+    boost::json::object out;
+    out["ID"] = medal.ID;
+    out["Total"] = medal.Total;
+    json_value = std::move(out);
+}
+
+void tag_invoke(boost::json::value_from_tag, boost::json::value& json_value, c_backend::private_service::submit_game_statistics::s_request::s_player const& player)
+{
+    boost::json::object out;
+    out["UserID"] = player.UserID;
+    out["Kills"] = player.Kills;
+    out["Deaths"] = player.Deaths;
+    out["Assists"] = player.Assists;
+    out["Suicides"] = player.Suicides;
+    out["GamesWon"] = player.GamesWon;
+    out["TotalWP"] = player.TotalWP;
+    out["TimePlayed"] = player.TimePlayed;
+    out["Medals"] = boost::json::value_from(player.Medals);
+    json_value = std::move(out);
+}
+
+std::string c_backend::private_service::submit_game_statistics::s_request::to_json()
+{
+    boost::json::object out;
+    out["LobbyID"] = LobbyID;
+    out["DedicatedServerID"] = DedicatedServerID;
+    out["Players"] = boost::json::value_from(Players);
+    return boost::json::serialize(out);
+}
+
+void c_backend::private_service::submit_game_statistics::request(s_request request)
+{
+    if (!m_endpoint->m_resolved)
+    {
+        return;
+    }
+    m_status.status = _request_status_waiting;
+
+    g_backend_services->make_request
+    (
+        request,
+        http::verb::post,
+        "/PrivateService.svc/SubmitGameStatistics",
+        &response,
+        *m_endpoint,
+        false
+    );
+}
+
+void c_backend::private_service::submit_game_statistics::response(s_backend_response* response)
+{
+    if (response->retCode != _backend_success)
+    {
+        m_status.status = _request_status_failed;
+        return;
+    }
+
     m_status.status = _request_status_received;
 }

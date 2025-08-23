@@ -2,7 +2,6 @@
 #include <anvil\hooks\hooks.h>
 #include <cseries\cseries.h>
 #include <effects\particle_states.h>
-#include <Patch.hpp>
 #include <xmmintrin.h>
 
 // TODO: put this in a file with all the gpu_storage types :)
@@ -36,6 +35,6 @@ void __fastcall write_particle_state_hook(s_particle_state* STATE, unsigned long
 void anvil_hooks_effect_system_apply()
 {
 	// -- fix particle alpha_black_point and palette_v
-	Hook(0x0059151B, write_particle_state_hook, HookFlags::IsCall).Apply();
-	Hook(0x00591628, write_particle_state_hook, HookFlags::IsCall).Apply();
+	hook::call(0x59151B, write_particle_state_hook);
+	hook::call(0x591628, write_particle_state_hook);
 }

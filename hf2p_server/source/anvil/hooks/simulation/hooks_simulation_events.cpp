@@ -11,6 +11,7 @@
 #include <items\weapon_definitions.h>
 #include <simulation\game_interface\simulation_game_events.h>
 #include <game\game_engine_util.h>
+#include <anvil\backend\cache.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -331,6 +332,10 @@ __declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook2()
         lea eax, [ecx + 0x40 - 0x28];
         mov event_data, eax;
     }
+
+    // Anvil: track number of earned wp events to submit stats for later
+    c_backend_data_cache::cache_wp_event(event_data);
+
     game_engine_send_event(event_data);
 }
 
@@ -403,54 +408,54 @@ __declspec(safebuffers) void __fastcall c_teleporter_area__update_players_hook()
 void anvil_hooks_simulation_events_apply()
 {
     // simulation_action_damage_section_response
-    insert_hook(0x414EC5, 0x414ECA, damage_section_deplete_hook, _hook_execute_replaced_first);
-    insert_hook(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook, _hook_execute_replaced_first);
-    insert_hook(0x40C9C4, 0x40C9C9, object_damage_new_hook, _hook_execute_replaced_first);
+    hook::insert(0x414EC5, 0x414ECA, damage_section_deplete_hook, _hook_execute_replaced_first);
+    hook::insert(0x414B96, 0x414B9E, damage_section_respond_to_damage_hook, _hook_execute_replaced_first);
+    hook::insert(0x40C9C4, 0x40C9C9, object_damage_new_hook, _hook_execute_replaced_first);
 
     // simulation_action_damage_aftermath
     // We actually don't want this first hook, the call only exists in ms23 as an accidental leftover from H3's code
     // HO uses Reach's code here, and so simulation_action_damage_aftermath was moved to object_cause_damage
     // But this now means there's duplicate calls as the old H3 one wasn't removed
     // This ends up causing duplicate events to be sent to clients, making physics impulses way stronger than they should be
-    //insert_hook(0x41320A, 0x413210, object_apply_damage_aftermath_hook2, _hook_execute_replaced_last);
-    insert_hook(0x40FB0E, 0x40FB13, object_cause_damage_hook, _hook_execute_replaced_first);
+    //hook::insert(0x41320A, 0x413210, object_apply_damage_aftermath_hook2, _hook_execute_replaced_last);
+    hook::insert(0x40FB0E, 0x40FB13, object_cause_damage_hook, _hook_execute_replaced_first);
 
     // simulation_action_projectile_attached
-    insert_hook(0x468045, 0x46804B, projectile_attach_hook2, _hook_execute_replaced_last);
+    hook::insert(0x468045, 0x46804B, projectile_attach_hook2, _hook_execute_replaced_last);
 
     // simulation_action_projectile_detonate
-    hook_function(0x4667D0, 0x86, projectile_detonate_effects_and_damage);
-    csmemset(base_address<void*>(0x467250), 0x08, 1); // remove unnecessary cleanup bytes handled by fastcall
+    hook::function(0x4667D0, 0x86, projectile_detonate_effects_and_damage);
+    patch::bytes(0x467250, { 0x08 }); // remove unnecessary cleanup bytes handled by fastcall
 
     // simulation_action_projectile_impact_raw
-    add_variable_space_to_stack_frame(0x463930, 0x465667, 12); // add extra 12 bytes of variable space to projectile_collision
-    insert_hook(0x464FD4, 0x464FDC, projectile_collision_hook0, _hook_execute_replaced_last);
-    insert_hook(0x46528B, 0x465291, projectile_collision_hook1, _hook_execute_replaced_first);
-    insert_hook(0x46530B, 0x465313, projectile_collision_hook2, _hook_execute_replaced_first);
-    insert_hook(0x4653D3, 0x4653D8, projectile_collision_hook2, _hook_execute_replaced_first);
-    insert_hook(0x465454, 0x46545D, projectile_collision_hook2, _hook_execute_replaced_first);
-    insert_hook(0x465472, 0x46547A, projectile_collision_hook3, _hook_execute_replaced_first);
-    insert_hook(0x465591, 0x465596, (void*)12, _hook_stack_frame_cleanup); // cleanup
-    insert_hook(0x4655C3, 0x4655C8, (void*)12, _hook_stack_frame_cleanup); // cleanup
-    insert_hook(0x4655F1, 0x4655F6, (void*)12, _hook_stack_frame_cleanup); // cleanup
-    insert_hook(0x465657, 0x46565C, (void*)12, _hook_stack_frame_cleanup); // cleanup
-    insert_hook(0x46565F, 0x465666, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    hook::add_variable_space_to_stack_frame(0x463930, 0x465667, 12); // add extra 12 bytes of variable space to projectile_collision
+    hook::insert(0x464FD4, 0x464FDC, projectile_collision_hook0, _hook_execute_replaced_last);
+    hook::insert(0x46528B, 0x465291, projectile_collision_hook1, _hook_execute_replaced_first);
+    hook::insert(0x46530B, 0x465313, projectile_collision_hook2, _hook_execute_replaced_first);
+    hook::insert(0x4653D3, 0x4653D8, projectile_collision_hook2, _hook_execute_replaced_first);
+    hook::insert(0x465454, 0x46545D, projectile_collision_hook2, _hook_execute_replaced_first);
+    hook::insert(0x465472, 0x46547A, projectile_collision_hook3, _hook_execute_replaced_first);
+    hook::insert(0x465591, 0x465596, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    hook::insert(0x4655C3, 0x4655C8, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    hook::insert(0x4655F1, 0x4655F6, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    hook::insert(0x465657, 0x46565C, (void*)12, _hook_stack_frame_cleanup); // cleanup
+    hook::insert(0x46565F, 0x465666, (void*)12, _hook_stack_frame_cleanup); // cleanup
 
     // simulation_action_unit_board_vehicle - esi unit index
-    insert_hook(0x4479F3, 0x4479FA, unit_action_vehicle_board_submit_hook, _hook_execute_replaced_first);
+    hook::insert(0x4479F3, 0x4479FA, unit_action_vehicle_board_submit_hook, _hook_execute_replaced_first);
 
     // simulation_action_unit_exit_vehicle
-    insert_hook(0x456CC6, 0x456CCF, motor_animation_exit_seat_internal_hook, _hook_execute_replaced_last);
+    hook::insert(0x456CC6, 0x456CCF, motor_animation_exit_seat_internal_hook, _hook_execute_replaced_last);
 
     // simulation_action_unit_melee_clang
-    insert_hook(0x42C270, 0x42C276, unit_resolve_melee_attack_hook, _hook_execute_replaced_last);
+    hook::insert(0x42C270, 0x42C276, unit_resolve_melee_attack_hook, _hook_execute_replaced_last);
 
     // simulation_action_multiplayer_event
-    hook_function(0x11C0C0, 0x40, game_engine_send_event);
-    insert_hook(0xFAF89, 0xFAFC3, game_engine_earn_wp_event_hook2, _hook_replace); // inline in game_engine_earn_wp_event
-    insert_hook(0xE00DF, 0xE011A, game_engine_scoring_update_leaders_internal_hook, _hook_replace); // score leaders ('x' took the lead!)
-    insert_hook(0xFB1D8, 0xFB209, game_engine_award_medal_hook, _hook_replace); // medals
-    insert_hook(0x22E2D2, 0x22E308, c_slayer_engine__emit_game_start_event_hook, _hook_replace); // slayer popup on game start
-    insert_hook(0x11887F, 0x1188B4, display_teleporter_blocked_message_hook, _hook_replace); // teleporter blocked message
-    insert_hook(0x1187EF, 0x118824, c_teleporter_area__update_players_hook, _hook_replace); // teleporter used - actually hooks another function called by update_players but we don't have a name for it
+    hook::function(0x11C0C0, 0x40, game_engine_send_event);
+    hook::insert(0xFAF89, 0xFAFC3, game_engine_earn_wp_event_hook2, _hook_replace); // inline in game_engine_earn_wp_event
+    hook::insert(0xE00DF, 0xE011A, game_engine_scoring_update_leaders_internal_hook, _hook_replace); // score leaders ('x' took the lead!)
+    hook::insert(0xFB1D8, 0xFB209, game_engine_award_medal_hook, _hook_replace); // medals
+    hook::insert(0x22E2D2, 0x22E308, c_slayer_engine__emit_game_start_event_hook, _hook_replace); // slayer popup on game start
+    hook::insert(0x11887F, 0x1188B4, display_teleporter_blocked_message_hook, _hook_replace); // teleporter blocked message
+    hook::insert(0x1187EF, 0x118824, c_teleporter_area__update_players_hook, _hook_replace); // teleporter used - actually hooks another function called by update_players but we don't have a name for it
 }

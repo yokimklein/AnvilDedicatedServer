@@ -6,29 +6,6 @@
 #include <networking\session\network_session_membership.h>
 #include <networking\session\network_session_parameters_saved_film_game_options.h>
 
-enum e_network_session_peer_properties_status_flags
-{
-    _network_session_peer_properties_status_game_stats_written_bit = 0,
-    _network_session_peer_properties_status_match_ready_to_start_bit,
-    _network_session_peer_properties_status_match_arbitration_succeeded_bit,
-    _network_session_peer_properties_status_match_arbitration_failed_bit,
-    _network_session_peer_properties_status_match_teams_selected_bit,
-    _network_session_peer_properties_status_match_repeated_play_set_bit,
-    _network_session_peer_properties_status_match_started_bit,
-    _network_session_peer_properties_status_match_start_failed_bit,
-    _network_session_peer_properties_status_match_initial_stats_written_bit,
-    _network_session_peer_properties_status_match_initial_stats_write_failed_bit,
-    _network_session_peer_properties_status_match_stats_written_bit,
-    _network_session_peer_properties_status_match_host_selection_complete_bit,
-    _network_session_peer_properties_status_match_post_match_countdown_bit,
-    _network_session_peer_properties_status_match_has_idle_controller_bit,
-    _network_session_peer_properties_status_match_ready_for_next_match_bit,
-    _network_session_peer_properties_status_match_simulation_aborted_bit,
-    _network_session_peer_properties_status_match_acknowledge_sync_bit,
-
-    k_network_session_peer_properties_status_flags
-};
-
 #pragma pack(push, 1)
 enum e_controller_index;
 struct s_network_session_interface_user
@@ -55,6 +32,8 @@ struct s_network_session_interface_user
 };
 static_assert(sizeof(s_network_session_interface_user) == 0xBE8);
 
+typedef c_flags<e_network_session_peer_properties_status_flags, dword, k_network_session_peer_properties_status_flag_count> c_network_session_peer_properties_status_flags;
+
 class c_network_session_manager;
 struct s_network_session_interface_globals
 {
@@ -67,7 +46,7 @@ struct s_network_session_interface_globals
     //s_transport_qos_result qos_result;
     //long bandwidth_bps;
     //long max_machine_count;
-    e_network_session_peer_properties_status_flags peer_status_flags;
+	c_network_session_peer_properties_status_flags flags;
     //short ready_hopper_identifier;
     //byte : 8;
     //byte : 8;
@@ -114,7 +93,7 @@ struct s_network_session_interface_globals
 static_assert(sizeof(s_network_session_interface_globals) == 0x3410);
 static_assert(0x02 == OFFSETOF(s_network_session_interface_globals, machine_name));
 static_assert(0x22 == OFFSETOF(s_network_session_interface_globals, session_name));
-static_assert(0x64 == OFFSETOF(s_network_session_interface_globals, peer_status_flags)); // 0x3EAE124
+static_assert(0x64 == OFFSETOF(s_network_session_interface_globals, flags)); // 0x3EAE124
 static_assert(0x68 == OFFSETOF(s_network_session_interface_globals, game_start_error)); // 0x3EAE128
 static_assert(0x6C == OFFSETOF(s_network_session_interface_globals, map_id));
 static_assert(0x70 == OFFSETOF(s_network_session_interface_globals, current_map)); // 0x3EAE130
@@ -137,3 +116,4 @@ void __fastcall network_session_calculate_peer_connectivity(c_network_session* s
 void network_session_interface_set_local_name(wchar_t const* machine_name, wchar_t const* session_name);
 bool network_session_interface_get_squad_session(c_network_session** out_session);
 void __cdecl network_session_interface_update();
+void network_session_interface_set_peer_status_flag(e_network_session_peer_properties_status_flags peer_status_flag, bool enabled);

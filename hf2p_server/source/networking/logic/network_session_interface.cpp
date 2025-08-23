@@ -50,7 +50,7 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
 	peer_properties.peer_map_progress_percentage = session_interface_globals.current_map_progress_percentage;
 	peer_properties.peer_game_instance = session_interface_globals.game_instance;
 	game_get_determinism_versions(&peer_properties.determinism_version, &peer_properties.determinism_compatible_version);
-	peer_properties.flags = session_interface_globals.peer_status_flags;
+	peer_properties.flags = session_interface_globals.flags;
 
 	s_transport_secure_address secure_address = {};
 	const s_transport_secure_address* peer_secure_address;
@@ -267,4 +267,9 @@ bool network_session_interface_get_squad_session(c_network_session** out_session
 void __cdecl network_session_interface_update()
 {
 	INVOKE(0x2DC50, network_session_interface_update);
+}
+
+void network_session_interface_set_peer_status_flag(e_network_session_peer_properties_status_flags peer_status_flag, bool enabled)
+{
+	session_interface_globals.flags.set(peer_status_flag, enabled);
 }

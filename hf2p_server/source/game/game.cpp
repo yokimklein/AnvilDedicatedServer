@@ -206,3 +206,9 @@ bool __fastcall game_engine_teams_use_one_shared_life(e_game_team team)
 {
 	return INVOKE(0xDC7F0, game_engine_teams_use_one_shared_life, team);
 }
+
+bool game_options_valid()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
+	return game_globals && (game_globals->initializing || game_globals->map_active);
+}

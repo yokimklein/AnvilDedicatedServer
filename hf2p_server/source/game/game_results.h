@@ -479,7 +479,7 @@ static_assert(sizeof(s_game_results_event) == 0x24);
 
 struct s_game_results_game_description // s_game_results_multiplayer_game_description?
 {
-	bool team_game;
+	//bool team_game; // $TODO: was this removed? or alignment changed?
 	qword game_instance;
 	c_game_variant game_variant;
 	c_static_wchar_string<32> map_variant_name;
@@ -496,15 +496,17 @@ struct s_game_results_game_description // s_game_results_multiplayer_game_descri
 
 	byte __pad3CF[1];
 };
-static_assert(sizeof(s_game_results_game_description) == 0x3D0);
+//static_assert(sizeof(s_game_results_game_description) == 0x3D0);
+static_assert(0x08 == OFFSETOF(s_game_results_game_description, game_variant));
+static_assert(0x3C6 == OFFSETOF(s_game_results_game_description, simulation_aborted));
 
 struct c_game_results
 {
 	byte finish_reason;
 	bool initialized;
 	bool finalized;
-	// is this game result specific version of `s_game_matchmaking_options`?
-	s_game_matchmaking_options matchmaking_options;
+	bool team_game;
+	//s_game_matchmaking_options matchmaking_options; // removed since ms23
 	s_game_results_game_description game_description;
 	c_static_array<s_game_results_player_data, 16> players;
 	c_static_array<s_game_results_team_data, 16> teams;
@@ -512,7 +514,15 @@ struct c_game_results
 	c_static_array<s_game_results_event, 1000> events;
 	c_static_array<s_game_results_machine_data, 17> machines;
 };
-static_assert(sizeof(c_game_results) == 0x19A10);
+static_assert(sizeof(c_game_results) == 0x199B0);
+static_assert(0x00 == OFFSETOF(c_game_results, finish_reason));
+static_assert(0x01 == OFFSETOF(c_game_results, initialized));
+static_assert(0x02 == OFFSETOF(c_game_results, finalized));
+static_assert(0x08 == OFFSETOF(c_game_results, game_description));
+static_assert(0x3D0 == OFFSETOF(c_game_results, players));
+static_assert(0xBCD0 == OFFSETOF(c_game_results, teams));
+static_assert(0xBD10 == OFFSETOF(c_game_results, statistics));
+static_assert(0x19790 == OFFSETOF(c_game_results, machines));
 
 struct s_game_results_globals
 {
@@ -553,6 +563,10 @@ struct s_integer_statistic_definition
 };
 static_assert(sizeof(s_integer_statistic_definition) == 0x10);
 
+extern c_game_results& g_current_game_results;
+
 void __cdecl game_results_notify_player_indices_changed();
 void game_results_statistic_set(long absolute_player_index, e_game_team team_index, long statistic, long value);
 void __fastcall game_results_statistic_increment(long player_absolute_index, e_game_team team_index, long statistic, long value);
+bool game_results_get_game_finalized();
+c_game_results* game_results_get_final_results();

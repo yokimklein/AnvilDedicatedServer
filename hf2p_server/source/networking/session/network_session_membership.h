@@ -34,6 +34,37 @@ enum e_network_session_peer_state
 	k_network_session_peer_state_count
 };
 
+enum e_network_session_peer_properties_status_flags
+{
+	_network_session_peer_properties_status_game_stats_written_bit = 0,
+	_network_session_peer_properties_status_match_ready_to_start_bit,
+	_network_session_peer_properties_status_match_arbitration_succeeded_bit,
+	_network_session_peer_properties_status_match_arbitration_failed_bit,
+	_network_session_peer_properties_status_match_teams_selected_bit,
+	_network_session_peer_properties_status_match_repeated_play_set_bit,
+	_network_session_peer_properties_status_match_started_bit,
+	_network_session_peer_properties_status_match_start_failed_bit,
+	_network_session_peer_properties_status_match_initial_stats_written_bit,
+	_network_session_peer_properties_status_match_initial_stats_write_failed_bit,
+	_network_session_peer_properties_status_match_stats_written_bit,
+	_network_session_peer_properties_status_match_host_selection_complete_bit,
+	_network_session_peer_properties_status_match_post_match_countdown_bit,
+	_network_session_peer_properties_status_match_has_idle_controller_bit,
+	_network_session_peer_properties_status_match_ready_for_next_match_bit,
+	_network_session_peer_properties_status_match_simulation_aborted_bit,
+	_network_session_peer_properties_status_match_acknowledge_sync_bit,
+
+	k_network_session_peer_properties_status_flag_count,
+	k_network_session_peer_properties_status_flags_bits = 5
+};
+
+enum e_peer_property_flag_test_type
+{
+	_peer_property_flag_test_all_peers = 0,
+	_peer_property_flag_test_host,
+	_peer_property_flag_test_all_peers_but_host,
+};
+
 struct s_player_add_queue_entry
 {
 	s_player_identifier player_identifier;
@@ -83,7 +114,7 @@ struct s_network_session_peer_properties
 	e_language language;
 	long determinism_version;
 	long determinism_compatible_version;
-	ulong flags;
+	c_flags<e_network_session_peer_properties_status_flags, dword, k_network_session_peer_properties_status_flag_count> flags;
 };
 static_assert(sizeof(s_network_session_peer_properties) == 0xA8);
 
@@ -122,7 +153,7 @@ struct s_network_session_player
 	bool left_game;
 	byte pad[3];
 	enum e_controller_index controller_index;
-	long unknown2;
+	ulong join_time; // New field to Anvil used to track player join unix times ($TODO: previously unknown or padding, investigate further)
 	s_player_configuration configuration;
 	union
 	{
@@ -264,6 +295,7 @@ public:
 	long get_peer_from_unique_identifier(s_transport_unique_identifier const* unique_identifier) const;
 	bool is_host() const;
 	//const s_network_session_player* get_player_from_peer(long peer_index, long user_index) const;
+	bool peer_property_flag_test(e_peer_property_flag_test_type test_type, e_network_session_peer_properties_status_flags flag) const;
 
 	c_network_session* m_session;
 	long unknown1;

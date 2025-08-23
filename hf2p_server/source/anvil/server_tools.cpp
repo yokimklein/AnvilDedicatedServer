@@ -31,32 +31,13 @@
 constexpr wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
 constexpr wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
 
-void enable_memory_write(void* base)
-{
-    // Enable write to all executable memory
-    size_t Offset, Total;
-    Offset = Total = 0;
-    MEMORY_BASIC_INFORMATION MemInfo;
-
-    while (VirtualQuery((byte*)base + Offset, &MemInfo, sizeof(MEMORY_BASIC_INFORMATION)))
-    {
-        Offset += MemInfo.RegionSize;
-        if (MemInfo.Protect == PAGE_EXECUTE_READ)
-        {
-            Total += MemInfo.RegionSize;
-            VirtualProtect(MemInfo.BaseAddress, MemInfo.RegionSize, PAGE_EXECUTE_READWRITE, &MemInfo.Protect);
-        }
-    }
-}
 void anvil_initialize()
 {
     printf("%s\n", anvil_get_build_name_string());
     printf("%s\n", anvil_build_version_string());
     printf("Base address: %p\n\n", base_address<void*>());
-    enable_memory_write(base_address<void*>());
     anvil_patches_apply();
     anvil_hooks_apply();
-
     anvil_load_configuration();
 }
 
@@ -178,7 +159,6 @@ void anvil_session_update()
         printf("Disconnecting session...\n");
         session->disconnect();
 
-        //anvil_session_set_test_player_data(membership);
         /*
         // load new string from text file
         std::ifstream file("map_load.txt");
@@ -447,37 +427,6 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     return true;
 }
 
-void anvil_session_set_test_player_data(c_network_session_membership* membership)
-{
-    for (long player_index = membership->get_first_player(); player_index != NONE; player_index = membership->get_next_player(player_index))
-    {
-        s_network_session_player* current_player = membership->get_player(player_index);
-        s_player_configuration_from_host* host_configuration = &current_player->configuration.host;
-        
-        // display server-set loadouts in the client's UI
-        //host_configuration->s3d_player_customization.override_api_data = true;
-        //host_configuration->s3d_player_container.override_api_data = true;
-
-        current_player->controller_index = _controller_index0;
-
-        if (current_player->configuration.host.user_xuid == 2) // yokim
-        {
-            host_configuration->team_index = _multiplayer_team_red;
-            host_configuration->assigned_team_index = _multiplayer_team_red;
-        }
-        if (current_player->configuration.host.user_xuid == 3) // twister
-        {
-            host_configuration->team_index = _multiplayer_team_blue;
-            host_configuration->assigned_team_index = _multiplayer_team_blue;
-        }
-
-        //host_configuration->s3d_player_container.loadouts[0].primary_weapon = _none;
-        //host_configuration->s3d_player_container.loadouts[0].secondary_weapon = _none;
-    }
-    // push update
-    membership->increment_update();
-}
-
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration)
 {
     ASSERT(configuration != nullptr);
@@ -491,7 +440,7 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
     // test dedi player loadout
     if (player->peer_index == membership->host_peer_index())
     {
-        configuration->player_name.set(L"DECEMBER");
+        configuration->player_name.set(L"        ");
         configuration->user_xuid = USER_SYSTEM;
         configuration->player_appearance.service_tag.set(L"1225");
         configuration->s3d_player_container.loadouts[0].armor_suit = _armor_scout;
@@ -609,13 +558,13 @@ void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
     }
 
     long scnr_path_address = (long)g_tutorial_scenario_path.get_string();
-    memcpy(base_address<void*>(0x33AB0D), &scnr_path_address, 4);
-    memcpy(base_address<void*>(0x33AB58), &scnr_path_address, 4);
+    patch::bytes(0x33AB0D, (byte*)&scnr_path_address, 4);
+    patch::bytes(0x33AB58, (byte*)&scnr_path_address, 4);
 
     long map_name_address = (long)g_tutorial_map_name.get_string();
-    memcpy(base_address<void*>(0xDD176), &map_name_address, 4);
+    patch::bytes(0xDD176, (byte*)&map_name_address, 4);
 
-    printf("anvil_launch_scenario(): launching %s (%ls)\n", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
+    printf("" __FUNCTION__ ": launching %s (%ls)\n", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
     hq_start_tutorial_level();
 }
 

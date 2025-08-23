@@ -1,6 +1,5 @@
 #include "hooks_miscellaneous.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
 #include <cseries\cseries.h>
 #include <cseries\cseries_windows_debug_pc.h>
 #include <anvil\build_version.h>
@@ -13,6 +12,9 @@
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <hf2p\loadouts.h>
 #include <tag_files\string_ids.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <winnt.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -128,13 +130,16 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
 
 #pragma runtime_checks("", off)
 // fastcall which user cleans up 4 bytes
-void __fastcall sub_718BF0_hook(long loadout_index, s_backend_loadout* loadout, s_backend_customisation* user_customisation)
+void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* loadout, s_backend_customisation* user_customisation)
 {
     // Check if loadout is valid before calling first
     // If a player kills the local player and no API loadout information for the killer exists, the pointer is null and can crash
     if (loadout == nullptr || user_customisation == nullptr)
         return;
-    INVOKE(0x318BF0, sub_718BF0_hook, loadout_index, loadout, user_customisation);
+
+    // texture_render_index is Bitmaps[].Index in texture_render_list tag
+
+    INVOKE(0x318BF0, sub_718BF0_hook, texture_render_index, loadout, user_customisation);
     __asm add esp, 4; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
@@ -142,74 +147,74 @@ void __fastcall sub_718BF0_hook(long loadout_index, s_backend_loadout* loadout, 
 void anvil_hooks_miscellaneous_apply()
 {
     // hook exceptions_update to catch esoteric crashes
-    Hook(0x95C0F, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x98BCB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9AB6B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9ABAB, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9EFE3, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F07C, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x9F8B1, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xC3E8B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0xDCCBD, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x16A63B, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x17C5FE, exceptions_update_hook, HookFlags::IsCall).Apply();
-    Hook(0x3DBB5B, exceptions_update_hook, HookFlags::IsCall).Apply();
+    hook::call(0x95C0F, exceptions_update_hook);
+    hook::call(0x98BCB, exceptions_update_hook);
+    hook::call(0x9AB6B, exceptions_update_hook);
+    hook::call(0x9ABAB, exceptions_update_hook);
+    hook::call(0x9EFE3, exceptions_update_hook);
+    hook::call(0x9F07C, exceptions_update_hook);
+    hook::call(0x9F8B1, exceptions_update_hook);
+    hook::call(0xC3E8B, exceptions_update_hook);
+    hook::call(0xDCCBD, exceptions_update_hook);
+    hook::call(0x16A63B, exceptions_update_hook);
+    hook::call(0x17C5FE, exceptions_update_hook);
+    hook::call(0x3DBB5B, exceptions_update_hook);
 
     // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
-    Hook(0x13C3, c_static_string_64_print_hook, HookFlags::IsCall).Apply();
+    hook::call(0x13C3, c_static_string_64_print_hook);
 
     // output the message type for debugging
-    Hook(0x16AF8, encode_message_header_hook, HookFlags::IsCall).Apply();
-    Hook(0x16C26, encode_message_header_hook, HookFlags::IsCall).Apply();
-    Hook(0x233D4, encode_message_header_hook, HookFlags::IsCall).Apply();
+    hook::call(0x16AF8, encode_message_header_hook);
+    hook::call(0x16C26, encode_message_header_hook);
+    hook::call(0x233D4, encode_message_header_hook);
 
-    // contrail gpu freeze fix - twister
-    Hook(0x28A38A, contrail_fix_hook).Apply();
+    // contrail gpu freeze 'fix' - twister
+    hook::function(0x28A38A, 5, contrail_fix_hook);
 
     // temporary test to force elite ui model on mainmenu
-    //Hook(0x2059B0, ui_get_player_model_id_evaluate_hook).Apply();
+    //hook::function(0x2059B0, 0x24, ui_get_player_model_id_evaluate_hook);
     
     // podium animation testing
-    Hook(0x2E8750, hf2p_player_podium_initialize).Apply();
+    hook::function(0x2E8750, 0xB2, hf2p_player_podium_initialize);
 
     // podium taunt triggering & syncing
-    insert_hook(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
-    insert_hook(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, true);
+    hook::insert(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
+    hook::insert(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, true);
 
     // disable build watermark text
-    //hook_function(0x1B0AB0, 0x5CF, game_engine_render_frame_watermarks_hook);
+    //hook::function(0x1B0AB0, 0x5CF, game_engine_render_frame_watermarks_hook);
 
     // hook net_debug_print's vsnprintf_s call to print API logs to the console
-    Hook(0x55D8BF, vsnprintf_s_net_debug_hook, HookFlags::IsCall).Apply();
+    hook::call(0x55D8BF, vsnprintf_s_net_debug_hook);
     
     // $TODO: may not be required with backend being disabled?
     // $TODO: why is this happening? Are we missing data which the clients need?
     // Fix host crashing when killed by a player when not connected to the API
-    Hook(0x33B1E0, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x33B1E5), 3);
-    Hook(0x33B2B0, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x33B2B5), 3);
-    Hook(0x33B33A, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B341, { 0x08 }).Apply();
-    Hook(0x33B3BA, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B3C1, { 0x08 }).Apply();
-    Hook(0x33B43A, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B441, { 0x08 }).Apply();
-    Hook(0x33B4B7, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B4BE, { 0x08 }).Apply();
-    Hook(0x33B53A, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B541, { 0x08 }).Apply();
-    Hook(0x33B5BA, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B5C1, { 0x08 }).Apply();
-    Hook(0x33B63A, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch(0x33B641, { 0x08 }).Apply();
-    Hook(0x33B6B8, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x33B6BD), 3);
-    Hook(0x33B6D3, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x33B6D8), 3);
-    Hook(0x33B6EE, sub_718BF0_hook, HookFlags::IsCall).Apply();
-    Patch::NopFill(Pointer::Base(0x33B6F3), 3);
+    hook::call(0x33B1E0, sub_718BF0_hook);
+    patch::nop_region(0x33B1E5, 3);
+    hook::call(0x33B2B0, sub_718BF0_hook);
+    patch::nop_region(0x33B2B5, 3);
+    hook::call(0x33B33A, sub_718BF0_hook);
+    patch::bytes(0x33B341, { 0x08 });
+    hook::call(0x33B3BA, sub_718BF0_hook);
+    patch::bytes(0x33B3C1, { 0x08 });
+    hook::call(0x33B43A, sub_718BF0_hook);
+    patch::bytes(0x33B441, { 0x08 });
+    hook::call(0x33B4B7, sub_718BF0_hook);
+    patch::bytes(0x33B4BE, { 0x08 });
+    hook::call(0x33B53A, sub_718BF0_hook);
+    patch::bytes(0x33B541, { 0x08 });
+    hook::call(0x33B5BA, sub_718BF0_hook);
+    patch::bytes(0x33B5C1, { 0x08 });
+    hook::call(0x33B63A, sub_718BF0_hook);
+    patch::bytes(0x33B641, { 0x08 });
+    hook::call(0x33B6B8, sub_718BF0_hook);
+    patch::nop_region(0x33B6BD, 3);
+    hook::call(0x33B6D3, sub_718BF0_hook);
+    patch::nop_region(0x33B6D8, 3);
+    hook::call(0x33B6EE, sub_718BF0_hook);
+    patch::nop_region(0x33B6F3, 3);
 
     // load string ids
-    insert_hook(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
+    hook::insert(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
 }

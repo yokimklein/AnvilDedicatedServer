@@ -1281,6 +1281,9 @@ void c_network_session::check_to_send_membership_update()
                                 shared_membership.peers[shared_membership.host_peer_index].player_mask.set(shared_player_index, true);
                                 shared_membership.players[shared_player_index].peer_index = shared_membership.host_peer_index;
                             }
+
+                            // remove field we added to track player time on the dedi as it doesn't exist on unmodified clients and will break the checksum
+                            shared_membership.players[shared_player_index].join_time = 0;
                         }
                         
                         bool send_complete_update = false;
@@ -1819,4 +1822,10 @@ bool c_network_session::handle_leave_internal(long peer_index)
 bool c_network_session::peer_joining() const
 {
     return current_local_state() == _network_session_state_peer_joining;
+}
+
+e_network_session_class c_network_session::session_class() const
+{
+    ASSERT(m_session_class >= 0 && m_session_class < k_network_session_class_count);
+    return m_session_class;
 }

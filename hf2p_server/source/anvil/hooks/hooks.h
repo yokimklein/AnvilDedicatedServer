@@ -1,4 +1,6 @@
 #pragma once
+#include <cseries\cseries.h>
+#include <initializer_list>
 
 // ogebp = ogesp + ogsp
 // ogesp = esp + default stack space + original_ebp/esp size + variable space + 3x pre-call pushes & return address + 4x hook func prologue pushes
@@ -23,12 +25,21 @@ enum e_hook_type
     _hook_replace_no_preserve // replaces instructions without preserving or restoring registers
 };
 
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);
-void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes);
-void nop_region(size_t address, size_t length);
-void hook_function(size_t function_address, size_t length, void* hook_function);
-// TODO: hook_call
-//void patch_bytes(size_t address, char* bytes, size_t length);
+namespace hook
+{
+    void insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);
+    void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes);
+    void function(size_t function_address, size_t length, void* function);
+    void call(size_t call_address, void* function);
+}
+
+namespace patch
+{
+    ulong set_memory_protect(size_t address, ulong new_protect, size_t size = sizeof(void*));
+    void nop_region(size_t address, size_t length);
+    void bytes(size_t address, std::initializer_list<byte> bytes);
+    void bytes(size_t address, byte* bytes, size_t size);
+}
 
 void anvil_patches_apply();
 void anvil_hooks_apply();

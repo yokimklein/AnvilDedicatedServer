@@ -4,7 +4,6 @@
 #include <memory\tls.h>
 #include <nmd_assembly.h>
 #include <objects\crates.h>
-#include <Patch.hpp>
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_action.h>
 
@@ -171,42 +170,42 @@ void __fastcall game_engine_register_object_hook(datum_index object_index)
 void anvil_hooks_object_creation_apply()
 {
 	// create & update player biped on spawn (player_spawn)
-	Hook(0xBB084, player_set_facing_player_spawn_hook, HookFlags::IsCall).Apply();
+	hook::call(0xBB084, player_set_facing_player_spawn_hook);
 
 	// map variant object spawning
-	Hook(0xAEA03, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_map_variant::create_object
-	Hook(0x172D86, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // c_candy_spawner:spawn_object
-	Hook(0x4095BB, game_engine_register_object_hook, HookFlags::IsCall).Apply(); // object_new_from_scenario_internal
+	hook::call(0xAEA03, game_engine_register_object_hook); // c_map_variant::create_object
+	hook::call(0x172D86, game_engine_register_object_hook); // c_candy_spawner:spawn_object
+	hook::call(0x4095BB, game_engine_register_object_hook); // object_new_from_scenario_internal
 
 	// effect object spawning
-	insert_hook(0x114A2F, 0x114A6C, event_generate_part_hook, _hook_replace);
+	hook::insert(0x114A2F, 0x114A6C, event_generate_part_hook, _hook_replace);
 	
 	// weapon_barrel_create_projectiles
-	add_variable_space_to_stack_frame(0x4371F0, 0x439A51, 4); // Add 4 bytes of variable space to the stack frame
-	insert_hook(0x4373B4, 0x4373BB, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve no_barrel_prediction in our new variable
-	insert_hook(0x4391CD, 0x4391D9, weapon_barrel_create_projectiles_hook1, _hook_replace); // crate projectiles
-	insert_hook(0x4394A2, 0x4394A8, weapon_barrel_create_projectiles_hook2, _hook_execute_replaced_last); // non-predicted standard projectiles
-	insert_hook(0x439A4B, 0x439A50, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+	hook::add_variable_space_to_stack_frame(0x4371F0, 0x439A51, 4); // Add 4 bytes of variable space to the stack frame
+	hook::insert(0x4373B4, 0x4373BB, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve no_barrel_prediction in our new variable
+	hook::insert(0x4391CD, 0x4391D9, weapon_barrel_create_projectiles_hook1, _hook_replace); // crate projectiles
+	hook::insert(0x4394A2, 0x4394A8, weapon_barrel_create_projectiles_hook2, _hook_execute_replaced_last); // non-predicted standard projectiles
+	hook::insert(0x439A4B, 0x439A50, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
 	// grenade & equipment throw spawning
-	add_variable_space_to_stack_frame(0x47CE00, 0x47D21C, 4); // Add 4 bytes of variable space to the stack frame
-	insert_hook(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
-	insert_hook(0x47D185, 0x47D18D, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
-	insert_hook(0x47D211, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+	hook::add_variable_space_to_stack_frame(0x47CE00, 0x47D21C, 4); // Add 4 bytes of variable space to the stack frame
+	hook::insert(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
+	hook::insert(0x47D185, 0x47D18D, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
+	hook::insert(0x47D211, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 	
 	// hologram spawning
-	insert_hook(0x45113A, 0x451144, equipment_activate_hook, _hook_execute_replaced_last);
+	hook::insert(0x45113A, 0x451144, equipment_activate_hook, _hook_execute_replaced_last);
 
 	// item inventory
-	insert_hook(0x484337, 0x48433D, item_in_unit_inventory_hook, _hook_execute_replaced_last);
+	hook::insert(0x484337, 0x48433D, item_in_unit_inventory_hook, _hook_execute_replaced_last);
 
 	// actor place
-	//Patch(0x6989CB, { 0x0F, 0x84, 0x6D, 0x00, 0x00, 0x00 }).Apply(); // redirect jump to hook instead of return
-	//Patch(0x6989E0, { 0x0F, 0x86, 0x58, 0x00, 0x00, 0x00 }).Apply(); // redirect jump to hook instead of return
-	//Patch(0x6989F5, { 0x74, 0x47 }).Apply(); // redirect jump to hook instead of return
-	//Patch(0x698A35, { 0x74, 07 }).Apply(); // redirect jump to hook instead of return
-	//insert_hook(0x698A3E, 0x698A47, actor_place_hook, _hook_execute_replaced_last);
+	//patch::bytes(0x6989CB, { 0x0F, 0x84, 0x6D, 0x00, 0x00, 0x00 }); // redirect jump to hook instead of return
+	//patch::bytes(0x6989E0, { 0x0F, 0x86, 0x58, 0x00, 0x00, 0x00 }); // redirect jump to hook instead of return
+	//patch::bytes(0x6989F5, { 0x74, 0x47 }); // redirect jump to hook instead of return
+	//patch::bytes(0x698A35, { 0x74, 07 }); // redirect jump to hook instead of return
+	//hook::insert(0x698A3E, 0x698A47, actor_place_hook, _hook_execute_replaced_last);
 
 	// final gambit modifier plasma grenade
-	insert_hook(0x426F19, 0x426F20, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
+	hook::insert(0x426F19, 0x426F20, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
 }

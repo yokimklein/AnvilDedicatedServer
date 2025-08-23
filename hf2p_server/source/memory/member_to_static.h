@@ -83,3 +83,10 @@ union static_to_member_t
     void* pointer;
     function_t function;
 };
+
+union module_address
+{
+    size_t address;
+    char* data;
+    void* pointer;
+};

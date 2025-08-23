@@ -427,8 +427,8 @@ void c_network_message_handler::handle_player_add(c_network_channel* channel, s_
 		return;
 	}
 
-	// TODO: implement this
-	if (false/*!session->handle_player_add(channel, message)*/)
+	// $TODO: implement this?
+	if (true/*!session->handle_player_add(channel, message)*/)
 	{
 		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_add: session failed to handle player-add (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),

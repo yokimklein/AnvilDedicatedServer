@@ -37,7 +37,6 @@ struct s_anvil_session_vote_pool
 
 extern s_anvil_session_vote_pool g_anvil_session_vote_pool;
 
-void enable_memory_write(void* base);
 void anvil_initialize();
 bool anvil_session_create();
 void anvil_session_update();

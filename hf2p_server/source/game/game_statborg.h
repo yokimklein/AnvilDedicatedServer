@@ -45,6 +45,8 @@ enum e_statborg_entry
 
 	_statborg_entry_kill_damage_type,
 
+	// one more entry here?
+
 	k_statborg_indices_count
 };
 

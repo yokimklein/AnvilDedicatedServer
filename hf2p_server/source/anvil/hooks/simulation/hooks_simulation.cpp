@@ -1,6 +1,5 @@
 #include "hooks_simulation.h"
 #include <anvil\hooks\hooks.h>
-#include <Patch.hpp>
 #include <simulation\simulation_world.h>
 #include <main\main.h>
 #include <game\game_engine.h>
@@ -22,11 +21,11 @@ long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* fil
 void anvil_hooks_simulation_apply()
 {
     // allow view_establishment to progress past connection phase to established in update_establishing_view again
-    Hook(0x370E0, update_establishing_view_hook).Apply();
+    hook::function(0x370E0, 0x12D, update_establishing_view_hook);
 
     // add game_engine_attach_to_simulation back to game_engine_game_starting
-    Hook(0xC703E, internal_halt_render_thread_and_lock_resources_hook, HookFlags::IsCall).Apply();
+    hook::call(0xC703E, internal_halt_render_thread_and_lock_resources_hook);
 
     // add game_engine_detach_from_simulation_gracefully back to game_engine_game_ending
-    insert_hook(0xC7320, 0xC7353, game_engine_detach_from_simulation_gracefully, _hook_replace);
+    hook::insert(0xC7320, 0xC7353, game_engine_detach_from_simulation_gracefully, _hook_replace);
 }

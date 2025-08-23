@@ -149,6 +149,7 @@ public:
 	bool handle_leave_request(transport_address const* outgoing_address);
 	bool handle_leave_internal(long peer_index);
 	bool peer_joining() const;
+	e_network_session_class session_class() const;
 
 	// non source original getter
 	const c_network_message_gateway* message_gateway() const { return m_message_gateway; };

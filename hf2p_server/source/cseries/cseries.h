@@ -161,6 +161,7 @@ const long QWORD_BITS = SIZEOF_BITS(qword);
 //#define MASK(bit) ((1ULL << (bit)) - 1)
 #define MASK(bit) ( (FLAG((bit)-1)) | ((bit) <= 1 ? 0 : ( (FLAG((bit)-1) - 1) )) )
 #define TEST_BIT(flags, bit) (((flags) & (1ULL << (bit))) != 0)
+#define TEST_RANGE(flags, start_bit, end_bit) (((flags) & (((1 << ((end_bit) - (start_bit) + 1)) - 1) << (start_bit))) != 0)
 #define TEST_FLAG(flags, bit) (flags.test((bit)))
 #define TEST_MASK(flags, mask) (((flags) & mask) != 0)
 #define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))

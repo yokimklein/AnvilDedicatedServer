@@ -210,8 +210,10 @@
     <ClInclude Include="source\camera\observer_director.h" />
     <ClInclude Include="source\camera\saved_film_director.h" />
     <ClInclude Include="source\cseries\async_xoverlapped.h" />
+    <ClInclude Include="source\cseries\cseries_windows.h" />
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
+    <ClInclude Include="source\data_mining\data_mining.h" />
     <ClInclude Include="source\devices\devices.h" />
     <ClInclude Include="source\effects\effects.h" />
     <ClInclude Include="source\effects\particle_states.h" />
@@ -404,8 +406,6 @@
     <ClInclude Include="source\networking\network_utilities.h" />
     <ClInclude Include="source\networking\transport\transport_endpoint_winsock.h" />
     <ClInclude Include="source\tag_files\tag_groups.h" />
-    <ClInclude Include="third_party\patch\Patch.hpp" />
-    <ClInclude Include="third_party\patch\Pointer.hpp" />
     <ClInclude Include="source\simulation\simulation.h" />
     <ClInclude Include="source\networking\messages\network_message_queue.h" />
     <ClInclude Include="source\networking\delivery\network_connection.h" />
@@ -484,8 +484,10 @@
     <ClCompile Include="source\anvil\hooks\simulation\hooks_statborg.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_weapon_updates.cpp" />
     <ClCompile Include="source\cache\cache_files.cpp" />
+    <ClCompile Include="source\cseries\cseries_windows.cpp" />
     <ClCompile Include="source\cseries\cseries_windows_debug_pc.cpp" />
     <ClCompile Include="source\cseries\language.cpp" />
+    <ClCompile Include="source\data_mining\data_mining.cpp" />
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\game\game_allegiance.cpp" />
     <ClCompile Include="source\game\game_engine_assault.cpp" />
@@ -536,7 +538,9 @@
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\hashtable.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_state_handler.cpp" />
     <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp" />
     <ClCompile Include="source\networking\network_configuration.cpp" />
     <ClCompile Include="source\networking\network_globals.cpp" />
@@ -592,8 +596,6 @@
     <ClCompile Include="source\networking\transport\transport_shim.cpp" />
     <ClCompile Include="source\tag_files\files.cpp" />
     <ClCompile Include="source\tag_files\tag_groups.cpp" />
-    <ClCompile Include="third_party\patch\Patch.cpp" />
-    <ClCompile Include="third_party\patch\Pointer.cpp" />
     <ClCompile Include="source\simulation\simulation.cpp" />
     <ClCompile Include="source\networking\messages\network_message_queue.cpp" />
     <ClCompile Include="source\game\players.cpp" />

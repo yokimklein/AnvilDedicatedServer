@@ -35,17 +35,24 @@ public:
 	virtual char const* get_state_string();
 	virtual void handle_missing_required_session_parameter(e_network_session_type session_type);
 
+	c_life_cycle_state_manager* get_manager() const;
+	bool all_peers_have_main_menu_ready(c_network_session* session) const;
+
 protected:
-	byte : 8;
-	byte : 8;
-	byte : 8;
-	byte : 8;
+	// 4 bytes smaller in ms29, were these removed? or was it m_state?
+	//byte : 8;
+	//byte : 8;
+	//byte : 8;
+	//byte : 8;
 
 	c_enum<e_life_cycle_state, long, _life_cycle_state_none, k_life_cycle_state_count> m_state;
 	c_life_cycle_state_manager* m_manager;
 
-	// Removed since h3/ms23
-	//c_flags<e_life_cycle_state_handler_flags, byte, k_life_cycle_state_handler_flags> m_handler_flags;
+	// Temp padding
+	long : 32;
+
+	// Removed since h3/ms23? Need to confirm which fields remain
+	//c_flags<e_life_cycle_state_handler_flags, byte, k_life_cycle_state_handler_flags_count> m_handler_flags;
 	//c_flags<e_network_session_parameter_type, qword, k_network_session_parameter_type_count> m_required_squad_session_parameter_mask;
 	//c_flags<e_network_session_parameter_type, qword, k_network_session_parameter_type_count> m_required_group_session_parameter_mask;
 };

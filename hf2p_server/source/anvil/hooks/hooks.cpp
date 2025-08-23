@@ -1,5 +1,4 @@
 #include "hooks.h"
-#include <cseries\cseries.h>
 #include <anvil\hooks\effects\hooks_effect_system.h>
 #include <anvil\hooks\hooks_ds.h>
 #include <anvil\hooks\hooks_session.h>
@@ -18,14 +17,16 @@
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
 #include <stdio.h>
-#include <Patch.hpp> // TODO: replace ED hook system
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <memoryapi.h>
 
-// helper function for insert_hook, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
+// helper function for insert, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)
 {
     // copy the instructions we're replacing into a new buffer
     byte* code_buffer = new byte[length];
-    memcpy(code_buffer, source, length);
+    csmemcpy(code_buffer, source, length);
 
     size_t i = 0;
     do
@@ -52,7 +53,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                 offset = *(long*)&code_buffer[i + 1]; // near offset
                 offset = (long)(((size_t)source + i) + offset + 5); // destination address
                 offset = offset - ((size_t)destination + i) - 5; // new offset
-                memcpy(&code_buffer[i + 1], &offset, sizeof(offset));
+                csmemcpy(&code_buffer[i + 1], &offset, sizeof(offset));
                 break;
             // fix short jump offsets
             case 0x74: // jz
@@ -133,7 +134,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
     }
     while (i < length);
 
-    memcpy(destination, code_buffer, length);
+    csmemcpy(destination, code_buffer, length);
     delete[] code_buffer;
 }
 
@@ -145,7 +146,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
 // NOTE: ensure the area you're overwriting is at least 5 bytes in size
 // NOTE: if using _hook_stack_frame_increase or _hook_stack_frame_cleanup, inserted_function becomes the number of bytes you wish to (de)allocate on the stack
-void insert_hook(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
+void hook::insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
 {
     long code_offset = 0;
     byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
@@ -201,16 +202,16 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
     {
         ASSERT((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
         char increase_bytes = (char)inserted_function;
-        memcpy(&sub_esp_code[2], &increase_bytes, sizeof(increase_bytes));
-        memcpy(inserted_code + code_offset, sub_esp_code, sizeof(sub_esp_code));
+        csmemcpy(&sub_esp_code[2], &increase_bytes, sizeof(increase_bytes));
+        csmemcpy(inserted_code + code_offset, sub_esp_code, sizeof(sub_esp_code));
         code_offset += sizeof(sub_esp_code);
     }
     else if (hook_type == _hook_stack_frame_cleanup)
     {
         ASSERT((char)inserted_function < INT8_MAX); // ensure we have the space to increase by the desired amount
         char decrease_bytes = (char)inserted_function;
-        memcpy(&add_esp_code[2], &decrease_bytes, sizeof(decrease_bytes));
-        memcpy(inserted_code + code_offset, add_esp_code, sizeof(add_esp_code));
+        csmemcpy(&add_esp_code[2], &decrease_bytes, sizeof(decrease_bytes));
+        csmemcpy(inserted_code + code_offset, add_esp_code, sizeof(add_esp_code));
         code_offset += sizeof(add_esp_code);
     }
     else
@@ -218,20 +219,20 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
         if (hook_type != _hook_replace_no_preserve)
         {
             // preserve registers across call
-            memcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
+            csmemcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
             code_offset += sizeof(preserve_registers);
         }
 
         // call inserted function
         size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
-        memcpy(&call_code[1], &call_offset, sizeof(call_offset));
-        memcpy(inserted_code + code_offset, call_code, sizeof(call_code));
+        csmemcpy(&call_code[1], &call_offset, sizeof(call_offset));
+        csmemcpy(inserted_code + code_offset, call_code, sizeof(call_code));
         code_offset += sizeof(call_code);
 
         if (hook_type != _hook_replace_no_preserve)
         {
             // restore registers
-            memcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
+            csmemcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
             code_offset += sizeof(restore_registers);
         }
     }
@@ -246,23 +247,35 @@ void insert_hook(size_t start_address, size_t return_address, void* inserted_fun
 
     // return
     size_t return_offset = (base_address(return_address) - (size_t)(inserted_code + code_offset) - sizeof(return_code));
-    memcpy(&return_code[1], &return_offset, sizeof(return_offset));
-    memcpy(inserted_code + code_offset, return_code, sizeof(return_code));
+    csmemcpy(&return_code[1], &return_offset, sizeof(return_offset));
+    csmemcpy(inserted_code + code_offset, return_code, sizeof(return_code));
     code_offset += sizeof(return_code);
+
+    // enable memory writing for insert
+    ulong old_protect = patch::set_memory_protect(start_address, PAGE_READWRITE, sizeof(jump_code));
 
     // write jump to inserted function
     size_t jump_offset = ((size_t)(inserted_code)-base_address(start_address) - sizeof(jump_code));
-    memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
-    memcpy(base_address<void*>(start_address), jump_code, sizeof(jump_code));
+    csmemcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
+    csmemcpy(base_address<void*>(start_address), jump_code, sizeof(jump_code));
+
+    // restore memory protection
+    patch::set_memory_protect(start_address, old_protect, sizeof(jump_code));
+    patch::set_memory_protect((size_t)inserted_code - base_address(), PAGE_EXECUTE_READ, inserted_code_size);
 
     if (hook_type != _hook_replace_no_nop)
     {
         // nop the bytes leftover between the original overwritten instructions and the return point for sanity
         // makes looking at the modified disassembly less chaotic
-        nop_region(start_address + sizeof(jump_code), length - sizeof(jump_code));
+        long nop_length = length - sizeof(jump_code);
+        if (nop_length > 0)
+        {
+            patch::nop_region(start_address + sizeof(jump_code), nop_length);
+        }
     }
 }
 
+/*
 // Now unused - I tried to create new variables by adding to the stack pointer and correcting all the esp offsets, but there were plenty of spaces where I couldn't do this without overflowing the offsets
 void increase_esp_offsets(size_t function_start, size_t function_end, size_t offset_increase)
 {
@@ -346,6 +359,7 @@ void increase_esp_offsets(size_t function_start, size_t function_end, size_t off
     }
     while (i < length);
 }
+*/
 
 // correct ebp+ offsets to accomodate for newly pushed variables onto the stack at the start of functions
 void increase_positive_ebp_offsets(size_t function_start, size_t function_end, size_t offset_increase)
@@ -353,6 +367,9 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
     size_t i = 0;
     size_t length = function_end - function_start;
     size_t base_function = base_address(function_start);
+
+    // enable memory writing for insert
+    ulong old_protect = patch::set_memory_protect(function_start, PAGE_READWRITE, length);
     do
     {
         void* instruction_address = (void*)(base_function + i);
@@ -448,11 +465,14 @@ void increase_positive_ebp_offsets(size_t function_start, size_t function_end, s
 
         i += instruction_length;
     } while (i < length);
+
+    // restore memory protection
+    patch::set_memory_protect(function_start, old_protect, length);
 }
 
 // ALWAYS compare a function's instructions *before* AND *after* this has been called to ensure it has worked properly.
 // NOTE: You have to manually clean up the stack after calling this, it does not handle it for you! There isn't always 5 bytes worth of space at the return to replace. Cleanup must occur at the start of the function epilogue so the pops return the correct values
-void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes)
+void hook::add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes)
 {
     size_t bytes_to_overwrite = 0;
     size_t length = function_end - function_start;
@@ -470,53 +490,122 @@ void add_variable_space_to_stack_frame(size_t function_start, size_t function_en
     increase_positive_ebp_offsets(function_start, function_end, space_in_bytes);
 
     // make new hook flag to jump to raw assembly shellcode?
-    insert_hook(function_start, function_start + bytes_to_overwrite, (void*)space_in_bytes, _hook_stack_frame_increase);
+    hook::insert(function_start, function_start + bytes_to_overwrite, (void*)space_in_bytes, _hook_stack_frame_increase);
 }
 
-void nop_region(size_t address, size_t length)
+ulong patch::set_memory_protect(size_t address, ulong new_protect, size_t size)
 {
-    memset(base_address<void*>(address), 0x90, length);
+    ulong old_protect;
+    bool result = VirtualProtect(base_address<void*>(address), size, new_protect, &old_protect);
+    if (!result)
+    {
+        printf("HOOKS/PATCH,ERR: " __FUNCTION__ ": failed to set memory protection at baseless address 0x%08x!", address);
+        ASSERT(result != false);
+        return PAGE_NOACCESS;
+    }
+    return old_protect;
 }
 
-void hook_function(size_t function_address, size_t length, void* hook_function)
+void patch::nop_region(size_t address, size_t length)
 {
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(address, PAGE_READWRITE, length);
+
+    csmemset(base_address<void*>(address), 0x90, length);
+
+    // restore memory protection
+    patch::set_memory_protect(address, old_protect, length);
+}
+
+void patch::bytes(size_t address, std::initializer_list<byte> bytes)
+{
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(address, PAGE_READWRITE, bytes.size());
+
+    csmemcpy(base_address<void*>(address), bytes.begin(), bytes.size());
+
+    // restore memory protection
+    patch::set_memory_protect(address, old_protect, bytes.size());
+}
+
+void patch::bytes(size_t address, byte* bytes, size_t size)
+{
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(address, PAGE_READWRITE, size);
+
+    csmemcpy(base_address<void*>(address), bytes, size);
+
+    // restore memory protection
+    patch::set_memory_protect(address, old_protect, size);
+}
+
+void hook::function(size_t function_address, size_t length, void* function)
+{
+    ASSERT(function);
+
     byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
 
     // ensure we have the space to write a jump
     ASSERT(length >= 5);
 
     // cleanup old function code
-    nop_region(function_address, length);
+    patch::nop_region(function_address, length);
+
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(function_address, PAGE_READWRITE, length);
 
     // write jump to hook function
-    size_t jump_offset = ((size_t)(hook_function)-base_address(function_address) - sizeof(jump_code));
-    memcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
-    memcpy(base_address<void*>(function_address), jump_code, sizeof(jump_code));
+    size_t jump_offset = ((size_t)(function)-base_address(function_address) - sizeof(jump_code));
+    csmemcpy(&jump_code[1], &jump_offset, sizeof(jump_offset));
+    csmemcpy(base_address<void*>(function_address), jump_code, sizeof(jump_code));
+
+    // restore memory protection
+    patch::set_memory_protect(function_address, old_protect, length);
+}
+
+void hook::call(size_t call_address, void* function)
+{
+    ASSERT(function);
+    const bool k_target_is_call_opcode = base_address<byte*>(call_address)[0] == 0xE8;
+    ASSERT(k_target_is_call_opcode == true); // assert if there's no call instruction at the supplied address
+
+    byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder bytes
+
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(call_address, PAGE_READWRITE, sizeof(call_code));
+
+    // overwrite call
+    size_t call_offset = ((size_t)(function)-base_address(call_address) - sizeof(call_code));
+    csmemcpy(&call_code[1], &call_offset, sizeof(call_offset));
+    csmemcpy(base_address<void*>(call_address), call_code, sizeof(call_code));
+
+    // restore memory protection
+    patch::set_memory_protect(call_address, old_protect, sizeof(call_code));
 }
 
 //void patch_bytes(size_t address, char* bytes, size_t length)
 //{
-//    memcpy(base_address<void*>(address), bytes, length);
+//    csmemcpy(base_address<void*>(address), bytes, length);
 //}
 
 void anvil_patches_apply()
 {
     // enable tag edits
-    Patch(0x082DB4, { 0xEB }).Apply();
-    Patch::NopFill(Pointer::Base(0x083120), 2);
-    Patch::NopFill(Pointer::Base(0x083AFC), 2);
+    patch::bytes(0x082DB4, { 0xEB });
+    patch::nop_region(0x083120, 2);
+    patch::nop_region(0x083AFC, 2);
 
     // contrail gpu freeze fix - twister
-    Patch(0x1D6B70, { 0xC3 }).Apply();
+    patch::bytes(0x1D6B70, { 0xC3 });
 
     // enable netdebug
     //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
     //g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
 
     // test to replace tutorial map id with diamondback id in damage function
-    //Patch(0x40F290, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
-    //Patch(0x40F2E3, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
-    //Patch(0x411E02, { 0xC1, 0x02 }).Apply(); // replace 0x36D with 0x2C1
+    //patch::bytes(0x40F290, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
+    //patch::bytes(0x40F2E3, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
+    //patch::bytes(0x411E02, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
 }
 
 void anvil_hooks_apply()
