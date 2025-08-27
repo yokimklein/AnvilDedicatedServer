@@ -85,6 +85,7 @@ public:
             struct s_member
             {
                 qword userId;
+                std::string username;
                 std::string sessionId;
             };
 

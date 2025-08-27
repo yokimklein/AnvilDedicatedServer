@@ -201,6 +201,7 @@ s_member tag_invoke(boost::json::value_to_tag<s_member>, boost::json::value cons
     s_member member
     {
         static_cast<qword>(obj.at("userId").as_int64()),
+        obj.at("username").as_string().c_str(),
         obj.at("sessionId").as_string().c_str(),
     };
     return member;

@@ -204,6 +204,12 @@ void c_life_cycle_state_handler_end_game_write_stats::update_write_stats()
 	
 		// UserID
 		request_player.UserID = player->configuration.host.user_xuid;
+
+		if (request_player.UserID == USER_SYSTEM)
+		{
+			continue;
+		}
+
 		// Kills
 		request_player.Kills = final_results->statistics.player[player_index].statistics[_game_results_statistic_kills].statistic;
 		// Deaths

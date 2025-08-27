@@ -7,7 +7,6 @@ bool c_network_message_gateway::receive_out_of_band_packet(transport_address con
 
 bool c_network_message_gateway::send_message_directed(transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, void const* message)
 {
-	// $TODO: stack overflow crash here inside of c_network_message_gateway::send_all_pending_messages when more than 1 peer disconnects in a single tick
 	return INVOKE_CLASS_MEMBER(0x232C0, c_network_message_gateway, send_message_directed, outgoing_address, message_type, message_storage_size, message);
 }
 
