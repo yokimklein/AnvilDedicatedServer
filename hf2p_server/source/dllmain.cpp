@@ -26,3 +26,8 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
     }
     return TRUE;
 }
+
+// needed for PE bear import table
+extern "C" __declspec(dllexport) void null_export(void)
+{
+}

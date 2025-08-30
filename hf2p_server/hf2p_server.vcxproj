@@ -1,16 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="dedicated server cache debug|Win32">
+      <Configuration>dedicated server cache debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="ProxyDebug|Win32">
-      <Configuration>ProxyDebug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="dedicated server cache release|Win32">
+      <Configuration>dedicated server cache release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -23,19 +19,13 @@
     <ProjectName>hf2p_dedicated_server</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -47,33 +37,26 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='dedicated server cache debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='dedicated server cache release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
     <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>hf2p_dedicated_server_cache_debug</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\bin\plugins\</OutDir>
-    <IntDir>$(SolutionDir)bin\obj\</IntDir>
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
     <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>hf2p_dedicated_server_cache_release</TargetName>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -92,44 +75,19 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>
+      </ImportLibrary>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del $(IntDir)build_version.obj</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ISPROXY;WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj</Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -152,13 +110,16 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
+      <ImportLibrary />
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj</Command>
+      <Command>del $(IntDir)build_version.obj
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -313,7 +274,6 @@
     <ClInclude Include="source\anvil\hooks\hooks.h" />
     <ClInclude Include="source\anvil\build_version.h" />
     <ClInclude Include="source\cseries\cseries.h" />
-    <ClInclude Include="source\anvil\dllproxy.h" />
     <ClInclude Include="source\game\game_engine_assault.h" />
     <ClInclude Include="source\game\game_engine_assault_traits.h" />
     <ClInclude Include="source\game\game_engine_ctf.h" />

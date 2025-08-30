@@ -3,21 +3,17 @@
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache debug|Win32'">
+    <LocalDebuggerCommand>hf2p_dedicated_server_cache_debug.exe</LocalDebuggerCommand>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)11.1.604673_cert_ms29\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerCommandArguments>
     </LocalDebuggerCommandArguments>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ProxyDebug|Win32'">
-    <LocalDebuggerCommand>halo_online.exe</LocalDebuggerCommand>
-    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='dedicated server cache release|Win32'">
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)11.1.604673_cert_ms29\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>$(SolutionDir)Halo Online Build 11.1.604673 cert_ms29 Live release October 15 2015 (Cache 11.1.601838)\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArguments>
-    </LocalDebuggerCommandArguments>
-    <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
+    <LocalDebuggerCommand>hf2p_dedicated_server_cache_release.exe</LocalDebuggerCommand>
   </PropertyGroup>
 </Project>

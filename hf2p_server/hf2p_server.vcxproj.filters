@@ -312,9 +312,6 @@
     <ClInclude Include="source\game\multiplayer_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\anvil\dllproxy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\anvil\backend\uri_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>

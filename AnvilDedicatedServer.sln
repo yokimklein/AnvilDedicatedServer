@@ -1,29 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156 d17.13
+VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hf2p_dedicated_server", "hf2p_server\hf2p_server.vcxproj", "{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x86 = Debug|x86
-		ProxyDebug|Any CPU = ProxyDebug|Any CPU
-		ProxyDebug|x86 = ProxyDebug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x86 = Release|x86
+		dedicated server cache debug|Any CPU = dedicated server cache debug|Any CPU
+		dedicated server cache debug|x86 = dedicated server cache debug|x86
+		dedicated server cache release|Any CPU = dedicated server cache release|Any CPU
+		dedicated server cache release|x86 = dedicated server cache release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Debug|x86.ActiveCfg = Debug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Debug|x86.Build.0 = Debug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.ProxyDebug|Any CPU.ActiveCfg = ProxyDebug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.ProxyDebug|x86.ActiveCfg = ProxyDebug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.ProxyDebug|x86.Build.0 = ProxyDebug|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Release|Any CPU.ActiveCfg = Release|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Release|x86.ActiveCfg = Release|Win32
-		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.Release|x86.Build.0 = Release|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache debug|Any CPU.ActiveCfg = dedicated server cache release|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache debug|x86.ActiveCfg = dedicated server cache debug|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache debug|x86.Build.0 = dedicated server cache debug|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache release|Any CPU.ActiveCfg = dedicated server cache release|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache release|x86.ActiveCfg = dedicated server cache release|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.dedicated server cache release|x86.Build.0 = dedicated server cache release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
