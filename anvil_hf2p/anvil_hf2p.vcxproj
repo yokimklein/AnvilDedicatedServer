@@ -1,0 +1,598 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="cache_debug_dedicated_server|Win32">
+      <Configuration>cache_debug_dedicated_server</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="cache_release_dedicated_server|Win32">
+      <Configuration>cache_release_dedicated_server</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{4f1c8dd3-162f-4e26-adec-2ec2c1791cdd}</ProjectGuid>
+    <RootNamespace>hf2p_dedicated_server</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>anvil_hf2p</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <TargetProjectName>hf2p_dedicated_server</TargetProjectName>
+    <TargetVariant>cache</TargetVariant>
+    <TargetConfiguration>debug</TargetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+    <TargetProjectName>hf2p_dedicated_server</TargetProjectName>
+    <TargetVariant>cache</TargetVariant>
+    <TargetConfiguration>release</TargetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetBinaryName>$(TargetProjectName)_$(TargetVariant)_$(TargetConfiguration)</TargetBinaryName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
+    <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>anvil_$(TargetBinaryName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
+    <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>anvil_$(TargetBinaryName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>
+      </ImportLibrary>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>del $(IntDir)build_version.obj</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
+      <ImportLibrary />
+    </Link>
+    <PostBuildEvent>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>del $(IntDir)build_version.obj
+</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="source\ai\actors.h" />
+    <ClInclude Include="source\ai\actor_firing_position.h" />
+    <ClInclude Include="source\ai\actor_moving.h" />
+    <ClInclude Include="source\ai\actor_moving_hints.h" />
+    <ClInclude Include="source\ai\ai_actions.h" />
+    <ClInclude Include="source\ai\joint_behavior.h" />
+    <ClInclude Include="source\ai\sector.h" />
+    <ClInclude Include="source\animations\animation_data.h" />
+    <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
+    <ClInclude Include="source\animations\mixing_board\channels\channel_base.h" />
+    <ClInclude Include="source\anvil\backend\cache.h" />
+    <ClInclude Include="source\anvil\backend\lobby.h" />
+    <ClInclude Include="source\anvil\backend\backend.h" />
+    <ClInclude Include="source\anvil\backend\request_info.h" />
+    <ClInclude Include="source\anvil\backend\services\authorization_service.h" />
+    <ClInclude Include="source\anvil\backend\services\endpoints_service.h" />
+    <ClInclude Include="source\anvil\backend\services\private_service.h" />
+    <ClInclude Include="source\anvil\backend\services\title_resource_service.h" />
+    <ClInclude Include="source\anvil\backend\services\user_storage_service.h" />
+    <ClInclude Include="source\anvil\config.h" />
+    <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
+    <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
+    <ClInclude Include="source\anvil\hooks\hooks_session.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_damage_updates.h" />
+    <ClInclude Include="source\anvil\hooks\hooks_miscellaneous.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_deletion.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_updates.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_physics_updates.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_player_updates.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_globals.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_object_creation.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h" />
+    <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
+    <ClInclude Include="source\anvil\session_control.h" />
+    <ClInclude Include="source\cache\cache_files.h" />
+    <ClInclude Include="source\camera\camera.h" />
+    <ClInclude Include="source\camera\camera_globals.h" />
+    <ClInclude Include="source\camera\debug_director.h" />
+    <ClInclude Include="source\camera\director.h" />
+    <ClInclude Include="source\camera\director_globals.h" />
+    <ClInclude Include="source\camera\editor_director.h" />
+    <ClInclude Include="source\camera\game_director.h" />
+    <ClInclude Include="source\camera\observer.h" />
+    <ClInclude Include="source\camera\observer_director.h" />
+    <ClInclude Include="source\camera\saved_film_director.h" />
+    <ClInclude Include="source\cseries\async_xoverlapped.h" />
+    <ClInclude Include="source\cseries\cseries_windows.h" />
+    <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
+    <ClInclude Include="source\cseries\language.h" />
+    <ClInclude Include="source\data_mining\data_mining.h" />
+    <ClInclude Include="source\devices\devices.h" />
+    <ClInclude Include="source\effects\effects.h" />
+    <ClInclude Include="source\effects\particle_states.h" />
+    <ClInclude Include="source\game\aim_target.h" />
+    <ClInclude Include="source\game\game.h" />
+    <ClInclude Include="source\game\game_allegiance.h" />
+    <ClInclude Include="source\game\game_engine_area_set.h" />
+    <ClInclude Include="source\game\game_engine_candy_monitor.h" />
+    <ClInclude Include="source\game\game_engine_events.h" />
+    <ClInclude Include="source\game\game_engine_event_definitions.h" />
+    <ClInclude Include="source\game\game_engine_group.h" />
+    <ClInclude Include="source\game\game_engine_scoring.h" />
+    <ClInclude Include="source\game\game_engine_simulation.h" />
+    <ClInclude Include="source\game\game_engine_spawning.h" />
+    <ClInclude Include="source\game\game_engine_spawn_influencer.h" />
+    <ClInclude Include="source\game\game_engine_team.h" />
+    <ClInclude Include="source\game\game_engine_teleporters.h" />
+    <ClInclude Include="source\game\game_engine_util.h" />
+    <ClInclude Include="source\game\game_globals.h" />
+    <ClInclude Include="source\game\game_statborg.h" />
+    <ClInclude Include="source\game\game_time.h" />
+    <ClInclude Include="source\game\materials.h" />
+    <ClInclude Include="source\game\player_mapping.h" />
+    <ClInclude Include="source\hf2p\hf2p.h" />
+    <ClInclude Include="source\hf2p\hf2p_definitions.h" />
+    <ClInclude Include="source\hf2p\podium.h" />
+    <ClInclude Include="source\hf2p\hq.h" />
+    <ClInclude Include="source\hf2p\loadouts.h" />
+    <ClInclude Include="source\anvil\backend\user.h" />
+    <ClInclude Include="source\items\items.h" />
+    <ClInclude Include="source\items\item_definitions.h" />
+    <ClInclude Include="source\items\projectiles.h" />
+    <ClInclude Include="source\items\weapons.h" />
+    <ClInclude Include="source\items\weapon_definitions.h" />
+    <ClInclude Include="source\main\levels.h" />
+    <ClInclude Include="source\main\main.h" />
+    <ClInclude Include="source\math\matrix_math.h" />
+    <ClInclude Include="source\memory\hashtable.h" />
+    <ClInclude Include="source\memory\member_to_static.h" />
+    <ClInclude Include="source\memory\rockall_heap.h" />
+    <ClInclude Include="source\models\damage_info_definitions.h" />
+    <ClInclude Include="source\models\model_definitions.h" />
+    <ClInclude Include="source\motor\action_system.h" />
+    <ClInclude Include="source\motor\mover.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_in_game.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_joining.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_leaving.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_none.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_pre_game.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_start_game.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_manager.h" />
+    <ClInclude Include="source\networking\logic\life_cycle\life_cycle_state_handler.h" />
+    <ClInclude Include="source\networking\logic\network_bandwidth.h" />
+    <ClInclude Include="source\networking\messages\network_out_of_band_consumer.h" />
+    <ClInclude Include="source\networking\network_configuration.h" />
+    <ClInclude Include="source\networking\network_external.h" />
+    <ClInclude Include="source\networking\network_memory.h" />
+    <ClInclude Include="source\networking\online\online_constants.h" />
+    <ClInclude Include="source\networking\online\online_session.h" />
+    <ClInclude Include="source\networking\replication\replication_control_view.h" />
+    <ClInclude Include="source\networking\replication\replication_entity_manager_view.h" />
+    <ClInclude Include="source\networking\replication\replication_entity_manager.h" />
+    <ClInclude Include="source\networking\replication\replication_event_manager.h" />
+    <ClInclude Include="source\networking\replication\replication_event_manager_view.h" />
+    <ClInclude Include="source\networking\replication\replication_scheduler.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_chunked.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_generic.h" />
+    <ClInclude Include="source\networking\session\network_session_state.h" />
+    <ClInclude Include="source\networking\transport\transport_qos.h" />
+    <ClInclude Include="source\objects\crates.h" />
+    <ClInclude Include="source\objects\damage.h" />
+    <ClInclude Include="source\objects\multiplayer_game_objects.h" />
+    <ClInclude Include="source\objects\object_definitions.h" />
+    <ClInclude Include="source\objects\object_scripting.h" />
+    <ClInclude Include="source\objects\object_types.h" />
+    <ClInclude Include="source\objects\scenery.h" />
+    <ClInclude Include="source\objects\target_tracking.h" />
+    <ClInclude Include="source\physics\character_physics.h" />
+    <ClInclude Include="source\physics\collisions.h" />
+    <ClInclude Include="source\physics\collision_bsp_references.h" />
+    <ClInclude Include="source\physics\havok_component.h" />
+    <ClInclude Include="source\physics\physics_model_definitions.h" />
+    <ClInclude Include="source\render\render_visibility_collection.h" />
+    <ClInclude Include="source\saved_games\scenario_map_variant.h" />
+    <ClInclude Include="source\scenario\scenario.h" />
+    <ClInclude Include="source\scenario\scenario_definitions.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_action.h" />
+    <ClInclude Include="source\game\aim_assist.h" />
+    <ClInclude Include="source\main\main_game.h" />
+    <ClInclude Include="source\anvil\server_tools.h" />
+    <ClInclude Include="source\hf2p\hf2p_session.h" />
+    <ClInclude Include="source\memory\byte_swapping.h" />
+    <ClInclude Include="source\networking\network_time.h" />
+    <ClInclude Include="source\replication\replication_encoding.h" />
+    <ClInclude Include="source\scenario\scenario_map_variant.h" />
+    <ClInclude Include="source\anvil\hooks\hooks.h" />
+    <ClInclude Include="source\anvil\build_version.h" />
+    <ClInclude Include="source\cseries\cseries.h" />
+    <ClInclude Include="source\game\game_engine_assault.h" />
+    <ClInclude Include="source\game\game_engine_assault_traits.h" />
+    <ClInclude Include="source\game\game_engine_ctf.h" />
+    <ClInclude Include="source\game\game_engine_ctf_traits.h" />
+    <ClInclude Include="source\game\game_engine_default.h" />
+    <ClInclude Include="source\game\game_engine_infection.h" />
+    <ClInclude Include="source\game\game_engine_infection_traits.h" />
+    <ClInclude Include="source\game\game_engine_juggernaut.h" />
+    <ClInclude Include="source\game\game_engine_juggernaut_traits.h" />
+    <ClInclude Include="source\game\game_engine_king.h" />
+    <ClInclude Include="source\game\game_engine_koth_traits.h" />
+    <ClInclude Include="source\game\game_engine_oddball.h" />
+    <ClInclude Include="source\game\game_engine_oddball_traits.h" />
+    <ClInclude Include="source\game\game_engine_sandbox.h" />
+    <ClInclude Include="source\game\game_engine_sandbox_traits.h" />
+    <ClInclude Include="source\game\game_engine_slayer.h" />
+    <ClInclude Include="source\game\game_engine_slayer_traits.h" />
+    <ClInclude Include="source\game\game_engine_territories.h" />
+    <ClInclude Include="source\game\game_engine_territories_traits.h" />
+    <ClInclude Include="source\game\game_engine_traits.h" />
+    <ClInclude Include="source\game\game_engine_variant.h" />
+    <ClInclude Include="source\game\game_engine_vip.h" />
+    <ClInclude Include="source\game\game_engine_vip_traits.h" />
+    <ClInclude Include="source\game\game_progression.h" />
+    <ClInclude Include="source\game\multiplayer_definitions.h" />
+    <ClInclude Include="source\anvil\backend\uri_map.h" />
+    <ClInclude Include="source\math\integer_math.h" />
+    <ClInclude Include="source\game\game_results.h" />
+    <ClInclude Include="source\game\player_control.h" />
+    <ClInclude Include="source\networking\logic\network_life_cycle.h" />
+    <ClInclude Include="source\networking\messages\network_messages_connect.h" />
+    <ClInclude Include="source\networking\messages\network_messages_out_of_band.h" />
+    <ClInclude Include="source\networking\messages\network_messages_session_membership.h" />
+    <ClInclude Include="source\networking\messages\network_messages_session_parameters.h" />
+    <ClInclude Include="source\networking\messages\network_messages_session_protocol.h" />
+    <ClInclude Include="source\networking\messages\network_messages_simulation.h" />
+    <ClInclude Include="source\networking\messages\network_messages_simulation_distributed.h" />
+    <ClInclude Include="source\networking\messages\network_messages_simulation_synchronous.h" />
+    <ClInclude Include="source\networking\messages\network_messages_test.h" />
+    <ClInclude Include="source\networking\session\network_session_parameter_type_collection.h" />
+    <ClInclude Include="source\saved_games\saved_game_files.h" />
+    <ClInclude Include="source\shell\shell.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_damage.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_device_machines.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_assault.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_ctf.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_globals.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_infection.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_juggernaut.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_player.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_sandbox.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_territories.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_vip.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_entities.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_events.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_generics.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_items.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_objects.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_projectiles.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_statborg.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_units.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_vehicles.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_weapons.h" />
+    <ClInclude Include="source\simulation\simulation_actors.h" />
+    <ClInclude Include="source\simulation\simulation_debug_globals.h" />
+    <ClInclude Include="source\simulation\simulation_entity_database.h" />
+    <ClInclude Include="source\simulation\simulation_entity_definition.h" />
+    <ClInclude Include="source\simulation\simulation_event_definition.h" />
+    <ClInclude Include="source\simulation\simulation_event_handler.h" />
+    <ClInclude Include="source\simulation\simulation_gamestate_entities.h" />
+    <ClInclude Include="source\simulation\simulation_players.h" />
+    <ClInclude Include="source\simulation\simulation_queue.h" />
+    <ClInclude Include="source\simulation\simulation_queue_entities.h" />
+    <ClInclude Include="source\simulation\simulation_queue_global_events.h" />
+    <ClInclude Include="source\simulation\simulation_type_collection.h" />
+    <ClInclude Include="source\simulation\simulation_view_telemetry.h" />
+    <ClInclude Include="source\simulation\simulation_watcher.h" />
+    <ClInclude Include="source\simulation\simulation_world.h" />
+    <ClInclude Include="source\simulation\simulation_view.h" />
+    <ClInclude Include="source\math\fast_checksum.h" />
+    <ClInclude Include="source\networking\network_statistics.h" />
+    <ClInclude Include="source\memory\ring_buffer.h" />
+    <ClInclude Include="source\memory\sliding_window.h" />
+    <ClInclude Include="source\networking\logic\network_session_interface.h" />
+    <ClInclude Include="source\game\player_configuration.h" />
+    <ClInclude Include="source\game\player_appearance.h" />
+    <ClInclude Include="source\networking\session\network_managed_session.h" />
+    <ClInclude Include="source\networking\logic\network_join.h" />
+    <ClInclude Include="source\networking\network_globals.h" />
+    <ClInclude Include="source\networking\network_utilities.h" />
+    <ClInclude Include="source\networking\transport\transport_endpoint_winsock.h" />
+    <ClInclude Include="source\tag_files\tag_groups.h" />
+    <ClInclude Include="source\simulation\simulation.h" />
+    <ClInclude Include="source\networking\messages\network_message_queue.h" />
+    <ClInclude Include="source\networking\delivery\network_connection.h" />
+    <ClInclude Include="source\game\players.h" />
+    <ClInclude Include="source\interface\gui_pregame_setup_manager.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_ui.h" />
+    <ClInclude Include="source\networking\session\network_session_parameter_types.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_matchmaking.h" />
+    <ClInclude Include="source\game\game_engine.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_saved_film_game_options.h" />
+    <ClInclude Include="source\memory\data.h" />
+    <ClInclude Include="source\objects\objects.h" />
+    <ClInclude Include="source\math\real_math.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_map_variant.h" />
+    <ClInclude Include="source\game\game_engine_player_traits.h" />
+    <ClInclude Include="source\memory\bitstream.h" />
+    <ClInclude Include="source\game\game_options.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_game_variant.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_game.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_base.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters_session.h" />
+    <ClInclude Include="source\networking\session\network_session_membership.h" />
+    <ClInclude Include="source\networking\session\network_observer.h" />
+    <ClInclude Include="source\networking\session\network_session_manager.h" />
+    <ClInclude Include="source\networking\messages\network_message_gateway.h" />
+    <ClInclude Include="source\networking\messages\network_message_handler.h" />
+    <ClInclude Include="source\networking\messages\network_message_type_collection.h" />
+    <ClInclude Include="source\networking\delivery\network_link.h" />
+    <ClInclude Include="source\networking\delivery\network_channel.h" />
+    <ClInclude Include="source\networking\session\network_session.h" />
+    <ClInclude Include="source\networking\session\network_session_parameters.h" />
+    <ClInclude Include="source\networking\transport\transport_security.h" />
+    <ClInclude Include="source\networking\transport\transport_address.h" />
+    <ClInclude Include="source\interface\user_interface_networking.h" />
+    <ClInclude Include="source\networking\transport\transport_shim.h" />
+    <ClInclude Include="source\memory\tls.h" />
+    <ClInclude Include="source\tag_files\files.h" />
+    <ClInclude Include="source\tag_files\files_windows.h" />
+    <ClInclude Include="source\tag_files\string_ids.h" />
+    <ClInclude Include="source\tag_files\tag_block.h" />
+    <ClInclude Include="source\tag_files\tag_field.h" />
+    <ClInclude Include="source\text\unicode.h" />
+    <ClInclude Include="source\tools\network_webstats.h" />
+    <ClInclude Include="source\interface\user_interface_session.h" />
+    <ClInclude Include="source\units\bipeds.h" />
+    <ClInclude Include="source\units\units.h" />
+    <ClInclude Include="third_party\nmd\nmd_assembly.h" />
+    <ClInclude Include="source\game\survival_mode.h" />
+    <ClInclude Include="source\simulation\game_interface\simulation_game_engine_king.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\ai\actors.cpp" />
+    <ClCompile Include="source\anvil\backend\cache.cpp" />
+    <ClCompile Include="source\anvil\backend\lobby.cpp" />
+    <ClCompile Include="source\anvil\backend\backend.cpp" />
+    <ClCompile Include="source\anvil\backend\request_info.cpp" />
+    <ClCompile Include="source\anvil\backend\services\authorization_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\endpoints_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\private_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\title_resource_service.cpp" />
+    <ClCompile Include="source\anvil\backend\services\user_storage_service.cpp" />
+    <ClCompile Include="source\anvil\config.cpp" />
+    <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_damage_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks_miscellaneous.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_deletion.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_physics_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_player_updates.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_globals.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_object_creation.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_statborg.cpp" />
+    <ClCompile Include="source\anvil\hooks\simulation\hooks_weapon_updates.cpp" />
+    <ClCompile Include="source\cache\cache_files.cpp" />
+    <ClCompile Include="source\cseries\cseries_windows.cpp" />
+    <ClCompile Include="source\cseries\cseries_windows_debug_pc.cpp" />
+    <ClCompile Include="source\cseries\language.cpp" />
+    <ClCompile Include="source\data_mining\data_mining.cpp" />
+    <ClCompile Include="source\game\game.cpp" />
+    <ClCompile Include="source\game\game_allegiance.cpp" />
+    <ClCompile Include="source\game\game_engine_assault.cpp" />
+    <ClCompile Include="source\game\game_engine_candy_monitor.cpp" />
+    <ClCompile Include="source\game\game_engine_ctf.cpp" />
+    <ClCompile Include="source\game\game_engine_default.cpp" />
+    <ClCompile Include="source\game\game_engine_events.cpp" />
+    <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
+    <ClCompile Include="source\game\game_engine_group.cpp" />
+    <ClCompile Include="source\game\game_engine_infection.cpp" />
+    <ClCompile Include="source\game\game_engine_juggernaut.cpp" />
+    <ClCompile Include="source\game\game_engine_king.cpp" />
+    <ClCompile Include="source\game\game_engine_oddball.cpp" />
+    <ClCompile Include="source\game\game_engine_player_traits.cpp" />
+    <ClCompile Include="source\game\game_engine_sandbox.cpp" />
+    <ClCompile Include="source\game\game_engine_scoring.cpp" />
+    <ClCompile Include="source\game\game_engine_simulation.cpp" />
+    <ClCompile Include="source\game\game_engine_slayer.cpp" />
+    <ClCompile Include="source\game\game_engine_spawning.cpp" />
+    <ClCompile Include="source\game\game_engine_team.cpp" />
+    <ClCompile Include="source\game\game_engine_territories.cpp" />
+    <ClCompile Include="source\game\game_engine_traits.cpp" />
+    <ClCompile Include="source\game\game_engine_util.cpp" />
+    <ClCompile Include="source\game\game_engine_variant.cpp" />
+    <ClCompile Include="source\game\game_engine_vip.cpp" />
+    <ClCompile Include="source\game\game_globals.cpp" />
+    <ClCompile Include="source\game\game_results.cpp" />
+    <ClCompile Include="source\game\game_statborg.cpp" />
+    <ClCompile Include="source\game\game_time.cpp" />
+    <ClCompile Include="source\game\game_options.cpp" />
+    <ClCompile Include="source\game\multiplayer_definitions.cpp" />
+    <ClCompile Include="source\game\player_appearance.cpp" />
+    <ClCompile Include="source\game\player_mapping.cpp" />
+    <ClCompile Include="source\hf2p\hf2p.cpp" />
+    <ClCompile Include="source\hf2p\hf2p_session.cpp" />
+    <ClCompile Include="source\hf2p\hq.cpp" />
+    <ClCompile Include="source\hf2p\podium.cpp" />
+    <ClCompile Include="source\hf2p\loadouts.cpp" />
+    <ClCompile Include="source\anvil\backend\user.cpp" />
+    <ClCompile Include="source\interface\user_interface_session.cpp" />
+    <ClCompile Include="source\items\projectiles.cpp" />
+    <ClCompile Include="source\items\weapons.cpp" />
+    <ClCompile Include="source\main\levels.cpp" />
+    <ClCompile Include="source\main\main.cpp" />
+    <ClCompile Include="source\math\matrix_math.cpp" />
+    <ClCompile Include="source\math\real_math.cpp" />
+    <ClCompile Include="source\memory\bitstream.cpp" />
+    <ClCompile Include="source\memory\data.cpp" />
+    <ClCompile Include="source\memory\hashtable.cpp" />
+    <ClCompile Include="source\memory\rockall_heap.cpp" />
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.cpp" />
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />
+    <ClCompile Include="source\networking\logic\life_cycle\life_cycle_state_handler.cpp" />
+    <ClCompile Include="source\networking\messages\network_out_of_band_consumer.cpp" />
+    <ClCompile Include="source\networking\network_configuration.cpp" />
+    <ClCompile Include="source\networking\network_globals.cpp" />
+    <ClCompile Include="source\networking\network_memory.cpp" />
+    <ClCompile Include="source\networking\replication\replication_entity_manager_view.cpp" />
+    <ClCompile Include="source\networking\replication\replication_entity_manager.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp" />
+    <ClCompile Include="source\networking\transport\transport_endpoint_winsock.cpp" />
+    <ClCompile Include="source\objects\crates.cpp" />
+    <ClCompile Include="source\objects\objects.cpp" />
+    <ClCompile Include="source\objects\object_scripting.cpp" />
+    <ClCompile Include="source\objects\object_types.cpp" />
+    <ClCompile Include="source\objects\scenery.cpp" />
+    <ClCompile Include="source\physics\collision_bsp_references.cpp" />
+    <ClCompile Include="source\physics\havok_component.cpp" />
+    <ClCompile Include="source\scenario\scenario.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_action.cpp" />
+    <ClCompile Include="source\game\game_engine.cpp" />
+    <ClCompile Include="source\main\main_game.cpp" />
+    <ClCompile Include="source\anvil\server_tools.cpp" />
+    <ClCompile Include="source\networking\logic\network_life_cycle.cpp" />
+    <ClCompile Include="source\networking\network_time.cpp" />
+    <ClCompile Include="source\scenario\scenario_map_variant.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks.cpp" />
+    <ClCompile Include="source\anvil\backend\uri_map.cpp" />
+    <ClCompile Include="source\anvil\build_version.cpp" />
+    <ClCompile Include="source\cseries\cseries.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameter_type_collection.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_damage.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_engine_globals.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_engine_player.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_entities.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_events.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_objects.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_projectiles.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_statborg.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_units.cpp" />
+    <ClCompile Include="source\simulation\game_interface\simulation_game_weapons.cpp" />
+    <ClCompile Include="source\simulation\simulation_entity_database.cpp" />
+    <ClCompile Include="source\simulation\simulation_event_handler.cpp" />
+    <ClCompile Include="source\simulation\simulation_gamestate_entities.cpp" />
+    <ClCompile Include="source\simulation\simulation_queue_entities.cpp" />
+    <ClCompile Include="source\simulation\simulation_queue_global_events.cpp" />
+    <ClCompile Include="source\simulation\simulation_type_collection.cpp" />
+    <ClCompile Include="source\simulation\simulation_watcher.cpp" />
+    <ClCompile Include="source\simulation\simulation_world.cpp" />
+    <ClCompile Include="source\simulation\simulation_view.cpp" />
+    <ClCompile Include="source\networking\logic\network_session_interface.cpp" />
+    <ClCompile Include="source\networking\session\network_managed_session.cpp" />
+    <ClCompile Include="source\networking\logic\network_join.cpp" />
+    <ClCompile Include="source\networking\network_utilities.cpp" />
+    <ClCompile Include="source\networking\transport\transport_shim.cpp" />
+    <ClCompile Include="source\tag_files\files.cpp" />
+    <ClCompile Include="source\tag_files\tag_groups.cpp" />
+    <ClCompile Include="source\simulation\simulation.cpp" />
+    <ClCompile Include="source\networking\messages\network_message_queue.cpp" />
+    <ClCompile Include="source\game\players.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_game.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_base.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters_session.cpp" />
+    <ClCompile Include="source\networking\session\network_session_membership.cpp" />
+    <ClCompile Include="source\networking\session\network_observer.cpp" />
+    <ClCompile Include="source\networking\session\network_session_manager.cpp" />
+    <ClCompile Include="source\dllmain.cpp" />
+    <ClCompile Include="source\networking\messages\network_message_gateway.cpp" />
+    <ClCompile Include="source\networking\messages\network_message_handler.cpp" />
+    <ClCompile Include="source\networking\messages\network_message_type_collection.cpp" />
+    <ClCompile Include="source\networking\delivery\network_link.cpp" />
+    <ClCompile Include="source\networking\delivery\network_channel.cpp" />
+    <ClCompile Include="source\networking\session\network_session.cpp" />
+    <ClCompile Include="source\networking\session\network_session_parameters.cpp" />
+    <ClCompile Include="source\networking\transport\transport_security.cpp" />
+    <ClCompile Include="source\networking\transport\transport_address.cpp" />
+    <ClCompile Include="source\memory\tls.cpp" />
+    <ClCompile Include="source\simulation\simulation_debug_globals.cpp" />
+    <ClCompile Include="source\tag_files\string_ids.cpp" />
+    <ClCompile Include="source\text\unicode.cpp" />
+    <ClCompile Include="source\units\bipeds.cpp" />
+    <ClCompile Include="source\units\units.cpp" />
+    <ClCompile Include="third_party\lookup3\lookup3.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
