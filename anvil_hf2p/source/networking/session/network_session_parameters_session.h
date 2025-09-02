@@ -168,12 +168,12 @@ struct s_network_session_parameter_lobby_vote_set
 	{
 		bool operator!=(s_lobby_vote other) const { return csmemcmp(this, &other, sizeof(*this)) != 0; };
 
-		char gamemode; // ditto below, for modes
-		char map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
-		char number_of_votes;
+		byte gamemode; // ditto below, for modes
+		byte map; // ID of the map info title instance on the API - these are assigned in the order that they're sent
+		byte number_of_votes;
 	};
 
-	c_static_array<s_lobby_vote, 2> vote_options;
+	s_lobby_vote vote_options[2];
 	char winning_vote_index;
 	char : 8;
 };

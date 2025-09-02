@@ -384,6 +384,39 @@ void c_backend::title_resource_service::get_title_configuration::response(s_back
                     }
                     break;
                 }
+                case _instance_map_info:
+                {
+                    auto results = instance.get_properties({ "NAME", "ID" });
+                    s_cached_map_info map_info;
+                    map_info.title_instance_id = g_backend_data_cache.m_map_infos.size();
+                    map_info.map_id = (e_map_id)results.get_integer("ID");
+                    g_backend_data_cache.m_map_infos.insert({ results.get_string("NAME"), map_info });
+                    break;
+                }
+                case _instance_game_mode:
+                {
+                    auto results = instance.get_properties({ "NAME", "ID", "SECONDARY_ID", "ROUND_TIME_LIMIT" });
+                    s_cached_gamemode gamemode;
+                    gamemode.title_instance_id = g_backend_data_cache.m_gamemodes.size();
+                    gamemode.gamemode_id = results.get_integer("ID");
+                    gamemode.variant_id = results.get_integer("SECONDARY_ID");
+                    gamemode.time_limit = results.get_integer("ROUND_TIME_LIMIT");
+                    g_backend_data_cache.m_gamemodes.insert({ results.get_string("NAME"), gamemode });
+                    break;
+                }
+                case _instance_playlist:
+                {
+                    auto results = instance.get_properties({ "NAME", "GAME_MODE_COLLECTION", "MAP_COLLECTION", "MIN_PLAYERS", "MAX_PLAYERS", "MAX_PARTY", "IS_TEAM_PLAYLIST" });
+                    s_cached_playlist playlist;
+                    playlist.gamemodes = results.get_string_list("GAME_MODE_COLLECTION");
+                    playlist.maps = results.get_string_list("MAP_COLLECTION");
+                    playlist.minimum_players = results.get_integer("MIN_PLAYERS");
+                    playlist.maximum_players = results.get_integer("MAX_PLAYERS");
+                    playlist.maximum_party = results.get_integer("MAX_PARTY");
+                    playlist.is_team_playlist = results.get_boolean("IS_TEAM_PLAYLIST");
+                    g_backend_data_cache.m_playlists.insert({ results.get_string("NAME"), playlist });
+                    break;
+                }
                 default:
                 {
                     break;

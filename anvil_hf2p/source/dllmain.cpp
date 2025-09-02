@@ -1,6 +1,18 @@
 #include <iostream>
 #include <windows.h>
 #include <anvil\server_tools.h>
+#include <anvil\build_version.h>
+#include <anvil\hooks\hooks.h>
+#include <anvil\config.h>
+
+void anvil_initialize()
+{
+    printf("%s\n\n", anvil_build_version_string());
+    printf("base address: %p\n\n", base_address<void*>());
+    anvil_patches_apply();
+    anvil_hooks_apply();
+    anvil_load_configuration();
+}
 
 BOOL WINAPI DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
 {
@@ -18,12 +30,15 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
         DisableThreadLibraryCalls(hModule); // disable DLL_THREAD_ATTACH and DLL_THREAD_DETACH (reduces the working set size)
         anvil_initialize();
         return true;
+
     case DLL_PROCESS_DETACH:
         fclose(f);
         FreeConsole();
         return FreeLibrary(hModule);
+
     case DLL_THREAD_ATTACH:
         return true;
+
     case DLL_THREAD_DETACH:
         return true;
     }

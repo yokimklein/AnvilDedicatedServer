@@ -1,7 +1,7 @@
 #include "hooks_ds.h"
 #include <anvil\hooks\hooks.h>
 #include <anvil\backend\services\user_storage_service.h>
-#include <anvil\server_tools.h>
+#include <anvil\session_control.h>
 #include <networking\session\network_session_parameters_game.h>
 #include <networking\transport\transport_security.h>
 #include <networking\session\network_session.h>

@@ -4,6 +4,7 @@
 #include <anvil\backend\lobby.h>
 #include <game\player_appearance.h>
 #include <hf2p\loadouts.h>
+#include <scenario\scenario_map_variant.h>
 #include <vector>
 #include <string>
 #include <map>
@@ -60,6 +61,30 @@ struct s_cached_public_data
     s_backend_customisation customisation;
 };
 
+struct s_cached_map_info
+{
+    ulong title_instance_id;
+    e_map_id map_id;
+};
+
+struct s_cached_gamemode
+{
+    ulong title_instance_id;
+    long gamemode_id;
+    long variant_id;
+    long time_limit;
+};
+
+struct s_cached_playlist
+{
+    std::vector<std::string> gamemodes;
+    std::vector<std::string> maps;
+    long minimum_players;
+    long maximum_players;
+    long maximum_party;
+    bool is_team_playlist;
+};
+
 class c_backend_data_cache
 {
 public:
@@ -90,6 +115,10 @@ public:
     std::map<std::string, s_cached_consumable> m_consumables;
     std::map<std::string, ulong> m_colours;
     std::vector<s_cached_scoring_event> m_scoring_events;
+    // $TODO:
+    std::map<std::string, s_cached_map_info> m_map_infos;
+    std::map<std::string, s_cached_gamemode> m_gamemodes;
+    std::map<std::string, s_cached_playlist> m_playlists;
 
     // refreshed on map load, size of multiplayer\multiplayer_globals.multiplayer_globals > Universal[0].Equipment
     std::vector<s_cached_consumable_costs> m_consumable_costs;

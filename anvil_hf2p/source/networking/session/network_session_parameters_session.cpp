@@ -1,10 +1,24 @@
 #include "network_session_parameters_session.h"
 #include <simulation\simulation.h>
 #include <iostream>
+#include <game\game.h>
+#include <anvil\backend\cache.h>
+#include <anvil\config.h>
 
 long c_network_session_parameter_session_size::get_max_player_count() const
 {
 	long max_player_count = k_network_maximum_players_per_session;
+
+	if (game_is_dedicated_server())
+	{
+		std::string playlist_id = g_anvil_configuration["playlist_id"];
+		if (g_backend_data_cache.m_playlists.contains(playlist_id))
+		{
+			s_cached_playlist& playlist = g_backend_data_cache.m_playlists[playlist_id];
+			max_player_count = MIN(playlist.maximum_players, k_network_maximum_players_per_session);
+		}
+	}
+
 	if (get_allowed())
 	{
 		max_player_count = m_data.maximum_player_count;
@@ -44,11 +58,11 @@ bool c_network_session_parameter_session_mode::set(e_network_session_mode sessio
 
 bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter_lobby_vote_set* vote_set)
 {
-	if (memcmp(&m_data.vote_options, &vote_set->vote_options, sizeof(s_network_session_parameter_lobby_vote_set::vote_options)) != 0
+	if (csmemcmp(&m_data.vote_options, &vote_set->vote_options, sizeof(s_network_session_parameter_lobby_vote_set::vote_options)) != 0
 		|| m_data.winning_vote_index != vote_set->winning_vote_index
 		|| !get_allowed())
 	{
-		m_data.vote_options = vote_set->vote_options;
+		csmemcpy(m_data.vote_options, vote_set->vote_options, sizeof(m_data.vote_options));
 		m_data.winning_vote_index = vote_set->winning_vote_index;
 		set_update_required();
 	}
@@ -57,6 +71,6 @@ bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter
 
 void c_network_session_parameter_lobby_vote_set::get(s_network_session_parameter_lobby_vote_set* output)
 {
-	output->vote_options = m_data.vote_options;
+	csmemcpy(output->vote_options, m_data.vote_options, sizeof(m_data.vote_options));
 	output->winning_vote_index = m_data.winning_vote_index;
 }

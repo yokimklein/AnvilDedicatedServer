@@ -134,8 +134,10 @@ void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* lo
 {
     // Check if loadout is valid before calling first
     // If a player kills the local player and no API loadout information for the killer exists, the pointer is null and can crash
-    if (loadout == nullptr || user_customisation == nullptr)
+    if (!loadout || !user_customisation)
+    {
         return;
+    }
 
     // texture_render_index is Bitmaps[].Index in texture_render_list tag
 

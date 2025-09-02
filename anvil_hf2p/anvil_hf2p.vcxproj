@@ -280,6 +280,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\anvil\hooks\simulation\hooks_statborg.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
     <ClInclude Include="source\anvil\session_control.h" />
+    <ClInclude Include="source\anvil\session_voting.h" />
     <ClInclude Include="source\cache\cache_files.h" />
     <ClInclude Include="source\camera\camera.h" />
     <ClInclude Include="source\camera\camera_globals.h" />
@@ -564,6 +565,8 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_statborg.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_weapon_updates.cpp" />
+    <ClCompile Include="source\anvil\session_control.cpp" />
+    <ClCompile Include="source\anvil\session_voting.cpp" />
     <ClCompile Include="source\cache\cache_files.cpp" />
     <ClCompile Include="source\cseries\cseries_windows.cpp" />
     <ClCompile Include="source\cseries\cseries_windows_debug_pc.cpp" />
