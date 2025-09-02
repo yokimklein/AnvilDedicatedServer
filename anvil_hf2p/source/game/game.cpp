@@ -107,14 +107,16 @@ bool game_in_progress()
 
 bool game_is_client()
 {
+#if defined(GAME_CLIENT_ENABLED)
+	return true;
+#else
 	return false;
+#endif
 }
 
 bool game_is_dedicated_server()
 {
-	// TODO: change this with build configuration
-	// dedicated server mode should disable rendering, sound, host player
-#if defined(GAME_IS_DEDICATED_SERVER)
+#if defined(DEDICATED_SERVER_ENABLED)
 	return true;
 #else
 	return false;

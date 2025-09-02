@@ -5,8 +5,16 @@
       <Configuration>cache_debug_dedicated_server</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="cache_debug_game_client|Win32">
+      <Configuration>cache_debug_game_client</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="cache_release_dedicated_server|Win32">
       <Configuration>cache_release_dedicated_server</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="cache_release_game_client|Win32">
+      <Configuration>cache_release_game_client</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -28,6 +36,15 @@
     <TargetVariant>cache</TargetVariant>
     <TargetConfiguration>debug</TargetConfiguration>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_game_client|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <TargetProjectName>hf2p_game_client</TargetProjectName>
+    <TargetVariant>cache</TargetVariant>
+    <TargetConfiguration>debug</TargetConfiguration>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -35,6 +52,16 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
     <TargetProjectName>hf2p_dedicated_server</TargetProjectName>
+    <TargetVariant>cache</TargetVariant>
+    <TargetConfiguration>release</TargetConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_game_client|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+    <TargetProjectName>hf2p_game_client</TargetProjectName>
     <TargetVariant>cache</TargetVariant>
     <TargetConfiguration>release</TargetConfiguration>
   </PropertyGroup>
@@ -49,11 +76,23 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_game_client|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_game_client|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
+    <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>anvil_$(TargetBinaryName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_game_client|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
     <IntDir>$(SolutionDir)bin\obj\</IntDir>
@@ -65,11 +104,48 @@
     <IntDir>$(SolutionDir)bin\obj\</IntDir>
     <TargetName>anvil_$(TargetBinaryName)</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_game_client|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)11.1.604673_cert_ms29\</OutDir>
+    <IntDir>$(SolutionDir)bin\obj\</IntDir>
+    <TargetName>anvil_$(TargetBinaryName)</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_dedicated_server|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>
+      </ImportLibrary>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <PostBuildEvent>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>del $(IntDir)build_version.obj</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_game_client|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;GAME_CLIENT_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -102,7 +178,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;HF2PSERVER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);GAME_IS_DEDICATED_SERVER;_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -121,6 +197,42 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary />
+    </Link>
+    <PostBuildEvent>
+      <Command>del "$(TargetDir)$(TargetName).exp"
+IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>del $(IntDir)build_version.obj
+</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_game_client|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";GAME_CLIENT_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)third_party\lookup3\;$(PROJECTDIR)third_party\nmd\;$(PROJECTDIR)third_party\patch\;$(PROJECTDIR)third_party\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)third_party\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
+      <ImportLibrary>
+      </ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>del "$(TargetDir)$(TargetName).exp"

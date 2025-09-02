@@ -1,6 +1,7 @@
 #include "config.h"
 #include <cseries\cseries.h>
 #include <format>
+#include <game\game.h>
 
 std::map<std::string, std::string> g_anvil_configuration =
 {
@@ -16,6 +17,11 @@ std::map<std::string, std::string> g_anvil_configuration =
 
 void anvil_load_configuration()
 {
+    if (!game_is_dedicated_server())
+    {
+        return;
+    }
+
     std::ifstream file("server.cfg");
     std::string str;
 

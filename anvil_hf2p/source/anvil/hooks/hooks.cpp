@@ -20,6 +20,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <memoryapi.h>
+#include <game\game.h>
 
 // helper function for insert, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)
@@ -606,23 +607,29 @@ void anvil_patches_apply()
     //patch::bytes(0x40F290, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
     //patch::bytes(0x40F2E3, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
     //patch::bytes(0x411E02, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
+
+    // $TODO: english patch
 }
 
 void anvil_hooks_apply()
 {
-    anvil_hooks_ds_apply(); // DEDICATED SERVER HOOKS
-    anvil_hooks_session_apply(); // SESSION HOOKS
-    anvil_hooks_simulation_apply(); // SIMULATION HOOKS
-    anvil_hooks_statborg_apply(); // STATBORG UPDATES
-    anvil_hooks_simulation_globals_apply(); // GLOBALS UPDATES
-    anvil_hooks_object_creation_apply(); // OBJECT CREATION
-    anvil_hooks_object_deletion_apply(); // OBJECT DELETION
-    anvil_hooks_object_updates_apply(); // OBJECT UPDATES
-    anvil_hooks_physics_updates_apply(); // OBJECT PHYSICS UPDATES
-    anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
-    anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
-    anvil_hooks_player_updates_apply(); // PLAYER UPDATES
-    anvil_hooks_simulation_events_apply(); // SIMULATION EVENTS
     anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
     anvil_hooks_effect_system_apply(); // EFFECTS
+
+    if (game_is_dedicated_server())
+    {
+        anvil_hooks_ds_apply(); // DEDICATED SERVER HOOKS
+        anvil_hooks_session_apply(); // SESSION HOOKS
+        anvil_hooks_simulation_apply(); // SIMULATION HOOKS
+        anvil_hooks_statborg_apply(); // STATBORG UPDATES
+        anvil_hooks_simulation_globals_apply(); // GLOBALS UPDATES
+        anvil_hooks_object_creation_apply(); // OBJECT CREATION
+        anvil_hooks_object_deletion_apply(); // OBJECT DELETION
+        anvil_hooks_object_updates_apply(); // OBJECT UPDATES
+        anvil_hooks_physics_updates_apply(); // OBJECT PHYSICS UPDATES
+        anvil_hooks_damage_updates_apply(); // OBJECT DAMAGE UPDATES
+        anvil_hooks_weapon_updates_apply(); // WEAPON UPDATES
+        anvil_hooks_player_updates_apply(); // PLAYER UPDATES
+        anvil_hooks_simulation_events_apply(); // SIMULATION EVENTS
+    }
 }

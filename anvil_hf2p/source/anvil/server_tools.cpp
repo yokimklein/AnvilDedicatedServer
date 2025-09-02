@@ -28,14 +28,10 @@
 #include <anvil\config.h>
 #include <anvil\backend\cache.h>
 
-constexpr wchar_t k_anvil_machine_name[16] = L"ANVIL_DEDICATED";
-constexpr wchar_t k_anvil_session_name[32] = L"ANVIL_DEDICATED_SESSION";
-
 void anvil_initialize()
 {
-    printf("%s\n", anvil_get_build_name_string());
-    printf("%s\n", anvil_build_version_string());
-    printf("Base address: %p\n\n", base_address<void*>());
+    printf("%s\n\n", anvil_build_version_string());
+    printf("base address: %p\n\n", base_address<void*>());
     anvil_patches_apply();
     anvil_hooks_apply();
     anvil_load_configuration();
@@ -51,7 +47,7 @@ bool anvil_session_create()
         return false;
     }
     user_interface_set_desired_multiplayer_mode(_desired_multiplayer_mode_custom_games);
-    network_session_interface_set_local_name(k_anvil_machine_name, k_anvil_session_name);
+    network_session_interface_set_local_name(L"ANVIL_DEDICATED", L"ANVIL_DEDICATED_SESSION");
     return true;
 }
 

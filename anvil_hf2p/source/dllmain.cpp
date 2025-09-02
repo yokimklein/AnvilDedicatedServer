@@ -8,9 +8,12 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD  dwReason, LPVOID lpReserved)
     switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
+#ifdef EVENTS_ENABLED
+        // allocate console
         AllocConsole();
         setlocale(LC_ALL, "");
         freopen_s(&f, "CONOUT$", "w", stdout);
+#endif
         SetProcessDPIAware(); // disable dpi scaling
         DisableThreadLibraryCalls(hModule); // disable DLL_THREAD_ATTACH and DLL_THREAD_DETACH (reduces the working set size)
         anvil_initialize();

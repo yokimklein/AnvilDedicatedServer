@@ -2,38 +2,23 @@
 #include "build_version.h"
 #include <game\game.h>
 
-#define PROJECT_NAME "Anvil Station"
-
-#if defined(GAME_IS_DEDICATED_SERVER)
-#define BUILD_CONFIG "Dedicated Server"
-#else
-#define BUILD_CONFIG "Game Server"
-//#define BUILD_CONFIG "Game Client"
-#endif
-
-#ifdef _DEBUG
-#define BUILD_TYPE "Debug"
-#else
-#define BUILD_TYPE "Release"
-#endif
-
 const char* anvil_build_version_string()
 {
-	return BUILD_TYPE " " __DATE__ " " __TIME__;
+	return TARGET_PROJECT_NAME " " TARGET_VARIANT " " TARGET_CONFIGURATION " " TARGET_PLATFORM " " TARGET_VERSION " " __DATE__ " " __TIME__;
 }
 
 const char* anvil_get_config_string()
 {
-	// TODO "Game Client" once the client build config is added
-	return BUILD_CONFIG;
-}
-
-const char* anvil_get_project_name_string()
-{
-	return PROJECT_NAME;
+#if defined(DEDICATED_SERVER_ENABLED)
+	return "Dedicated Server";
+#elif defined(GAME_CLIENT_ENABLED)
+	return "Game Client";
+#else
+#error No window config string set!
+#endif
 }
 
 const char* anvil_get_build_name_string()
 {
-	return PROJECT_NAME " " BUILD_CONFIG;
+	return TARGET_PROJECT_NAME;
 }

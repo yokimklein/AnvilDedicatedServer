@@ -9,16 +9,28 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		cache_debug_dedicated_server|Any CPU = cache_debug_dedicated_server|Any CPU
 		cache_debug_dedicated_server|x86 = cache_debug_dedicated_server|x86
+		cache_debug_game_client|Any CPU = cache_debug_game_client|Any CPU
+		cache_debug_game_client|x86 = cache_debug_game_client|x86
 		cache_release_dedicated_server|Any CPU = cache_release_dedicated_server|Any CPU
 		cache_release_dedicated_server|x86 = cache_release_dedicated_server|x86
+		cache_release_game_client|Any CPU = cache_release_game_client|Any CPU
+		cache_release_game_client|x86 = cache_release_game_client|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_dedicated_server|Any CPU.ActiveCfg = cache_release_dedicated_server|Win32
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_dedicated_server|x86.ActiveCfg = cache_debug_dedicated_server|Win32
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_dedicated_server|x86.Build.0 = cache_debug_dedicated_server|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_game_client|Any CPU.ActiveCfg = cache_debug_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_game_client|Any CPU.Build.0 = cache_debug_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_game_client|x86.ActiveCfg = cache_debug_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_debug_game_client|x86.Build.0 = cache_debug_game_client|Win32
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_dedicated_server|Any CPU.ActiveCfg = cache_release_dedicated_server|Win32
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_dedicated_server|x86.ActiveCfg = cache_release_dedicated_server|Win32
 		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_dedicated_server|x86.Build.0 = cache_release_dedicated_server|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_game_client|Any CPU.ActiveCfg = cache_release_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_game_client|Any CPU.Build.0 = cache_release_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_game_client|x86.ActiveCfg = cache_release_game_client|Win32
+		{4F1C8DD3-162F-4E26-ADEC-2EC2C1791CDD}.cache_release_game_client|x86.Build.0 = cache_release_game_client|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

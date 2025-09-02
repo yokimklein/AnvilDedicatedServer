@@ -3,9 +3,6 @@
 #include <scenario\scenario_map_variant.h>
 #include <game\game_engine_variant.h>
 
-extern const wchar_t k_anvil_machine_name[16];
-extern const wchar_t k_anvil_session_name[32];
-
 enum e_map_id;
 enum e_game_engine_type;
 class c_network_session;

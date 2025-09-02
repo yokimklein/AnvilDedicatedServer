@@ -192,7 +192,7 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 	return ((unsigned long)pointer & ((1 << alignment_bits) - 1)) == 0;
 }
 
-#if defined(_DEBUG)
+#if defined(ASSERTS_ENABLED)
 
 // TODO: PROPER ASSERTION DEFINITIONS
 #define ASSERT(STATEMENT, ...) do { assert(STATEMENT); } while (false)
@@ -234,7 +234,7 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 #define ASSERT3(STATEMENT, ...) do { } while (false)
 #define ASSERT_EXCEPTION3(STATEMENT, ...) do { } while (false)
 
-#endif // _DEBUG
+#endif
 
 extern int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size);
 extern void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size);
