@@ -120,9 +120,13 @@ void backend_deobfuscate_uri(char* uri, long uri_size)
 	std::string resource = uri_str.substr(last + 5, uri_str.length() - last);
 
 	if (backend_hashmap.find(service) != backend_hashmap.end())
+	{
 		service = backend_hashmap.at(service);
+	}
 	if (backend_hashmap.find(resource) != backend_hashmap.end())
+	{
 		resource = backend_hashmap.at(resource);
+	}
 
 	// rebuild the URI with the deobfuscated names
 	snprintf(uri, uri_size, "/%s.svc/%s", service.c_str(), resource.c_str());

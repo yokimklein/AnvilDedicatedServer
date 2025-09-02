@@ -15,6 +15,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <winnt.h>
+#include <anvil\backend\uri_map.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -100,30 +101,29 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     // original function call
     int result = vsnprintf_s(DstBuf, SizeInBytes, MaxCount, Format, ArgList);
 
+    // deobfuscate URIs in request and response prints
+    c_static_string<0x100> resource_uri;
+    if (strcmp(Format, "Request %s") == 0)
+    {
+        resource_uri.set(&DstBuf[8]);
+        backend_deobfuscate_uri(resource_uri.get_buffer(), SizeInBytes);
+        printf("[+] Request %s \n", resource_uri.get_buffer());
+    }
+    else if (strcmp(Format, "Response %s [%d|%d]") == 0)
+    {
+        resource_uri.set(&DstBuf[9]);
+
+        long end_index = resource_uri.index_of("[");
+        resource_uri.get_buffer()[end_index - 1] = 0;
+
+        backend_deobfuscate_uri(resource_uri.get_buffer(), SizeInBytes);
+        printf("[+] Response %s %s \n", resource_uri.get_buffer(), &DstBuf[end_index + 9]);
+    }
     // check if we're building a URI - we don't want to print these
-    if (strcmp(Format, "/%s.svc/%s") != 0)
+    else if (strcmp(Format, "/%s.svc/%s") != 0)
     {
         printf("[+] %s \n", DstBuf);
     }
-    // parse obfuscated URIs - temporarily disabled due to crashes
-    //else if (strcmp(Format, "Request %s") == 0 || strcmp(Format, "Response %s [%d|%d]") == 0)
-    //{
-    //    char resource_uri[0x100];
-    //    memcpy(resource_uri, va_arg(ArgList, char*), 0x100); // occasional access violations here - TODO FIX
-    //    backend_deobfuscate_uri(resource_uri, 0x100);
-    //
-    //    // potentially dangerous, but acceptable given the context?
-    //    // these will return random data from memory for request logs
-    //    // but they are ignored by the request format in snprintf
-    //    long request_status = va_arg(ArgList, long); // more likely to be error code - response code
-    //    long response_status = va_arg(ArgList, long);
-    //
-    //    char deobfuscated_log[0x100];
-    //    memcpy(deobfuscated_log, DstBuf, 0x100);
-    //    snprintf(deobfuscated_log, 0x100, Format, resource_uri, request_status, response_status);
-    //
-    //    printf("[+] %s \n", deobfuscated_log);
-    //}
 
     return result;
 }
