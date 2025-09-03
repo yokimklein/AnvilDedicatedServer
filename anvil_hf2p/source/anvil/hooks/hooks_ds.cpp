@@ -14,6 +14,7 @@
 #include <networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h>
 #include <networking\network_time.h>
 #include <anvil\session_voting.h>
+#include <anvil\backend\services\private_service.h>
 
 bool const k_add_local_player_in_dedicated_server_mode = false;
 
@@ -196,8 +197,9 @@ void anvil_hooks_ds_apply()
     patch::nop_region(0x2B0226, 5);
     // $TODO: replace above with removing hf2p_game_initialize?
 
-    // remove call to hf2p_client_dispose in game_dispose
+    // remove call to hf2p_client_dispose & hf2p_main_dispose in game_dispose
     patch::nop_region(0x95D9F, 5);
+    patch::nop_region(0x95DA4, 5);
 
     // remove call to heartbeat update in main_loop_pregame
     patch::nop_region(0x96067, 5);

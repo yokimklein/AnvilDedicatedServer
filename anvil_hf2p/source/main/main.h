@@ -85,3 +85,4 @@ extern _main_globals& main_globals;
 
 bool main_is_in_main_loop_pregame();
 long __cdecl internal_halt_render_thread_and_lock_resources(const char* file_name, long line_number);
+void __fastcall main_exit_game();

@@ -12,3 +12,8 @@ long __cdecl internal_halt_render_thread_and_lock_resources(const char* file_nam
 {
 	return INVOKE(0x94CB0, internal_halt_render_thread_and_lock_resources, file_name, line_number);
 }
+
+void __fastcall main_exit_game()
+{
+	main_globals.exit_game = true;
+}

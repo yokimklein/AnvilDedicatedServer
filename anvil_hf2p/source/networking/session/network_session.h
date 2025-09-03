@@ -8,7 +8,7 @@ enum e_network_session_type
 {
 	_network_session_type_none = 0,
 	_network_session_type_squad,
-	//_network_session_type_group, // No longer exists in ms29
+	_network_session_type_group,
 
 	k_network_session_type_count
 };

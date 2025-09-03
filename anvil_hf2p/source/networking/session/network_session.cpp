@@ -16,6 +16,7 @@
 #include <networking\messages\network_messages_session_membership.h>
 #include <game\player_mapping.h>
 #include <anvil\backend\services\user_storage_service.h>
+#include <anvil\backend\cache.h>
 
 char const* k_session_type_strings[k_network_session_type_count] = {
     "none",
@@ -588,12 +589,15 @@ void c_network_session::disconnect()
 {
     DECLFUNC(0x21CC0, void, __thiscall, c_network_session*)(this);
 
-    // unregister the game server on the API
-    if (game_is_dedicated_server())
+    // unregister the game server on the API on disconnect/dispose
+    if (m_session_type == _network_session_type_squad && m_session_class == _network_session_class_online)
     {
-        s_transport_secure_address server_identifier;
-        anvil_get_server_identifier(&server_identifier);
-        c_backend::private_service::unregister_game_server::request(transport_secure_address_get_string(&server_identifier));
+        if (game_is_dedicated_server() && g_backend_data_cache.m_lobby_info.valid)
+        {
+            s_transport_secure_address server_identifier;
+            anvil_get_server_identifier(&server_identifier);
+            c_backend::private_service::unregister_game_server::request(transport_secure_address_get_string(&server_identifier));
+        }
     }
 }
 

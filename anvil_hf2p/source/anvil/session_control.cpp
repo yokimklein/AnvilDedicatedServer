@@ -12,6 +12,7 @@
 #include "anvil\config.h"
 #include "anvil\server_tools.h"
 #include "anvil\session_voting.h"
+#include <networking\network_utilities.h>
 
 bool anvil_session_create()
 {
@@ -38,7 +39,7 @@ void anvil_session_update()
     static bool key_held_pgdown = false;
     //static bool key_held_delete = false; // used for podium taunts
 
-    if (!life_cycle_globals.initialized)
+    if (!life_cycle_globals.initialized || !network_initialized())
     {
         return;
     }

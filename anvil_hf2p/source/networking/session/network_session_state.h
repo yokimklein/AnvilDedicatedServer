@@ -3,7 +3,7 @@
 
 enum e_network_session_state
 {
-	_network_session_state_none,
+	_network_session_state_none = 0,
 	_network_session_state_peer_creating,
 	_network_session_state_peer_joining,
 	_network_session_state_peer_join_abort,
@@ -16,7 +16,8 @@ enum e_network_session_state
 	//_network_session_state_host_reestablish,
 	//_network_session_state_election,
 
-	k_network_session_state_count
+	k_network_session_state_count,
+	k_network_session_state_none = NONE,
 };
 
 enum e_dedicated_server_session_state
