@@ -21,6 +21,14 @@ long rand_range(long min, long max)
 };
 void anvil_session_start_voting(c_network_session* session)
 {
+    // $TODO: pull default playlist from multiplayer defaults if we don't have one or if the assigned playlist is invalid
+    if (!g_backend_data_cache.m_playlists.contains(g_anvil_configuration["playlist_id"]))
+    {
+        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": config playlist [%s] has no entry in backend cache! cannot start vote.\n",
+            g_anvil_configuration["playlist_id"].c_str());
+        return;
+    }
+
     s_cached_playlist& playlist = g_backend_data_cache.m_playlists[g_anvil_configuration["playlist_id"]];
     c_network_session_parameters* parameters = session->get_session_parameters();
 
@@ -172,12 +180,24 @@ void anvil_session_update_voting(c_network_session* session)
     {
         parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
     }
-    // dedi state is set to in game by c_life_cycle_state_handler_in_game::enter, and reset to waiting for players in c_life_cycle_state_handler_in_game::exit
+    else if (*dedicated_server_session_state == _dedicated_server_session_state_waiting_for_players)
+    {
+        // $TODO: re-request playlist info here so we can update playlists on the API without needing to restart the dedis
+        // use _dedicated_server_session_state_waiting_for_voting_set for this
 
-    // when enough players are found JOINING SESSION
-    // once connected, WAITING FOR PLAYERS until all lobby players have connected
-    // VOTING ENDS IN for 10 seconds during vote phase
-    // GAME STARTS 5 second countdown timer
+        // If the playlist doesn't exist, return out
+        if (!g_backend_data_cache.m_playlists.contains(g_anvil_configuration["playlist_id"]))
+        {
+            // I would print an error here but this would be called each tick and spam the log
+            return;
+        }
+
+        s_cached_playlist& playlist = g_backend_data_cache.m_playlists[g_anvil_configuration["playlist_id"]];
+        if (membership->get_player_count() >= playlist.minimum_players)
+        {
+            anvil_session_start_voting(session);
+        }
+    }
     // wait 30 seconds once loaded back to mainmenu after game with 'PREPARE FOR BATTLE' text, kick all players from session back to matchmake
     // then return to MATCHMAKING QUEUE until enough players are found
 

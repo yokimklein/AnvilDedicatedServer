@@ -115,7 +115,6 @@ public:
     std::map<std::string, s_cached_consumable> m_consumables;
     std::map<std::string, ulong> m_colours;
     std::vector<s_cached_scoring_event> m_scoring_events;
-    // $TODO:
     std::map<std::string, s_cached_map_info> m_map_infos;
     std::map<std::string, s_cached_gamemode> m_gamemodes;
     std::map<std::string, s_cached_playlist> m_playlists;
