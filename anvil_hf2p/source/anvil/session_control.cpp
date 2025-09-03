@@ -97,9 +97,8 @@ void anvil_session_update()
                     transport_security_globals.address.port,
                     g_anvil_configuration["playlist_id"]
                 );
-
                 // set default dedicated server state
-                e_dedicated_server_session_state session_state = _dedicated_server_session_state_waiting_for_players;
+                e_dedicated_server_session_state session_state = _dedicated_server_session_state_matchmaking_session;
                 session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&session_state);
             }
         }

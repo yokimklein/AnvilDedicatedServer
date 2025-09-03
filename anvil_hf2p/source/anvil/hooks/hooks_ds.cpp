@@ -12,6 +12,8 @@
 #include <anvil\backend\cache.h>
 #include <networking\session\network_managed_session.h>
 #include <networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h>
+#include <networking\network_time.h>
+#include <anvil\session_voting.h>
 
 bool const k_add_local_player_in_dedicated_server_mode = false;
 
@@ -54,8 +56,9 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__exit_ho
     c_network_session* session = nullptr;
     if (network_session_interface_get_squad_session(&session) && game_is_dedicated_server())
     {
-        e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_waiting_for_players;
+        e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_matchmaking_session;
         session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);
+        g_anvil_return_from_game_time = network_time_get();
     }
 }
 

@@ -9,8 +9,12 @@
 #include "anvil\session_control.h"
 #include "anvil\config.h"
 #include "anvil\backend\cache.h"
+#include <networking\network_time.h>
 
 e_player_vote_selection g_anvil_vote_selections[k_maximum_multiplayer_players]{};
+dword g_anvil_return_from_game_time = NONE;
+
+constexpr dword SESSION_POSTGAME_COOLDOWN_SECONDS = 30000;
 
 // TEMP FUNCTION: TODO blam _random_range
 long rand_range(long min, long max)
@@ -179,6 +183,15 @@ void anvil_session_update_voting(c_network_session* session)
         parameters->m_parameters.game_start_status.get()->map_load_progress == 100)
     {
         parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
+    }
+    else if (*dedicated_server_session_state == _dedicated_server_session_state_matchmaking_session)
+    {
+        // wait 30sec before sending to _dedicated_server_session_state_waiting_for_players
+        if (network_time_since(g_anvil_return_from_game_time) >= SESSION_POSTGAME_COOLDOWN_SECONDS)
+        {
+            e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_waiting_for_players;
+            session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);
+        }
     }
     else if (*dedicated_server_session_state == _dedicated_server_session_state_waiting_for_players)
     {
