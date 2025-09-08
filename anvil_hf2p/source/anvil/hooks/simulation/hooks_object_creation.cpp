@@ -16,7 +16,7 @@ __declspec(safebuffers) void __fastcall event_generate_part_hook()
 	__asm mov object_index, esi;
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 
-	object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
+	object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, object_index);
 	if (!TEST_BIT(_object_mask_crate, object_header->type.get()) || !crate_will_self_destruct(object_index))
 	{
 		object_set_garbage(object_index, true, 0);
@@ -147,7 +147,7 @@ __declspec(safebuffers) void __fastcall unit_drop_plasma_on_death_hook()
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
+	player_datum* player_data = (player_datum*)datum_get(players, player_index);
 	simulation_action_object_create(player_data->unit_index);
 	simulation_action_object_update(player_data->unit_index, _simulation_unit_update_control);
 

@@ -160,16 +160,12 @@ bool game_is_multiplayer()
 
 bool game_is_survival()
 {
-	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
-	if (game_globals && (game_globals->initializing || game_globals->map_active))
-	{
-		game_options* game_options = game_options_get();
-		return game_options->game_mode == _game_mode_campaign && game_options->survival_enabled;
-	}
-	else
+	if (!game_options_valid())
 	{
 		return false;
 	}
+
+	return game_options_get()->game_mode == _game_mode_campaign && game_options_get()->survival_enabled;
 }
 
 bool game_is_finished()
@@ -177,6 +173,45 @@ bool game_is_finished()
 	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	ASSERT(game_globals && game_globals->map_active);
 	return game_globals->game_finished;
+}
+
+bool game_is_multithreaded()
+{
+	return true;
+}
+
+bool game_has_nonlocal_players()
+{
+	if (!VALID_INDEX(game_simulation_get(), k_game_simulation_count))
+	{
+		return false;
+	}
+
+	long local_machine_index = players_get_local_machine_index();
+	ulong machine_valid_mask;
+	s_machine_identifier machine_identifiers[k_maximum_machines];
+	players_get_machines(&machine_valid_mask, machine_identifiers);
+	return local_machine_index != NONE && TEST_MASK(~FLAG(local_machine_index), machine_valid_mask);
+}
+
+bool game_is_authoritative_playback()
+{
+	if (!game_options_valid())
+	{
+		return false;
+	}
+
+	if (!game_options_get()->game_playback)
+	{
+		return false;
+	}
+
+	if (game_options_get()->game_playback == _game_playback_network_client)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 e_campaign_difficulty_level game_difficulty_level_get()

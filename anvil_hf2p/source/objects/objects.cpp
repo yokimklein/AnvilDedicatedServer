@@ -22,7 +22,8 @@ object_datum* object_get(datum_index object_index)
 e_object_type object_get_type(datum_index object_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-	return object_headers[DATUM_INDEX_TO_ABSOLUTE_INDEX(object_index)].type;
+	object_header_datum* header_datum = (object_header_datum*)datum_get(object_headers, DATUM_INDEX_TO_ABSOLUTE_INDEX(object_index));
+	return header_datum->type;
 }
 
 bool object_is_multiplayer_cinematic_object(datum_index object_index)
@@ -203,15 +204,16 @@ void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, 
 
 bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected)
 {
-	INVOKE(0x3FBF90, object_set_position_internal, object_index, desired_position, desired_forward, desired_up, location, compute_node_matrices, set_havok_object_position, in_editor, disconnected);
+	bool result = INVOKE(0x3FBF90, object_set_position_internal, object_index, desired_position, desired_forward, desired_up, location, compute_node_matrices, set_havok_object_position, in_editor, disconnected);
 	__asm add esp, 0x1C; // Fix usercall & cleanup stack
+	return result;
 }
 #pragma runtime_checks("", restore)
 
 object_header_datum const* object_header_get(datum_index object_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-	return static_cast<object_header_datum*>(datum_try_and_get(*object_headers, object_index));
+	return static_cast<object_header_datum*>(datum_try_and_get(object_headers, object_index));
 }
 
 void* object_get_and_verify_type(datum_index object_index, dword object_type_mask)

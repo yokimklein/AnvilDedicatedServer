@@ -260,7 +260,7 @@ void __fastcall unit_handle_equipment_energy_cost(datum_index unit_index, long e
     }
 
     TLS_DATA_GET_VALUE_REFERENCE(players);
-    player_datum* player = (player_datum*)datum_get(*players, unit->unit.player_index);
+    player_datum* player = (player_datum*)datum_get(players, unit->unit.player_index);
     if (!player_has_consumable(player, consumable_slot))
     {
         return;

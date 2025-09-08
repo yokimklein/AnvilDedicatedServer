@@ -1,5 +1,4 @@
 #pragma once
-#include <cseries\cseries.h>
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/real_math.hpp
 
@@ -115,8 +114,34 @@ union real_vector3d
 };
 static_assert(sizeof(real_vector3d) == 0xC);
 
+union real_vector4d
+{
+	real_vector4d() {};
+	real_vector4d(real i, real j, real k, real l)
+	{
+		this->i = i;
+		this->j = j;
+		this->k = k;
+		this->l = l;
+	}
+
+	struct
+	{
+		real i;
+		real j;
+		real k;
+		real l;
+	};
+	real n[4];
+};
+
 union real_quaternion
 {
+	struct
+	{
+		real_vector3d v;
+		real w;
+	};
 	struct
 	{
 		real i;
@@ -203,6 +228,14 @@ union real_ahsv_color
 };
 static_assert(sizeof(real_ahsv_color) == 0x10);
 
+struct real_linear_rgb_color
+{
+	real red;
+	real green;
+	real blue;
+};
+static_assert(sizeof(real_linear_rgb_color) == 0xC);
+
 typedef real angle;
 static_assert(sizeof(angle) == 0x4);
 
@@ -240,38 +273,58 @@ union real_euler_angles3d
 };
 static_assert(sizeof(real_euler_angles3d) == 0xC);
 
-union real_matrix3x3
+struct real_matrix3x3
 {
-	struct
+	real_matrix3x3()
 	{
-		real_vector3d forward;
-		real_vector3d left;
-		real_vector3d up;
-	};
-	real n[9];
-};
-static_assert(sizeof(real_matrix3x3) == 0x24);
-
-struct real_matrix4x3
-{
-	real_matrix4x3() {};
-
-	real scale;
+		forward = { 0.0f, 0.0f, 0.0f };
+		left = { 0.0f, 0.0f, 0.0f };
+		up = { 0.0f, 0.0f, 0.0f };
+	}
+	real_matrix3x3(real_vector3d forward, real_vector3d left, real_vector3d up)
+	{
+		this->forward = forward;
+		this->left = left;
+		this->up = up;
+	}
 
 	union
 	{
+		real n[3][3];
+		real_vector3d basis[3];
+
 		struct
 		{
 			real_vector3d forward;
 			real_vector3d left;
 			real_vector3d up;
-			real_point3d position;
 		};
-
-		real n[k_3d_count][k_4d_count];
 	};
 };
+static_assert(sizeof(real_matrix3x3) == 0x24);
+
+struct real_matrix4x3
+{
+	real scale;
+	real_matrix3x3 vectors;
+	real_point3d position;
+};
 static_assert(sizeof(real_matrix4x3) == 0x34);
+
+union real_rectangle2d
+{
+	real n[4];
+	real m[2][2];
+
+	struct
+	{
+		real x0;
+		real x1;
+		real y0;
+		real y1;
+	};
+};
+static_assert(sizeof(real_rectangle2d) == sizeof(real) * 4);
 
 struct real_rectangle3d
 {
@@ -284,10 +337,59 @@ struct real_rectangle3d
 };
 static_assert(sizeof(real_rectangle3d) == 0x18);
 
-// These are supposed to be pointers, but the pointers were compiled out in MS29
-extern real_vector3d const& global_up3d;
-extern real_vector3d const& global_down3d;
-extern real_point3d const& global_origin3d;
+struct real_orientation
+{
+	real_quaternion rotation;
+	real_point3d translation;
+	real scale;
+};
+
+extern const real_point2d* const global_origin2d;
+
+extern const real_point2d* const global_x_axis2d;
+extern const real_point2d* const global_y_axis2d;
+
+extern const real_point2d* const global_negative_x_axis2d;
+extern const real_point2d* const global_negative_y_axis2d;
+
+extern const real_vector2d* const global_zero_vector2d;
+extern const real_vector2d* const global_forward2d;
+extern const real_vector2d* const global_left2d;
+
+extern const real_vector2d* const global_backward2d;
+extern const real_vector2d* const global_right2d;
+
+extern const real_point3d* const global_origin3d;
+
+extern const real_point3d* const global_x_axis3d;
+extern const real_point3d* const global_y_axis3d;
+extern const real_point3d* const global_z_axis3d;
+extern const real_point3d* const global_negative_x_axis3d;
+extern const real_point3d* const global_negative_y_axis3d;
+extern const real_point3d* const global_negative_z_axis3d;
+
+extern const real_vector3d* const global_zero_vector3d;
+
+extern const real_vector3d* const global_forward3d;
+extern const real_vector3d* const global_left3d;
+extern const real_vector3d* const global_up3d;
+
+extern const real_vector3d* const global_backward3d;
+extern const real_vector3d* const global_right3d;
+extern const real_vector3d* const global_down3d;
+
+extern const real_vector4d* const global_zero_vector4d;
+extern const real_euler_angles2d* const global_zero_angles2d;
+extern const real_euler_angles3d* const global_zero_angles3d;
+extern const real_quaternion* const global_identity_quaternion;
+
+extern const real_matrix4x3* const global_identity4x3;
+extern const real_matrix4x3* const global_negative_identity4x3;
+
+extern const real_orientation* const global_identity_orientation;
+
+extern const real_rectangle2d* const global_null_rectangle2d;
+extern const real_rectangle3d* const global_null_rectangle3d;
 
 extern real_vector3d* __cdecl cross_product3d(real_vector3d const* a, real_vector3d const* b, real_vector3d* out);
 extern real __cdecl dot_product3d(real_vector3d const* a, real_vector3d const* b);
@@ -308,3 +410,10 @@ extern real_point2d* __cdecl set_real_point2d(real_point2d* point, real x, real 
 extern real_point3d* __cdecl set_real_point3d(real_point3d* point, real x, real y, real z);
 extern real_point2d* __cdecl point_from_line2d(real_point2d const* point, real_vector2d const* vector, real scale, real_point2d* out_point);
 extern real_vector2d* __cdecl vector_from_points2d(real_point2d const* point0, real_point2d const* point1, real_vector2d* out_vector);
+extern real __cdecl interpolate_linear(real start_value, real end_value, real interpolation_factor);
+extern real_point3d* __cdecl project_point2d(const real_point2d* p2d, const real_plane3d* plane, short projection, bool sign, real_point3d* p3d);
+extern real_vector3d* __fastcall generate_up_vector3d(const real_vector3d* forward, real_vector3d* up);
+extern real dot_product4d_quaternion(const real_quaternion* a, const real_quaternion* b);
+extern long rectangle3d_build_edges(const real_rectangle3d* bounds, long maximum_edge_count, real_point3d(* const edges)[2]);
+extern long rectangle3d_build_faces(const real_rectangle3d* bounds, long maximum_face_count, real_point3d(* const faces)[4]);
+extern long rectangle3d_build_vertices(const real_rectangle3d* bounds, long maximum_vertex_count, real_point3d* const vertices);

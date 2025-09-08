@@ -4,8 +4,8 @@
 
 // ogebp = ogesp + ogsp
 // ogesp = esp + default stack space + original_ebp/esp size + variable space + 3x pre-call pushes & return address + 4x hook func prologue pushes
-// NOTE: this overwrites eax
 // NOTE: only ebp is affected by the input sp value, so if this is wrong and you don't use ebp you may not notice
+// original_sp = take the stack pointer at the call in IDA and decrement 4 for the return address
 #define DEFINE_ORIGINAL_EBP_ESP(original_sp, variable_space)                    \
     long original_ebp;                                                          \
     long original_esp;                                                          \
@@ -39,6 +39,7 @@ namespace patch
     void nop_region(size_t address, size_t length);
     void bytes(size_t address, std::initializer_list<byte> bytes);
     void bytes(size_t address, byte* bytes, size_t size);
+    void function(size_t address, void* function_address);
 }
 
 void anvil_patches_apply();

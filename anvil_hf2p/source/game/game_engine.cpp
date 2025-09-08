@@ -63,7 +63,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		TLS_DATA_GET_VALUE_REFERENCE(players);
 		if (game_is_authoritative() && game_engine_has_teams())
 		{
-			player_datum* player_data = (player_datum*)datum_get(*players, player_index);
+			player_datum* player_data = (player_datum*)datum_get(players, player_index);
 			game_engine_recompute_active_teams();
 			game_engine_adjust_team_score_for_composition(player_data->configuration.host.team_index);
 		}
@@ -81,7 +81,7 @@ void __fastcall game_engine_player_added(datum_index player_index)
 
 		if (game_is_authoritative())
 		{
-			player_datum* player_data = (player_datum*)datum_get(*players, player_index);
+			player_datum* player_data = (player_datum*)datum_get(players, player_index);
 			player_data->multiplayer.remaining_lives = current_game_variant()->get_active_variant()->get_respawn_options()->get_lives_per_round();
 			simulation_action_game_engine_player_update(player_index, _simulation_player_update_lives_remaining);
 		}
@@ -167,7 +167,7 @@ bool __fastcall game_engine_player_is_playing(datum_index player_index)
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	
 	player->respawn_timer_countdown_ticks = timer_ticks;
 	player->respawn_timer_countdown_seconds = CLAMP(game_ticks_to_seconds_ceil(timer_ticks), 0, 1023);
@@ -190,15 +190,15 @@ void game_engine_player_activated(datum_index player_index)
 void __fastcall game_engine_boot_player_safe(datum_index player_index, datum_index spectating_player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
-	player->multiplayer.dead_camera_target_player_index = datum_absolute_index_to_index(*players, spectating_player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
+	player->multiplayer.dead_camera_target_player_index = datum_absolute_index_to_index(players, spectating_player_index);
 	simulation_action_game_engine_player_update(player_index, _simulation_player_update_spectating_player);
 }
 
 void __fastcall game_engine_boot_player(datum_index booted_player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, booted_player_index);
+	player_datum* player = (player_datum*)datum_get(players, booted_player_index);
 	if (player)
 	{
 		s_game_engine_event_data event_data;
@@ -283,7 +283,7 @@ void __fastcall game_engine_player_indices_swapped(long player_1_absolute_index,
 void __fastcall game_engine_apply_appearance_traits(datum_index player_index, c_player_trait_appearance* trait)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	bool player_update = false;
 	bool update_camo = false;
 	if (player->multiplayer.player_traits.get_appearance_traits()->get_active_camo_setting() != trait->get_active_camo_setting())
@@ -338,7 +338,7 @@ void __fastcall game_engine_apply_appearance_traits(datum_index player_index, c_
 void __fastcall game_engine_apply_movement_traits(datum_index player_index, c_player_trait_movement* trait)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	bool player_update = false;
 	if (player->multiplayer.player_traits.get_movement_traits()->get_speed() != trait->get_speed())
 	{
@@ -364,7 +364,7 @@ void __fastcall game_engine_apply_movement_traits(datum_index player_index, c_pl
 void __fastcall game_engine_apply_sensors_traits(datum_index player_index, c_player_trait_sensors* trait)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	bool player_update = false;
 	if (player->multiplayer.player_traits.get_sensor_traits()->get_motion_tracker_setting() != trait->get_motion_tracker_setting())
 	{
@@ -385,7 +385,7 @@ void __fastcall game_engine_apply_sensors_traits(datum_index player_index, c_pla
 void __fastcall game_engine_apply_shield_vitality_traits(datum_index player_index, c_player_trait_shield_vitality* trait)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	bool player_update = false;
 	if (player->multiplayer.player_traits.get_shield_vitality_traits()->get_damage_resistance_percentage_setting() != trait->get_damage_resistance_percentage_setting())
 	{
@@ -421,7 +421,7 @@ void __fastcall game_engine_apply_shield_vitality_traits(datum_index player_inde
 void __fastcall game_engine_apply_weapons_traits(datum_index player_index, c_player_trait_weapons* trait)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	bool player_update = false;
 	if (player->multiplayer.player_traits.get_weapons_traits()->get_damage_modifier_percentage_setting() != trait->get_damage_modifier_percentage_setting())
 	{

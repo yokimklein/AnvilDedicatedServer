@@ -124,7 +124,7 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	}
 	else
 	{
-		out_event_data->direction = global_up3d;
+		out_event_data->direction = *global_up3d;
 		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: event damage_aftermath has bad direction vector - who generated this nonsense?\n");
 	}
 	if (result_data->epicenter_valid)

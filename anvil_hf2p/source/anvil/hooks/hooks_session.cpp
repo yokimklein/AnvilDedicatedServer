@@ -8,6 +8,7 @@
 #include <networking\transport\transport_shim.h>
 #include <game\game_engine_spawning.h>
 #include <networking\messages\network_message_gateway.h>
+#include <cseries\cseries_events.h>
 
 // add back missing message handlers
 void __fastcall handle_out_of_band_message_hook(c_network_message_handler* message_handler, void* unused, transport_address const* address, e_network_message_type message_type, long unused2, const void* message)
@@ -31,7 +32,7 @@ void __fastcall session_idle_hook(c_network_session* session)
 // add debug print back to before life cycle end is called in c_gui_location_manager::update
 void __fastcall network_life_cycle_end_hook()
 {
-    printf("Resetting network location.  If you got here and didn't just issue a console command, this is a bug.\n");
+    event(_event_warning, "ui:location_manager: Resetting network location.  If you got here and didn't just issue a console command, this is a bug.");
     network_life_cycle_end();
 }
 

@@ -6,10 +6,10 @@
 REFERENCE_DECLARE(0x103E768, bool, g_network_interface_show_latency_and_framerate_metrics_on_chud);
 REFERENCE_DECLARE(0x1038283, bool, g_network_interface_fake_latency_and_framerate_metrics_on_chud);
 
-bool g_network_debug_globals_latency_and_framerate_metrics_enabled = []() -> bool
-{
-	g_network_interface_show_latency_and_framerate_metrics_on_chud = false; // set to true to enable
-	g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
-
-	return true;
-}();
+//bool g_network_debug_globals_latency_and_framerate_metrics_enabled = []() -> bool
+//{
+//	g_network_interface_show_latency_and_framerate_metrics_on_chud = false; // set to true to enable
+//	g_network_interface_fake_latency_and_framerate_metrics_on_chud = false;
+//
+//	return true;
+//}();

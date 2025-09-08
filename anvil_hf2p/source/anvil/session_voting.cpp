@@ -14,11 +14,14 @@
 e_player_vote_selection g_anvil_vote_selections[k_maximum_multiplayer_players]{};
 dword g_anvil_return_from_game_time = NONE;
 
-constexpr dword SESSION_POSTGAME_COOLDOWN_SECONDS = 30000;
+constexpr dword SESSION_POSTGAME_COOLDOWN_MS = 30000;
+constexpr long VOTING_COUNTDOWN_TIME_SECONDS = 10;
+constexpr long SESSION_COUNTDOWN_TIME_SECONDS = 5;
 
 // TEMP FUNCTION: TODO blam _random_range
 long rand_range(long min, long max)
 {
+    srand(static_cast<dword>(time(NULL)));
     long range = max - min + 1;
     long num = rand() % range + min;
     return num;
@@ -73,7 +76,7 @@ void anvil_session_start_voting(c_network_session* session)
 
     e_dedicated_server_session_state session_state = _dedicated_server_session_state_voting;
     parameters->m_parameters.dedicated_server_session_state.set(&session_state);
-    parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_voting, 10);
+    parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_voting, VOTING_COUNTDOWN_TIME_SECONDS);
 }
 
 void anvil_session_update_voting(c_network_session* session)
@@ -182,12 +185,12 @@ void anvil_session_update_voting(c_network_session* session)
         parameters->m_parameters.game_start_status.get()->game_start_status == _session_game_start_status_ready_leader &&
         parameters->m_parameters.game_start_status.get()->map_load_progress == 100)
     {
-        parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, 5);
+        parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, SESSION_COUNTDOWN_TIME_SECONDS);
     }
     else if (*dedicated_server_session_state == _dedicated_server_session_state_matchmaking_session)
     {
         // wait 30sec before sending to _dedicated_server_session_state_waiting_for_players
-        if (network_time_since(g_anvil_return_from_game_time) >= SESSION_POSTGAME_COOLDOWN_SECONDS)
+        if (network_time_since(g_anvil_return_from_game_time) >= SESSION_POSTGAME_COOLDOWN_MS)
         {
             e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_waiting_for_players;
             session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&dedi_state);

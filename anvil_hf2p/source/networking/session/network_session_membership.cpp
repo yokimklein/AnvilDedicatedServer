@@ -12,6 +12,7 @@
 #include <networking\network_time.h>
 #include <game\player_mapping.h>
 #include <cseries\cseries_windows.h>
+#include <input\input_windows.h>
 //#include <format>
 
 char const* network_session_peer_states[k_network_session_peer_state_count] =

@@ -17,6 +17,7 @@
 #include <game\player_mapping.h>
 #include <anvil\backend\services\user_storage_service.h>
 #include <anvil\backend\cache.h>
+#include <input\input_windows.h>
 
 char const* k_session_type_strings[k_network_session_type_count] = {
     "none",

@@ -114,7 +114,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER=-1;VERSION_BUILD_NUMBER_VERSION=-1;VERSION_BRANCH_NAME="main";VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Dedicated Server";VERSION_TARGET_APPLICATION="anvil dedicated server";VERSION_BUILD_NAME="";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -122,6 +122,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -138,14 +139,14 @@
 IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj</Command>
+      <Command>del $(IntDir)version.obj</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_debug_game_client|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;GAME_CLIENT_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER=-1;VERSION_BUILD_NUMBER_VERSION=-1;VERSION_BRANCH_NAME="main";VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Game Client";VERSION_TARGET_APPLICATION="anvil game client";VERSION_BUILD_NAME="";DEBUG_ENABLED;ASSERTS_ENABLED;EVENTS_ENABLED;GAME_CLIENT_ENABLED;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -153,6 +154,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,7 +171,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
 IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj</Command>
+      <Command>del $(IntDir)version.obj</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_dedicated_server|Win32'">
@@ -178,7 +180,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER=-1;VERSION_BUILD_NUMBER_VERSION=-1;VERSION_BRANCH_NAME="main";VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Dedicated Server";VERSION_TARGET_APPLICATION="anvil dedicated server";VERSION_BUILD_NAME="";EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -186,6 +188,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,8 +206,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
 IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj
-</Command>
+      <Command>del $(IntDir)version.obj</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='cache_release_game_client|Win32'">
@@ -213,7 +215,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;TARGET_PROJECT_NAME="anvil_$(TargetProjectName)";TARGET_VARIANT="$(TargetVariant)";TARGET_CONFIGURATION="$(TargetConfiguration)";TARGET_PLATFORM="$(PlatformShortName)";TARGET_VERSION="untracked version";GAME_CLIENT_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER=-1;VERSION_BUILD_NUMBER_VERSION=-1;VERSION_BRANCH_NAME="main";VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Game Client";VERSION_TARGET_APPLICATION="anvil game client";VERSION_BUILD_NAME="";GAME_CLIENT_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -221,6 +223,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -239,8 +242,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
 IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(SolutionDir)patch\xdelta3-3.1.0-x86_64" -d -s "$(SolutionDir)11.1.604673_cert_ms29\halo_online.exe" "$(SolutionDir)patch\$(TargetName).xdelta" "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>del $(IntDir)build_version.obj
-</Command>
+      <Command>del $(IntDir)version.obj</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -251,6 +253,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\ai\ai_actions.h" />
     <ClInclude Include="source\ai\joint_behavior.h" />
     <ClInclude Include="source\ai\sector.h" />
+    <ClInclude Include="source\algorithms\binary_search.h" />
     <ClInclude Include="source\animations\animation_data.h" />
     <ClInclude Include="source\animations\mixing_board\channels\animation_channel.h" />
     <ClInclude Include="source\animations\mixing_board\channels\channel_base.h" />
@@ -265,6 +268,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\anvil\backend\services\user_storage_service.h" />
     <ClInclude Include="source\anvil\config.h" />
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h" />
+    <ClInclude Include="source\anvil\hooks\hooks_debug.h" />
     <ClInclude Include="source\anvil\hooks\hooks_ds.h" />
     <ClInclude Include="source\anvil\hooks\hooks_session.h" />
     <ClInclude Include="source\anvil\hooks\simulation\hooks_simulation_events.h" />
@@ -281,7 +285,11 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\anvil\hooks\simulation\hooks_weapon_updates.h" />
     <ClInclude Include="source\anvil\session_control.h" />
     <ClInclude Include="source\anvil\session_voting.h" />
+    <ClInclude Include="source\bitmaps\color_table_group.h" />
     <ClInclude Include="source\cache\cache_files.h" />
+    <ClInclude Include="source\cache\cache_file_tag_resource_runtime.h" />
+    <ClInclude Include="source\cache\restricted_memory.h" />
+    <ClInclude Include="source\cache\restricted_memory_regions.h" />
     <ClInclude Include="source\camera\camera.h" />
     <ClInclude Include="source\camera\camera_globals.h" />
     <ClInclude Include="source\camera\debug_director.h" />
@@ -292,12 +300,17 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\camera\observer.h" />
     <ClInclude Include="source\camera\observer_director.h" />
     <ClInclude Include="source\camera\saved_film_director.h" />
+    <ClInclude Include="source\config\version.h" />
     <ClInclude Include="source\cseries\async_xoverlapped.h" />
+    <ClInclude Include="source\cseries\cseries_console.h" />
+    <ClInclude Include="source\cseries\cseries_events.h" />
     <ClInclude Include="source\cseries\cseries_windows.h" />
     <ClInclude Include="source\cseries\cseries_windows_debug_pc.h" />
     <ClInclude Include="source\cseries\language.h" />
     <ClInclude Include="source\data_mining\data_mining.h" />
     <ClInclude Include="source\devices\devices.h" />
+    <ClInclude Include="source\dialogs\edit_text.h" />
+    <ClInclude Include="source\editor\editor_stubs.h" />
     <ClInclude Include="source\effects\effects.h" />
     <ClInclude Include="source\effects\particle_states.h" />
     <ClInclude Include="source\game\aim_target.h" />
@@ -326,21 +339,40 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\hf2p\hq.h" />
     <ClInclude Include="source\hf2p\loadouts.h" />
     <ClInclude Include="source\anvil\backend\user.h" />
+    <ClInclude Include="source\hs\hs.h" />
+    <ClInclude Include="source\hs\hs_enum.h" />
+    <ClInclude Include="source\hs\hs_function.h" />
+    <ClInclude Include="source\hs\hs_library_external.h" />
+    <ClInclude Include="source\hs\hs_runtime_internal.h" />
+    <ClInclude Include="source\input\input_windows.h" />
+    <ClInclude Include="source\interface\interface.h" />
+    <ClInclude Include="source\interface\interface_constants.h" />
+    <ClInclude Include="source\interface\terminal.h" />
+    <ClInclude Include="source\interface\user_interface_text.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\item_definitions.h" />
     <ClInclude Include="source\items\projectiles.h" />
     <ClInclude Include="source\items\weapons.h" />
     <ClInclude Include="source\items\weapon_definitions.h" />
+    <ClInclude Include="source\main\debug_keys.h" />
     <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
+    <ClInclude Include="source\main\console.h" />
+    <ClInclude Include="source\main\main_time.h" />
+    <ClInclude Include="source\math\color_math.h" />
     <ClInclude Include="source\math\matrix_math.h" />
+    <ClInclude Include="source\math\random_math.h" />
     <ClInclude Include="source\memory\hashtable.h" />
     <ClInclude Include="source\memory\member_to_static.h" />
+    <ClInclude Include="source\memory\read_write_lock.h" />
     <ClInclude Include="source\memory\rockall_heap.h" />
     <ClInclude Include="source\models\damage_info_definitions.h" />
     <ClInclude Include="source\models\model_definitions.h" />
     <ClInclude Include="source\motor\action_system.h" />
     <ClInclude Include="source\motor\mover.h" />
+    <ClInclude Include="source\multithreading\synchronization.h" />
+    <ClInclude Include="source\multithreading\synchronized_value.h" />
+    <ClInclude Include="source\multithreading\threads.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_in_game.h" />
     <ClInclude Include="source\networking\logic\life_cycle\life_cycle_handler_joining.h" />
@@ -366,6 +398,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\networking\session\network_session_parameters_chunked.h" />
     <ClInclude Include="source\networking\session\network_session_parameters_generic.h" />
     <ClInclude Include="source\networking\session\network_session_state.h" />
+    <ClInclude Include="source\networking\tools\remote_command.h" />
     <ClInclude Include="source\networking\transport\transport_qos.h" />
     <ClInclude Include="source\objects\crates.h" />
     <ClInclude Include="source\objects\damage.h" />
@@ -380,10 +413,24 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\physics\collision_bsp_references.h" />
     <ClInclude Include="source\physics\havok_component.h" />
     <ClInclude Include="source\physics\physics_model_definitions.h" />
+    <ClInclude Include="source\profiler\profiler.h" />
+    <ClInclude Include="source\rasterizer\rasterizer.h" />
+    <ClInclude Include="source\rasterizer\rasterizer_main.h" />
+    <ClInclude Include="source\rasterizer\rasterizer_resource_definitions.h" />
+    <ClInclude Include="source\rasterizer\rasterizer_shader_definitions.h" />
+    <ClInclude Include="source\rasterizer\rasterizer_vertex_definitions.h" />
+    <ClInclude Include="source\render\camera_fx_settings.h" />
+    <ClInclude Include="source\render\render_cameras.h" />
+    <ClInclude Include="source\render\render_debug.h" />
+    <ClInclude Include="source\render\render_game_state.h" />
+    <ClInclude Include="source\render\render_patchy_fog.h" />
+    <ClInclude Include="source\render\render_visibility.h" />
     <ClInclude Include="source\render\render_visibility_collection.h" />
+    <ClInclude Include="source\render\views\render_view.h" />
     <ClInclude Include="source\saved_games\scenario_map_variant.h" />
     <ClInclude Include="source\scenario\scenario.h" />
     <ClInclude Include="source\scenario\scenario_definitions.h" />
+    <ClInclude Include="source\shell\shell_windows.h" />
     <ClInclude Include="source\simulation\game_interface\simulation_game_action.h" />
     <ClInclude Include="source\game\aim_assist.h" />
     <ClInclude Include="source\main\main_game.h" />
@@ -394,7 +441,6 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\replication\replication_encoding.h" />
     <ClInclude Include="source\scenario\scenario_map_variant.h" />
     <ClInclude Include="source\anvil\hooks\hooks.h" />
-    <ClInclude Include="source\anvil\build_version.h" />
     <ClInclude Include="source\cseries\cseries.h" />
     <ClInclude Include="source\game\game_engine_assault.h" />
     <ClInclude Include="source\game\game_engine_assault_traits.h" />
@@ -529,17 +575,27 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\tag_files\string_ids.h" />
     <ClInclude Include="source\tag_files\tag_block.h" />
     <ClInclude Include="source\tag_files\tag_field.h" />
+    <ClInclude Include="source\text\draw_string.h" />
+    <ClInclude Include="source\text\font_cache.h" />
+    <ClInclude Include="source\text\font_fallback.h" />
+    <ClInclude Include="source\text\font_group.h" />
+    <ClInclude Include="source\text\font_loading.h" />
+    <ClInclude Include="source\text\font_package_cache.h" />
     <ClInclude Include="source\text\unicode.h" />
     <ClInclude Include="source\tools\network_webstats.h" />
     <ClInclude Include="source\interface\user_interface_session.h" />
     <ClInclude Include="source\units\bipeds.h" />
     <ClInclude Include="source\units\units.h" />
+    <ClInclude Include="source\visibility\visibility_collection.h" />
+    <ClInclude Include="source\xbox\xbox.h" />
+    <ClInclude Include="source\_force_includes\_force_included_types.h" />
     <ClInclude Include="third_party\nmd\nmd_assembly.h" />
     <ClInclude Include="source\game\survival_mode.h" />
     <ClInclude Include="source\simulation\game_interface\simulation_game_engine_king.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\ai\actors.cpp" />
+    <ClCompile Include="source\algorithms\binary_search.cpp" />
     <ClCompile Include="source\anvil\backend\cache.cpp" />
     <ClCompile Include="source\anvil\backend\lobby.cpp" />
     <ClCompile Include="source\anvil\backend\backend.cpp" />
@@ -551,6 +607,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\anvil\backend\services\user_storage_service.cpp" />
     <ClCompile Include="source\anvil\config.cpp" />
     <ClCompile Include="source\anvil\hooks\effects\hooks_effect_system.cpp" />
+    <ClCompile Include="source\anvil\hooks\hooks_debug.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_ds.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks_session.cpp" />
     <ClCompile Include="source\anvil\hooks\simulation\hooks_simulation_events.cpp" />
@@ -568,10 +625,18 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\anvil\session_control.cpp" />
     <ClCompile Include="source\anvil\session_voting.cpp" />
     <ClCompile Include="source\cache\cache_files.cpp" />
+    <ClCompile Include="source\cache\cache_file_tag_resource_runtime.cpp" />
+    <ClCompile Include="source\cache\restricted_memory.cpp" />
+    <ClCompile Include="source\cache\restricted_memory_regions.cpp" />
+    <ClCompile Include="source\config\version.cpp" />
+    <ClCompile Include="source\cseries\cseries_console.cpp" />
+    <ClCompile Include="source\cseries\cseries_events.cpp" />
     <ClCompile Include="source\cseries\cseries_windows.cpp" />
     <ClCompile Include="source\cseries\cseries_windows_debug_pc.cpp" />
     <ClCompile Include="source\cseries\language.cpp" />
     <ClCompile Include="source\data_mining\data_mining.cpp" />
+    <ClCompile Include="source\dialogs\edit_text.cpp" />
+    <ClCompile Include="source\editor\editor_stubs.cpp" />
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\game\game_allegiance.cpp" />
     <ClCompile Include="source\game\game_engine_assault.cpp" />
@@ -611,17 +676,34 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\hf2p\podium.cpp" />
     <ClCompile Include="source\hf2p\loadouts.cpp" />
     <ClCompile Include="source\anvil\backend\user.cpp" />
+    <ClCompile Include="source\hs\hs.cpp" />
+    <ClCompile Include="source\hs\hs_function.cpp" />
+    <ClCompile Include="source\hs\hs_library_external.cpp" />
+    <ClCompile Include="source\hs\hs_runtime.cpp" />
+    <ClCompile Include="source\input\input_windows.cpp" />
+    <ClCompile Include="source\interface\interface.cpp" />
+    <ClCompile Include="source\interface\interface_constants.cpp" />
+    <ClCompile Include="source\interface\terminal.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
+    <ClCompile Include="source\main\debug_keys.cpp" />
     <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />
+    <ClCompile Include="source\main\console.cpp" />
+    <ClCompile Include="source\main\main_time.cpp" />
+    <ClCompile Include="source\math\color_math.cpp" />
     <ClCompile Include="source\math\matrix_math.cpp" />
+    <ClCompile Include="source\math\random_math.cpp" />
     <ClCompile Include="source\math\real_math.cpp" />
     <ClCompile Include="source\memory\bitstream.cpp" />
     <ClCompile Include="source\memory\data.cpp" />
     <ClCompile Include="source\memory\hashtable.cpp" />
+    <ClCompile Include="source\memory\read_write_lock.cpp" />
     <ClCompile Include="source\memory\rockall_heap.cpp" />
+    <ClCompile Include="source\multithreading\synchronization.cpp" />
+    <ClCompile Include="source\multithreading\synchronized_value.cpp" />
+    <ClCompile Include="source\multithreading\threads.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_handler_end_game_write_stats.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_manager.cpp" />
     <ClCompile Include="source\networking\logic\life_cycle\life_cycle_state_handler.cpp" />
@@ -632,6 +714,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\networking\replication\replication_entity_manager_view.cpp" />
     <ClCompile Include="source\networking\replication\replication_entity_manager.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp" />
+    <ClCompile Include="source\networking\tools\remote_command.cpp" />
     <ClCompile Include="source\networking\transport\transport_endpoint_winsock.cpp" />
     <ClCompile Include="source\objects\crates.cpp" />
     <ClCompile Include="source\objects\objects.cpp" />
@@ -640,7 +723,19 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\objects\scenery.cpp" />
     <ClCompile Include="source\physics\collision_bsp_references.cpp" />
     <ClCompile Include="source\physics\havok_component.cpp" />
+    <ClCompile Include="source\rasterizer\dx9\rasterizer_dx9_dynamic_geometry.cpp" />
+    <ClCompile Include="source\rasterizer\dx9\rasterizer_dx9_main.cpp" />
+    <ClCompile Include="source\rasterizer\rasterizer.cpp" />
+    <ClCompile Include="source\rasterizer\rasterizer_main.cpp" />
+    <ClCompile Include="source\rasterizer\rasterizer_resource_definitions.cpp" />
+    <ClCompile Include="source\render\render_cameras.cpp" />
+    <ClCompile Include="source\render\render_debug.cpp" />
+    <ClCompile Include="source\render\render_visibility.cpp" />
+    <ClCompile Include="source\render\views\render_player_view.cpp" />
+    <ClCompile Include="source\render\views\render_view.cpp" />
     <ClCompile Include="source\scenario\scenario.cpp" />
+    <ClCompile Include="source\shell\shell.cpp" />
+    <ClCompile Include="source\shell\shell_windows.cpp" />
     <ClCompile Include="source\simulation\game_interface\simulation_game_action.cpp" />
     <ClCompile Include="source\game\game_engine.cpp" />
     <ClCompile Include="source\main\main_game.cpp" />
@@ -650,7 +745,6 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\scenario\scenario_map_variant.cpp" />
     <ClCompile Include="source\anvil\hooks\hooks.cpp" />
     <ClCompile Include="source\anvil\backend\uri_map.cpp" />
-    <ClCompile Include="source\anvil\build_version.cpp" />
     <ClCompile Include="source\cseries\cseries.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_game_variant.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameter_type_collection.cpp" />
@@ -702,9 +796,17 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\memory\tls.cpp" />
     <ClCompile Include="source\simulation\simulation_debug_globals.cpp" />
     <ClCompile Include="source\tag_files\string_ids.cpp" />
+    <ClCompile Include="source\text\draw_string.cpp" />
+    <ClCompile Include="source\text\font_cache.cpp" />
+    <ClCompile Include="source\text\font_fallback.cpp" />
+    <ClCompile Include="source\text\font_group.cpp" />
+    <ClCompile Include="source\text\font_loading.cpp" />
+    <ClCompile Include="source\text\font_package_cache.cpp" />
     <ClCompile Include="source\text\unicode.cpp" />
     <ClCompile Include="source\units\bipeds.cpp" />
     <ClCompile Include="source\units\units.cpp" />
+    <ClCompile Include="source\visibility\visibility_collection.cpp" />
+    <ClCompile Include="source\xbox\xbox.cpp" />
     <ClCompile Include="third_party\lookup3\lookup3.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

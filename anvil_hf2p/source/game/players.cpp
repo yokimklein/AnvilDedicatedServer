@@ -49,7 +49,7 @@ long player_mapping_get_input_user(datum_index player_index)
 void __fastcall player_set_facing(datum_index player_index, real_vector3d* forward)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player_data = (player_datum*)datum_get(*players, player_index);
+	player_datum* player_data = (player_datum*)datum_get(players, player_index);
 	if (game_is_authoritative())
 	{
 		if (player_data->unit_index != NONE)
@@ -77,13 +77,13 @@ void __fastcall player_control_set_facing(long input_user_index, real_vector3d* 
 long player_index_from_absolute_player_index(short absolute_player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	return datum_absolute_index_to_index(*players, absolute_player_index);
+	return datum_absolute_index_to_index(players, absolute_player_index);
 }
 
 void __fastcall player_increment_control_context(datum_index player_index)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, player_index);
+	player_datum* player = (player_datum*)datum_get(players, player_index);
 	datum_index unit_index = player->unit_index;
 	if (unit_index != NONE)
 	{
@@ -127,7 +127,7 @@ s_machine_identifier* players_get_machine_identifier(long machine_index)
 void c_player_in_game_iterator::begin()
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	m_iterator.begin(*players);
+	m_iterator.begin(players);
 }
 
 bool c_player_in_game_iterator::next()
@@ -161,7 +161,7 @@ void __fastcall player_notify_vehicle_ejection_finished(datum_index player_index
 	if (!game_is_predicted())
 	{
 		TLS_DATA_GET_VALUE_REFERENCE(players);
-		player_datum* player = (player_datum*)datum_get(*players, player_index);
+		player_datum* player = (player_datum*)datum_get(players, player_index);
 		player->flags.set(_player_vehicle_entrance_ban_bit, true);
 		player->vehicle_entrance_ban_ticks = (word)game_seconds_to_ticks_round(2.0f);
 		simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
@@ -409,4 +409,19 @@ long player_get_energy_regeneration_count(const player_datum* player)
 		return energy_increase_max;
 	}
 	return energy_regeneration_count;
+}
+
+long players_get_local_machine_index()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(players_globals);
+	return players_globals->local_machine_index;
+}
+
+void players_get_machines(ulong* machine_valid_mask, s_machine_identifier machine_identifiers[k_maximum_machines])
+{
+	ASSERT(machine_valid_mask);
+	ASSERT(machine_identifiers);
+	TLS_DATA_GET_VALUE_REFERENCE(players_globals);
+	*machine_valid_mask = players_globals->machine_valid_mask;
+	csmemcpy(machine_identifiers, players_globals->machine_identifiers.get_elements(), sizeof(players_globals->machine_identifiers));
 }

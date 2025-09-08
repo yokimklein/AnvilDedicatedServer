@@ -83,6 +83,25 @@ static_assert(sizeof(_main_globals) == 0x84);
 
 extern _main_globals& main_globals;
 
+class c_tag_resources_game_lock
+{
+public:
+	c_tag_resources_game_lock();
+	~c_tag_resources_game_lock();
+
+protected:
+	long m_resource_key;
+};
+#define LOCAL_TAG_RESOURCE_SCOPE_LOCK c_tag_resources_game_lock __local_tag_resource_scope_lock{}
+
 bool main_is_in_main_loop_pregame();
 long __cdecl internal_halt_render_thread_and_lock_resources(const char* file_name, long line_number);
 void __fastcall main_exit_game();
+void main_loop_pregame_disable(bool disable);
+extern bool main_time_halted();
+
+template<typename... parameters_t, long k_parameter_count = sizeof...(parameters_t)>
+bool main_status(const char* status_type, const char* format, parameters_t... parameters)
+{
+	return DECLFUNC(0x96D20, bool, __cdecl, const char*, const char*, ...)(status_type, format, parameters...);
+}

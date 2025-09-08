@@ -10,3 +10,5 @@ extern void __cdecl matrix4x3_multiply(real_matrix4x3 const* in_matrix0, real_ma
 extern void __cdecl matrix4x3_inverse(real_matrix4x3 const* matrix, real_matrix4x3* out_matrix);
 extern real_vector3d* __cdecl matrix4x3_transform_normal(real_matrix4x3 const* matrix, real_vector3d const* vector, real_vector3d* out_vector);
 extern real_plane3d* __cdecl matrix4x3_transform_plane(real_matrix4x3 const* matrix, real_plane3d const* plane, real_plane3d* out_plane);
+real_matrix3x3* matrix3x3_rotation_from_quaternion(real_matrix3x3* matrix, const real_quaternion* quaternion);
+void matrix4x3_from_point_and_quaternion(real_matrix4x3* matrix, const real_point3d* point, const real_quaternion* quaternion);

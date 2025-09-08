@@ -3,6 +3,7 @@
 #include <anvil\hooks\hooks_ds.h>
 #include <anvil\hooks\hooks_session.h>
 #include <anvil\hooks\hooks_miscellaneous.h>
+#include <anvil\hooks\hooks_debug.h>
 #include <anvil\hooks\simulation\hooks_simulation.h>
 #include <anvil\hooks\simulation\hooks_statborg.h>
 #include <anvil\hooks\simulation\hooks_simulation_globals.h>
@@ -540,6 +541,26 @@ void patch::bytes(size_t address, byte* bytes, size_t size)
     patch::set_memory_protect(address, old_protect, size);
 }
 
+void patch::function(size_t address, void* function_address)
+{
+    // enable memory writing
+    ulong old_protect = patch::set_memory_protect(address, PAGE_READWRITE, sizeof(size_t));
+
+    // convert function address to byte array
+    ulong addr = reinterpret_cast<uintptr_t>(function_address);
+    byte bytes[4];
+    bytes[0] = (addr >> 0) & 0xFF;
+    bytes[1] = (addr >> 8) & 0xFF;
+    bytes[2] = (addr >> 16) & 0xFF;
+    bytes[3] = (addr >> 24) & 0xFF;
+
+    // copy bytes
+    csmemcpy(base_address<void*>(address), bytes, sizeof(size_t));
+
+    // restore memory protection
+    patch::set_memory_protect(address, old_protect, sizeof(size_t));
+}
+
 void hook::function(size_t function_address, size_t length, void* function)
 {
     ASSERT(function);
@@ -608,13 +629,15 @@ void anvil_patches_apply()
     //patch::bytes(0x40F2E3, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
     //patch::bytes(0x411E02, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
 
-    // $TODO: english patch
+    // english patch
+    patch::bytes(0x2B923A, { _language_english });
 }
 
 void anvil_hooks_apply()
 {
     anvil_hooks_miscellaneous_apply(); // MISCELLANEOUS
     anvil_hooks_effect_system_apply(); // EFFECTS
+    anvil_hooks_debug_apply(); // DEBUG
 
     if (game_is_dedicated_server())
     {

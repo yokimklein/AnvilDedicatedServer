@@ -13,14 +13,15 @@
 #include "anvil\server_tools.h"
 #include "anvil\session_voting.h"
 #include <networking\network_utilities.h>
+#include <cseries\cseries_events.h>
 
 bool anvil_session_create()
 {
-    printf("Creating session...\n");
+    event(_event_message, "networking:" __FUNCTION__ ": creating session...");
     network_life_cycle_end();
     if (!network_life_cycle_create_local_squad(_network_session_class_online))
     {
-        printf("Session creation failed!\n");
+        event(_event_error, "networking:" __FUNCTION__ ": session creation failed!");
         return false;
     }
     user_interface_set_desired_multiplayer_mode(_desired_multiplayer_mode_custom_games);
@@ -75,15 +76,15 @@ void anvil_session_update()
             s_transport_secure_address secure_address = {};
             if (transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &secure_identifier, &secure_address))
             {
-                printf("\nSession ready to join!\nServer Address: %s\nServerID: %s\nLobbyID: %s\n\n",
-                    transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false),
+                event(_event_status, "networking:" __FUNCTION__ ": session ready! address: [%s]",
+                    transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false));
+                event(_event_status, "networking:" __FUNCTION__ ": serverid: [%s] lobbyid: [%s]",
                     transport_secure_address_get_string(&secure_address),
                     transport_secure_identifier_get_string(&secure_identifier));
             }
             else
             {
-                printf("\nSession failed to retrieve security info.\nServer Address: %s\n\n",
-                    transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false));
+                event(_event_error, "networking:" __FUNCTION__ ": session failed to retrieve security info!");
             }
             if (game_is_dedicated_server())
             {
@@ -117,17 +118,17 @@ void anvil_session_update()
     // debug server controls
     if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
     {
-        printf("Starting vote...\n");
+        event(_event_message, "networking:" __FUNCTION__ ": starting vote...");
         anvil_session_start_voting(session);
     }
     else if (anvil_key_pressed(VK_HOME, &key_held_home))
     {
-        printf("Launching session...\n");
+        event(_event_message, "networking:" __FUNCTION__ ": launching session...");
         parameters->m_parameters.session_mode.set(_network_session_mode_setup);
     }
     else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
     {
-        printf("Disconnecting session...\n");
+        event(_event_message, "networking:" __FUNCTION__ ": disconnecting session...");
         session->disconnect();
 
         /*
@@ -161,12 +162,12 @@ void anvil_session_update()
     }
     else if (anvil_key_pressed(VK_END, &key_held_end))
     {
-        printf("Ending game...\n");
+        event(_event_message, "networking:" __FUNCTION__ ": ending game...");
         parameters->m_parameters.session_mode.set(_network_session_mode_end_game);
     }
     else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
     {
-        printf("Setting test mode...\n");
+        event(_event_message, "networking:" __FUNCTION__ ": setting test mode...");
         anvil_session_set_gamemode(session, _game_engine_type_slayer, 0, 0);
         anvil_session_set_map(_riverworld);
     }

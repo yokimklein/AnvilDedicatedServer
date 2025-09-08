@@ -1,5 +1,4 @@
 #pragma once
-#include <cseries\cseries.h>
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/integer_math.hpp
 
@@ -135,3 +134,53 @@ union argb_color
 	ulong value;
 };
 static_assert(sizeof(argb_color) == 0x4);
+
+union pixel32
+{
+	struct
+	{
+		byte blue;
+		byte green;
+		byte red;
+		byte alpha;
+	};
+	byte n[4];
+	ulong value;
+};
+static_assert(sizeof(pixel32) == 0x4);
+
+template<typename t_type>
+t_type int_min(const t_type& val0, const t_type& val1)
+{
+	if (val0 <= val1)
+		return val0;
+
+	return val1;
+}
+
+template<typename t_type>
+t_type int_max(const t_type& val0, const t_type& val1)
+{
+	if (val0 <= val1)
+		return val1;
+
+	return val0;
+}
+
+template<typename t_type, typename t_other_type>
+t_type int_ceiling(const t_type& val0, const t_other_type& val1)
+{
+	return int_min(val0, static_cast<t_type>(val1));
+}
+
+template<typename t_type, typename t_other_type>
+t_type int_floor(const t_type& val0, const t_other_type& val1)
+{
+	return int_max(val0, static_cast<t_type>(val1));
+}
+
+template<typename t_type, typename t_other_type0, typename t_other_type1>
+t_type int_pin(const t_type& val0, const t_other_type0& val1, const t_other_type1& val2)
+{
+	return int_ceiling(int_floor(val0, val1), val2);
+}

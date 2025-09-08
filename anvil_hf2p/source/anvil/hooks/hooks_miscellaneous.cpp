@@ -2,7 +2,7 @@
 #include <anvil\hooks\hooks.h>
 #include <cseries\cseries.h>
 #include <cseries\cseries_windows_debug_pc.h>
-#include <anvil\build_version.h>
+#include <config\version.h>
 #include <networking\logic\network_life_cycle.h>
 #include <networking\messages\network_message_gateway.h>
 #include <networking\messages\network_message_type_collection.h>
@@ -49,10 +49,9 @@ long __cdecl exceptions_update_hook()
     return exceptions_update();
 }
 
-// TODO: this doesn't work outside of proxydll atm, our launcher is injecting too late
 c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
 {
-    static_string->print("Halo Online %s %s", anvil_get_config_string(), "Live_release_11.1.604673");
+    static_string->print("Halo Online " VERSION_WINDOW_NAME " %s", VERSION_WINDOW_VERSION);
     return static_string;
 }
 
@@ -90,11 +89,6 @@ __declspec(naked) void contrail_fix_hook()
 //    FUNCTION_DEF(0x1210F0, long, __fastcall, hs_return, long a1, long a2);
 //    return hs_return(a2, 1);
 //}
-
-void __cdecl game_engine_render_frame_watermarks_hook()
-{
-    // empty function
-}
 
 int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t MaxCount, const char* Format, va_list ArgList)
 {

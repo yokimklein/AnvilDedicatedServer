@@ -426,3 +426,5 @@ real player_get_consumable_cooldown_init(const player_datum* player, long consum
 real player_get_consumable_cooldown(const player_datum* player, long consumable_slot);
 void player_set_consumable_cooldown(player_datum* player, real cooldown, real cooldown_init);
 long player_get_energy_regeneration_count(const player_datum* player);
+long players_get_local_machine_index();
+void players_get_machines(ulong* machine_valid_mask, s_machine_identifier machine_identifiers[k_maximum_machines]);

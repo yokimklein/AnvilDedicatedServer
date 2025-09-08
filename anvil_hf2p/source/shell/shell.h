@@ -68,15 +68,25 @@ enum e_player_model_choice
 
 };
 
-enum e_controller_index
+enum e_shell_application_type
 {
-	_controller_index0 = 0,
-	_controller_index1,
-	_controller_index2,
-	_controller_index3,
+	_shell_application_tool = 0,
+	_shell_application_editor,
+	_shell_application_game,
 
-	k_number_of_controllers,
-
-	k_any_controller = 0xFF,
-	k_no_controller = 0xFFFFFFFF,
+	k_shell_application_count
 };
+
+enum e_shell_tool_type
+{
+	_shell_tool_invalid = 0,
+	_shell_tool_interactive,
+	_shell_tool_command_line,
+
+	k_shell_tool_count
+};
+
+extern e_shell_application_type shell_application_type();
+extern e_shell_tool_type shell_tool_type();
+extern bool shell_application_is_paused();
+const char* shell_get_version();

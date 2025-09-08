@@ -78,7 +78,7 @@ string_id __fastcall game_engine_get_multiplayer_weapon_selection_name(short abs
 void game_engine_set_event_effect_player_and_team(datum_index effect_player_index, s_game_engine_event_data* event_data)
 {
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player = (player_datum*)datum_get(*players, effect_player_index);
+	player_datum* player = (player_datum*)datum_get(players, effect_player_index);
 	event_data->effect_player_index = effect_player_index;
 	event_data->effect_team_index = player->configuration.host.team_index;
 }

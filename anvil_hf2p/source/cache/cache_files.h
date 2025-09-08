@@ -4,7 +4,9 @@
 void* __fastcall tag_get(tag group_tag, long index);
 long __fastcall cache_file_get_global_tag_index(tag group_tag);
 
-#define TAG_GET(GROUP, TYPE, INDEX) ((TYPE*)tag_get(GROUP, INDEX))
+#define TAG_GET(GROUP, TYPE, INDEX) ((TYPE*)tag_get((GROUP), (INDEX)))
+#define TAG_GET_SAFE(GROUP, TYPE, INDEX) ((INDEX) != NONE ? ((TYPE*)tag_get((GROUP), (INDEX))) : NULL)
+#define TAG_BLOCK_GET_ELEMENT(BLOCK, INDEX, TYPE) ((TYPE*)tag_block_get_element_with_size((BLOCK), (INDEX), sizeof(TYPE)))
 
 extern char const* k_cache_strings_file;
 extern char const* k_cache_tags_file;

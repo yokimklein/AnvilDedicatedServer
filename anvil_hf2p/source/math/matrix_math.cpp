@@ -5,9 +5,9 @@
 void __cdecl matrix4x3_rotation_from_vectors(real_matrix4x3* matrix, real_vector3d const* forward, real_vector3d const* up)
 {
 	matrix->scale = 1.0f;
-	matrix->forward = *forward;
-	cross_product3d(up, forward, &matrix->left);
-	matrix->up = *up;
+	matrix->vectors.forward = *forward;
+	cross_product3d(up, forward, &matrix->vectors.left);
+	matrix->vectors.up = *up;
 	set_real_point3d(&matrix->position, 0.0f, 0.0f, 0.0f);
 }
 
@@ -32,9 +32,9 @@ real_vector3d* __cdecl matrix4x3_transform_vector(real_matrix4x3 const* matrix, 
 		up *= matrix->scale;
 	}
 
-	out_vector->n[0] = ((forward * matrix->forward.n[0]) + (left * matrix->left.n[0])) + (up * matrix->up.n[0]);
-	out_vector->n[1] = ((forward * matrix->forward.n[1]) + (left * matrix->left.n[1])) + (up * matrix->up.n[1]);
-	out_vector->n[2] = ((forward * matrix->forward.n[2]) + (left * matrix->left.n[2])) + (up * matrix->up.n[2]);
+	out_vector->n[0] = ((forward * matrix->vectors.forward.n[0]) + (left * matrix->vectors.left.n[0])) + (up * matrix->vectors.up.n[0]);
+	out_vector->n[1] = ((forward * matrix->vectors.forward.n[1]) + (left * matrix->vectors.left.n[1])) + (up * matrix->vectors.up.n[1]);
+	out_vector->n[2] = ((forward * matrix->vectors.forward.n[2]) + (left * matrix->vectors.left.n[2])) + (up * matrix->vectors.up.n[2]);
 
 	return out_vector;
 }
@@ -45,9 +45,9 @@ real_point3d* __cdecl matrix4x3_transform_point(real_matrix4x3 const* matrix, re
 	real left = in_point->n[1] * matrix->scale;
 	real up = in_point->n[2] * matrix->scale;
 
-	out_point->n[0] = (((matrix->left.n[0] * left) + (matrix->forward.n[0] * forward)) + (matrix->up.n[0] * up)) + matrix->position.n[0];
-	out_point->n[1] = (((matrix->left.n[1] * left) + (matrix->forward.n[1] * forward)) + (matrix->up.n[1] * up)) + matrix->position.n[1];
-	out_point->n[2] = (((matrix->left.n[2] * left) + (matrix->forward.n[2] * forward)) + (matrix->up.n[2] * up)) + matrix->position.n[2];
+	out_point->n[0] = (((matrix->vectors.left.n[0] * left) + (matrix->vectors.forward.n[0] * forward)) + (matrix->vectors.up.n[0] * up)) + matrix->position.n[0];
+	out_point->n[1] = (((matrix->vectors.left.n[1] * left) + (matrix->vectors.forward.n[1] * forward)) + (matrix->vectors.up.n[1] * up)) + matrix->position.n[1];
+	out_point->n[2] = (((matrix->vectors.left.n[2] * left) + (matrix->vectors.forward.n[2] * forward)) + (matrix->vectors.up.n[2] * up)) + matrix->position.n[2];
 
 	return out_point;
 }
@@ -66,21 +66,21 @@ void __cdecl matrix4x3_multiply(real_matrix4x3 const* in_matrix0, real_matrix4x3
 	if (in_matrix1 == out_matrix)
 		csmemcpy(out_matrix, in_matrix1, sizeof(real_matrix4x3));
 
-	out_matrix->forward.n[0] = ((in_matrix0->forward.n[0] * in_matrix1->forward.n[0]) + (in_matrix0->left.n[0] * in_matrix1->forward.n[1])) + (in_matrix0->up.n[0] * in_matrix1->forward.n[2]);
-	out_matrix->forward.n[1] = ((in_matrix0->forward.n[1] * in_matrix1->forward.n[0]) + (in_matrix0->left.n[1] * in_matrix1->forward.n[1])) + (in_matrix0->up.n[1] * in_matrix1->forward.n[2]);
-	out_matrix->forward.n[2] = ((in_matrix0->forward.n[2] * in_matrix1->forward.n[0]) + (in_matrix0->left.n[2] * in_matrix1->forward.n[1])) + (in_matrix0->up.n[2] * in_matrix1->forward.n[2]);
+	out_matrix->vectors.forward.n[0] = ((in_matrix0->vectors.forward.n[0] * in_matrix1->vectors.forward.n[0]) + (in_matrix0->vectors.left.n[0] * in_matrix1->vectors.forward.n[1])) + (in_matrix0->vectors.up.n[0] * in_matrix1->vectors.forward.n[2]);
+	out_matrix->vectors.forward.n[1] = ((in_matrix0->vectors.forward.n[1] * in_matrix1->vectors.forward.n[0]) + (in_matrix0->vectors.left.n[1] * in_matrix1->vectors.forward.n[1])) + (in_matrix0->vectors.up.n[1] * in_matrix1->vectors.forward.n[2]);
+	out_matrix->vectors.forward.n[2] = ((in_matrix0->vectors.forward.n[2] * in_matrix1->vectors.forward.n[0]) + (in_matrix0->vectors.left.n[2] * in_matrix1->vectors.forward.n[1])) + (in_matrix0->vectors.up.n[2] * in_matrix1->vectors.forward.n[2]);
 
-	out_matrix->left.n[0] = ((in_matrix0->forward.n[0] * in_matrix1->left.n[0]) + (in_matrix0->left.n[0] * in_matrix1->left.n[1])) + (in_matrix0->up.n[0] * in_matrix1->left.n[2]);
-	out_matrix->left.n[1] = ((in_matrix0->forward.n[1] * in_matrix1->left.n[0]) + (in_matrix0->left.n[1] * in_matrix1->left.n[1])) + (in_matrix0->up.n[1] * in_matrix1->left.n[2]);
-	out_matrix->left.n[2] = ((in_matrix0->forward.n[2] * in_matrix1->left.n[0]) + (in_matrix0->left.n[2] * in_matrix1->left.n[1])) + (in_matrix0->up.n[2] * in_matrix1->left.n[2]);
+	out_matrix->vectors.left.n[0] = ((in_matrix0->vectors.forward.n[0] * in_matrix1->vectors.left.n[0]) + (in_matrix0->vectors.left.n[0] * in_matrix1->vectors.left.n[1])) + (in_matrix0->vectors.up.n[0] * in_matrix1->vectors.left.n[2]);
+	out_matrix->vectors.left.n[1] = ((in_matrix0->vectors.forward.n[1] * in_matrix1->vectors.left.n[0]) + (in_matrix0->vectors.left.n[1] * in_matrix1->vectors.left.n[1])) + (in_matrix0->vectors.up.n[1] * in_matrix1->vectors.left.n[2]);
+	out_matrix->vectors.left.n[2] = ((in_matrix0->vectors.forward.n[2] * in_matrix1->vectors.left.n[0]) + (in_matrix0->vectors.left.n[2] * in_matrix1->vectors.left.n[1])) + (in_matrix0->vectors.up.n[2] * in_matrix1->vectors.left.n[2]);
 
-	out_matrix->up.n[0] = ((in_matrix0->forward.n[0] * in_matrix1->up.n[0]) + (in_matrix0->left.n[0] * in_matrix1->up.n[1])) + (in_matrix0->up.n[0] * in_matrix1->up.n[2]);
-	out_matrix->up.n[1] = ((in_matrix0->forward.n[1] * in_matrix1->up.n[0]) + (in_matrix0->left.n[1] * in_matrix1->up.n[1])) + (in_matrix0->up.n[1] * in_matrix1->up.n[2]);
-	out_matrix->up.n[2] = ((in_matrix0->forward.n[2] * in_matrix1->up.n[0]) + (in_matrix0->left.n[2] * in_matrix1->up.n[1])) + (in_matrix0->up.n[2] * in_matrix1->up.n[2]);
+	out_matrix->vectors.up.n[0] = ((in_matrix0->vectors.forward.n[0] * in_matrix1->vectors.up.n[0]) + (in_matrix0->vectors.left.n[0] * in_matrix1->vectors.up.n[1])) + (in_matrix0->vectors.up.n[0] * in_matrix1->vectors.up.n[2]);
+	out_matrix->vectors.up.n[1] = ((in_matrix0->vectors.forward.n[1] * in_matrix1->vectors.up.n[0]) + (in_matrix0->vectors.left.n[1] * in_matrix1->vectors.up.n[1])) + (in_matrix0->vectors.up.n[1] * in_matrix1->vectors.up.n[2]);
+	out_matrix->vectors.up.n[2] = ((in_matrix0->vectors.forward.n[2] * in_matrix1->vectors.up.n[0]) + (in_matrix0->vectors.left.n[2] * in_matrix1->vectors.up.n[1])) + (in_matrix0->vectors.up.n[2] * in_matrix1->vectors.up.n[2]);
 
-	out_matrix->position.n[0] = in_matrix0->position.n[0] + (in_matrix0->scale * (((in_matrix0->forward.n[0] * in_matrix1->position.n[0]) + (in_matrix0->left.n[0] * in_matrix1->position.n[1])) + (in_matrix0->up.n[0] * in_matrix1->position.n[2])));
-	out_matrix->position.n[1] = in_matrix0->position.n[1] + (in_matrix0->scale * (((in_matrix0->forward.n[1] * in_matrix1->position.n[0]) + (in_matrix0->left.n[1] * in_matrix1->position.n[1])) + (in_matrix0->up.n[1] * in_matrix1->position.n[2])));
-	out_matrix->position.n[2] = in_matrix0->position.n[2] + (in_matrix0->scale * (((in_matrix0->forward.n[2] * in_matrix1->position.n[0]) + (in_matrix0->left.n[2] * in_matrix1->position.n[1])) + (in_matrix0->up.n[2] * in_matrix1->position.n[2])));
+	out_matrix->position.n[0] = in_matrix0->position.n[0] + (in_matrix0->scale * (((in_matrix0->vectors.forward.n[0] * in_matrix1->position.n[0]) + (in_matrix0->vectors.left.n[0] * in_matrix1->position.n[1])) + (in_matrix0->vectors.up.n[0] * in_matrix1->position.n[2])));
+	out_matrix->position.n[1] = in_matrix0->position.n[1] + (in_matrix0->scale * (((in_matrix0->vectors.forward.n[1] * in_matrix1->position.n[0]) + (in_matrix0->vectors.left.n[1] * in_matrix1->position.n[1])) + (in_matrix0->vectors.up.n[1] * in_matrix1->position.n[2])));
+	out_matrix->position.n[2] = in_matrix0->position.n[2] + (in_matrix0->scale * (((in_matrix0->vectors.forward.n[2] * in_matrix1->position.n[0]) + (in_matrix0->vectors.left.n[2] * in_matrix1->position.n[1])) + (in_matrix0->vectors.up.n[2] * in_matrix1->position.n[2])));
 
 	out_matrix->scale = in_matrix0->scale * in_matrix1->scale;
 }
@@ -104,28 +104,28 @@ void __cdecl matrix4x3_inverse(real_matrix4x3 const* matrix, real_matrix4x3* out
 		negative_z *= out_matrix->scale;
 	}
 
-	out_matrix->forward.i = matrix->forward.i;
-	out_matrix->left.j = matrix->left.j;
-	out_matrix->up.k = matrix->up.k;
+	out_matrix->vectors.forward.i = matrix->vectors.forward.i;
+	out_matrix->vectors.left.j = matrix->vectors.left.j;
+	out_matrix->vectors.up.k = matrix->vectors.up.k;
 
-	out_matrix->left.i = matrix->forward.j;
-	out_matrix->forward.j = matrix->left.i;
-	out_matrix->up.i = matrix->forward.k;
+	out_matrix->vectors.left.i = matrix->vectors.forward.j;
+	out_matrix->vectors.forward.j = matrix->vectors.left.i;
+	out_matrix->vectors.up.i = matrix->vectors.forward.k;
 
-	out_matrix->forward.k = matrix->up.i;
-	out_matrix->up.j = matrix->left.k;
-	out_matrix->left.k = matrix->up.j;
+	out_matrix->vectors.forward.k = matrix->vectors.up.i;
+	out_matrix->vectors.up.j = matrix->vectors.left.k;
+	out_matrix->vectors.left.k = matrix->vectors.up.j;
 
-	out_matrix->position.x = ((negative_x * out_matrix->forward.i) + (negative_y * out_matrix->left.i)) + (negative_z * out_matrix->up.i);
-	out_matrix->position.y = ((negative_x * out_matrix->forward.j) + (negative_y * out_matrix->left.j)) + (negative_z * out_matrix->up.j);
-	out_matrix->position.z = ((negative_x * out_matrix->forward.k) + (negative_y * out_matrix->left.k)) + (negative_z * out_matrix->up.k);
+	out_matrix->position.x = ((negative_x * out_matrix->vectors.forward.i) + (negative_y * out_matrix->vectors.left.i)) + (negative_z * out_matrix->vectors.up.i);
+	out_matrix->position.y = ((negative_x * out_matrix->vectors.forward.j) + (negative_y * out_matrix->vectors.left.j)) + (negative_z * out_matrix->vectors.up.j);
+	out_matrix->position.z = ((negative_x * out_matrix->vectors.forward.k) + (negative_y * out_matrix->vectors.left.k)) + (negative_z * out_matrix->vectors.up.k);
 }
 
 real_vector3d* __cdecl matrix4x3_transform_normal(real_matrix4x3 const* matrix, real_vector3d const* vector, real_vector3d* out_vector)
 {
-	out_vector->i = ((vector->i * matrix->forward.i) + (vector->j * matrix->left.i)) + (vector->k * matrix->up.i);
-	out_vector->j = ((vector->i * matrix->forward.j) + (vector->j * matrix->left.j)) + (vector->k * matrix->up.j);
-	out_vector->k = ((vector->i * matrix->forward.k) + (vector->j * matrix->left.k)) + (vector->k * matrix->up.k);
+	out_vector->i = ((vector->i * matrix->vectors.forward.i) + (vector->j * matrix->vectors.left.i)) + (vector->k * matrix->vectors.up.i);
+	out_vector->j = ((vector->i * matrix->vectors.forward.j) + (vector->j * matrix->vectors.left.j)) + (vector->k * matrix->vectors.up.j);
+	out_vector->k = ((vector->i * matrix->vectors.forward.k) + (vector->j * matrix->vectors.left.k)) + (vector->k * matrix->vectors.up.k);
 
 	return out_vector;
 }
@@ -136,4 +136,43 @@ real_plane3d* __cdecl matrix4x3_transform_plane(real_matrix4x3 const* matrix, re
 	out_plane->d = (matrix->scale * plane->d) + dot_product3d((real_vector3d*)&matrix->position, &out_plane->n);
 
 	return out_plane;
+}
+
+real_matrix3x3* matrix3x3_rotation_from_quaternion(real_matrix3x3* matrix, const real_quaternion* quaternion)
+{
+	const real dot_product = dot_product4d_quaternion(quaternion, quaternion);
+
+	const real scalar = (dot_product > k_real_epsilon ? 2.0f / dot_product : 0.0f);
+
+	real_vector3d scaled_vector;
+	scale_vector3d(&quaternion->v, scalar, &scaled_vector);
+
+	real_vector3d w_scaled_vector;
+	scale_vector3d(&scaled_vector, quaternion->w, &w_scaled_vector);
+
+	real_vector3d i_scaled_vector;
+	scale_vector3d(&scaled_vector, quaternion->i, &i_scaled_vector);
+
+	real j_scaled_vector_j = quaternion->j * scaled_vector.j;
+	real j_scaled_vector_k = quaternion->j * scaled_vector.k;
+	real k_scaled_vector_k = quaternion->k * scaled_vector.k;
+
+	matrix->forward.i = 1.0f - (k_scaled_vector_k + j_scaled_vector_j);
+	matrix->left.i = i_scaled_vector.j - w_scaled_vector.k;
+	matrix->up.i = i_scaled_vector.k + w_scaled_vector.j;
+	matrix->forward.j = i_scaled_vector.j + w_scaled_vector.k;
+	matrix->left.j = 1.0f - (k_scaled_vector_k + i_scaled_vector.i);
+	matrix->up.j = j_scaled_vector_k - w_scaled_vector.i;
+	matrix->forward.k = i_scaled_vector.k - w_scaled_vector.j;
+	matrix->left.k = j_scaled_vector_k + w_scaled_vector.i;
+	matrix->up.k = 1.0f - (j_scaled_vector_j + i_scaled_vector.i);
+	return matrix;
+}
+
+void matrix4x3_from_point_and_quaternion(real_matrix4x3* matrix, const real_point3d* point, const real_quaternion* quaternion)
+{
+	matrix3x3_rotation_from_quaternion(&matrix->vectors, quaternion);
+	matrix->scale = 1.0f;
+	matrix->position = *point;
+	return;
 }

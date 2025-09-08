@@ -5,7 +5,7 @@
 void __fastcall simulation_queue_player_event_apply_set_activation(datum_index player_index, bool player_active)
 {
     TLS_DATA_GET_VALUE_REFERENCE(players);
-    player_datum* player = (player_datum*)datum_get(*players, player_index);
+    player_datum* player = (player_datum*)datum_get(players, player_index);
     if (player->flags.test(_player_active_in_game_bit) != player_active)
     {
         if (player_active)

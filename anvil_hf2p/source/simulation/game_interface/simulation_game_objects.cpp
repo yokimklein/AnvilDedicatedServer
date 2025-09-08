@@ -46,7 +46,7 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 			TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 			c_simulation_entity_database* entity_database = simulation_get_world()->get_entity_database();
 			object_datum* object = object_get(entity_object_index);
-			object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, entity_object_index);
+			object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, entity_object_index);
 			s_simulation_entity* entity = entity_database->entity_get(entity_index);
 			ASSERT(!object_header->flags.test(_object_header_being_deleted_bit));
 			ASSERT(entity->gamestate_index != NONE);
@@ -67,7 +67,7 @@ void simulation_action_object_create_build_entity_types(datum_index object_index
 {
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 	object_datum* object = object_get(object_index);
-	object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
+	object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, object_index);
 	datum_index object_ultimate_parent = object_get_ultimate_parent(object_index);
 	if (object_header->flags.test(_object_header_being_deleted_bit)
 		|| object->object.gamestate_index != NONE

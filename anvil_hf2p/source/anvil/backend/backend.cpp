@@ -1,5 +1,5 @@
 #include "backend.h"
-#include <anvil\build_version.h>
+#include <config\version.h>
 #include <iostream>
 #include <networking\network_time.h>
 #include <anvil\config.h>
@@ -383,7 +383,7 @@ ulong c_backend::make_request(s_backend_request& request_body, http::verb http_v
     request.method(http_verb);
     request.version(11);
     request.set(http::field::host, resolved_endpoint.m_host + ":" + resolved_endpoint.m_port);
-    request.set(http::field::user_agent, anvil_get_build_name_string());
+    request.set(http::field::user_agent, VERSION_TARGET_APPLICATION);
     request.set(http::field::content_type, "application/json");
     if (use_auth_token)
     {

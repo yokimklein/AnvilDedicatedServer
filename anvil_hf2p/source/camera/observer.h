@@ -1,6 +1,31 @@
 #pragma once
 #include <cseries\cseries.h>
 
+#define OBSERVER_SIGNATURE 'rad!'
+
+struct s_focus_and_distance
+{
+	real_point3d focus;
+	real distance;
+};
+static_assert(sizeof(s_focus_and_distance) == 0x10);
+
+struct s_observer_depth_of_field
+{
+	enum
+	{
+		_active_bit = 0,
+		k_flags_count
+	};
+
+	long flags;
+	real near_focal_plane_distance;
+	real far_focal_plane_distance;
+	real focal_depth;
+	real blur_amount;
+};
+static_assert(sizeof(s_observer_depth_of_field) == 0x14);
+
 struct s_observer_command
 {
 	dword_flags flags;

@@ -2,11 +2,15 @@
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/cseries/cseries.hpp
 
-//#include <math\integer_math.h>
-//#include <math\real_math.h>
+#include "cseries\cseries_windows.h"
+#include "cseries\cseries_console.h"
+
+#include <math\integer_math.h>
+#include <math\real_math.h>
 
 #include <stdarg.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include <memory\member_to_static.h>
 
@@ -47,6 +51,8 @@ k_return_type base_address(size_t address = 0)
 
 #define REFERENCE_DECLARE(address, type, name) type& name = *base_address<type*>(address)
 #define REFERENCE_DECLARE_ARRAY(address, type, name, count) type(&name)[count] = *base_address<type(*)[count]>(address)
+#define REFERENCE_DECLARE_2D_ARRAY(address, type, name, count0, count1) type(&name)[count0][count1] = *base_address<type(*)[count0][count1]>(address)
+#define REFERENCE_DECLARE_3D_ARRAY(address, type, name, count0, count1, count3) type(&name)[count0][count1][count3] = *base_address<type(*)[count0][count1][count3]>(address)
 #define REFERENCE_DECLARE_STATIC_ARRAY(address, type, count, name) c_static_array<type, count> &name = *base_address<c_static_array<type, count>*>(address)
 
 #define FLOOR(a, b) ((a) <= (b) ? (b) : (a))
@@ -57,97 +63,13 @@ k_return_type base_address(size_t address = 0)
 #define CLAMP_LOWER(x, low, high) ((x) >= (high) - (low) ? (x) - (high) : (low))
 #define CLAMP_UPPER(x, low, high) ((x) <= (high) - (low) ? (x) + (low) : (high))
 
+#define STRINGIFY_DETAIL(x) #x
+#define STRINGIFY(x) STRINGIFY_DETAIL(x)
+
 #define try_bool(X) if (!X) return false
 
 #define k_tag_string_length 32
 #define k_tag_long_string_length 256
-
-// 4-character tag group identifier
-typedef unsigned long tag;
-static_assert(sizeof(tag) == 0x4);
-
-enum : tag
-{
-	_tag_none = 0xFFFFFFFF
-};
-
-// 8-bit unsigned integer ranging from 0 to 255
-typedef unsigned char uchar;
-static_assert(sizeof(uchar) == 0x1);
-
-// 16-bit unsigned integer ranging from 0 to 65,535
-typedef unsigned short ushort;
-static_assert(sizeof(ushort) == 0x2);
-
-// 32-bit unsigned integer ranging from 0 to 4,294,967,295
-typedef unsigned long ulong;
-static_assert(sizeof(ulong) == 0x4);
-
-// 64-bit signed integer ranging from -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
-typedef long long long64;
-static_assert(sizeof(long64) == 0x8);
-
-// 64-bit unsigned integer ranging from 0 to 18,446,744,073,709,551,615
-typedef unsigned long long ulong64;
-static_assert(sizeof(ulong64) == 0x8);
-
-// 32-character ascii string
-typedef char string[32];
-static_assert(sizeof(string) == 0x20);
-
-// 256-character ascii string
-typedef char long_string[256];
-static_assert(sizeof(long_string) == 0x100);
-
-// a 32-bit string identifier
-typedef unsigned long string_id;
-static_assert(sizeof(string_id) == 0x4);
-
-// 8-bit unsigned integer ranging from 0 to 255
-typedef unsigned char byte;
-static_assert(sizeof(byte) == 0x1);
-
-// 16-bit unsigned integer ranging from 0 to 65,535
-typedef unsigned short word;
-static_assert(sizeof(word) == 0x2);
-
-// 32-bit unsigned integer ranging from 0 to 4,294,967,295
-typedef unsigned long dword;
-static_assert(sizeof(dword) == 0x4);
-
-// 64-bit unsigned integer ranging from 0 to 18,446,744,073,709,551,615
-typedef unsigned long long qword;
-static_assert(sizeof(qword) == 0x8);
-
-// 8-bit enumerator value
-typedef char char_enum;
-static_assert(sizeof(char_enum) == 0x1);
-
-// 16-bit enumerator value
-typedef short short_enum;
-static_assert(sizeof(short_enum) == 0x2);
-
-// 32-bit enumerator value
-typedef long long_enum;
-static_assert(sizeof(long_enum) == 0x4);
-
-// 8-bit flags container
-typedef byte byte_flags;
-static_assert(sizeof(byte_flags) == 0x1);
-
-// 16-bit flags container
-typedef word word_flags;
-static_assert(sizeof(word_flags) == 0x2);
-
-// 32-bit flags container
-typedef dword dword_flags;
-static_assert(sizeof(dword_flags) == 0x4);
-
-// 32-bit floating-point number ranging from 1.175494351e-38F to 3.402823466e+38F
-typedef float real;
-static_assert(sizeof(real) == 0x4);
-
-typedef char utf8;
 
 #define SIZEOF_BITS(value) 8 * sizeof(value)
 
@@ -209,9 +131,9 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 //	} \
 //} while (false)
 
-#define ASSERT2(STATEMENT) assert(STATEMENT)
-//#define ASSERT2(STATEMENT) ASSERT_EXCEPTION2(STATEMENT, true)
-//#define ASSERT_EXCEPTION2(STATEMENT, IS_EXCEPTION, ...) \
+#define VASSERT(STATEMENT) assert(STATEMENT)
+//#define VASSERT(STATEMENT) VASSERT_EXCEPTION(STATEMENT, true)
+//#define VASSERT_EXCEPTION(STATEMENT, IS_EXCEPTION, ...) \
 //do { \
 //	if (!handle_assert_as_exception(STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
 //	{ \
@@ -228,11 +150,8 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 #define ASSERT(STATEMENT, ...) do { } while (false)
 #define ASSERT_EXCEPTION(STATEMENT, ...) do { } while (false)
 
-#define ASSERT2(STATEMENT, ...) do { } while (false)
-#define ASSERT_EXCEPTION2(STATEMENT, ...) do { } while (false)
-
-#define ASSERT3(STATEMENT, ...) do { } while (false)
-#define ASSERT_EXCEPTION3(STATEMENT, ...) do { } while (false)
+#define VASSERT(STATEMENT, ...) do { } while (false)
+#define VASSERT_EXCEPTION(STATEMENT, ...) do { } while (false)
 
 #endif
 
@@ -240,24 +159,35 @@ extern int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size
 extern void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size);
 extern void* (__cdecl* csmemset)(void* _Dst, int _Val, size_t _Size);
 
+struct csstrtok_data
+{
+	char* unknown1;
+	char* unknown2;
+	char* unknown3;
+};
+
 extern long csstricmp(char const* s1, char const* s2);
 extern long csstrcmp(char const* s1, char const* s2);
 extern long csstrncmp(char const* s1, char const* s2, dword size);
-//extern long csstrnicmp(char const* s1, char const* s2, dword size);
-//extern char* csstristr(char const* s1, char const* s2);
+extern long csstrnicmp(char const* s1, char const* s2, dword size);
+extern char* csstristr(char const* s1, char const* s2);
 extern char* csstrnzcpy(char* s1, char const* s2, dword size);
 extern char* csstrnzcat(char* s1, char const* s2, dword size);
 extern dword csstrnlen(char const* s, dword size);
 extern char* csstrnupr(char* s, dword size);
 extern char* csstrnlwr(char* s, dword size);
 extern char const* csstrstr(char const* s1, char const* s2);
-//extern char* csstrtok(char*, char const*, bool, struct csstrtok_data* data);
+extern char* csstrtok(char* a1, char const* delimiters, bool a3, csstrtok_data* data);
 extern long cvsnzprintf(char* buffer, dword size, char const* format, va_list list);
 extern char* csnzprintf(char* buffer, dword size, char const* format, ...);
 extern char* csnzappendf(char* buffer, dword size, char const* format, ...);
-extern bool string_is_not_empty(char const* s);
-extern char* strncpy_debug(char* s1, dword size1, char const* s2, dword size2);
+extern char* strncpy_debug(char* s1, char const* s2, dword size);
 extern long strlen_debug(char const* s);
+extern bool string_is_not_empty(char const* s);
+extern void string_terminate_at_first_delimiter(char* s, const char* delimiter);
+
+extern bool ascii_isupper(char C);
+extern void ascii_strnlwr(char* string, long count);
 
 template<typename t_type, long k_count>
 void zero_array(t_type(&data)[k_count])
@@ -266,6 +196,130 @@ void zero_array(t_type(&data)[k_count])
 }
 
 long __fastcall bit_vector_count_bits(const dword* bit_mask, int bit_count);
+
+template<typename t_type>
+class c_wrapped_array
+{
+public:
+	c_wrapped_array()
+	{
+		set_elements(nullptr, 0);
+	}
+
+	template<long k_element_count>
+	c_wrapped_array(t_type(&elements)[k_element_count])
+	{
+		set_elements(elements, k_element_count);
+	}
+
+	void set_elements(t_type* elements, long element_count)
+	{
+		m_count = element_count;
+		m_elements = elements;
+	}
+
+	long count() const
+	{
+		return m_count;
+	}
+
+	t_type* begin()
+	{
+		return m_elements;
+	}
+
+	t_type* end()
+	{
+		return m_elements + m_count;
+	}
+
+	bool valid_index(long index)
+	{
+		return VALID_INDEX(index, count());
+	}
+
+	t_type& operator[](long index)
+	{
+		ASSERT(valid_index(index));
+
+		return m_elements[index];
+	}
+
+	//protected:
+	long m_count;
+	t_type* m_elements;
+};
+
+template<typename t_type>
+class c_basic_buffer
+{
+public:
+	//c_basic_buffer() :
+	//	m_buffer(nullptr),
+	//	m_size(0)
+	//{
+	//}
+	//
+	//c_basic_buffer(void* start, ulong size) :
+	//	m_buffer(start),
+	//	m_size(size)
+	//{
+	//}
+	//
+	//c_basic_buffer(void* start, ulong size) :
+	//	m_buffer(start),
+	//	m_size(size)
+	//{
+	//}
+	//
+	//c_basic_buffer(void* start, const void* end) :
+	//	m_buffer(start),
+	//	m_size(pointer_distance(start, end))
+	//{
+	//	ASSERT(start <= end);
+	//}
+
+	void clear()
+	{
+		m_buffer = nullptr;
+		m_size = 0;
+	}
+
+	void set_buffer(t_type* start, ulong size)
+	{
+		ASSERT(start || size == 0);
+
+		m_buffer = start;
+		m_size = size;
+	}
+
+	void set_buffer(t_type* start, t_type* end)
+	{
+		ASSERT(start <= end);
+
+		m_buffer = start;
+		m_size = pointer_distance(start, end);
+	}
+
+	ulong size()
+	{
+		return m_size;
+	}
+
+	t_type* begin() const
+	{
+		return m_buffer;
+	}
+
+	t_type* end() const
+	{
+		return (t_type*)offset_pointer(m_buffer, m_size);
+	}
+
+	//protected:
+	t_type* m_buffer;
+	ulong m_size;
+};
 
 template<typename t_type, long k_count>
 struct c_static_array
@@ -1077,6 +1131,15 @@ protected:
 	char m_string[k_maximum_count];
 };
 
+class c_string_builder :
+	public c_static_string<1024>
+{
+public:
+	c_string_builder();
+	c_string_builder(const char* format, ...);
+	~c_string_builder();
+};
+
 extern char* tag_to_string(tag _tag, char* buffer);
 
 struct c_string_id
@@ -1126,40 +1189,40 @@ T rotate_left(T value, int count)
 #define __ROR4__(value, count) rotate_left(static_cast<dword>(value), -count)
 #define __ROR8__(value, count) rotate_left(static_cast<qword>(value), -count)
 
-//extern real_argb_color const* const& global_real_argb_white;
-//extern real_argb_color const* const& global_real_argb_grey;
-//extern real_argb_color const* const& global_real_argb_black;
-//extern real_argb_color const* const& global_real_argb_red;
-//extern real_argb_color const* const& global_real_argb_green;
-//extern real_argb_color const* const& global_real_argb_blue;
-//extern real_argb_color const* const& global_real_argb_yellow;
-//extern real_argb_color const* const& global_real_argb_cyan;
-//extern real_argb_color const* const& global_real_argb_magenta;
-//extern real_argb_color const* const& global_real_argb_pink;
-//extern real_argb_color const* const& global_real_argb_lightblue;
-//extern real_argb_color const* const& global_real_argb_orange;
-//extern real_argb_color const* const& global_real_argb_purple;
-//extern real_argb_color const* const& global_real_argb_aqua;
-//extern real_argb_color const* const& global_real_argb_darkgreen;
-//extern real_argb_color const* const& global_real_argb_salmon;
-//extern real_argb_color const* const& global_real_argb_violet;
-//extern real_rgb_color const* const& global_real_rgb_white;
-//extern real_rgb_color const* const& global_real_rgb_grey;
-//extern real_rgb_color const* const& global_real_rgb_black;
-//extern real_rgb_color const* const& global_real_rgb_red;
-//extern real_rgb_color const* const& global_real_rgb_green;
-//extern real_rgb_color const* const& global_real_rgb_blue;
-//extern real_rgb_color const* const& global_real_rgb_yellow;
-//extern real_rgb_color const* const& global_real_rgb_cyan;
-//extern real_rgb_color const* const& global_real_rgb_magenta;
-//extern real_rgb_color const* const& global_real_rgb_pink;
-//extern real_rgb_color const* const& global_real_rgb_lightblue;
-//extern real_rgb_color const* const& global_real_rgb_orange;
-//extern real_rgb_color const* const& global_real_rgb_purple;
-//extern real_rgb_color const* const& global_real_rgb_aqua;
-//extern real_rgb_color const* const& global_real_rgb_darkgreen;
-//extern real_rgb_color const* const& global_real_rgb_salmon;
-//extern real_rgb_color const* const& global_real_rgb_violet;
+extern const real_argb_color* const global_real_argb_white;
+extern const real_argb_color* const global_real_argb_grey;
+extern const real_argb_color* const global_real_argb_black;
+extern const real_argb_color* const global_real_argb_red;
+extern const real_argb_color* const global_real_argb_green;
+extern const real_argb_color* const global_real_argb_blue;
+extern const real_argb_color* const global_real_argb_yellow;
+extern const real_argb_color* const global_real_argb_cyan;
+extern const real_argb_color* const global_real_argb_magenta;
+extern const real_argb_color* const global_real_argb_pink;
+extern const real_argb_color* const global_real_argb_lightblue;
+extern const real_argb_color* const global_real_argb_orange;
+extern const real_argb_color* const global_real_argb_purple;
+extern const real_argb_color* const global_real_argb_aqua;
+extern const real_argb_color* const global_real_argb_darkgreen;
+extern const real_argb_color* const global_real_argb_salmon;
+extern const real_argb_color* const global_real_argb_violet;
+extern const real_rgb_color* const global_real_rgb_white;
+extern const real_rgb_color* const global_real_rgb_grey;
+extern const real_rgb_color* const global_real_rgb_black;
+extern const real_rgb_color* const global_real_rgb_red;
+extern const real_rgb_color* const global_real_rgb_green;
+extern const real_rgb_color* const global_real_rgb_blue;
+extern const real_rgb_color* const global_real_rgb_yellow;
+extern const real_rgb_color* const global_real_rgb_cyan;
+extern const real_rgb_color* const global_real_rgb_magenta;
+extern const real_rgb_color* const global_real_rgb_pink;
+extern const real_rgb_color* const global_real_rgb_lightblue;
+extern const real_rgb_color* const global_real_rgb_orange;
+extern const real_rgb_color* const global_real_rgb_purple;
+extern const real_rgb_color* const global_real_rgb_aqua;
+extern const real_rgb_color* const global_real_rgb_darkgreen;
+extern const real_rgb_color* const global_real_rgb_salmon;
+extern const real_rgb_color* const global_real_rgb_violet;
 
 long bit_count(long val);
 long __fastcall index_from_mask(const dword* mask, long bit_count); // first index?
@@ -1167,8 +1230,10 @@ long __fastcall index_from_mask(const dword* mask, long bit_count); // first ind
 struct c_allocation_base
 {
 public:
-	virtual void* allocate(dword allocation, char const* name);
-	virtual void deallocate(void* buffer);
+	c_allocation_base();
+
+	virtual void* allocate(dword allocation, char const* name) = 0;
+	virtual void deallocate(void* buffer) = 0;
 };
 
 struct c_system_allocation :

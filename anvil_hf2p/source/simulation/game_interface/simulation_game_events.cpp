@@ -88,7 +88,7 @@ void simulation_event_generate_for_client_player_mask(e_simulation_event_type ev
 	{
 		if (player_mask.test(player_index))
 		{
-			player_datum* player = (player_datum*)datum_try_and_get_absolute(*players, player_index);
+			player_datum* player = (player_datum*)datum_try_and_get_absolute(players, player_index);
 			if (!player)
 			{
 				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: Failed to get a player for index %d for event %d/%s\n",

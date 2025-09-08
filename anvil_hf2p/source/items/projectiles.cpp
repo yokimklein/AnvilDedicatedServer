@@ -21,7 +21,7 @@ void __fastcall projectile_detonate_effects_and_damage(datum_index projectile_in
             if (unit_player_index != NONE)
             {
                 TLS_DATA_GET_VALUE_REFERENCE(players);
-                if (datum_try_and_get(*players, unit_player_index))
+                if (datum_try_and_get(players, unit_player_index))
                 {
                     player_index = unit_player_index;
                 }

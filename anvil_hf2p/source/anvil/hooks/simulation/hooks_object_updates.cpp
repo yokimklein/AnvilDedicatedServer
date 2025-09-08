@@ -25,7 +25,7 @@ __declspec(safebuffers) void __fastcall object_update_hook()
     __asm mov object_index, edi;
 
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
-    object_header_datum* object_header = (object_header_datum*)datum_get(*object_headers, object_index);
+    object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, object_index);
     
     // we've left the scope of this if check where we've hooked, so we need to check it again
     if (!object_header->flags.test(_object_header_do_not_update_bit))
@@ -305,7 +305,7 @@ __declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
     __asm mov unit, esi;
     TLS_DATA_GET_VALUE_REFERENCE(players);
 
-    player_datum* player_data = &players[unit->unit.player_index];
+    player_datum* player_data = (player_datum*)datum_get(players, unit->unit.player_index);
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 

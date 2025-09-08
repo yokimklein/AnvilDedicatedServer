@@ -140,7 +140,7 @@ bool __stdcall c_simulation_player_respawn_request_event_definition__apply_game_
 	}
 
 	TLS_DATA_GET_VALUE_REFERENCE(players);
-	player_datum* player_data = (player_datum*)datum_try_and_get_absolute(*players, player_absolute_index);
+	player_datum* player_data = (player_datum*)datum_try_and_get_absolute(players, player_absolute_index);
 	if (!player_data || player_data->unit_index != NONE)
 	{
 		return false;

@@ -187,24 +187,34 @@ struct s_game_globals_grenade
 };
 static_assert(sizeof(s_game_globals_grenade) == 0x44);
 
+constexpr long NUMBER_OF_INTERFACE_TAGS = 14;
 struct s_game_globals_interface_tag_references
 {
 	struct gfx_ui_string_block;
 
-	c_typed_tag_reference<BITMAP_TAG> obsolete1; // spinner bitmap
-	c_typed_tag_reference<BITMAP_TAG> obsolete2;
-	c_typed_tag_reference<COLOR_TABLE_TAG> screen_color_table;
-	c_typed_tag_reference<COLOR_TABLE_TAG> hud_color_table;
-	c_typed_tag_reference<COLOR_TABLE_TAG> editor_color_table;
-	c_typed_tag_reference<COLOR_TABLE_TAG> dialog_color_table;
-	c_typed_tag_reference<BITMAP_TAG> motion_sensor_sweep_bitmap;
-	c_typed_tag_reference<BITMAP_TAG> motion_sensor_sweep_bitmap_mask;
-	c_typed_tag_reference<BITMAP_TAG> multiplayer_hud_bitmap;
-	s_tag_reference unused;
-	c_typed_tag_reference<BITMAP_TAG> motion_sensor_blip_bitmap;
-	c_typed_tag_reference<BITMAP_TAG> interface_goo_map1;
-	c_typed_tag_reference<BITMAP_TAG> interface_goo_map2;
-	c_typed_tag_reference<BITMAP_TAG> interface_goo_map3;
+	union
+	{
+		struct _tag_references
+		{
+			c_typed_tag_reference<BITMAP_TAG> obsolete1; // spinner bitmap
+			c_typed_tag_reference<BITMAP_TAG> obsolete2;
+			c_typed_tag_reference<COLOR_TABLE_TAG> screen_color_table;
+			c_typed_tag_reference<COLOR_TABLE_TAG> hud_color_table;
+			c_typed_tag_reference<COLOR_TABLE_TAG> editor_color_table;
+			c_typed_tag_reference<COLOR_TABLE_TAG> dialog_color_table;
+			c_typed_tag_reference<BITMAP_TAG> motion_sensor_sweep_bitmap;
+			c_typed_tag_reference<BITMAP_TAG> motion_sensor_sweep_bitmap_mask;
+			c_typed_tag_reference<BITMAP_TAG> multiplayer_hud_bitmap;
+			s_tag_reference unused;
+			c_typed_tag_reference<BITMAP_TAG> motion_sensor_blip_bitmap;
+			c_typed_tag_reference<BITMAP_TAG> interface_goo_map1;
+			c_typed_tag_reference<BITMAP_TAG> interface_goo_map2;
+			c_typed_tag_reference<BITMAP_TAG> interface_goo_map3;
+		} interface_tag_references;
+		s_tag_reference interface_tags[NUMBER_OF_INTERFACE_TAGS];
+		static_assert((sizeof(s_tag_reference) * NUMBER_OF_INTERFACE_TAGS) == sizeof(_tag_references));
+	};
+
 	c_typed_tag_reference<USER_INTERFACE_GLOBALS_DEFINITION_TAG> mainmenu_ui_globals;
 	c_typed_tag_reference<USER_INTERFACE_GLOBALS_DEFINITION_TAG> singleplayer_ui_globals;
 	c_typed_tag_reference<USER_INTERFACE_GLOBALS_DEFINITION_TAG> multiplayer_ui_globals;
@@ -226,17 +236,20 @@ struct s_game_globals
 	c_typed_tag_block<s_game_globals_difficulty_information> difficulty;
 	c_typed_tag_block<s_game_globals_grenade> grenades;
 	s_tag_block unused2;
-	c_typed_tag_block<s_game_globals_interface_tag_references> interface_tag_references;
+	c_typed_tag_block<s_game_globals_interface_tag_references> interface_tags;
 	byte data2[0x60];
 	c_typed_tag_reference<MULTIPLAYER_GLOBALS_TAG> multiplayer_globals;
 	c_typed_tag_reference<SURVIVAL_MODE_GLOBALS_TAG> survival_globals;
 	c_typed_tag_reference<HF2P_GLOBALS_TAG> armor_globals;
-	byte data3[0x434];
+	byte data3[0x348];
+	c_typed_tag_reference<RASTERIZER_GLOBALS_TAG> rasterizer_globals_ref;
+	byte data4[0xDC];
 };
 static_assert(sizeof(s_game_globals) == 0x614);
 static_assert(0x120 == OFFSETOF(s_game_globals, difficulty));
 static_assert(0x1B0 == OFFSETOF(s_game_globals, multiplayer_globals));
 static_assert(0x1D0 == OFFSETOF(s_game_globals, armor_globals));
+static_assert(0x528 == OFFSETOF(s_game_globals, rasterizer_globals_ref));
 
 real game_difficulty_get_value_by_difficulty(short value_type, e_campaign_difficulty_level difficulty_level);
 real __fastcall game_difficulty_get_team_value(short value_type, e_game_team team);

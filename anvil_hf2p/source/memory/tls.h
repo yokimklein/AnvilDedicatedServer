@@ -10,6 +10,53 @@
 #include <game\survival_mode.h>
 #include <ai\actors.h>
 #include <camera\director_globals.h>
+#include <cache\restricted_memory_regions.h>
+#include <multithreading\threads.h>
+
+template<long index, void(__cdecl* tls_pre_overwrite_fixup_callback)(void*) = nullptr, void(__cdecl* tls_post_copy_fixup_callback)(void*) = nullptr, void(__cdecl* tls_update_callback)(void*) = nullptr>
+struct t_restricted_allocation_manager : public c_allocation_base
+{
+public:
+	t_restricted_allocation_manager()
+	{
+		m_member_index = NONE;
+		m_thread_id = NONE;
+	}
+	~t_restricted_allocation_manager()
+	{
+
+	}
+
+	void* allocate(ulong allocation, const char* name) override
+	{
+		// $TODO:
+		return NULL;
+	}
+
+	void deallocate(void* buffer) override
+	{
+		// $TODO:
+		return;
+	}
+
+	void* reserve_memory(const char* name, const char* type, unsigned int allocation, long alignment_bits)
+	{
+		ASSERT(!valid());
+		m_member_index = restricted_region_add_member(index, name, type, allocation, alignment_bits, tls_update_callback, tls_pre_overwrite_fixup_callback, tls_post_copy_fixup_callback);
+		m_thread_id = get_current_thread_index();
+		return restricted_region_get_member_address(index, m_member_index);
+	}
+
+	bool valid() const
+	{
+		return m_member_index != NONE && m_thread_id != NONE;
+	}
+
+protected:
+	long m_member_index;
+	long m_thread_id;
+};
+static_assert(sizeof(t_restricted_allocation_manager<NONE>) == 0xC);
 
 struct s_thread_local_storage
 {
@@ -53,10 +100,10 @@ struct s_thread_local_storage
 	s_survival_mode_globals* survival_mode_globals;
 	byte* __unknown98; // recycling_group
 	byte* __unknown9C; // effect location
-	byte* __unknownA0;
+	byte* g_cortana_globals;
 	byte* __unknownA4; // rasterizer game states?
 	byte* __unknownA8; // vocalization records
-	byte* __unknownAC;
+	struct s_font_cache_globals* g_font_cache_globals;
 	byte* __unknownB0;
 	struct s_game_sound_globals* game_sound_globals;
 	byte* __unknownB8;
@@ -71,7 +118,7 @@ struct s_thread_local_storage
 	byte* __unknownDC; // g_object_scripting_state?
 	byte* __unknownE0; // flocks
 	byte* effect_counts;
-	byte* __unknownE8;
+	byte* hs_runtime_globals;
 	byte* __unknownEC; // objectives
 	byte* __unknownF0;
 	byte* __unknownF4; // squad group
@@ -107,7 +154,7 @@ struct s_thread_local_storage
 	byte* __unknown16C;
 	byte* __unknown170; // c_particle_emitter_gpu::s_row
 	byte* __unknown174;
-	byte* __unknown178;
+	byte* g_water_interaction_events;
 	byte* __unknown17C;
 	byte* __unknown180; // object list header 
 	byte* __unknown184; // screen_effect
@@ -126,9 +173,9 @@ struct s_thread_local_storage
 	byte* __unknown1B8; // beam
 	byte* __unknown1BC; // impact_arrays
 	byte* __unknown1C0;
-	byte* __unknown1C4;
+	byte* g_rasterizer_implicit_geometry_globals;
 	byte* __unknown1C8; // c_contrail_gpu::s_row
-	byte* __unknown1CC; // hue saturation control?
+	byte* hue_saturation_control;
 	byte* __unknown1D0;
 	byte* __unknown1D4; // c_beam_gpu::s_row
 	byte* __unknown1D8; // c_light_volume_gpu::s_row
@@ -192,7 +239,7 @@ struct s_thread_local_storage
 	byte* __unknown2C0;
 	byte* __unknown2C4;
 	byte* __unknown2C8;
-	byte* __unknown2CC; // used
+	long g_registered_thread_index;
 	byte* __unknown2D0; // cluster light reference
 	byte* __unknown2D4; // light cluster reference
 	byte* __unknown2D8;
@@ -202,11 +249,7 @@ struct s_thread_local_storage
 	byte* __unknown2E8;
 	byte* __unknown2EC;
 	byte* __unknown2F0;
-	byte* __unknown2F4;
-	byte* __unknown2F8;
-	byte* __unknown2FC;
-	byte* __unknown300; // used
-	byte* __unknown304;
+	void* g_restricted_address[k_total_restricted_memory_regions];
 	byte* __unknown308;
 	byte* __unknown30C;
 	byte* __unknown310;

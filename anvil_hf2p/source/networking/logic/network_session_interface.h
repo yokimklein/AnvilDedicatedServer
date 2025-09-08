@@ -12,7 +12,7 @@ struct s_network_session_interface_user
 {
     long user_state;
     s_player_identifier player_identifier;
-    e_controller_index controller_index;
+    enum e_controller_index controller_index;
     s_player_configuration player_data;
     long player_update_number;
     c_static_string<64> override_hopper_directory;
