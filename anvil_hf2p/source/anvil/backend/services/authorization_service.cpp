@@ -2,6 +2,7 @@
 #include <anvil\config.h>
 #include <anvil\backend\lobby.h>
 #include <networking\network_time.h>
+#include <cseries\cseries_events.h>
 
 void c_backend::authorization_service::initialise(c_backend::resolved_endpoint* endpoint)
 {
@@ -104,13 +105,13 @@ void c_backend::authorization_service::enqueue::response(s_backend_response* res
 
         if (body.Position != 0 || body.Token.State != 2)
         {
-            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": API attempted to hold game server in the login queue - this should never happen!\n");
+            event(_event_critical, "backend:authorization_service: API attempted to hold game server in the login queue - this should never happen!");
         }
         else
         {
             m_authorisation_token = body.Token.Token;
             m_last_token_refresh = network_time_get();
-            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": enqueue successful\n");
+            event(_event_status, "backend:authorization_service: enqueue successful");
             m_session_state = _backend_session_authenticating;
             m_status.status = _request_status_received;
             return;
@@ -261,7 +262,7 @@ void c_backend::authorization_service::refresh_tokens::response(s_backend_respon
 
         if (body.tokens.size() != 2)
         {
-            printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received invalid number of tokens! [%d]\n", body.tokens.size());
+            event(_event_error, "backend:authorization_service: received invalid number of tokens! [%d]", body.tokens.size());
         }
         else
         {

@@ -10,6 +10,7 @@
 #include "anvil\config.h"
 #include "anvil\backend\cache.h"
 #include <networking\network_time.h>
+#include <cseries\cseries_events.h>
 
 e_player_vote_selection g_anvil_vote_selections[k_maximum_multiplayer_players]{};
 dword g_anvil_return_from_game_time = NONE;
@@ -28,6 +29,8 @@ long rand_range(long min, long max)
 };
 void anvil_session_start_voting(c_network_session* session)
 {
+    event(_event_message, "networking:" __FUNCTION__ ": starting vote...");
+
     // $TODO: pull default playlist from multiplayer defaults if we don't have one or if the assigned playlist is invalid
     if (!g_backend_data_cache.m_playlists.contains(g_anvil_configuration["playlist_id"]))
     {

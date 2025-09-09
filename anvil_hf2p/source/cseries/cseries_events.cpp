@@ -164,6 +164,15 @@ const s_event_category_default_configuration g_log_events[]
 		_event_message
 	},
 	{
+		"xoverlapped:",
+		k_event_level_none,
+		{ 1.0f, 0.4f, 0.7f },
+		_event_message,
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
 		"networking:spawning:",
 		k_event_level_none,
 		{ 1.0f, 0.4f, 0.7f },
@@ -186,7 +195,7 @@ const s_event_category_default_configuration g_log_events[]
 		_event_warning,
 		{ 1.0f, 0.4f, 0.7f },
 		_event_message,
-		"networking_debug.txt",
+		NULL,
 		build_networking_buffer_for_log,
 		_event_message
 	},
@@ -213,7 +222,7 @@ const s_event_category_default_configuration g_log_events[]
 		k_event_level_none,
 		{ 1.0f, 0.5f, 0.0f },
 		_event_message,
-		"ui_debug.txt",
+		NULL,
 		NULL,
 		_event_message
 	},
@@ -222,7 +231,52 @@ const s_event_category_default_configuration g_log_events[]
 		k_event_level_none,
 		{ 1.0f, 0.5f, 0.0f },
 		_event_message,
-		"ui_debug.txt",
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
+		"ui:alert:",
+		k_event_level_none,
+		{ 1.0f, 0.5f, 0.0f },
+		_event_message,
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
+		"ui:dialog:",
+		k_event_level_none,
+		{ 1.0f, 0.5f, 0.0f },
+		_event_message,
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
+		"ui:custom_bitmaps:",
+		k_event_level_none,
+		{ 1.0f, 0.5f, 0.0f },
+		_event_message,
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
+		"ui:profile:campaign:",
+		k_event_level_none,
+		{ 1.0f, 0.5f, 0.0f },
+		_event_message,
+		NULL,
+		NULL,
+		_event_message
+	},
+	{
+		"campaign:",
+		k_event_level_none,
+		{ 1.0f, 0.5f, 0.0f },
+		_event_message,
+		NULL,
 		NULL,
 		_event_message
 	},
@@ -258,7 +312,7 @@ const s_event_category_default_configuration g_log_events[]
 		k_event_level_none,
 		{ 0.7f, 0.7f, 0.5f },
 		k_event_level_none,
-		"animation_audio_content_debug_4tx_",
+		"animation_audio_content_debug.txt",
 		NULL,
 		k_event_level_none
 	},
@@ -327,12 +381,21 @@ const s_event_category_default_configuration g_log_events[]
 	},
 	{
 		"system:",
-		_event_warning,
+		_event_error,
 		{ 1.0f, 1.0f, 1.0f },
 		_event_message,
 		"system_log.txt",
 		NULL,
-		k_event_level_none
+		_event_warning
+	},
+	{
+		"bitmaps:",
+		_event_error,
+		{ 1.0f, 1.0f, 1.0f },
+		_event_message,
+		"bitmaps_log.txt",
+		NULL,
+		_event_warning
 	},
 	{
 		"cache:",
@@ -351,6 +414,42 @@ const s_event_category_default_configuration g_log_events[]
 		NULL,
 		NULL,
 		k_event_level_none
+	},
+	{
+		"inspection:",
+		_event_message,
+		{ 1.0f, 1.0f, 1.0f },
+		_event_message,
+		NULL,
+		NULL,
+		k_event_level_none
+	},
+	{
+		"shader:",
+		_event_message,
+		{ 1.0f, 1.0f, 1.0f },
+		_event_message,
+		NULL,
+		NULL,
+		k_event_level_none
+	},
+	{
+		"bink:",
+		k_event_level_none,
+		{ 1.0f, 1.0f, 1.0f },
+		_event_message,
+		"bink_log.txt",
+		NULL,
+		k_event_level_none
+	},
+	{
+		"backend:",
+		k_event_level_none,
+		{ 0.2f, 0.2f, 1.0f },
+		_event_message,
+		"backend_log.txt",
+		NULL,
+		_event_message
 	},
 };
 
@@ -690,7 +789,7 @@ bool events_initialize_if_possible()
 		event_globals.disable_event_suppression = false;
 		event_globals.enable_spam_suppression = shell_application_type() != _shell_application_tool;
 		event_globals.dump_to_stderr = shell_application_type() == _shell_application_tool;
-		event_globals.current_display_level = _event_verbose;
+		event_globals.current_display_level = _event_message;
 		event_globals.current_log_level = _event_verbose;
 		event_globals.current_remote_log_level = _event_verbose;
 		event_globals.current_minimum_level = k_event_level_none;

@@ -3,6 +3,7 @@
 #include <combaseapi.h>
 #include <anvil\backend\cache.h>
 #include <anvil\backend\user.h>
+#include <cseries\cseries_events.h>
 
 void c_backend::private_service::initialise(c_backend::resolved_endpoint* endpoint)
 {
@@ -74,7 +75,7 @@ void c_backend::private_service::register_game_server::response(s_backend_respon
 
     m_status.status = _request_status_received;
     g_backend_data_cache.m_lobby_info.valid = true;
-    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received lobby identifier [%s]\n", transport_secure_identifier_get_string(&g_backend_data_cache.m_lobby_info.lobby_identifier));
+    event(_event_status, "backend:private_service: received lobby identifier [%s]", transport_secure_identifier_get_string(&g_backend_data_cache.m_lobby_info.lobby_identifier));
 }
 
 std::string c_backend::private_service::unregister_game_server::s_request::to_json()
@@ -233,13 +234,13 @@ void c_backend::private_service::retrieve_lobby_members::response(s_backend_resp
     // ensure the API hasn't returned more players than we support
     if (!VALID_INDEX(user_sessions_count, k_network_maximum_players_per_session))
     {
-        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received too many user sessions! [%d out of max %d]\n", user_sessions_count, k_network_maximum_players_per_session);
+        event(_event_error, "backend:private_service: received too many user sessions! [%d out of max %d]", user_sessions_count, k_network_maximum_players_per_session);
         m_status.status = _request_status_none;
         g_backend_data_cache.m_lobby_session.reset_user_data();
         return;
     }
 
-    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received [%d] user sessions\n", user_sessions_count);
+    event(_event_status, "backend:private_service: received [%d] user sessions", user_sessions_count);
 
     s_user_session users[k_network_maximum_players_per_session];
     csmemset(users, 0, sizeof(users));

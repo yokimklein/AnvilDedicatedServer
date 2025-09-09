@@ -76,9 +76,9 @@ void anvil_session_update()
             s_transport_secure_address secure_address = {};
             if (transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &secure_identifier, &secure_address))
             {
-                event(_event_status, "networking:" __FUNCTION__ ": session ready! address: [%s]",
+                event(_event_message, "networking:" __FUNCTION__ ": session ready! address: [%s]",
                     transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, true, false));
-                event(_event_status, "networking:" __FUNCTION__ ": serverid: [%s] lobbyid: [%s]",
+                event(_event_message, "networking:" __FUNCTION__ ": serverid: [%s] lobbyid: [%s]",
                     transport_secure_address_get_string(&secure_address),
                     transport_secure_identifier_get_string(&secure_identifier));
             }
@@ -118,7 +118,6 @@ void anvil_session_update()
     // debug server controls
     if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
     {
-        event(_event_message, "networking:" __FUNCTION__ ": starting vote...");
         anvil_session_start_voting(session);
     }
     else if (anvil_key_pressed(VK_HOME, &key_held_home))

@@ -9,6 +9,7 @@
 #include <anvil\backend\services\user_storage_service.h>
 #include <anvil\backend\services\title_resource_service.h>
 #include <anvil\backend\cache.h>
+#include <cseries\cseries_events.h>
 
 std::shared_ptr<c_backend> g_backend_services;
 
@@ -75,12 +76,16 @@ void c_backend::on_resolve(e_resolved_endpoints endpoint_type, beast::error_code
     // $TODO: handle resolution timeouts?
     if (ec)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to resolve host %s:%s! [error: %d - %s]\n", endpoint.m_host.c_str(), endpoint.m_port.c_str(), ec.value(), ec.message().c_str());
+        event(_event_error, "backend: failed to resolve host %s:%s! [error: %d - %s]",
+            endpoint.m_host.c_str(),
+            endpoint.m_port.c_str(),
+            ec.value(),
+            ec.message().c_str());
         return;
     }
     endpoint.m_resolver_results = results;
     endpoint.m_resolved = true;
-    printf("ONLINE/HTTP,STUB_LOG_FILTER: " __FUNCTION__ ": successfully resolved host %s:%s\n", endpoint.m_host.c_str(), endpoint.m_port.c_str());
+    event(_event_status, "backend: resolved host %s:%s", endpoint.m_host.c_str(), endpoint.m_port.c_str());
 }
 
 c_backend::c_backend()
@@ -127,7 +132,7 @@ void c_backend::initialise()
 {
     if (g_backend_services)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": backend already initialised!\n");
+        event(_event_warning, "backend: attempted to initialise backend when already initialised!");
         return;
     }
     g_backend_services = std::shared_ptr<c_backend>(new c_backend());
@@ -267,7 +272,7 @@ void c_backend::on_connect(std::shared_ptr<s_backend_request_data> backend_data,
 
     if (ec)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to connect to host %s:%s! [error: %d - %s]\n",
+        event(_event_error, "backend: failed to connect to host %s:%s! [error: %d - %s]",
             backend_data.get()->resolved->m_host.c_str(),
             backend_data.get()->resolved->m_port.c_str(),
             ec.value(),
@@ -290,7 +295,7 @@ void c_backend::on_write(std::shared_ptr<s_backend_request_data> backend_data, b
 
     if (ec)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to write! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: failed to write! [error: %d - %s]", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -309,7 +314,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
 
     if (ec)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to read response! [error: %d - %s]\n", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: failed to read response! [error: %d - %s]", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -334,7 +339,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
                 response.retCode = (e_backend_return_codes)obj.at("retCode").as_int64();
                 if (response.retCode != _backend_success)
                 {
-                    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": response returned failed retCode! [%d]!\n", response.retCode);
+                    event(_event_warning, "backend: response returned failed retcode! [%d]!", response.retCode);
                     s_backend_response failure_response;
                     failure_response.retCode = response.retCode;
                     backend_data.get()->response_handler(&failure_response);
@@ -352,7 +357,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
     }
     catch (const std::exception& e)
     {
-        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": failed to parse JSON! [%s]\n%s\n", e.what(), response_body.c_str());
+        event(_event_error, "backend: failed to parse JSON! [%s]\n%s", e.what(), response_body.c_str());
         s_backend_response failure_response;
         failure_response.retCode = _backend_unhandled_error;
         backend_data.get()->response_handler(&failure_response);
@@ -363,7 +368,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
 
     if (ec && ec != beast::errc::not_connected)
     {
-        printf("ONLINE/HTTP,ERR: " __FUNCTION__ ": failed to shutdown connection! [error: %d - %s]!\n", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: failed to shutdown connection! [error: %d - %s]!", ec.value(), ec.message().c_str());
     }
 }
 
@@ -394,7 +399,7 @@ ulong c_backend::make_request(s_backend_request& request_body, http::verb http_v
     backend_data.get()->response_handler = response_handler;
     backend_data.get()->request_identifier = g_backend_services->increment_request_number();
 
-    printf("ONLINE/CLIENT/REQUEST,JSON: " __FUNCTION__ ": sending request to %s:%s%s\n", resolved_endpoint.m_host.c_str(), resolved_endpoint.m_port.c_str(), backend_data.get()->endpoint.c_str());
+    event(_event_status, "backend: sending request to %s:%s%s", resolved_endpoint.m_host.c_str(), resolved_endpoint.m_port.c_str(), backend_data.get()->endpoint.c_str());
 
     backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
     backend_data.get()->stream.async_connect(resolved_endpoint.m_resolver_results, beast::bind_front_handler(&c_backend::on_connect, g_backend_services->shared_from_this(), backend_data));

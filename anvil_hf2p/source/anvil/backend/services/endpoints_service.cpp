@@ -1,5 +1,6 @@
 #include "endpoints_service.h"
 #include <anvil\backend\services\authorization_service.h>
+#include <cseries\cseries_events.h>
 
 void c_backend::endpoints_service::initialise(c_backend::resolved_endpoint* endpoint)
 {
@@ -80,7 +81,7 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
 
     if (endpoints_count == 0)
     {
-        printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received 0 endpoints!\n");
+        event(_event_warning, "backend:endpoints_service: received 0 endpoints!");
         m_status.status = _request_status_failed;
         return;
     }
@@ -101,5 +102,5 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
 
     m_authorization_endpoint_valid = true;
     m_status.status = _request_status_received;
-    printf("ONLINE/CLIENT/RESPONSE,JSON: " __FUNCTION__ ": received %d endpoints, using [%s]\n", endpoints_count, authorisation_endpoint.Name.c_str());
+    event(_event_status, "backend:endpoints_service: received %d endpoints, using [%s]", endpoints_count, authorisation_endpoint.Name.c_str());
 }
