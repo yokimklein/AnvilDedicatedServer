@@ -415,6 +415,11 @@ e_character_status __fastcall font_cache_retrieve_character_hook(ulong character
 	__asm { add esp, 8 };
 	return result;
 }
+
+__declspec(safebuffers) void __cdecl shell_dispose_hook()
+{
+	events_dispose();
+}
 #pragma runtime_checks("", restore)
 
 void __fastcall c_draw_string__set_font_hook(c_draw_string* thisptr, void* unused, e_font_id font)
@@ -446,6 +451,9 @@ void anvil_hooks_debug_apply()
 	// reimplement hs print
 	patch::function(0xD4A234, print_hs_print_1_evaluate);
 	patch::function(0xD4C028, log_print_hs_log_print_1_evaluate);
+
+	// reimplement hs events_suppress_console_display
+	patch::function(0xD4C678, events_suppress_display_events_suppress_output_1_evaluate);
 
 	// main_time_halted for console pausing
 	hook::insert(0x958FD, 0x95903, main_loop_body_hook3, _hook_replace_no_preserve);
@@ -507,4 +515,7 @@ void anvil_hooks_debug_apply()
 	hook::insert(0x16B675, 0x16B689, font_cache_load_internal_hook, _hook_replace_no_preserve);
 	hook::insert(0x25F3E8, 0x25F3FE, hardware_cache_load_character_hook, _hook_replace_no_preserve);
 	hook::insert(0x25F2E3, 0x25F300, hardware_cache_predict_character_hook, _hook_replace_no_preserve);
+
+	// events_dispose in inlined cseries_dispose @ shell_dispose
+	hook::insert(0x123A, 0x123F, shell_dispose_hook, _hook_execute_replaced_last);
 }

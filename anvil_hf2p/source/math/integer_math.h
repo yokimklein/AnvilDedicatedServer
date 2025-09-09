@@ -184,3 +184,5 @@ t_type int_pin(const t_type& val0, const t_other_type0& val1, const t_other_type
 {
 	return int_ceiling(int_floor(val0, val1), val2);
 }
+
+extern rectangle2d* set_rectangle2d(rectangle2d* rectangle, short x0, short y0, short x1, short y1);

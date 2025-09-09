@@ -22,7 +22,7 @@ enum e_category_properties_flags
 	_category_properties_display_level_bit = 0,
 	_category_properties_force_display_level_bit,
 	_category_properties_log_level_bit,
-	_category_properties_remote_log_level_bit,
+	_category_properties_remote_log_level_bit, // datamine
 	_category_properties_debugger_break_level_bit,
 	_category_properties_halt_level_bit,
 	_category_properties_event_listener_bit,
@@ -33,6 +33,7 @@ enum e_category_properties_flags
 enum
 {
 	k_error_message_buffer_maximum_size = 2048,
+	k_spamming_event_display_timeout = 3000,
 };
 
 struct s_spamming_event
@@ -108,7 +109,7 @@ struct s_event_globals
 	long console_suppression_count;
 	long console_suppression_old_line_check_time;
 	short message_buffer_size;
-	char message_buffer[2048];
+	char message_buffer[k_error_message_buffer_maximum_size];
 	long external_primary_event_log_index;
 	long internal_primary_event_log_index;
 	long internal_primary_full_event_log_index;
@@ -117,6 +118,7 @@ struct s_event_globals
 	long event_index;
 	c_static_array<c_event_listener*, 8> event_listeners;
 	c_static_array<s_spamming_event, 64> spamming_event_list;
+	ulong last_console_response_event_time;
 	bool enable_events;
 	bool enable_spam_suppression;
 	bool dump_to_stderr;
@@ -126,7 +128,7 @@ struct s_event_globals
 	bool suppress_console_display_and_show_spinner;
 	long permitted_thread_bits;
 };
-static_assert(sizeof(s_event_globals) == 0x82B6C);
+static_assert(sizeof(s_event_globals) == 0x82B70);
 
 class c_event
 {
@@ -158,6 +160,8 @@ inline thread_local s_event_context g_event_context_stack[32]{};
 
 extern s_event_globals event_globals;
 extern bool g_events_initialized;
+extern bool g_events_initializing_cookie;
+extern bool events_force_no_log;
 extern c_read_write_lock g_event_read_write_lock;
 
 extern const char* const k_event_level_names[k_event_level_count + 1];
@@ -171,10 +175,12 @@ struct s_file_reference;
 extern s_file_reference* __cdecl create_report_file_reference(s_file_reference* info, const char* filename, bool use_sub_directory);
 extern void events_clear();
 extern void events_debug_render();
+extern void events_dispose();
 extern const char* events_get();
 extern void events_initialize();
 extern long event_interlocked_compare_exchange(long volatile* destination, long exchange, long comperand);
 extern void event_logs_flush();
+extern void events_suppress_output(bool suppress);
 
 //#define USE_CONSOLE_FOR_EVENTS
 
@@ -192,7 +198,9 @@ do { \
 	{ \
 		long event_category_index = local_event.generate(__VA_ARGS__); \
 		if (x_event_category_index == NONE) \
+		{ \
 			event_interlocked_compare_exchange(&x_event_category_index, event_category_index, NONE); \
+		} \
 	} \
 } while (false)
 #define event_no_console(severity, ...) do { /* $TODO: implement me */ } while (false)

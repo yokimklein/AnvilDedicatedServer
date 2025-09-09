@@ -73,3 +73,12 @@ void color_regamma(const real_linear_rgb_color* linear_color, real_rgb_color* ga
 	gamma_color->green = value_regamma(linear_color->green);
 	gamma_color->blue = value_regamma(linear_color->blue);
 }
+
+real_rgb_color interpolate_real_rgb_color(const real_rgb_color* a, const real_rgb_color* b, real t)
+{
+	real_rgb_color result;
+	result.red = interpolate_linear(a->red, b->red, t);
+	result.green = interpolate_linear(a->green, b->green, t);
+	result.blue = interpolate_linear(a->blue, b->blue, t);
+	return result;
+}

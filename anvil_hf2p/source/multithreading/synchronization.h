@@ -381,5 +381,5 @@ extern void __fastcall internal_semaphore_take(long semaphore_id);
 //extern void __cdecl release_locks_safe_for_crash_release();
 //extern void __cdecl render_synchronization_stats();
 //extern long __cdecl sempahore_get_max_signal_count(long semaphore_id);
-//extern bool __cdecl synchronization_objects_initialized();
+extern bool synchronization_objects_initialized();
 //extern bool __cdecl wait_for_single_object_internal(void* handle, ulong timeout_in_milliseconds);

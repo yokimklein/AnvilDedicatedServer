@@ -699,6 +699,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\main\main_render.cpp" />
     <ClCompile Include="source\main\main_time.cpp" />
     <ClCompile Include="source\math\color_math.cpp" />
+    <ClCompile Include="source\math\integer_math.cpp" />
     <ClCompile Include="source\math\matrix_math.cpp" />
     <ClCompile Include="source\math\random_math.cpp" />
     <ClCompile Include="source\math\real_math.cpp" />

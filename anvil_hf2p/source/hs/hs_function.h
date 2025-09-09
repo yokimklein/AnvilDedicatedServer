@@ -26,3 +26,4 @@ extern const hs_function_definition* (&hs_function_table)[hs_function_table_coun
 
 extern void __cdecl print_hs_print_1_evaluate(short function_index, long thread_index, bool initialize);
 extern void __cdecl log_print_hs_log_print_1_evaluate(short function_index, long thread_index, bool initialize);
+extern void __cdecl events_suppress_display_events_suppress_output_1_evaluate(short function_index, long thread_index, bool initialize);

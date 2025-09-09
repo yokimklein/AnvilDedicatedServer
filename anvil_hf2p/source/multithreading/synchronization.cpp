@@ -55,6 +55,11 @@ void __fastcall internal_semaphore_take(long semaphore_id)
     INVOKE(0x941A0, internal_semaphore_take, semaphore_id);
 }
 
+bool synchronization_objects_initialized()
+{
+	return g_synch_globals.initialized;
+}
+
 c_critical_section_scope::c_critical_section_scope(long critical_section_id)
 {
 	m_critical_section_id = critical_section_id;
