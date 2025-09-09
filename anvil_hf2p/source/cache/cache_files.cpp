@@ -13,6 +13,8 @@ char const* k_cache_render_models_file = "maps\\render_models.dat";
 char const* k_cache_file_extension = ".map";
 char const* k_cache_path_format = "maps\\%s.map";
 
+REFERENCE_DECLARE(0x3EDDCD0, s_cache_file_globals, g_cache_file_globals);
+
 void* __fastcall tag_get(tag group_tag, long index)
 {
 	return INVOKE(0x83C70, tag_get, group_tag, index);
@@ -21,4 +23,9 @@ void* __fastcall tag_get(tag group_tag, long index)
 long __fastcall cache_file_get_global_tag_index(tag group_tag)
 {
 	return INVOKE(0x82E30, cache_file_get_global_tag_index, group_tag);
+}
+
+const char* cache_file_get_build_number()
+{
+	return g_cache_file_globals.header.build_number.get_string();
 }

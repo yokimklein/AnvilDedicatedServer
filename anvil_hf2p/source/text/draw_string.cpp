@@ -122,6 +122,11 @@ void c_draw_string::set_color(const real_argb_color* color)
 	m_color = *color;
 }
 
+void c_draw_string::set_drop_shadow_style(e_text_drop_shadow_style drop_shadow_style)
+{
+	m_drop_shadow_style = drop_shadow_style;
+}
+
 void c_draw_string::set_font(e_font_id font)
 {
 	if (font == _font_id_fallback)
@@ -147,6 +152,11 @@ void c_draw_string::set_font(e_font_id font)
 void c_draw_string::set_justification(e_text_justification justification)
 {
 	m_justification = justification;
+}
+
+void c_draw_string::set_scale(real scale)
+{
+	m_scale = scale;
 }
 
 void c_draw_string::set_shadow_color(pixel32 color)

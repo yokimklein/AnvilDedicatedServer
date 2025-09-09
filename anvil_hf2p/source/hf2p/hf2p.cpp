@@ -84,3 +84,8 @@ void game_startup_sapien()
 {
 
 }
+
+bool __fastcall hf2p_session_invalid(s_transport_secure_identifier* session_id)
+{
+    return INVOKE(0x557EC0, hf2p_session_invalid, session_id);
+}

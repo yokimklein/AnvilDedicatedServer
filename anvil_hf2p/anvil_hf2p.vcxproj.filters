@@ -1053,6 +1053,15 @@
     <ClInclude Include="source\algorithms\binary_search.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\game_engine_display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\main\main_render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\interface\user_interface_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1695,6 +1704,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\algorithms\binary_search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\game_engine_display.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\main\main_render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\interface\user_interface_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

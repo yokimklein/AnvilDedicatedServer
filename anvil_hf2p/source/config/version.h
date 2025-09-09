@@ -29,4 +29,5 @@ extern const char* version_get_target_variant();
 extern const char* version_get_full_string();
 extern const char* version_get_build_identifier();
 extern long version_get_build_number_sequence_identifier();
+extern const char* version_get_target_application();
 extern long64 version_get_build_number_identifier();

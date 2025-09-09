@@ -16,6 +16,7 @@
 #include <Windows.h>
 #include <winnt.h>
 #include <anvil\backend\uri_map.h>
+#include <game\game_engine_display.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -177,8 +178,8 @@ void anvil_hooks_miscellaneous_apply()
     hook::insert(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
     hook::insert(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, true);
 
-    // disable build watermark text
-    //hook::function(0x1B0AB0, 0x5CF, game_engine_render_frame_watermarks_hook);
+    // hook watermark
+    hook::function(0x1B0AB0, 0x5CF, game_engine_render_watermarks);
 
     // hook net_debug_print's vsnprintf_s call to print API logs to the console
     hook::call(0x55D8BF, vsnprintf_s_net_debug_hook);

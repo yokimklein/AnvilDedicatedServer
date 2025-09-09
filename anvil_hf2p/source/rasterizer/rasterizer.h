@@ -677,3 +677,4 @@ public:
 static_assert(sizeof(c_rasterizer_globals) == 0xBC);
 
 extern bool rasterizer_set_explicit_debug_shader(c_rasterizer_globals::e_explicit_shader shader_type);
+bool rasterizer_get_is_widescreen();

@@ -200,3 +200,8 @@ void __fastcall c_rasterizer::set_alpha_blend_mode_custom_device_no_cache(IDirec
 {
 	INVOKE(0x25AC40, c_rasterizer::set_alpha_blend_mode_custom_device_no_cache, NULL, alpha_blend_mode);
 }
+
+bool rasterizer_get_is_widescreen()
+{
+	return ((real)c_rasterizer::render_globals.resolution_width / (real)c_rasterizer::render_globals.resolution_height) > 1.5f;
+}

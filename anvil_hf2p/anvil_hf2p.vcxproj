@@ -318,6 +318,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\game\game_allegiance.h" />
     <ClInclude Include="source\game\game_engine_area_set.h" />
     <ClInclude Include="source\game\game_engine_candy_monitor.h" />
+    <ClInclude Include="source\game\game_engine_display.h" />
     <ClInclude Include="source\game\game_engine_events.h" />
     <ClInclude Include="source\game\game_engine_event_definitions.h" />
     <ClInclude Include="source\game\game_engine_group.h" />
@@ -348,6 +349,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\interface\interface.h" />
     <ClInclude Include="source\interface\interface_constants.h" />
     <ClInclude Include="source\interface\terminal.h" />
+    <ClInclude Include="source\interface\user_interface_controller.h" />
     <ClInclude Include="source\interface\user_interface_text.h" />
     <ClInclude Include="source\items\items.h" />
     <ClInclude Include="source\items\item_definitions.h" />
@@ -358,6 +360,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClInclude Include="source\main\levels.h" />
     <ClInclude Include="source\main\main.h" />
     <ClInclude Include="source\main\console.h" />
+    <ClInclude Include="source\main\main_render.h" />
     <ClInclude Include="source\main\main_time.h" />
     <ClInclude Include="source\math\color_math.h" />
     <ClInclude Include="source\math\matrix_math.h" />
@@ -643,6 +646,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\game\game_engine_candy_monitor.cpp" />
     <ClCompile Include="source\game\game_engine_ctf.cpp" />
     <ClCompile Include="source\game\game_engine_default.cpp" />
+    <ClCompile Include="source\game\game_engine_display.cpp" />
     <ClCompile Include="source\game\game_engine_events.cpp" />
     <ClCompile Include="source\game\game_engine_event_definitions.cpp" />
     <ClCompile Include="source\game\game_engine_group.cpp" />
@@ -684,6 +688,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\interface\interface.cpp" />
     <ClCompile Include="source\interface\interface_constants.cpp" />
     <ClCompile Include="source\interface\terminal.cpp" />
+    <ClCompile Include="source\interface\user_interface_controller.cpp" />
     <ClCompile Include="source\interface\user_interface_session.cpp" />
     <ClCompile Include="source\items\projectiles.cpp" />
     <ClCompile Include="source\items\weapons.cpp" />
@@ -691,6 +696,7 @@ IF NOT EXIST "$(SolutionDir)11.1.604673_cert_ms29\$(TargetBinaryName).exe" "$(So
     <ClCompile Include="source\main\levels.cpp" />
     <ClCompile Include="source\main\main.cpp" />
     <ClCompile Include="source\main\console.cpp" />
+    <ClCompile Include="source\main\main_render.cpp" />
     <ClCompile Include="source\main\main_time.cpp" />
     <ClCompile Include="source\math\color_math.cpp" />
     <ClCompile Include="source\math\matrix_math.cpp" />

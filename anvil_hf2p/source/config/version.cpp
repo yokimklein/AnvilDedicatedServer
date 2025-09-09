@@ -67,6 +67,11 @@ long version_get_build_number_sequence_identifier()
     return k_version_build_number_sequence_identifier;
 }
 
+const char* version_get_target_application()
+{
+    return k_version_target_application;
+}
+
 long64 version_get_build_number_identifier()
 {
     return make_int64(version_get_build_number(), version_get_build_number_sequence_identifier());

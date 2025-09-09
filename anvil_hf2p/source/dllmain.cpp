@@ -43,7 +43,7 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
         case DLL_PROCESS_ATTACH:
         {
 #ifdef EVENTS_ENABLED
-            c_console::initialize(VERSION_FULL_STRING);
+            c_console::initialize(version_get_full_string());
             SetConsoleCtrlHandler(HandlerRoutine, TRUE);
             setlocale(LC_ALL, "");
 #endif
