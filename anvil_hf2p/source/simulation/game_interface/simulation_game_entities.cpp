@@ -24,7 +24,7 @@ long simulation_entity_create(e_simulation_entity_type simulation_entity_type, l
 	long entity_index = entity_database->entity_create(simulation_entity_type);
 	if (entity_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ENTITIES: simulation_entity_create: failed to create entity (type %d/%s object [0x%08x])\n",
+		event(_event_error, "networking:simulation:entities: failed to create entity (type %d/%s object [0x%08x])",
 			simulation_entity_type,
 			simulation_entity_type_get_name(simulation_entity_type),
 			object_index);
@@ -65,21 +65,35 @@ e_simulation_entity_type simulation_entity_type_from_object_creation(long object
 	switch (object_tag->object.type.get())
 	{
 		case _object_type_biped:
+		{
 			return _simulation_entity_type_unit;
+		}
 		case _object_type_vehicle:
+		{
 			return _simulation_entity_type_vehicle;
+		}
 		case _object_type_weapon:
+		{
 			if (object_index != NONE)
+			{
 				return k_simulation_entity_type_none;
+			}
 			return _simulation_entity_type_weapon;
+		}
 		case _object_type_equipment:
+		{
 			return _simulation_entity_type_item;
+		}
 		case _object_type_terminal:
 		case _object_type_machine:
 		case _object_type_control:
+		{
 			return _simulation_entity_type_device;
+		}
 		case _object_type_projectile:
+		{
 			return _simulation_entity_type_projectile;
+		}
 		case _object_type_armor: // i'm making an assumption that armors would've synced the same as scenery
 		case _object_type_scenery: // seeing as scenery tags were used before armor tags existed
 		{
@@ -154,18 +168,17 @@ void simulation_entity_delete(long entity_index, datum_index object_index, datum
 	{
 		if (object_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ENTITY: simulation_entity_delete: game engine entity deleted with non-local entity 0x%08x type %d\n",
+			VASSERT(c_string_builder("networking:simulation:entity: game engine entity deleted with non-local entity 0x%08x type %d",
 				entity_index,
-				entity->entity_type);
+				entity->entity_type).get_string());
 		}
 		else
 		{
-			// TODO finish print
-			printf("MP/NET/SIMULATION,ENTITY: simulation_entity_delete: object 0x%08x (%s) deleted with non-local entity 0x%08x type %d\n",
+			VASSERT(c_string_builder("networking:simulation:entity: object 0x%08x (%s) deleted with non-local entity 0x%08x type %d",
 				object_index,
-				/*tag_name_strip_path(tag_get_name(object_get(object_index)->definition_index))*/"tag_name",
+				/*tag_name_strip_path(tag_get_name(object_get(object_index)->definition_index))*/"tag_name", // $TODO:
 				entity_index,
-				entity->entity_type);
+				entity->entity_type).get_string());
 		}
 	}
 	entity->gamestate_index = NONE;

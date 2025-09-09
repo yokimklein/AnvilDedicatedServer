@@ -2,6 +2,7 @@
 #include <networking\session\network_session.h>
 #include <stdio.h>
 #include <networking\session\network_managed_session.h>
+#include <cseries\cseries_events.h>
 
 bool c_network_session_parameter_base::get_allowed() const
 {
@@ -38,7 +39,7 @@ bool c_network_session_parameter_base::handle_change_request(void const* change_
 	bool success = handle_change_request_payload(change_request);
 	if (success)
 	{
-		printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_base::handle_change_request: [%s] parameter %d [%s] change request handled\n",
+		event(_event_status, "networking:session_parameters: [%s] parameter %d [%s] change request handled",
 			get_session_description(),
 			m_parameter_type,
 			m_parameter_type_description);
@@ -50,7 +51,7 @@ void c_network_session_parameter_base::set_update_required()
 {
 	ASSERT(set_allowed());
 
-	printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_base::set_update_required: [%s] parameter %d [%s] marking dirty\n",
+	event(_event_status, "networking:session_parameters: [%s] parameter %d [%s] marking dirty",
 		get_session_description(),
 		m_parameter_type,
 		m_parameter_type_description);

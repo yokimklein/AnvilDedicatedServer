@@ -11,6 +11,7 @@
 #include <game\game_engine_event_definitions.h>
 #include <stdio.h>
 #include <simulation\game_interface\simulation_game_events.h>
+#include <cseries\cseries_events.h>
 
 // TODO
 bool game_engine_is_sandbox()
@@ -42,7 +43,7 @@ void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
 {
 	if (game_is_predicted())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: game_engine_send_event: predicted client attempting to send event type [%d]\n", event_data->event_name);
+		event(_event_warning, "networking:game_event: predicted client attempting to send event type [%d]", event_data->event_name);
 	}
 	else
 	{

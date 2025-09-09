@@ -4,6 +4,7 @@
 #include <networking\messages\network_messages_connect.h>
 #include <networking\messages\network_message_gateway.h>
 #include <text\unicode.h>
+#include <cseries\cseries_events.h>
 
 char const* k_network_channel_reason_names[] =
 {
@@ -132,14 +133,11 @@ bool c_network_channel::get_remote_address(transport_address* address) const
 
 void c_network_channel::close(e_network_channel_closure_reason closure_reason)
 {
-	// TODO: this sometimes throws an exception? when 2 clients timeout
-	//DECLFUNC(0xC310, void, __thiscall, c_network_channel*, e_network_channel_closure_reason)(this, reason);
-
 	ASSERT(closure_reason > _network_channel_reason_none && closure_reason < k_network_channel_reason_count);
 	ASSERT(allocated());
 	ASSERT(!closed());
 
-	printf("MP/NET/CHANNEL,CTRL: c_network_channel::close: Closing channel. Reason %s.\n", get_closure_reason_string(closure_reason));
+	event(_event_message, "networking:channel: Closing channel. Reason %s.", get_closure_reason_string(closure_reason));
 
 	if (connected() && closure_reason != _network_channel_reason_connect_reinitiated)
 	{

@@ -4,6 +4,7 @@
 #include <anvil\backend\lobby.h>
 #include <game\game.h>
 #include <WinSock2.h>
+#include <cseries\cseries_events.h>
 
 REFERENCE_DECLARE(0x4EBE9D0, s_transport_security_globals, transport_security_globals);
 REFERENCE_DECLARE(0x49C1060, s_transport_secure_address const, g_session_secure_address);
@@ -174,7 +175,7 @@ bool __cdecl transport_secure_address_resolve()
 
         if (!XNetGetTitleXnAddr(&xnet_address))
         {
-            printf("MP/NET/TRANSPORT,SECURE: %s: Address resolution failed, networking is unavailable\n", __FUNCTION__);
+            event(_event_warning, "networking:transport: Address resolution failed, networking is unavailable");
             transport_security_globals.local_address_valid = false;
         }
         else
@@ -202,7 +203,7 @@ bool __fastcall transport_secure_key_create(s_transport_session_description* ses
 {
     if (!transport_secure_address_get(&session_description->host_address))
     {
-        printf("MP/NET/TRANSPORT,SEC: %s: failed to get IP address.\n", __FUNCTION__);
+        event(_event_error, "networking:transport:security: failed to get IP address.");
         return false;
     }
 

@@ -9,6 +9,7 @@
 #include <networking\logic\network_session_interface.h>
 #include <anvil\backend\services\private_service.h>
 #include <anvil\backend\cache.h>
+#include <cseries\cseries_events.h>
 
 char const* k_stats_write_desire_strings[]
 {
@@ -36,7 +37,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_()
 		bool not_writing_stats = true;
 		if (m_flags.test(_end_game_write_stats_bypassed_bit) || !game_is_dedicated_server()) // No need to write stats outside of dedi
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": not writing stats, bypassing\n");
+			event(_event_message, "networking:logic:life_cycle:end_game_write_stats: not writing stats, bypassing");
 			not_writing_stats = true;
 		}
 		else
@@ -44,7 +45,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_()
 			e_end_game_stats_write_desire stats_write_desire = game_get_stats_write_desire();
 			if (stats_write_desire != _end_game_stats_write_desire_write_desired)
 			{
-				printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": should not write stats for this game, not writing stats [reason %s]\n",
+				event(_event_message, "networking:logic:life_cycle:end_game_write_stats: should not write stats for this game, not writing stats [reason %s]",
 					k_stats_write_desire_strings[stats_write_desire]);
 				not_writing_stats = true;
 			}
@@ -124,7 +125,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_()
 		{
 			if (!m_flags.test(_end_game_write_stats_completed_bit))
 			{
-				printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": we exceeded the grief timer, and had not written stats, force completing\n");
+				event(_event_warning, "networking:logic:life-cycle:end_match_write_stats: we exceeded the grief timer, and had not written stats, force completing");
 				network_session_interface_set_peer_status_flag(_network_session_peer_properties_status_game_stats_written_bit, true);
 				m_flags.set(_end_game_write_stats_completed_bit, true);
 			}
@@ -135,7 +136,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_()
 				// if the host hasn't written stats, bail out of session
 				if (!membership->get_peer(membership->local_peer_index())->properties.flags.test(_network_session_peer_properties_status_match_stats_written_bit))
 				{
-					printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": host is taking too long to write stats, bailing!\n");
+					event(_event_warning, "networking:logic:life-cycle:end_match_write_stats: host is taking too long to write stats, bailing!");
 					session->host_boot_machine(membership->local_peer_index(), _network_session_boot_blocking_stats_write);
 					session->get_session_parameters()->m_parameters.session_mode.set(_network_session_mode_idle);
 				}
@@ -156,7 +157,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_()
 						{
 							if (peers_without_stats_mask.test(peer_index))
 							{
-								printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": peer %d is taking too long to write stats, kicking!\n", peer_index);
+								event(_event_warning, "networking:logic:life-cycle:end_match_write_stats: peer %d is taking too long to write stats, kicking!", peer_index);
 								session->host_boot_machine(peer_index, _network_session_boot_blocking_stats_write);
 							}
 						}
@@ -189,7 +190,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_write_stats()
 	s_transport_secure_address server_identifier = {};
 	if (!transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &lobby_identifier, &server_identifier))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": failed to retrieve LobbyID and DedicatedServerID! stats will not be submitted!\n");
+		event(_event_error, "networking:logic:life_cycle:end_match_write_stats: failed to retrieve LobbyID and DedicatedServerID! stats will not be submitted!");
 		m_flags.set(_end_game_write_stats_write_completed_bit, true);
 		return;
 	}
@@ -345,7 +346,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_submit_webstats()
 	{
 		if (!final_results->initialized)
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": can't submit webstats, final game results not finalized?\n");
+			event(_event_warning, "networking:logic:life_cycle:end_game_write_stats: can't submit webstats, final game results not finalized?");
 		}
 		else
 		{
@@ -354,7 +355,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_submit_webstats()
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": can't submit webstats, can't get final game results\n");
+		event(_event_warning, "networking:logic:life_cycle:end_game_write_stats: can't submit webstats, can't get final game results");
 	}
 
 	m_flags.set(_end_game_write_stats_webstats_submitted_bit, true);
@@ -370,7 +371,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_data_mine_upload()
 		if (m_flags.test_range(_end_game_write_stats_session_start_initiated_bit, _end_game_write_stats_data_mine_upload_initiated_bit) ||
 			m_flags.test_range(_end_game_write_stats_write_initiated_bit, _end_game_write_stats_write_completed_bit))
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": initiated data mine upload\n");
+			event(_event_message, "networking:logic:life_cycle:end_game_write_stats: initiated data mine upload");
 			//m_manager->get_observer()->observer_prioritize_upload_bandwidth(true);
 			//data_mine_upload_no_dialog();
 			m_flags.set(_end_game_write_stats_data_mine_upload_initiated_bit, true);
@@ -379,13 +380,13 @@ void c_life_cycle_state_handler_end_game_write_stats::update_data_mine_upload()
 			!m_flags.test(_end_game_write_stats_data_mine_upload_completed_bit)/* &&
 			!data_mine_uploading_files()*/)
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": data mine upload complete\n");
+			event(_event_message, "networking:logic:life_cycle:end_game_write_stats: data mine upload complete");
 			m_flags.set(_end_game_write_stats_data_mine_upload_completed_bit, true);
 		}
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": data mining not enabled, marking upload completed\n");
+		event(_event_message, "networking:logic:life_cycle:end_game_write_stats: data mining not enabled, marking upload completed");
 		m_flags.set(_end_game_write_stats_data_mine_upload_initiated_bit, true);
 		m_flags.set(_end_game_write_stats_data_mine_upload_completed_bit, true);
 	}

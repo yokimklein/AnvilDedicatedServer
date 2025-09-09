@@ -2,6 +2,7 @@
 #include <networking\replication\replication_entity_manager.h>
 #include <stdio.h>
 #include <memory\data.h>
+#include <cseries\cseries_events.h>
 
 void c_replication_entity_manager_view::create_entity(long entity_index)
 {
@@ -31,13 +32,13 @@ void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_ind
 		{
 			set_state(entity_index, _replication_entity_view_state_none);
 			m_statistics.deletions_sent++;
-			printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager_view::mark_entity_for_deletion: [%d] entity deleted from ready state 0x%08X\n", m_view_index, entity_index);
+			event(_event_status, "networking:replication:entity:[%d] entity deleted from ready state 0x%08X", m_view_index, entity_index);
 			return;
 		}
 
 		ASSERT(m_entity_data[absolute_index].flags.test(_replication_entity_view_data_entity_creation_sent_flag));
 		set_state(entity_index, _replication_entity_view_state_active);
-		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager_view::mark_entity_for_deletion: [%d] creation sent for entity marked for deletion (ready->active) 0x%08X\n", m_view_index, entity_index);
+		event(_event_status, "networking:replication:entity:[%d] creation sent for entity marked for deletion (ready->active) 0x%08X", m_view_index, entity_index);
 	}
 
 	entity->deletion_mask |= FLAG(m_view_index);

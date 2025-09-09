@@ -129,35 +129,6 @@ void anvil_session_update()
     {
         event(_event_message, "networking:" __FUNCTION__ ": disconnecting session...");
         session->disconnect();
-
-        /*
-        // load new string from text file
-        std::ifstream file("map_load.txt");
-        std::string scenario_path_str;
-        std::string map_name_str;
-        if (std::getline(file, scenario_path_str))
-        {
-            if (!std::getline(file, map_name_str))
-            {
-                printf("no .map name provided, using -1 map id\n");
-                anvil_launch_scenario(scenario_path_str.c_str(), nullptr);
-            }
-            else
-            {
-                wchar_t map_name[128];
-                ascii_string_to_wchar_string(map_name_str.c_str(), map_name, map_name_str.length(), nullptr);
-                anvil_launch_scenario(scenario_path_str.c_str(), map_name);
-            }
-        }
-        else
-        {
-            printf("map_load.txt mising scenario path line!\n");
-        }
-        */
-        //printf("Starting session countdown...\n");
-        //parameters->countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
-        //e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
-        //parameters->dedicated_server_session_state.set(&session_state);
     }
     else if (anvil_key_pressed(VK_END, &key_held_end))
     {
@@ -176,4 +147,51 @@ void anvil_session_update()
     {
         anvil_session_update_voting(session);
     }
+}
+
+bool anvil_session_set_map(e_map_id map_id)
+{
+    // create variant on the heap to avoid a large stack frame
+    c_map_variant* map_variant = new c_map_variant();
+    map_variant->create_default(map_id);
+    bool success = user_interface_squad_set_multiplayer_map(map_variant);
+    if (!success)
+    {
+        event(_event_warning, "networking:anvil:session: failed to set map variant!");
+    }
+    delete map_variant;
+    return success;
+}
+
+bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_index, long variant_index, ulong time_limit)
+{
+    c_game_variant game_variant = c_game_variant();
+    if (!game_engine_tag_defined_variant_get_built_in_variant(engine_index, variant_index, &game_variant))
+    {
+        event(_event_warning, "networking:anvil:session: failed to get game variant!");
+        return false;
+    }
+
+    game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(time_limit);
+
+    if (!session->get_session_parameters()->m_parameters.ui_game_mode.request_change(_gui_game_mode_multiplayer))
+    {
+        event(_event_warning, "networking:anvil:session: failed to set ui game mode!");
+        return false;
+    }
+    if (!user_interface_squad_set_game_variant(&game_variant))
+    {
+        event(_event_warning, "networking:anvil:session: failed to set game variant!");
+        return false;
+    }
+    return true;
+}
+
+void anvil_session_start_countdown(c_network_session* session)
+{
+    event(_event_message, "networking:anvil:session: starting session countdown...");
+    c_network_session_parameters* parameters = session->get_session_parameters();
+    parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
+    e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
+    parameters->m_parameters.dedicated_server_session_state.set(&session_state);
 }

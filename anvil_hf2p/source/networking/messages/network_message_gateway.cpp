@@ -1,4 +1,5 @@
 #include "network_message_gateway.h"
+#include <cseries\cseries_events.h>
 
 bool c_network_message_gateway::receive_out_of_band_packet(transport_address const* incoming_address, c_bitstream* packet)
 {
@@ -29,7 +30,7 @@ void c_network_message_gateway::send_all_pending_messages()
 			result = read_packet_header(&m_outgoing_packet);
 			if (!result)
 			{
-				printf("MP/NET/MESSAGE,SND: c_network_message_gateway::send_all_pending_messages: Error. An outgoing message header is corrupt. Addr %s.\n",
+				event(_event_critical, "networking:messages:gateway:send_all_pending_messages: Error. An outgoing message header is corrupt. Addr %s.",
 					transport_address_get_string(&m_outgoing_packet_address));
 			}
 
@@ -45,7 +46,7 @@ void c_network_message_gateway::send_all_pending_messages()
 				result = m_message_types->decode_message(&m_outgoing_packet, &message_type, &message_storage_size, message_storage);
 				if (!result)
 				{
-					printf("MP/NET/MESSAGE,SND: c_network_message_gateway::send_all_pending_messages: Error. An outgoing message payload is corrupt. Type %s. Size %d.\n",
+					event(_event_critical, "networking:messages:gateway:send_all_pending_messages: Error. An outgoing message payload is corrupt. Type %s. Size %d.",
 						m_message_types->get_message_type_name(message_type),
 						message_storage_size);
 					break;

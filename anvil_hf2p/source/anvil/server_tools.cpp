@@ -12,44 +12,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winuser.h>
-
-bool anvil_session_set_map(e_map_id map_id)
-{
-    // create variant on the heap to avoid a large stack frame
-    c_map_variant* map_variant = new c_map_variant();
-    map_variant->create_default(map_id);
-    bool success = user_interface_squad_set_multiplayer_map(map_variant);
-    if (success == false)
-    {
-        printf("Failed to set map variant!\n");
-    }
-    delete map_variant;
-    return success;
-}
-
-bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_index, long variant_index, ulong time_limit)
-{
-    c_game_variant game_variant = c_game_variant();
-    if (!game_engine_tag_defined_variant_get_built_in_variant(engine_index, variant_index, &game_variant))
-    {
-        printf("Failed to get game variant!");
-        return false;
-    }
-
-    game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(time_limit);
-
-    if (!session->get_session_parameters()->m_parameters.ui_game_mode.request_change(_gui_game_mode_multiplayer))
-    {
-        printf("Failed to set UI game mode!\n");
-        return false;
-    }
-    if (!user_interface_squad_set_game_variant(&game_variant))
-    {
-        printf("Failed to set game variant!\n");
-        return false;
-    }
-    return true;
-}
+#include <cseries\cseries_events.h>
+#include "session_control.h"
 
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration)
 {
@@ -135,11 +99,11 @@ void anvil_log_game_start_status(s_network_session_parameter_game_start_status* 
 {
     if (start_status->game_start_status == _session_game_start_status_error)
     {
-        printf("start status updated: error (%s) affected player mask [%08X]\n", multiplayer_game_start_error_to_string(start_status->game_start_error), start_status->player_error_mask);
+        event(_event_status, "networking:anvil:session: start status updated: error [%s] affected player mask [%08X]", multiplayer_game_start_error_to_string(start_status->game_start_error), start_status->player_error_mask);
     }
     else
     {
-        printf("start status updated: %s (map load progress: %d)\n", multiplayer_game_start_status_to_string(start_status->game_start_status), start_status->map_load_progress);
+        event(_event_status, "networking:anvil:session: start status updated: status [%s] map load progress [%d]", multiplayer_game_start_status_to_string(start_status->game_start_status), start_status->map_load_progress);
     }
 }
 
@@ -188,7 +152,7 @@ void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
     long map_name_address = (long)g_tutorial_map_name.get_string();
     patch::bytes(0xDD176, (byte*)&map_name_address, 4);
 
-    printf("" __FUNCTION__ ": launching %s (%ls)\n", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
+    event(_event_status, "" __FUNCTION__ ": launching scenario [%s] map [%ls]", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
     hq_start_tutorial_level();
 }
 

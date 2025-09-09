@@ -7,6 +7,7 @@
 #include <tag_files\tag_groups.h>
 #include <objects\object_definitions.h>
 #include <math.h>
+#include <cseries\cseries_events.h>
 
 void simulation_action_damage_section_response(datum_index object_index, long damage_section_index, long response_index, e_damage_section_response_type damage_section_response_type)
 {
@@ -26,7 +27,7 @@ void simulation_action_damage_section_response(datum_index object_index, long da
 		{
 			object_description = object_describe(object_index);
 		}
-		printf("MP/NET/SIMULATION,EVENT: simulation_action_damage_section_response: damage section on [%s] fired without an entity index\n", object_description);
+		event(_event_warning, "networking:simulation:event: damage section on [%s] fired without an entity index", object_description);
 	}
 	else
 	{
@@ -125,7 +126,7 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 	else
 	{
 		out_event_data->direction = *global_up3d;
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: event damage_aftermath has bad direction vector - who generated this nonsense?\n");
+		event(_event_error, "networking:simulation: event damage_aftermath has bad direction vector - who generated this nonsense?");
 	}
 	if (result_data->epicenter_valid)
 	{
@@ -136,27 +137,27 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 		out_event_data->epicenter_direction = normalize3d(&out_event_data->epicenter_direction_vector);
 		if (fabsf(out_event_data->epicenter_direction) < k_real_epsilon)
 		{
-			printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: Epicenter represents invalid vector despite a physics impulse occurring on the authority.  What's up?\n");
+			event(_event_error, "Epicenter represents invalid vector despite a physics impulse occurring on the authority.  What's up?");
 			out_event_data->epicenter_valid = false;
 		}
 		else
 		{
 			if (!IN_RANGE_INCLUSIVE(out_event_data->epicenter_direction, 0.0f, 25.0f))
 			{
-				printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: epicenter magnitude (%f) out of expected range (%f to %f)\n", out_event_data->epicenter_direction, 0.0f, 25.0f);
+				event(_event_warning, "networking:simulation: simulation_action_damage_aftermath():epicenter magnitude (%f) out of expected range (%f to %f)", out_event_data->epicenter_direction, 0.0f, 25.0f);
 			}
 			out_event_data->epicenter_direction = CLAMP(out_event_data->epicenter_direction, 0.0f, 25.0f);
 		}
 	}
 	if (!IN_RANGE_INCLUSIVE(result_data->scale, 0.0f, 2.0f))
 	{
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: scale (%f) out of expected range (%f to %f)\n", result_data->scale, 0.0f, 2.0f);
+		event(_event_warning, "networking:simulation: simulation_action_damage_aftermath():scale (%f) out of expected range (%f to %f)", result_data->scale, 0.0f, 2.0f);
 	}
 	out_event_data->scale = CLAMP(result_data->scale, 0.0f, 2.0f);
 
 	if (!IN_RANGE_INCLUSIVE(result_data->shake_scale, 0.0f, 2.0f))
 	{
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: shake scale (%f) out of expected range (%f to %f)\n", result_data->shake_scale, 0.0f, 2.0f);
+		event(_event_warning, "networking:simulation: simulation_action_damage_aftermath():shake scale (%f) out of expected range (%f to %f)", result_data->shake_scale, 0.0f, 2.0f);
 	}
 	out_event_data->shake_scale = CLAMP(result_data->shake_scale, 0.0f, 2.0f);
 	out_event_data->flags = result_data->flags;
@@ -164,13 +165,13 @@ void build_damage_aftermath_event_data(datum_index object_index, s_damage_afterm
 
 	if (!IN_RANGE_INCLUSIVE(result_data->body_damage, 0.0f, 16.0f))
 	{
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: body damage (%f) out of expected range (%f to %f)\n", result_data->body_damage, 0.0f, 16.0f);
+		event(_event_warning, "networking:simulation: simulation_action_damage_aftermath(): body damage (%f) out of expected range (%f to %f)", result_data->body_damage, 0.0f, 16.0f);
 	}
 	out_event_data->body_damage = CLAMP(result_data->body_damage, 0.0f, 16.0f);
 
 	if (!IN_RANGE_INCLUSIVE(result_data->shield_damage, 0.0f, 3.0f))
 	{
-		printf("MP/NET/SIMULATION: build_damage_aftermath_event_data: shield damage (%f) out of expected range (%f to %f)\n", result_data->shield_damage, 0.0f, 3.0f);
+		event(_event_warning, "networking:simulation: simulation_action_damage_aftermath(): shield damage (%f) out of expected range (%f to %f)", result_data->shield_damage, 0.0f, 3.0f);
 	}
 	out_event_data->shield_damage = CLAMP(result_data->shield_damage, 0.0f, 3.0f);
 	out_event_data->body_part = static_cast<short>(result_data->body_part);

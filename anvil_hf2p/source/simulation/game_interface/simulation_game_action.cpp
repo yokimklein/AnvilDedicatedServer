@@ -232,7 +232,7 @@ void simulation_action_game_engine_globals_delete()
 	datum_index gamestate_index = game_engine_globals_get_gamestate_index();
 	if (gamestate_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_delete: game engine globals has invalid gamestate index, can't delete\n");
+		event(_event_warning, "networking:simulation:action game engine globals has invalid gamestate index, can't delete");
 	}
 	else
 	{
@@ -241,7 +241,7 @@ void simulation_action_game_engine_globals_delete()
 			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 			if (entity_index == NONE)
 			{
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_delete: game engine globals [gamestate index 0x%8X] has no entity to delete\n", gamestate_index);
+				event(_event_warning, "networking:simulation:action game engine globals [gamestate index 0x%08X] has no entity to delete", gamestate_index);
 			}
 			else
 			{
@@ -292,7 +292,7 @@ void simulation_action_game_statborg_delete()
 	datum_index gamestate_index = game_engine_globals_get_statborg_gamestate_index();
 	if (gamestate_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_delete: statborg has invalid gamestate index, cannot delete\n");
+		event(_event_warning, "networking:simulation:action: statborg has invalid gamestate index, cannot delete");
 	}
 	else
 	{
@@ -301,7 +301,7 @@ void simulation_action_game_statborg_delete()
 			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 			if (entity_index == NONE)
 			{
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_delete: statborg gamestate index 0x%8X not attached to entity\n", gamestate_index);
+				event(_event_warning, "networking:simulation:action: statborg gamestate index 0x%08X not attached to entity", gamestate_index);
 			}
 			else
 			{
@@ -378,7 +378,7 @@ void simulation_action_game_map_variant_delete()
 		datum_index gamestate_index = map_variant->simulation_gamestate_indices[i];
 		if (gamestate_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_map_variant_delete: map variant has invalid gamestate index, can't delete\n");
+			event(_event_warning, "networking:simulation:action map variant has invalid gamestate index, can't delete");
 		}
 		else
 		{
@@ -387,7 +387,7 @@ void simulation_action_game_map_variant_delete()
 				long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 				if (entity_index == NONE)
 				{
-					printf("MP/NET/SIMULATION,ACTION: simulation_action_game_map_variant_delete: map variant [gamestate index 0x%8X] has no entity to delete\n", gamestate_index);
+					event(_event_warning, "networking:simulation:action map variant [gamestate index 0x%08X] has no entity to delete", gamestate_index);
 				}
 				else
 				{

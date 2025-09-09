@@ -14,5 +14,3 @@ struct transport_endpoint
 	e_transport_type type;
 	long flags;
 };
-
-//long netadapter_test();

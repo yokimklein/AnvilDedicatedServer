@@ -17,7 +17,7 @@ void simulation_action_game_engine_globals_update(c_simulation_object_update_fla
 	{
 		if (game_is_available())
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_update: game engine globals does not have gamestate to update?\n");
+			event(_event_warning, "networking:simulation:action: game engine globals does not have gamestate to update?");
 		}
 	}
 	else
@@ -25,7 +25,7 @@ void simulation_action_game_engine_globals_update(c_simulation_object_update_fla
 		long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 		if (entity_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_globals_update: game engine globals has invalid entity index (gamestate 0x%8X) can't update\n", gamestate_index);
+			event(_event_warning, "networking:simulation:action: game engine globals has invalid entity index (gamestate 0x%8X) can't update", gamestate_index);
 		}
 		else
 		{

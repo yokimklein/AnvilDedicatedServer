@@ -1,5 +1,6 @@
 #pragma once
 #include <networking\session\network_session_parameters_base.h>
+#include <cseries\cseries_events.h>
 #include <iostream>
 
 template <typename t_type>
@@ -20,7 +21,10 @@ public:
 	{
 		if (!get_allowed())
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: %s: [%s] failed to get parameter %d [%s], data not available\n", __FUNCTION__, get_session_description(), m_parameter_type, m_parameter_type_description);
+			event(_event_warning, "networking:session_parameters: [%s] failed to get parameter %d [%s], data not available",
+				get_session_description(),
+				m_parameter_type,
+				m_parameter_type_description);
 			return NULL;
 		}
 
@@ -30,7 +34,7 @@ public:
 	inline bool set(t_type const* parameter)
 	{
 		ASSERT(parameter);
-		printf("MP/NET/SESSION,PARAMS: %s: [%s] parameter type %d [%s] being set\n", __FUNCTION__, get_session_description(), m_parameter_type, m_parameter_type_description);
+		event(_event_status, "networking:session_parameters: [%s] parameter type %d [%s] being set", get_session_description(), m_parameter_type, m_parameter_type_description);
 
 		if (set_allowed())
 		{
@@ -43,8 +47,7 @@ public:
 		}
 		else
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: %s: [%s] failed to set parameter %d [%s], access denied [%s]\n",
-				__FUNCTION__,
+			event(_event_warning, "networking:session_parameters: [%s] failed to set parameter %d [%s], access denied [%s]",
 				get_session_description(),
 				m_parameter_type,
 				m_parameter_type_description,

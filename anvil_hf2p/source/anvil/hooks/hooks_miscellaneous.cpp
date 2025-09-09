@@ -17,6 +17,7 @@
 #include <winnt.h>
 #include <anvil\backend\uri_map.h>
 #include <game\game_engine_display.h>
+#include <cseries\cseries_events.h>
 
 // runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
 // ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
@@ -65,7 +66,7 @@ void __fastcall encode_message_header_hook(c_network_message_type_collection* _t
     // const cast is kind of gross but I'll justify it here as we're currently within a method of c_network_message_type_collection and we need a replacement thisptr
     c_network_message_type_collection* message_type_collection = const_cast<c_network_message_type_collection*>(session->message_gateway()->message_types());
 
-    printf("SEND: %s (%d bytes)\n", message_type_collection->get_message_type_name(message_type), message_storage_size);
+    event(_event_verbose, "networking:messages:send: %s (%d bytes)", message_type_collection->get_message_type_name(message_type), message_storage_size);
     DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);
 }
 
@@ -102,7 +103,7 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     {
         resource_uri.set(&DstBuf[8]);
         backend_deobfuscate_uri(resource_uri.get_buffer(), SizeInBytes);
-        printf("[+] Request %s \n", resource_uri.get_buffer());
+        event(_event_verbose, "backend:saber request %s", resource_uri.get_buffer());
     }
     else if (strcmp(Format, "Response %s [%d|%d]") == 0)
     {
@@ -112,12 +113,12 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
         resource_uri.get_buffer()[end_index - 1] = 0;
 
         backend_deobfuscate_uri(resource_uri.get_buffer(), SizeInBytes);
-        printf("[+] Response %s %s \n", resource_uri.get_buffer(), &DstBuf[end_index + 9]);
+        event(_event_verbose, "backend:saber response %s %s", resource_uri.get_buffer(), &DstBuf[end_index + 9]);
     }
     // check if we're building a URI - we don't want to print these
     else if (strcmp(Format, "/%s.svc/%s") != 0)
     {
-        printf("[+] %s \n", DstBuf);
+        event(_event_verbose, "backend:saber  %s", DstBuf);
     }
 
     return result;

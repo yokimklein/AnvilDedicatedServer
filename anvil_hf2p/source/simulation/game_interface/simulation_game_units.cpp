@@ -2,6 +2,7 @@
 #include <game\game.h>
 #include <stdio.h>
 #include <simulation\game_interface\simulation_game_events.h>
+#include <cseries\cseries_events.h>
 
 void simulation_action_unit_board_vehicle(datum_index unit_index)
 {
@@ -15,7 +16,7 @@ void simulation_action_unit_board_vehicle(datum_index unit_index)
 	datum_index parent_object_index = unit->object.parent_object_index;
 	if (parent_object_index == NONE || seat_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,EVENT: simulation_action_unit_board_vehicle: attempting to generate a board-vehicle event for unit not in a vehicle or bad seat index\n");
+		event(_event_warning, "networking:simulation:event: attempting to generate a board-vehicle event for unit not in a vehicle or bad seat index");
 		return;
 	}
 
@@ -38,7 +39,7 @@ void simulation_action_unit_exit_vehicle(datum_index unit_index)
 	datum_index parent_object_index = unit->object.parent_object_index;
 	if (parent_object_index == NONE || seat_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,EVENT: simulation_action_unit_board_vehicle: attempting to generate an exit-vehicle event for unit not in a vehicle or bad seat index\n");
+		event(_event_warning, "networking:simulation:event: attempting to generate an exit-vehicle event for unit not in a vehicle or bad seat index");
 		return;
 	}
 

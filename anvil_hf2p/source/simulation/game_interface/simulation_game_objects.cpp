@@ -39,7 +39,7 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 		long entity_index = simulation_entity_create(entity_types[i], entity_object_indices[i], gamestate_index);
 		if (entity_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_object_create: object entity creation failed! 0x%8X/%d\n", entity_object_indices[i], entity_types[i]);
+			event(_event_error, "networking:simulation:action: object entity creation failed! 0x%08X/%d", entity_object_indices[i], entity_types[i]);
 		}
 		else
 		{
@@ -50,13 +50,12 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 			s_simulation_entity* entity = entity_database->entity_get(entity_index);
 			ASSERT(!object_header->flags.test(_object_header_being_deleted_bit));
 			ASSERT(entity->gamestate_index != NONE);
-			// TODO: finish print
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_object_create: %s '%s' index 0x%08X created entity type %d/%s index 0x%8X\n",
-				/*object_type_get_name(object->object_identifier->get_type(object_identifier->type))*/"object_type_name",
-				/*tag_name_strip_path(tag_get_name(*object_identifier))*/"tag_name",
+			event(_event_status, "networking:simulation:objects: %s '%s' index 0x%08X created entity type %d/%s index 0x%08X",
+				/*object_type_get_name(object->object_identifier->get_type(object_identifier->type))*/"object_type_name", // $TODO: 
+				/*tag_name_strip_path(tag_get_name(*object_identifier))*/"tag_name", // $TODO: 
 				entity_object_index,
 				entity_types[i],
-				/*simulation_entity_type_get_name(entity_types[i])*/"entity_type_name",
+				/*simulation_entity_type_get_name(entity_types[i])*/"entity_type_name", // $TODO: 
 				entity_index);
 			entity_database->entity_capture_creation_data(entity_index);
 		}
@@ -113,7 +112,7 @@ void simulation_action_object_delete(datum_index object_index)
 		long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 		if (entity_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_object_delete: object 0x%8X gamestate index 0x%8X not attached to entity (can't delete entity)\n",
+			event(_event_warning, "networking:simulation:action: object 0x%08X gamestate index 0x%08X not attached to entity (can't delete entity)",
 				object_index,
 				object->object.gamestate_index);
 		}
@@ -164,7 +163,7 @@ void __fastcall simulation_action_object_force_update(datum_index object_index, 
 	long entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 	if (entity_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ACTION: simulation_action_object_force_update_internal: failed to get entity index for gamestate 0x%8X (object %s)\n",
+		event(_event_error, "networking:simulation:action: failed to get entity index for gamestate 0x%08X (object %s)",
 			object->object.gamestate_index,
 			object_describe(object_index));
 	}
@@ -183,7 +182,7 @@ long simulation_object_get_entity_internal(datum_index object_index, bool safe)
 {
 	if (game_is_playback())
 	{
-		printf("MP/NET/SIMULATION,OBJECTS: simulation_object_get_entity_internal: attempting to call simulation_object_get_authoritative_entity() during saved film\n");
+		event(_event_error, "networking:simulation:objects: attempting to call simulation_object_get_authoritative_entity() during saved film");
 		return NONE;
 	}
 
@@ -203,7 +202,7 @@ long simulation_object_get_entity_internal(datum_index object_index, bool safe)
 	long simulation_entity_index = simulation_gamestate_entity_get_simulation_entity_index(object->object.gamestate_index);
 	if (simulation_entity_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,OBJECTS: simulation_object_get_entity_internal: failed to get entity index for gamestate 0x%8X (object %s) during simulation_object_get_authoritative_entity_internal()\n",
+		event(_event_warning, "networking:simulation:objects: failed to get entity index for gamestate 0x%08X (object %s) during simulation_object_get_authoritative_entity_internal()",
 			object->object.gamestate_index,
 			object_describe(object_index));
 		return NONE;

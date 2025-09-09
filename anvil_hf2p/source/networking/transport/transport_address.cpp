@@ -1,6 +1,7 @@
 #include "transport_address.h"
 #include <networking\transport\transport_security.h>
 #include <stdio.h>
+#include <cseries\cseries_events.h>
 
 enum
 {
@@ -103,7 +104,7 @@ bool transport_address_valid(transport_address const* address)
 				valid = address->ipv4_address != 0;
 				if (!address->ipv4_address)
 				{
-					printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: transport_address_valid: the IPV4 address is NOT valid\n\n");
+					event(_event_warning, "networking:transport:transport_address_valid: the IPV4 address is NOT valid\n");
 				}
 				break;
 			case 16:
@@ -117,7 +118,7 @@ bool transport_address_valid(transport_address const* address)
 				}
 				if (!valid)
 				{
-					printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: transport_address_valid: the IPV6 address is NOT valid\n\n");
+					event(_event_warning, "networking:transport:transport_address_valid: the IPV6 address is NOT valid\n");
 				}
 				break;
 		}

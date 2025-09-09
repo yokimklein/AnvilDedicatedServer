@@ -1,8 +1,8 @@
 #include "user.h"
-#include <networking\transport\transport_security.h>
-#include <anvil\backend\services\private_service.h>
-#include <anvil\backend\cache.h>
-#include <stdio.h>
+#include "networking\transport\transport_security.h"
+#include "anvil\backend\services\private_service.h"
+#include "anvil\backend\cache.h"
+#include "cseries\cseries_events.h"
 
 s_lobby_session_data::s_lobby_session_data()
     : valid(false)
@@ -44,8 +44,7 @@ qword user_xuid_from_secure_address(s_transport_secure_address const* secure_add
         }
     }
 
-    printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_xuid_from_secure_address: could not find userID associated with sessionID [%s]!\n",
-        transport_secure_address_get_string(secure_address));
+    event(_event_warning, "backend:user: could not find userID associated with sessionID [%s]!", transport_secure_address_get_string(secure_address));
     return USER_INVALID;
 }
 
@@ -53,7 +52,7 @@ bool user_sessions_request_for_lobby()
 {
     if (c_backend::private_service::retrieve_lobby_members::m_status.status != _request_status_none)
     {
-        printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_sessions_request_for_lobby: tried to send user sessions request before previous request has received a response!\n");
+        event(_event_warning, "backend:user: tried to send user sessions request before previous request has received a response!");
         return false;
     }
 
@@ -61,7 +60,7 @@ bool user_sessions_request_for_lobby()
     s_transport_secure_identifier lobby_identifier;
     if (!transport_secure_identifier_retrieve(&transport_security_globals.address, _transport_platform_windows, &lobby_identifier, &secure_address))
     {
-        printf("ONLINE/CLIENT/STUB_LOG_PATH,STUB_LOG_FILTER: user_sessions_request_for_lobby: failed to retrieve lobby identifier for request!\n");
+        event(_event_error, "backend:user: failed to retrieve lobby identifier for request!");
         return false;
     }
 

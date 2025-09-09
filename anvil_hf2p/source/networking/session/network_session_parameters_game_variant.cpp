@@ -1,5 +1,6 @@
 #include "network_session_parameters_game_variant.h"
 #include <iostream>
+#include <cseries\cseries_events.h>
 
 c_game_variant* c_network_session_parameter_game_variant::get()
 {
@@ -12,7 +13,7 @@ c_game_variant* c_network_session_parameter_game_variant::get()
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session_parameter_game_variant::get: [%s] can't get variant, unavailable\n", get_session_description());
+		event(_event_warning, "networking:session_parameters:chunked:game_variant: [%s] can't get variant, unavailable", get_session_description());
 	}
 	return NULL;
 }

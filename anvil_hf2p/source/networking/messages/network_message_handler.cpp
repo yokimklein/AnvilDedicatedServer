@@ -14,10 +14,11 @@
 #include <networking\session\network_session.h>
 #include <networking\network_utilities.h>
 #include <networking\network_time.h>
+#include <cseries\cseries_events.h>
 
 void c_network_message_handler::handle_ping(transport_address const* outgoing_address, s_network_message_ping const* message)
 {
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_ping: ping #%d received from '%s' at local %dms\n",
+	event(_event_message, "networking:test:ping: ping #%d received from '%s' at local %dms",
 		message->id,
 		transport_address_get_string(outgoing_address),
 		network_time_get_exact());
@@ -33,7 +34,7 @@ void c_network_message_handler::handle_ping(transport_address const* outgoing_ad
 
 void c_network_message_handler::handle_pong(transport_address const* outgoing_address, s_network_message_pong const* message)
 {
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_pong: ping #%d returned from '%s' at local %dms (latency %dms)\n", 
+	event(_event_message, "networking:test:ping: ping #%d returned from '%s' at local %dms (latency %dms)", 
 		message->id,
 		transport_address_get_string(outgoing_address),
 		network_time_get_exact(),
@@ -54,14 +55,12 @@ void c_network_message_handler::handle_connect_establish(c_network_channel* chan
 {
 	if (channel->closed())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: ignoring connect establish from '%s'/%d (currently closed)\n",
-			channel->get_name(),
-			message->remote_identifier);
+		event(_event_message, "networking:channel:connect: ignoring connect establish from '%s'/%d (currently closed)", channel->get_name(), message->remote_identifier);
 		return;
 	}
 	if (channel->get_identifier() != message->identifier)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: ignoring connect establish from '%s'/%d (establishment identifier %d != local identifier %d)\n",
+		event(_event_message, "networking:channel:connect: ignoring connect establish from '%s'/%d (establishment identifier %d != local identifier %d)",
 			channel->get_name(),
 			message->remote_identifier,
 			message->identifier,
@@ -71,7 +70,7 @@ void c_network_message_handler::handle_connect_establish(c_network_channel* chan
 	if (channel->established() && channel->get_remote_identifier() != message->remote_identifier)
 	{
 		long channel_identifier = NONE;
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d but we are already established to %d\n",
+		event(_event_warning, "networking:channel:connect: received establishment from '%s'/%d but we are already established to %d",
 			channel->get_name(),
 			message->remote_identifier,
 			channel->get_remote_identifier());
@@ -86,13 +85,13 @@ void c_network_message_handler::handle_connect_establish(c_network_channel* chan
 	}
 	if (channel->closed())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d for local %d but the channel closed before we could establish\n",
+		event(_event_message, "networking:channel:connect: received establishment from '%s'/%d for local %d but the channel closed before we could establish",
 			channel->get_name(),
 			message->remote_identifier,
 			channel->get_identifier());
 		return;
 	}
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_establish: received establishment from '%s'/%d for local %d\n",
+	event(_event_message, "networking:channel:connect: received establishment from '%s'/%d for local %d",
 		channel->get_name(),
 		message->remote_identifier,
 		channel->get_identifier());
@@ -103,19 +102,19 @@ void c_network_message_handler::handle_connect_closed(c_network_channel* channel
 {
 	if (channel->closed())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' ignoring remote closure (already closed)\n",
+		event(_event_message, "networking:channel:connect: '%s' ignoring remote closure (already closed)",
 			channel->get_name());
 		return;
 	}
 	if (channel->get_identifier() != message->remote_channel_identifier)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' ignoring remote closure (closed identifier %d != identifier %d)\n",
+		event(_event_message, "networking:channel:connect: '%s' ignoring remote closure (closed identifier %d != identifier %d)",
 			channel->get_name(),
 			message->remote_channel_identifier,
 			channel->get_identifier());
 		return;
 	}
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_connect_closed: '%s' remotely closed (reason #%d: '%s')\n",
+	event(_event_message, "networking:channel:connect: '%s' remotely closed (reason #%d: '%s')",
 		channel->get_name(),
 		message->closure_reason.get(),
 		channel->get_closure_reason_string(message->closure_reason));
@@ -126,7 +125,7 @@ void c_network_message_handler::handle_join_request(transport_address const* out
 {
 	if (message->protocol != k_network_protocol_version)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: received message with incorrect protocol version [%d!=%d]\n",
+		event(_event_error, "networking:messages:join-request: received message with incorrect protocol version [%d!=%d]",
 			message->protocol,
 			k_network_protocol_version);
 		return;
@@ -136,10 +135,10 @@ void c_network_message_handler::handle_join_request(transport_address const* out
 	if (!session || !session->is_host())
 	{
 		// if you get this error, it's likely caused by the client trying to connect with the wrong secure address/id, usually because the API server hasn't updated with the new server information
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: can't handle join-request for '%s' from '%s'\n",
+		event(_event_warning, "networking:messages:join-request: can't handle join-request for '%s' from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			transport_address_get_string(outgoing_address));
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_request: failed to handle incoming join request\n");
+		event(_event_error, "networking:messages:join-request: failed to handle incoming join request");
 		return;
 	}
 
@@ -150,7 +149,7 @@ void c_network_message_handler::handle_peer_connect(transport_address const* out
 {
 	if (message->protocol != k_network_protocol_version)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_connect: received message with incorrect protocol version [%d!=%d]\n",
+		event(_event_error, "networking:messages:peer-connect: received message with incorrect protocol version [%d!=%d]",
 			message->protocol,
 			k_network_protocol_version);
 		return;
@@ -159,8 +158,7 @@ void c_network_message_handler::handle_peer_connect(transport_address const* out
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_connect: no session, ignoring peer connect from '%s'\n",
-			transport_address_get_string(outgoing_address));
+		event(_event_warning, "networking:messages:peer-connect: no session, ignoring peer connect from '%s'", transport_address_get_string(outgoing_address));
 		return;
 	}
 
@@ -172,8 +170,7 @@ void c_network_message_handler::handle_join_abort(transport_address const* outgo
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->established() || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: no session, ignoring join abort from '%s'\n",
-			transport_address_get_string(outgoing_address));
+		event(_event_warning, "networking:messages:join-abort: no session, ignoring join abort from '%s'", transport_address_get_string(outgoing_address));
 		return;
 	}
 
@@ -184,12 +181,11 @@ void c_network_message_handler::handle_join_abort(transport_address const* outgo
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: ignoring unknown abort from '%s'\n",
-			transport_address_get_string(outgoing_address));
+		event(_event_warning, "networking:messages:join-abort: ignoring unknown abort from '%s'", transport_address_get_string(outgoing_address));
 		refuse_reason = _network_join_refuse_reason_abort_ignored;
 	}
 
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_join_abort: received abort, sending join-refusal (%s) to '%s'\n",
+	event(_event_message, "networking:messages:join-abort: received abort, sending join-refusal (%s) to '%s'",
 		network_message_join_refuse_get_reason_string(refuse_reason),
 		transport_address_get_string(outgoing_address));
 	s_network_message_join_refuse refuse_message =
@@ -211,21 +207,19 @@ void c_network_message_handler::handle_leave_session(transport_address const* ou
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: ignoring leave-session from '%s' (session not found)\n",
-			transport_address_get_string(outgoing_address));
+		event(_event_warning, "networking:messages:leave-session: ignoring leave-session from '%s' (session not found)", transport_address_get_string(outgoing_address));
 		return;
 	}
 
 	if (!session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: ignoring leave-session from '%s' (not hosting)\n",
-			transport_address_get_string(outgoing_address));
+		event(_event_warning, "networking:messages:leave-session: ignoring leave-session from '%s' (not hosting)", transport_address_get_string(outgoing_address));
 		return;
 	}
 
 	if (!session->handle_leave_request(outgoing_address))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_leave_session: can't handle leave-session request (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:leave-session: can't handle leave-session request (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			transport_address_get_string(outgoing_address));
 		return;
@@ -242,7 +236,7 @@ void c_network_message_handler::handle_session_disband(transport_address const* 
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_disband: ignoring message from '%s' (no %s session)\n",
+		event(_event_warning, "networking:messages:session-disband: ignoring message from '%s' (no %s session)",
 			transport_address_get_string(outgoing_address),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -250,7 +244,7 @@ void c_network_message_handler::handle_session_disband(transport_address const* 
 
 	if (!session->handle_session_disband(outgoing_address, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_disband: session (%s) failed to handle session-disband from '%s'\n",
+		event(_event_warning, "networking:messages:session-disband: session (%s) failed to handle session-disband from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			transport_address_get_string(outgoing_address));
 		return;
@@ -262,14 +256,14 @@ void c_network_message_handler::handle_session_boot(transport_address const* out
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_boot: ignoring session-boot from '%s' (no %s session)\n",
+		event(_event_warning, "networking:messages:session-boot: ignoring session-boot from '%s' (no %s session)",
 			transport_address_get_string(outgoing_address),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
 	}
 	if (!session->handle_session_boot(outgoing_address, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_session_boot: session (%s) failed to handle session-boot from '%s'\n",
+		event(_event_warning, "networking:messages:session-boot: session (%s) failed to handle session-boot from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			transport_address_get_string(outgoing_address));
 		return;
@@ -281,7 +275,7 @@ void c_network_message_handler::handle_host_decline(c_network_channel* channel, 
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_host_decline: channel '%s' ignoring host-decline (%s) (can not find session)\n",
+		event(_event_warning, "networking:messages:host-decline: channel '%s' ignoring host-decline (%s) (can not find session)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -289,7 +283,7 @@ void c_network_message_handler::handle_host_decline(c_network_channel* channel, 
 
 	if (!session->handle_host_decline(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_host_decline: session failed to handle host-decline (%s)\n",
+		event(_event_warning, "networking:messages:host-decline: session failed to handle host-decline (%s)",
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
 	}
@@ -300,7 +294,7 @@ void c_network_message_handler::handle_peer_establish(c_network_channel* channel
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->handle_peer_establish(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_establish: channel '%s' failed to handle peer-establish (%s)\n",
+		event(_event_warning, "networking:messages:peer-establish: channel '%s' failed to handle peer-establish (%s)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 	
@@ -317,7 +311,7 @@ void c_network_message_handler::handle_time_synchronize(transport_address const*
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_time_synchronize: session doesn't exist to handle time-synchronize (%s %d) from '%s'\n",
+		event(_event_warning, "networking:messages:time-synchronize: session doesn't exist to handle time-synchronize (%s %d) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			message->synchronization_stage,
 			transport_address_get_string(outgoing_address));
@@ -326,7 +320,7 @@ void c_network_message_handler::handle_time_synchronize(transport_address const*
 
 	if (!session->handle_time_synchronize(outgoing_address, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_time_synchronize: session failed to handle time-synchronize (%s %d) from '%s'\n",
+		event(_event_warning, "networking:messages:time-synchronize: session failed to handle time-synchronize (%s %d) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			message->synchronization_stage,
 			transport_address_get_string(outgoing_address));
@@ -339,14 +333,14 @@ void c_network_message_handler::handle_membership_update(c_network_channel* chan
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->channel_is_authoritative(channel))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_membership_update: channel '%s' ignoring membership-update (channel is not authoritative)\n",
+		event(_event_warning, "networking:messages:membership-update: channel '%s' ignoring membership-update (channel is not authoritative)",
 			channel->get_name());
 		return;
 	}
 
 	if (!session->handle_membership_update(message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_membership_update: failed to handle authoritative membership-update (%s update %d) from '%s'\n",
+		event(_event_warning, "networking:messages:membership-update: failed to handle authoritative membership-update (%s update %d) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			message->update_number,
 			channel->get_name());
@@ -359,7 +353,7 @@ void c_network_message_handler::handle_peer_properties(c_network_channel* channe
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_properties: channel '%s' ignoring peer-properties (%s) (not host)\n",
+		event(_event_warning, "networking:messages:peer-properties: channel '%s' ignoring peer-properties (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -367,7 +361,7 @@ void c_network_message_handler::handle_peer_properties(c_network_channel* channe
 
 	if (!session->handle_peer_properties(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_peer_properties: session failed to handle peer-properties (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:peer-properties: session failed to handle peer-properties (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -379,16 +373,16 @@ void c_network_message_handler::handle_delegate_leadership(c_network_channel* ch
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_delegate_leadership: channel '%s' ignoring delegate-leadership (%s) (not host)",
+		event(_event_warning, "networking:messages:delegate-leadership: channel '%s' ignoring delegate-leadership (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
 	}
 
 	// TODO: implement this
-	if (false/*!session->handle_delegate_leadership(channel, message)*/)
+	if (true/*!session->handle_delegate_leadership(channel, message)*/)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_delegate_leadership: session failed to handle delegate-leadership (%s) from '%s'",
+		event(_event_warning, "networking:messages:delegate-leadership: session failed to handle delegate-leadership (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -400,16 +394,16 @@ void c_network_message_handler::handle_boot_machine(c_network_channel* channel, 
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_boot_machine: channel '%s' ignoring boot-machine (%s) (not host)",
+		event(_event_warning, "networking:messages:boot-machine: channel '%s' ignoring boot-machine (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
 	}
 
 	// TODO: implement this
-	if (false/*!session->handle_boot_machine(channel, message)*/)
+	if (true/*!session->handle_boot_machine(channel, message)*/)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_boot_machine: session failed to handle boot-machine (%s) from '%s'",
+		event(_event_warning, "networking:messages:boot-machine: session failed to handle boot-machine (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -421,7 +415,7 @@ void c_network_message_handler::handle_player_add(c_network_channel* channel, s_
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_add: channel '%s' ignoring player-add (%s) (not host)",
+		event(_event_warning, "networking:messages:player-add: channel '%s' ignoring player-add (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -430,7 +424,7 @@ void c_network_message_handler::handle_player_add(c_network_channel* channel, s_
 	// $TODO: implement this?
 	if (true/*!session->handle_player_add(channel, message)*/)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_add: session failed to handle player-add (%s) from '%s'",
+		event(_event_warning, "networking:messages:player-add: session failed to handle player-add (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -442,7 +436,7 @@ void c_network_message_handler::handle_player_refuse(c_network_channel* channel,
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->channel_is_authoritative(channel))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_refuse: channel '%s' ignoring player-refuse (%s) (channel not authoritative)\n",
+		event(_event_warning, "networking:messages:player-refuse: channel '%s' ignoring player-refuse (%s) (channel not authoritative)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -450,7 +444,7 @@ void c_network_message_handler::handle_player_refuse(c_network_channel* channel,
 
 	if (!session->handle_player_refuse(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_refuse: session failed to handle player-refuse (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:player-refuse: session failed to handle player-refuse (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -462,16 +456,16 @@ void c_network_message_handler::handle_player_remove(c_network_channel* channel,
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_remove: channel '%s' ignoring player-remove (%s) (not host)",
+		event(_event_warning, "networking:messages:player-remove: channel '%s' ignoring player-remove (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
 	}
 
 	// TODO: implement this
-	if (false/*!session->handle_player_remove(channel, message)*/)
+	if (true/*!session->handle_player_remove(channel, message)*/)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_remove: session failed to handle player-remove (%s) from '%s'",
+		event(_event_warning, "networking:messages:player-remove: session failed to handle player-remove (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -483,7 +477,7 @@ void c_network_message_handler::handle_player_properties(c_network_channel* chan
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_properties: channel '%s' ignoring player-properties (%s) (not host)\n",
+		event(_event_warning, "networking:messages:player-properties: channel '%s' ignoring player-properties (%s) (not host)",
 			channel->get_name(),
 			transport_secure_identifier_get_string(&message->session_id));
 		return;
@@ -491,7 +485,7 @@ void c_network_message_handler::handle_player_properties(c_network_channel* chan
 
 	if (!session->handle_player_properties(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_player_properties: session failed to handle player-properties (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:player-properties: session failed to handle player-properties (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -503,14 +497,14 @@ void c_network_message_handler::handle_parameters_update(c_network_channel* chan
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->channel_is_authoritative(channel))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_update: channel '%s' ignoring parameters-update (channel is not authoritative)\n",
+		event(_event_warning, "networking:messages:parameters-update-new: channel '%s' ignoring parameters-update (channel is not authoritative)",
 			channel->get_name());
 		return;
 	}
 
 	if (!session->handle_parameters_update(message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_update: session failed to handle authoritative parameters-update (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:parameters-update-new: session failed to handle authoritative parameters-update (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -522,14 +516,14 @@ void c_network_message_handler::handle_parameters_request(c_network_channel* cha
 	c_network_session* session = m_session_manager->get_session(&message->session_id);
 	if (!session || !session->is_host())
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_request: channel '%s' ignoring parameters-request (we are not the host)\n",
+		event(_event_warning, "networking:messages:parameters-request-new: channel '%s' ignoring parameters-request (we are not the host)",
 			channel->get_name());
 		return;
 	}
 
 	if (!session->handle_parameters_request(channel, message))
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_parameters_request: session failed to handle parameters-request (%s) from '%s'\n",
+		event(_event_warning, "networking:messages:parameters-request-new: session failed to handle parameters-request (%s) from '%s'",
 			transport_secure_identifier_get_string(&message->session_id),
 			channel->get_name());
 		return;
@@ -539,7 +533,7 @@ void c_network_message_handler::handle_parameters_request(c_network_channel* cha
 void c_network_message_handler::handle_view_establishment(c_network_channel* channel, s_network_message_view_establishment const* message)
 {
 	// non original but useful log
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_view_establishment: establishment %d received\n", message->establishment_mode);
+	event(_event_verbose, "networking:messages:view-establishment: establishment %d received", message->establishment_mode);
 
 	DECLFUNC(0x257B0, void, __thiscall, c_network_channel*)(channel/*this, channel, message*/);
 }
@@ -597,13 +591,13 @@ void c_network_message_handler::handle_test(c_network_channel* channel, s_networ
 void c_network_message_handler::handle_channel_message(c_network_channel* channel, e_network_message_type message_type, long message_storage_size, void const* message)
 {
 #define LOG_RECEIVED_OVER_CLOSED_CHANNEL() \
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over CLOSED channel '%s'\n", \
+	event(_event_warning, "networking:messages:handler: %d/%s received over CLOSED channel '%s'", \
 	message_type, \
 	channel->m_type_collection->get_message_type_name(message_type), \
 	channel->get_name())
 
 #define LOG_RECEIVED_OVER_NON_CONNECTED_CHANNEL() \
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received over a non-connected channel '%s', discarding\n", \
+	event(_event_warning, "networking:messages:handler: %d/%s received over a non-connected channel '%s', discarding", \
 	message_type, \
 	channel->m_type_collection->get_message_type_name(message_type), \
 	channel->get_name())
@@ -615,7 +609,7 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
 	// non-original log but its useful to know when channel messages arrive
 	transport_address remote_address;
 	channel->get_remote_address(&remote_address);
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: %d/%s received channel message from '%s'\n",
+	event(_event_verbose, "networking:messages:handler: %d/%s received channel message from '%s'",
 		message_type,
 		m_message_types->get_message_type_name(message_type),
 		transport_address_get_string(&remote_address));
@@ -972,7 +966,7 @@ void c_network_message_handler::handle_channel_message(c_network_channel* channe
 		}
 		default:
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_channel_message: type %d/%s not allowed over channel '%s', discarding",
+			event(_event_warning, "networking:messages:handler: type %d/%s not allowed over channel '%s', discarding",
 				message_type,
 				m_message_types->get_message_type_name(message_type),
 				channel->get_name());
@@ -988,7 +982,7 @@ void c_network_message_handler::handle_out_of_band_message(transport_address con
 {
 	ASSERT(m_initialized);
 
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s received out-of-band from '%s'\n",
+	event(_event_verbose, "networking:messages:handler: %d/%s received out-of-band from '%s'",
 		message_type,
 		m_message_types->get_message_type_name(message_type),
 		transport_address_get_string(address));
@@ -1101,7 +1095,7 @@ void c_network_message_handler::handle_out_of_band_message(transport_address con
 		}
 		default:
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_message_handler::handle_out_of_band_message: %d/%s from '%s' cannot be handled out-of-band, discarding\n",
+			event(_event_warning, "networking:messages:handler: %d/%s from '%s' cannot be handled out-of-band, discarding",
 				message_type,
 				m_message_types->get_message_type_name(message_type),
 				transport_address_get_string(address));

@@ -19,6 +19,8 @@ enum e_network_session_map_status
 	k_network_session_map_status_count
 };
 
+extern const char* peer_properties_state_string_array[k_network_session_map_status_count];
+
 enum e_network_session_peer_state
 {
 	_network_session_peer_state_none,

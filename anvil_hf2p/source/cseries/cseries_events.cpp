@@ -806,8 +806,8 @@ bool events_initialize_if_possible()
 		event_globals.enable_spam_suppression = shell_application_type() != _shell_application_tool;
 		event_globals.dump_to_stderr = shell_application_type() == _shell_application_tool;
 		event_globals.current_display_level = _event_message;
-		event_globals.current_log_level = _event_verbose;
-		event_globals.current_remote_log_level = _event_verbose;
+		event_globals.current_log_level = _event_message;
+		event_globals.current_remote_log_level = _event_message;
 		event_globals.current_minimum_level = k_event_level_none;
 		event_globals.current_minimum_category_level = k_event_level_none;
 

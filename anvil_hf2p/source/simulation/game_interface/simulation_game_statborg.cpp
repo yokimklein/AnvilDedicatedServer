@@ -3,6 +3,7 @@
 #include <game\game_engine_simulation.h>
 #include <simulation\simulation_gamestate_entities.h>
 #include <stdio.h>
+#include <cseries\cseries_events.h>
 
 void simulation_action_game_statborg_update(c_simulation_object_update_flags& update_flags)
 {
@@ -16,7 +17,7 @@ void simulation_action_game_statborg_update(c_simulation_object_update_flags& up
 	{
 		if (game_is_available())
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg does not have valid gamestate index to update\n");
+			event(_event_error, "networking:simulation:action: statborg does not have valid gamestate index to update");
 		}
 		return;
 	}
@@ -24,7 +25,7 @@ void simulation_action_game_statborg_update(c_simulation_object_update_flags& up
 	long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 	if (entity_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ACTION: simulation_action_game_statborg_update: statborg has invalid entity, can't update (gamestate 0x%8X)\n", gamestate_index);
+		event(_event_warning, "networking:simulation:action: statborg has invalid entity, can't update (gamestate 0x%08X)", gamestate_index);
 		return;
 	}
 	

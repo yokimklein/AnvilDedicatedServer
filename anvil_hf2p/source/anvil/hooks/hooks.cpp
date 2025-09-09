@@ -162,7 +162,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     long length = return_address - start_address;
     if (length < sizeof(jump_code))
     {
-        printf("The hook requires at least %d bytes available to overwrite!\n", sizeof(jump_code));
+        VASSERT(c_string_builder("The hook requires at least %d bytes available to overwrite!", sizeof(jump_code)).get_string());
         return;
     }
 
@@ -189,7 +189,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
 
     if (inserted_code == NULL)
     {
-        printf("Failed to allocate memory for hook!\n");
+        VASSERT("Failed to allocate memory for hook!");
         return;
     }
 
@@ -498,11 +498,9 @@ void hook::add_variable_space_to_stack_frame(size_t function_start, size_t funct
 ulong patch::set_memory_protect(size_t address, ulong new_protect, size_t size)
 {
     ulong old_protect;
-    bool result = VirtualProtect(base_address<void*>(address), size, new_protect, &old_protect);
-    if (!result)
+    if (!VirtualProtect(base_address<void*>(address), size, new_protect, &old_protect))
     {
-        printf("HOOKS/PATCH,ERR: " __FUNCTION__ ": failed to set memory protection at baseless address 0x%08x!", address);
-        ASSERT(result != false);
+        VASSERT(c_string_builder("failed to set memory protection at baseless address 0x%08x!", address).get_string());
         return PAGE_NOACCESS;
     }
     return old_protect;

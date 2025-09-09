@@ -1,6 +1,7 @@
 #include "network_session_parameters_game.h"
 #include <iostream>
 #include <anvil\server_tools.h>
+#include <cseries\cseries_events.h>
 
 char const* k_game_start_status_strings[k_session_game_start_status_count] = {
     "none",
@@ -61,7 +62,7 @@ s_network_session_parameter_game_start_status* c_network_session_parameter_game_
     {
         return &m_data;
     }
-    printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::get: [%s] failed to get, unavailable\n", get_session_description());
+    event(_event_warning, "networking:session_parameters:game_start_status: [%s] failed to get, unavailable", get_session_description());
     return NULL;
 }
 
@@ -83,7 +84,7 @@ bool c_network_session_parameter_game_start_status::set(s_network_session_parame
     }
     else
     {
-        printf("MP/NET/SESSION,PARAMS: c_network_session_parameter_game_start_status::set: [%s] type %d [%s] failed to get [%s]\n",
+        event(_event_warning, "networking:session_parameters:game_start_status: [%s] type %d [%s] failed to get [%s]",
             get_session_description(),
             m_parameter_type,
             m_parameter_type_description,
@@ -107,7 +108,7 @@ bool c_network_session_parameter_countdown_timer::set(e_network_game_countdown_d
     }
     else
     {
-        printf("MP/NET/SESSION,PARAMS: %s: [%s] can't set [%s]\n", __FUNCTION__, get_session_description(), get_set_denied_reason());
+        event(_event_error, "networking:session_parameters:countdown_timer: [%s] can't set [%s]", get_session_description(), get_set_denied_reason());
         return false;
     }
 }

@@ -243,11 +243,11 @@ long cvsnzprintf(char* buffer, dword size, char const* format, va_list list)
     ASSERT(format);
     ASSERT(size > 0);
 
-    long result = vsnprintf(buffer, size - 1, format, list);
+    long result = _vsnprintf_s(buffer, size, size - 1, format, list);
     buffer[size - 1] = 0;
 
-    size_t buf_size = strlen(buffer);
-    memset(buffer + buf_size, 0, size - buf_size);
+    //size_t buf_size = strlen(buffer);
+    //memset(buffer + buf_size, 0, size - buf_size);
 
     return result;
 }

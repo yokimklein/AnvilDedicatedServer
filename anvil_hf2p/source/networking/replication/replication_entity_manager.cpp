@@ -3,6 +3,7 @@
 #include <simulation\simulation_entity_definition.h>
 #include <networking\replication\replication_entity_manager_view.h>
 #include <simulation\simulation_entity_database.h>
+#include <cseries\cseries_events.h>
 
 long c_replication_entity_manager::create_local_entity()
 {
@@ -12,12 +13,12 @@ long c_replication_entity_manager::create_local_entity()
 	long absolute_index = preallocate_entity();
 	if (absolute_index == NONE)
 	{
-		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::create_local_entity: unable to create local entity, table is full\n");
+		event(_event_error, "networking:replication:entity: unable to create local entity, table is full");
 	}
 	else
 	{
 		entity_index = create_local_entity_internal(absolute_index);
-		printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::create_local_entity: local entity created %lx\n", entity_index);
+		event(_event_status, "networking:replication:entity: local entity created %lx", entity_index);
 	}
 	return entity_index;
 }
@@ -126,7 +127,7 @@ void c_replication_entity_manager::delete_local_entity(long entity_index)
 	ASSERT(!entity->flags.test(_replication_entity_marked_for_deletion_flag));
 	ASSERT(entity->deletion_mask == 0);
 	entity->flags.set(_replication_entity_marked_for_deletion_flag, true);
-	printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::delete_local_entity: local entity marked for deletion %lx\n", entity_index);
+	event(_event_status, "networking:replication:entity: local entity marked for deletion %lx", entity_index);
 	ASSERT(m_client);
 	m_client->notify_mark_entity_for_deletion(entity_index, false);
 	if (m_view_mask)
@@ -155,5 +156,5 @@ void c_replication_entity_manager::delete_entity_internal(long entity_index)
 	ASSERT(entity->deletion_mask == 0);
 	m_client->entity_delete_internal(entity_index);
 	entity->flags.set(_replication_entity_allocated_flag, false);
-	printf("MP/NET/REPLICATION,ENTITY: c_replication_entity_manager::delete_entity_internal: entity deleted %lx\n", entity_index);
+	event(_event_status, "networking:replication:entity: entity deleted %lx", entity_index);
 }

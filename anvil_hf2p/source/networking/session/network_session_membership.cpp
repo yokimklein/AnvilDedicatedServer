@@ -13,7 +13,17 @@
 #include <game\player_mapping.h>
 #include <cseries\cseries_windows.h>
 #include <input\input_windows.h>
+#include <cseries\cseries_events.h>
 //#include <format>
+
+const char* peer_properties_state_string_array[k_network_session_map_status_count] =
+{
+    "_none",
+    "_failed",
+    "_precaching",
+    "_precached",
+    "_loaded"
+};
 
 char const* network_session_peer_states[k_network_session_peer_state_count] =
 {
@@ -117,7 +127,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
     {
         if (get_player(player_index)->player_identifier == *player_identifier)
         {
-            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: peer #%d [%s] already has correct player [#%d]\n",
+            event(_event_message, "networking:session:membership: [%s] find_or_add_player: peer #%d [%s] already has correct player [#%d]",
                 session->get_id_string(),
                 peer_index,
                 transport_secure_address_get_string(&peer->secure_address),
@@ -126,7 +136,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
         }
         else
         {
-            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: peer #%d [%s] already has player [#%d] with different identifier, removing\n",
+            event(_event_message, "networking:session:membership: [%s] find_or_add_player: peer #%d [%s] already has player [#%d] with different identifier, removing",
                 session->get_id_string(),
                 peer_index,
                 transport_secure_address_get_string(&peer->secure_address),
@@ -138,7 +148,7 @@ long c_network_session_membership::find_or_add_player(long peer_index, s_player_
     long player_index_from_identifier = get_player_from_identifier(player_identifier);
     if (player_index_from_identifier != NONE)
     {
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::find_or_add_player: [%s] find_or_add_player: player index %d has the same player identifier as the one we're adding, removing them\n",
+        event(_event_message, "networking:session:membership: [%s] find_or_add_player: player index %d has the same player identifier as the one we're adding, removing them",
             session->get_id_string(),
             player_index_from_identifier);
         remove_player(player_index_from_identifier);
@@ -218,7 +228,6 @@ long c_network_session_membership::get_peer_from_incoming_address(transport_addr
     return DECLFUNC(0x31230, long, __thiscall, c_network_session_membership*, transport_address const*)(this, incoming_address);
 }
 
-// Method exists in ms29 but is inlined
 void c_network_session_membership::set_peer_connection_state(long peer_index, e_network_session_peer_state state)
 {
     ASSERT(state >= 0 && state < k_network_session_peer_state_count);
@@ -227,7 +236,7 @@ void c_network_session_membership::set_peer_connection_state(long peer_index, e_
 
     s_network_session_peer* session_peer = get_peer(peer_index);
     session_peer->connection_state = state;
-    printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_connection_state: [%s] peer #%d [%s] set to state %s (%d msec from start)\n",
+    event(_event_message, "networking:session:membership: [%s] peer #%d [%s] set to state %s (%d msec from start)",
         get_session()->get_id_string(),
         peer_index,
         transport_secure_address_get_string(&session_peer->secure_address),
@@ -388,7 +397,7 @@ void c_network_session_membership::remove_peer(long peer_index)
     char peer_name_string[0x100] = {};
     wchar_string_to_ascii_string(raw_peer->properties.peer_name.get_string(), peer_name_string, 0x100, nullptr);
     // This h3 log doesn't exist in ms23 for some reason
-    printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::remove_peer: [%s] removing peer #%d [%s] name [%s]\n",
+    event(_event_message, "networking:session:membership: [%s] removing peer #%d [%s] name [%s]",
         get_session()->get_id_string(),
         peer_index,
         transport_secure_address_get_string(&raw_peer->secure_address),
@@ -447,7 +456,7 @@ void c_network_session_membership::build_membership_update(long peer_index, cons
     c_flags<long, long, k_network_maximum_machines_per_session> peers_removed_mask;
     peers_removed_mask.clear();
     
-    printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: [%s] building new update\n", session->get_id_string());
+    event(_event_message, "networking:session:membership:dump: [%s] building new update", session->get_id_string());
     csmemset(message, 0, sizeof(s_network_message_membership_update));
     managed_session_get_id(session->managed_session_index(), &message->session_id);
     message->update_number = membership->update_number;
@@ -516,7 +525,7 @@ void c_network_session_membership::build_membership_update(long peer_index, cons
         }
         else
         {
-            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: removing peer #%d [%s]\n",
+            event(_event_status, "networking:session:membership:update: removing peer #%d [%s]",
                 i,
                 transport_secure_address_get_string(&membership_peer->secure_address));
             message->peer_updates[message->peer_update_count].peer_index = i;
@@ -573,13 +582,13 @@ void c_network_session_membership::build_membership_update(long peer_index, cons
                 }
 
                 ASSERT(update_data->player_location_updated || update_data->player_properties_updated);
-                printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: adding player [#%d]\n", i);
+                event(_event_status, "networking:session:membership:update: adding player [#%d]", i);
             }
         }
         else if (!peers_removed_mask.test(peer_index) && !peer_info_updated_mask.test(peer_index))
         {
             s_network_message_membership_update_player* player_update = &message->player_updates[message->player_update_count++];
-            printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_membership_update: player removed [#%d]\n", i);
+            event(_event_status, "networking:session:membership:update: player removed [#%d]", i);
             ASSERT(message->player_update_count <= NUMBEROF(message->player_updates));
             player_update->player_index = i;
             player_update->update_type = 0;
@@ -628,14 +637,14 @@ void c_network_session_membership::build_peer_properties_update(const s_network_
         peer_properties_update->peer_name_updated = true;
         peer_properties_update->peer_name.set(membership_properties->peer_name.get_string());
         peer_properties_update->peer_session_name.set(membership_properties->peer_session_name.get_string());
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties names changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer properties names changed");
     }
     peer_properties_update->game_start_error = membership_properties->game_start_error;
     if (!baseline_properties || membership_properties->peer_map != baseline_properties->peer_map)
     {
         peer_properties_update->peer_map_id_updated = true;
         peer_properties_update->peer_map_id = membership_properties->peer_map;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties map id changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer properties map id changed");
     }
     if (!baseline_properties
         || membership_properties->peer_map_status != baseline_properties->peer_map_status
@@ -644,19 +653,19 @@ void c_network_session_membership::build_peer_properties_update(const s_network_
         peer_properties_update->peer_map_updated = true;
         peer_properties_update->peer_map_status = membership_properties->peer_map_status;
         peer_properties_update->peer_map_progress_percentage = membership_properties->peer_map_progress_percentage;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties map changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer properties map changed");
     }
     if (!baseline_properties || membership_properties->peer_mp_map_mask != baseline_properties->peer_mp_map_mask)
     {
         peer_properties_update->available_multiplayer_map_mask_updated = true;
         peer_properties_update->available_multiplayer_map_mask = membership_properties->peer_mp_map_mask;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: available peer properties map mask changed\n");
+        event(_event_verbose, "networking:session:membership:update: available peer properties map mask changed");
     }
     if (!baseline_properties || membership_properties->peer_game_instance != baseline_properties->peer_game_instance)
     {
         peer_properties_update->peer_game_instance_updated = true;
         peer_properties_update->peer_game_instance = membership_properties->peer_game_instance;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer game instance changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer game instance changed");
     }
     if (!baseline_properties
         || membership_properties->connectivity_badness_rating != baseline_properties->connectivity_badness_rating
@@ -679,7 +688,7 @@ void c_network_session_membership::build_peer_properties_update(const s_network_
         peer_properties_update->connectivity.latency_average_msec = membership_properties->connectivity.latency_average_msec;
         peer_properties_update->connectivity.latency_maximum_msec = membership_properties->connectivity.latency_maximum_msec;
         peer_properties_update->language = membership_properties->language;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties connectivity changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer properties connectivity changed");
     }
 
     if (!baseline_properties
@@ -689,13 +698,13 @@ void c_network_session_membership::build_peer_properties_update(const s_network_
         peer_properties_update->versions_updated = true;
         peer_properties_update->determinism_version = membership_properties->determinism_version;
         peer_properties_update->determinism_compatible_version = membership_properties->determinism_compatible_version;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: peer properties versions changed\n");
+        event(_event_verbose, "networking:session:membership:update: peer properties versions changed");
     }
     if (!baseline_properties || membership_properties->flags != baseline_properties->flags)
     {
         peer_properties_update->flags_updated = true;
         peer_properties_update->flags = membership_properties->flags;
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::build_peer_properties_update: flags changed\n");
+        event(_event_verbose, "networking:session:membership:update: flags changed");
     }
 }
 
@@ -706,7 +715,7 @@ void c_network_session_membership::set_peer_address(long peer_index, s_transport
     s_network_session_peer* peer = get_peer(peer_index);
     if (peer->secure_address != *secure_address)
     {
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_address: [%s] secure address for peer #%d changed to [%s]\n",
+        event(_event_message, "networking:session:membership: [%s] secure address for peer #%d changed to [%s]",
             get_session()->get_id_string(),
             peer_index,
             transport_secure_address_get_string(secure_address));
@@ -727,14 +736,32 @@ void c_network_session_membership::set_peer_properties(long peer_index, s_networ
     }
     if (peer->properties != *peer_properties)
     {
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties\n");
+        event(_event_message, "networking:session:membership: [%s] peer-properties accepted for peer #%d [%s], "
+            "name=%S, session name=%S, map=%d, map status=%s, map progress=%d, game instance=0x%llX, start error=%s, "
+            "ratings (conn, host, client)=%d, %d, %d, connectivity=%04X (complete=%04X), flags=%X",
+            id_string,
+            peer_index,
+            transport_secure_address_get_string(&peer->secure_address),
+            peer_properties->peer_name.get_string(),
+            peer_properties->peer_session_name.get_string(),
+            peer_properties->peer_map,
+            peer_properties_state_string_array[peer_properties->peer_map_status],
+            peer_properties->peer_map_progress_percentage,
+            peer_properties->peer_game_instance,
+            multiplayer_game_start_error_to_string(peer_properties->game_start_error),
+            peer_properties->connectivity_badness_rating,
+            peer_properties->host_badness_rating,
+            peer_properties->client_badness_rating,
+            (ulong)peer_properties->connectivity.peer_connectivity_mask,
+            (ulong)peer_properties->connectivity.peer_probe_mask,
+            peer_properties->flags.get_unsafe());
         peer->properties = *peer_properties;
         // observer quality_statistics_notify_established_connectivity removed as estimated bandwidth fields were removed from s_network_session_peer_properties
         increment_update();
     }
     else
     {
-        printf("MP/NET/SESSION,MEMBERSHIP: c_network_session_membership::set_peer_properties: [%s] peer-properties discarded as irrelevant (from peer #%d [%s])\n",
+        event(_event_message, "networking:session:membership: [%s] peer-properties discarded as irrelevant (from peer #%d [%s])",
             id_string,
             peer_index,
             transport_secure_address_get_string(&peer->secure_address));

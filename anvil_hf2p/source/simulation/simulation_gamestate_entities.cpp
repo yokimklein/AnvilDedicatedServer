@@ -1,6 +1,7 @@
 #include "simulation_gamestate_entities.h"
 #include <memory\tls.h>
 #include <stdio.h>
+#include <cseries\cseries_events.h>
 
 datum_index simulation_gamestate_entity_create()
 {
@@ -8,7 +9,7 @@ datum_index simulation_gamestate_entity_create()
 	datum_index gamestate_index = datum_new(simulation_gamestate_entities);
 	if (gamestate_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,GAMESTATE: simulation_gamestate_entity_create: failed to allocate simulation gamestate entity\n");
+		event(_event_warning, "networking:simulation:gamestate: failed to allocate simulation gamestate entity");
 	}
 	else
 	{

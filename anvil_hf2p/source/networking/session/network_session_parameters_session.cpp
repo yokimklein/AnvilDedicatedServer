@@ -25,8 +25,7 @@ long c_network_session_parameter_session_size::get_max_player_count() const
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session_parameter_session_size::get_max_player_count: [%s] failed to get max player count, unavailable\n",
-			get_session_description());
+		event(_event_warning, "networking:session_parameters:session_size: [%s] failed to get max player count, unavailable", get_session_description());
 	}
 	return max_player_count;
 }
@@ -45,8 +44,7 @@ long c_network_session_parameter_session_size::get_max_peer_count() const
 	}
 	else
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: c_network_session_parameter_session_size::get_max_peer_count: [%s] failed to get max peer count, unavailable\n",
-			get_session_description());
+		event(_event_warning, "networking:session_parameters:session_size: [%s] failed to get max peer count, unavailable", get_session_description());
 	}
 	return max_peer_count;
 }

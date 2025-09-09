@@ -14,7 +14,7 @@ void c_simulation_world::update_establishing_view(c_simulation_view* view)
     if (view->ready_to_establish())
     {
         long establishment_identifier = m_next_view_establishment_identifier++;
-        printf("MP/NET/SIMULATION: c_simulation_world::update_establishing_view: simulation connected, go established - advancing remote client view %s (mode %d -> %d, new identifier %d)\n",
+        event(_event_message, "networking:simulation:world: simulation connected, go established - advancing remote client view %s (mode %d -> %d, new identifier %d)",
             view->get_view_description(),
             view->get_view_establishment_mode(),
             _simulation_view_establishment_mode_established,
@@ -23,7 +23,7 @@ void c_simulation_world::update_establishing_view(c_simulation_view* view)
     }
     else if (view->get_view_establishment_mode() != _simulation_view_establishment_mode_connect)
     {
-        printf("MP/NET/SIMULATION: c_simulation_world::update_establishing_view: view ready to connect, advancing remote client view %s (mode %d -> %d)\n",
+        event(_event_message, "networking:simulation:world: view ready to connect, advancing remote client view %s (mode %d -> %d)",
             view->get_view_description(),
             view->get_view_establishment_mode(),
             _simulation_view_establishment_mode_connect);

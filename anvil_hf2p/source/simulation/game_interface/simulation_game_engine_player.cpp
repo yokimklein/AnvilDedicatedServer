@@ -48,7 +48,7 @@ void simulation_action_game_engine_player_delete(short player_absolute_index)
 	datum_index gamestate_index = game_engine_globals_get_player_gamestate_index(player_absolute_index);
 	if (gamestate_index == NONE)
 	{
-		printf("MP/NET/SIMULATION,ACTION: simulation_action_game_map_variant_delete: global player %d has no gamestate representation\n", player_absolute_index);
+		event(_event_warning, "networking:simulation:action: global player %d has no gamestate representation", player_absolute_index);
 	}
 	else
 	{
@@ -57,7 +57,7 @@ void simulation_action_game_engine_player_delete(short player_absolute_index)
 			long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 			if (entity_index == NONE)
 			{
-				printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_delete: global player %d gamestate index 0x%8X not attached to entity\n", player_absolute_index, gamestate_index);
+				event(_event_warning, "networking:simulation:action: global player %d gamestate index 0x%8X not attached to entity", player_absolute_index, gamestate_index);
 			}
 			else
 			{
@@ -81,7 +81,7 @@ void simulation_action_game_engine_player_update(short player_index, c_simulatio
 	{
 		if (game_is_available())
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d not attached to gamestate\n", player_index);
+			event(_event_error, "networking:simulation:action: failed to update player %d not attached to gamestate", player_index);
 		}
 	}
 	else
@@ -89,7 +89,7 @@ void simulation_action_game_engine_player_update(short player_index, c_simulatio
 		long entity_index = simulation_gamestate_entity_get_simulation_entity_index(gamestate_index);
 		if (entity_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ACTION: simulation_action_game_engine_player_update: failed to update player %d gamestate 0x%8X not attached to entity\n", player_index, gamestate_index);
+			event(_event_warning, "networking:simulation:action: failed to update player %d gamestate 0x%8X not attached to entity", player_index, gamestate_index);
 		}
 		else
 		{

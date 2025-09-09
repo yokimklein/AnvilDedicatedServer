@@ -4,6 +4,7 @@
 #include <iostream>
 #include <networking\network_time.h>
 #include <anvil\backend\cache.h>
+#include <cseries\cseries_events.h>
 
 REFERENCE_DECLARE(0x3EAB120, s_online_session_manager_globals, online_session_manager_globals);
 
@@ -79,7 +80,7 @@ void managed_session_modify_slot_counts(long index, long private_slot_count, lon
 
 	if (online_session.private_slot_count != private_slot_count || online_session.public_slot_count != public_slot_count || TEST_BIT(online_session.public_slots_flags, 9) != friends_only)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_modify_slot_counts: [%s]:%08X modify slot count from %d/%d/fo=%d to %d/%d/fo=%d\n",
+		event(_event_message, "networking:managed_session: [%s]:%08X modify slot count from %d/%d/fo=%d to %d/%d/fo=%d",
 			transport_session_description_get_string(&online_session.description),
 			index,
 			online_session.private_slot_count,
@@ -205,7 +206,7 @@ void managed_session_reset_session(long index, bool recreating_session)
 	ASSERT(index < k_managed_sessions_max_count);
 
 	s_online_managed_session* managed_session = managed_session_get(index);
-	printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_reset_session: [%s]:%08X reset session\n",
+	event(_event_message, "networking:managed_session: [%s]:%08X reset session",
 		transport_session_description_get_string(&managed_session->desired_online_session_state.description),
 		index);
 
@@ -238,7 +239,7 @@ void managed_session_remove_players(long index, qword const* xuids, long xuid_co
 	
 	for (long player_index = 0; player_index < xuid_count; player_index++)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: managed_session_remove_players: [0x%I64x] from session 0x%8X\n", xuids[player_index], index);
+		event(_event_message, "networking:managed_session: remove player [0x%016I64X] from session 0x%8X", xuids[player_index], index);
 	}
 
 	managed_session->pending_operation_flags.set(_online_managed_session_players_remove_bit, true);
@@ -274,8 +275,8 @@ void __fastcall remove_from_player_list(s_online_session_player* players, long p
 		}
 		if (player_index == player_count)
 		{
-			// previously used 0x%Lx, but this caused compiler warnings
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: remove_from_player_list: unable to find player [0x%llx] in the list to remove from the session\n", xuids[player_index]);
+			// previously used 0x%Lx
+			event(_event_message, "networking:managed_session: unable to find player [0x%016I64X] in the list to remove from the session", xuids[player_index]);
 		}
 	}
 }

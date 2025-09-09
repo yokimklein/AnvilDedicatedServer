@@ -29,12 +29,12 @@ long rand_range(long min, long max)
 };
 void anvil_session_start_voting(c_network_session* session)
 {
-    event(_event_message, "networking:" __FUNCTION__ ": starting vote...");
+    event(_event_message, "networking:anvil:session:" __FUNCTION__ ": starting vote...");
 
     // $TODO: pull default playlist from multiplayer defaults if we don't have one or if the assigned playlist is invalid
     if (!g_backend_data_cache.m_playlists.contains(g_anvil_configuration["playlist_id"]))
     {
-        printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: " __FUNCTION__ ": config playlist [%s] has no entry in backend cache! cannot start vote.\n",
+        event(_event_error, "networking:anvil:session: config playlist [%s] has no entry in backend cache! cannot start vote.",
             g_anvil_configuration["playlist_id"].c_str());
         return;
     }
@@ -109,7 +109,7 @@ void anvil_session_update_voting(c_network_session* session)
                 }
             }
             char winning_index = (option_votes[0] > option_votes[1] ? 0 : 1);
-            printf("option %d wins the vote!\n", winning_index);
+            event(_event_status, "networking:anvil:session: option %d wins the vote", winning_index);
             s_network_session_parameter_lobby_vote_set lobby_vote_set;
             parameters->m_parameters.lobby_vote_set.get(&lobby_vote_set);
             lobby_vote_set.winning_vote_index = winning_index;

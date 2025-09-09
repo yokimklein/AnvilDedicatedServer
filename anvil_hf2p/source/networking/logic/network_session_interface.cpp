@@ -15,6 +15,7 @@
 #include <networking\network_configuration.h>
 #include <game\game.h>
 #include <networking\network_globals.h>
+#include <cseries\cseries_events.h>
 
 REFERENCE_DECLARE(0x3EAE0C0, s_network_session_interface_globals, session_interface_globals);
 
@@ -70,7 +71,7 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
 
 	if (peer->connection_state == _network_session_peer_state_joined || secure_address != *peer_secure_address || peer->properties != peer_properties)
 	{
-		printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: requesting peer-properties update (machine:%ls session-name:%ls map:%d), after %dms\n",
+		event(_event_message, "networking:logic:session: requesting peer-properties update (machine:%ls session-name:%ls map:%d), after %dms",
 			peer_properties.peer_name.get_string(),
 			peer_properties.peer_session_name.get_string(),
 			peer_properties.peer_map_status,
@@ -81,7 +82,7 @@ void __fastcall network_session_update_peer_properties(c_network_session* sessio
 		}
 		else
 		{
-			printf("MP/NET/STUB_LOG_PATH,STUB_LOG_FILTER: network_session_update_peer_properties: unable to send peer-properties update\n");
+			event(_event_error, "networking:logic:session: unable to send peer-properties update");
 		}
 	}
 }

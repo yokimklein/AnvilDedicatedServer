@@ -9,6 +9,7 @@
 #include <anvil\backend\services\private_service.h>
 #include <anvil\backend\cache.h>
 #include <game\game.h>
+#include <cseries\cseries_events.h>
 
 REFERENCE_DECLARE(0x1039AF8, s_networking_join_data, g_network_join_data);
 
@@ -29,7 +30,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 	{
 		case _network_join_closed_to_all_joins:
 		{
-			printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: attempted to join while in _network_join_closed_to_all_joins\n");
+			event(_event_message, "networking:logic:join: attempted to join while in _network_join_closed_to_all_joins");
 			session->acknowledge_join_request(incoming_address, _network_join_refuse_reason_not_joinable);
 			return;
 		}
@@ -39,7 +40,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 			{
 				break;
 			}
-			printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a group session while joining is in _network_join_open_to_join_squad\n");
+			event(_event_warning, "networking:logic:join: Warning. Attempted to join a group session while joining is in _network_join_open_to_join_squad");
 			session->acknowledge_join_request(incoming_address, _network_join_refuse_reason_in_matchmaking);
 			return;
 		}
@@ -49,13 +50,13 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 		//{
 		//    if (session->session_type() == _network_session_type_group)
 		//        break;
-		//    printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join a squad session while in matchmaking\n");
+		//    event(_event_message, "networking:logic:join: Warning. Attempted to join a squad session while in matchmaking");
 		//    session->acknowledge_join_request(incoming_address, _network_join_refuse_reason_in_matchmaking);
 		//    return;
 		//}
 		case _network_join_queue_closed_while_in_match:
 		{
-			printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: Warning. Attempted to join while in matchmaking\n");
+			event(_event_message, "networking:logic:join: Warning. Attempted to join while in matchmaking");
 			session->acknowledge_join_request(incoming_address, _network_join_refuse_reason_in_matchmaking);
 			return;
 		}
@@ -66,7 +67,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 	{
 		if (join_request->join_nonce == session->get_session_membership()->get_join_nonce(peer_index))
 		{
-			printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it already exists in the join queue\n", transport_address_get_string(incoming_address));
+			event(_event_message, "networking:logic:join: %s was ignored because it already exists in the join queue", transport_address_get_string(incoming_address));
 			return;
 		}
 	}
@@ -78,7 +79,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 		{
 			if (join_request->join_nonce == g_network_join_data.join_queue[queue_index].join_request.join_nonce)
 			{
-				printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was ignored because it is already being processed\n", transport_address_get_string(incoming_address));
+				event(_event_message, "networking:logic:join: %s was ignored because it is already being processed", transport_address_get_string(incoming_address));
 				return;
 			}
 		}
@@ -91,7 +92,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 	csmemcpy(&queue_entry.join_request, join_request, sizeof(queue_entry.join_request));
 	queue_entry.time_inserted_into_the_queue = network_time_get();
 	queue_entry.time_client_was_last_notified = -1;
-	printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was added to the join queue\n", transport_address_get_string(incoming_address));
+	event(_event_message, "networking:logic:join: %s was added to the join queue", transport_address_get_string(incoming_address));
 
 	// if the queue is now full (max 32), remove the entry that entered first to free up space
 	ASSERT(entry_count < NUMBEROF(g_network_join_data.join_queue));
@@ -109,7 +110,7 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 				entry_to_delete = &queue_entry;
 			}
 		}
-		printf("MP/NET/JOIN,CTRL: network_join_add_join_to_queue: %s was removed from the join queue because the queue was full\n", transport_address_get_string(incoming_address));
+		event(_event_message, "networking:logic:join: %s was removed from the join queue because the queue was full", transport_address_get_string(incoming_address));
 		session->acknowledge_join_request(incoming_address, _network_join_refuse_reason_rejected_by_host);
 
 		// replace entry to delete w/ last entry, and decrement queue entry count
@@ -165,7 +166,7 @@ bool network_join_process_joins_from_queue()
 	{
 		if (g_network_join_data.join_queue_entry_count > 0 && !is_peer_joining)
 		{
-			printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: Warning. unabled to process join because our bandwidth is not stable (stable=%d)\n", bandwidth_is_stable);
+			event(_event_message, "networking:logic:join: Warning. unabled to process join because our bandwidth is not stable (stable=%d)", bandwidth_is_stable);
 		}
 		return is_peer_joining;
 	}
@@ -191,7 +192,7 @@ bool network_join_process_joins_from_queue()
 					return false;
 				}
 				// hold in queue until we have valid data from the request
-				printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: requesting user sessions, holding join [%s] in queue\n",
+				event(_event_message, "networking:logic:join: requesting user sessions, holding join [%s] in queue",
 					transport_secure_nonce_get_string(queue_entry.join_request.join_nonce));
 				return true;
 			}
@@ -202,7 +203,7 @@ bool network_join_process_joins_from_queue()
 				// reset join if session data returned invalid, otherwise continue to join accept
 				if (!g_backend_data_cache.m_lobby_session.valid)
 				{
-					printf("MP/NET/JOIN,CTRL: network_join_process_joins_from_queue: session data returned invalid!\n");
+					event(_event_error, "networking:logic:join: session data returned invalid!");
 					return false;
 				}
 			}
@@ -238,7 +239,7 @@ void network_join_remove_join_from_queue(qword join_nonce)
 			continue;
 		}
 
-		printf("MP/NET/JOIN,CTRL: network_join_remove_join_from_queue: %s was removed from the join queue by request\n", transport_address_get_string(&queue_entry.address));
+		event(_event_message, "networking:logic:join: %s was removed from the join queue by request", transport_address_get_string(&queue_entry.address));
 		// overwrite queue entry with last entry & decrease entry count
 		memcpy(&queue_entry, &g_network_join_data.join_queue[--g_network_join_data.join_queue_entry_count], sizeof(s_networking_join_queue_entry));
 		// do not increment counter after removal

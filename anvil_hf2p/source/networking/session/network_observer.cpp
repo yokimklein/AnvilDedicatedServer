@@ -1,5 +1,6 @@
 #include "network_observer.h"
 #include <stdio.h>
+#include <cseries\cseries_events.h>
 
 char const* k_observer_state_strings[]
 {
@@ -118,7 +119,7 @@ void c_network_observer::quality_statistics_notify_peer_left_gracefully(e_networ
 	s_channel_observer const* observer = get_observer(owner, observer_index);
 	if (observer->stream.active && observer->stream.is_simulation)
 	{
-		printf("MP/NET/OBSERVER,QUALITY: c_network_observer::quality_statistics_notify_peer_left_gracefully: [%s] peer left gracefully, reporting as 'good'\n", get_name(observer_index));
+		event(_event_message, "networking:observer:quality: [%s] peer left gracefully, reporting as 'good'", get_name(observer_index));
 		// originally the channel index was calculated like this:
 		// sizeof(s_channel_observer) * channel_index / sizeof(s_channel_observer)
 		// I have no idea why they did this because this is entirely pointless

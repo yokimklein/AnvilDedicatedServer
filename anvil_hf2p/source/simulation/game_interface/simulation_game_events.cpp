@@ -42,7 +42,7 @@ void simulation_event_generate_for_client_player_list(e_simulation_event_type ev
 	c_flags<long, ulong, k_maximum_players> player_mask;
 	if (!player_indices || player_count < 1 || player_count > k_maximum_players)
 	{
-		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: not sending exclusive list event %d/%s for invalid player list [count %d]\n",
+		event(_event_warning, "networking:simulation:event: not sending exclusive list event %d/%s for invalid player list [count %d]",
 			event_type,
 			event_handler->get_event_type_name(event_type), player_count);
 	}
@@ -52,7 +52,7 @@ void simulation_event_generate_for_client_player_list(e_simulation_event_type ev
 		{
 			if (player_indices[i] == NONE)
 			{
-				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_list: exclusive player list has bad player index %d/%s\n",
+				event(_event_warning, "networking:simulation:event: exclusive player list has bad player index %d/%s",
 					event_type,
 					event_handler->get_event_type_name(event_type));
 			}
@@ -74,9 +74,7 @@ void simulation_event_generate_for_client_player_mask(e_simulation_event_type ev
 	}
 
 	c_simulation_event_handler* event_handler = world->get_event_handler();
-	printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: generating exclusive list event %d/%s\n",
-		event_type,
-		event_handler->get_event_type_name(event_type));
+	event(_event_verbose, "networking:simulation:event: generating exclusive list event %d/%s", event_type, event_handler->get_event_type_name(event_type));
 	if (!world->is_authority())
 	{
 		return;
@@ -91,7 +89,7 @@ void simulation_event_generate_for_client_player_mask(e_simulation_event_type ev
 			player_datum* player = (player_datum*)datum_try_and_get_absolute(players, player_index);
 			if (!player)
 			{
-				printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: Failed to get a player for index %d for event %d/%s\n",
+				event(_event_warning, "networking:simulation:event: Failed to get a player for index %d for event %d/%s",
 					player_index,
 					event_type,
 					event_handler->get_event_type_name(event_type));
@@ -118,7 +116,7 @@ void simulation_event_generate_for_client_player_mask(e_simulation_event_type ev
 	}
 	else
 	{
-		printf("MP/NET/SIMULATION,EVENT: simulation_event_generate_for_client_player_mask: exclusive player list for event %d/%s generated an invalid send machine mask\n",
+		event(_event_warning,"networking:simulation:event: exclusive player list for event %d/%s generated an invalid send machine mask",
 			event_type,
 			event_handler->get_event_type_name(event_type));
 	}

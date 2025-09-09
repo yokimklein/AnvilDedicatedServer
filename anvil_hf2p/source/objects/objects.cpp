@@ -8,6 +8,7 @@
 #include <simulation\game_interface\simulation_game_items.h>
 #include <tag_files\tag_groups.h>
 #include <intrin.h>
+#include <cseries\cseries_events.h>
 
 object_datum* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
@@ -52,11 +53,11 @@ void object_attach_gamestate_entity(datum_index object_index, datum_index gamest
 	datum_index ultimate_parent_index = object_get_ultimate_parent(object_index);
 	if (object_is_multiplayer_cinematic_object(object_index))
 	{
-		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object [0x%08lX]\n", object_index);
+		event(_event_error, "networking:objects: attaching simulation entity to multiplayer cinematic object [0x%08lX]", object_index);
 	}
 	else if (object_is_multiplayer_cinematic_object(ultimate_parent_index))
 	{
-		printf("MP/NET/OBJECTS: object_attach_gamestate_entity: attaching simulation entity to multiplayer cinematic object (parent) [0x%08lX]\n", ultimate_parent_index);
+		event(_event_error, "networking:objects: attaching simulation entity to multiplayer cinematic object (parent) [0x%08lX]", ultimate_parent_index);
 	}
 	object->object.gamestate_index = gamestate_index;
 }

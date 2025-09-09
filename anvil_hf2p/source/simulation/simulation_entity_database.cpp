@@ -21,19 +21,19 @@ long c_simulation_entity_database::entity_create(e_simulation_entity_type entity
 		entity_index = m_entity_manager->create_local_entity();
 		if (entity_index == NONE)
 		{
-			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: unable to allocate replication instance for new simulation entity (type %d)\n", entity_type);
+			event(_event_error, "networking:simulation:entity: unable to allocate replication instance for new simulation entity (type %d)", entity_type);
 		}
 		else
 		{
 			entity_create_internal(entity_index, entity_type, creation_data_size, creation_data, state_data_size, state_data);
 			creation_data = NULL;
 			state_data = NULL;
-			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: created entity 0x%08X of type %d\n", entity_index, entity_type);
+			event(_event_status, "networking:simulation:entity: created entity 0x%08X of type %d", entity_index, entity_type);
 		}
 	}
 	else
 	{
-		printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_create: unable to allocate memory for new simulation entity (type %d)\n", entity_type);
+		event(_event_error, "networking:simulation:entity: unable to allocate memory for new simulation entity (type %d)", entity_type);
 	}
 	if (creation_data)
 	{
@@ -66,7 +66,7 @@ bool c_simulation_entity_database::entity_allocate_creation_data(e_simulation_en
 		else
 		{
 			char heap_description[1024];
-			printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating creation data for new simulation entity (type %d, [%d] bytes) [%s]\n",
+			event(_event_error, "networking:simulation:entity: OUT OF MEMORY allocating creation data for new simulation entity (type %d, [%d] bytes) [%s]",
 				entity_type,
 				creation_data_size,
 				network_heap_describe(heap_description, 1024));
@@ -96,7 +96,7 @@ bool c_simulation_entity_database::entity_allocate_state_data(e_simulation_entit
 	else
 	{
 		char heap_description[1024];
-		printf("MP/NET/SIMULATION,ENTITY: c_simulation_entity_database::entity_allocate_creation_data: OUT OF MEMORY allocating state data for new simulation entity (type %d, [%d] bytes) [%s]\n",
+		event(_event_error, "networking:simulation:entity: OUT OF MEMORY allocating state data for new simulation entity (type %d, [%d] bytes) [%s]",
 			entity_type,
 			state_data_size,
 			network_heap_describe(heap_description, 1024));
@@ -165,7 +165,7 @@ void c_simulation_entity_database::entity_capture_creation_data(long entity_inde
 	ASSERT(entity->state_data_size == entity_definition->state_data_size());
 	bool baseline_valid = entity_definition->build_baseline_state_data(entity->creation_data_size, entity->creation_data, entity->state_data_size, entity->state_data);
 	ASSERT(baseline_valid);
-	// TODO c_simulation_entity_database::entity_validate_creation_data
+	// $TODO: c_simulation_entity_database::entity_validate_creation_data
 	entity->exists_in_gameworld = true;
 	entity->pending_update_mask.set_unsafe(MASK(entity_definition->update_flag_count()));
 	entity->force_update_mask.clear();
@@ -192,7 +192,7 @@ void c_simulation_entity_database::entity_update(long entity_index, c_simulation
 	c_simulation_entity_definition* entity_definition = m_type_collection->get_entity_definition(entity->entity_type);
 	if (!entity_definition->gameworld_attachment_valid(entity->gamestate_index))
 	{
-		printf("MP/NET/SIMULATION,ENTITY_DATABASE: c_simulation_entity_database::entity_update: entity type %d index 0x%8X not attached properly to gamestate 0x%8X (update)\n",
+		event(_event_error, "networking:simulation:entity_database: entity type %d index 0x%08X not attached properly to gamestate 0x%08X (update)",
 			entity->entity_type,
 			entity_index,
 			entity->gamestate_index);
@@ -201,7 +201,7 @@ void c_simulation_entity_database::entity_update(long entity_index, c_simulation
 	{
 		if (simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index) != entity->entity_index)
 		{
-			printf("MP/NET/SIMULATION,ENTITY_DATABASE: c_simulation_entity_database::entity_update: entity type %d index 0x%8X (!= 0x%08X) not attached properly to gamestate 0x%8X (update)\n",
+			event(_event_error, "networking:simulation:entity_database: entity type %d index 0x%08X (!= 0x%08X) not attached properly to gamestate 0x%08X (update)",
 				entity_index,
 				entity->entity_type,
 				simulation_gamestate_entity_get_simulation_entity_index(entity->gamestate_index),
