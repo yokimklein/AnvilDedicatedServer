@@ -4,7 +4,7 @@ A modification for Halo Online build 11.1.604673 cert_ms29 which restores missin
 **Part of the [Anvil Station](https://discord.gg/hetx7ekZJQ) project, dedicated to reviving the original Halo Online game.**<br/>
 <div align="left">
       <a href="https://www.youtube.com/watch?v=S9f6aUFZ4Ek">
-         <img src="https://github.com/yokimklein/AnvilDedicatedServer/blob/master/video_thumbnail.png" style="width:100%;">
+         <img src="https://github.com/yokimklein/AnvilDedicatedServer/blob/main/video_thumbnail.png" style="width:100%;">
       </a>
 </div> <br/>
 
