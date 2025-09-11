@@ -44,7 +44,7 @@ static_assert(sizeof(s_director_info) == 0xC);
 
 enum e_controller_index;
 enum e_output_user_index;
-struct c_director
+class c_director
 {
 	virtual e_director_mode get_type() const;
 	virtual void update(real);

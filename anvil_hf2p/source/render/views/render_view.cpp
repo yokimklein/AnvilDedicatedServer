@@ -41,7 +41,7 @@ void __fastcall render_debug_frame_render()
 		return;
 	}
 
-#if defined(DEBUG_ENABLED)
+#if defined(PLAY_ENABLED)
 	rectangle2d screen_pixel_bounds{};
 	c_rasterizer::get_fullscreen_render_pixel_bounds(&screen_pixel_bounds);
 
@@ -60,7 +60,7 @@ void __fastcall render_debug_frame_render()
 
 	main_time_frame_rate_display();
 
-#if defined(DEBUG_ENABLED)
+#if defined(PLAY_ENABLED)
 	//render_debug_scripting();
 	//render_debug_cluster_blend_info();
 	//profile_render(&screen_pixel_bounds, &safe_frame_pixel_bounds);

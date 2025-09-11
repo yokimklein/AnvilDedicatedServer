@@ -7,13 +7,10 @@
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_action.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall event_generate_part_hook()
+void __cdecl event_generate_part_hook(s_hook_registers registers)
 {
-	datum_index object_index;
-	__asm mov object_index, esi;
+	datum_index object_index = registers.esi;
+
 	TLS_DATA_GET_VALUE_REFERENCE(object_headers);
 
 	object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, object_index);
@@ -28,72 +25,54 @@ __declspec(safebuffers) void __fastcall event_generate_part_hook()
 __declspec(naked) void weapon_barrel_create_projectiles_hook0()
 {
 	// esp + original sp - variable offset + new stack space
-	__asm mov eax, [esp + 0x2254 - 0x2244 + 0x0C];
-	__asm mov[ebp + 4], eax;
-	__asm retn;
+	__asm
+	{
+		mov eax, [esp + 0x2254 - 0x2244 + 0x20]; // 0x20 = 8 push preservation calls * 4
+		mov[ebp + 4], eax;
+		retn;
+	}
 }
 
 // crate projectiles
-__declspec(safebuffers) void __fastcall weapon_barrel_create_projectiles_hook1()
+void __cdecl weapon_barrel_create_projectiles_hook1(s_hook_registers registers)
 {
-	datum_index object_index;
-	s_object_placement_data* placement_data;
-	DEFINE_ORIGINAL_EBP_ESP(0x2254, sizeof(object_index) + sizeof(placement_data));
+	s_object_placement_data* placement_data = (s_object_placement_data*)(registers.esp + 0x2250 - 0x2048);
 
-	__asm mov eax, original_esp;
-	__asm lea eax, [eax + 0x2250 - 0x2048];
-	__asm mov placement_data, eax;
-
-	object_index = object_new(placement_data);
-	if (object_index != -1)
+	datum_index object_index = object_new(placement_data);
+	if (object_index != NONE)
+	{
 		simulation_action_object_create(object_index);
+	}
 }
 
 // non-predicted standard projectiles
-__declspec(safebuffers) void __fastcall weapon_barrel_create_projectiles_hook2()
+void __cdecl weapon_barrel_create_projectiles_hook2(s_hook_registers registers)
 {
-	datum_index object_index;
-	bool no_barrel_prediction;
-	DEFINE_ORIGINAL_EBP_ESP(0x2254, sizeof(object_index) + (sizeof(no_barrel_prediction) + 3));
-
-	__asm mov eax, original_esp;
-	__asm mov eax, [eax + 0x2250 - 0x2230];
-	__asm mov object_index, eax;
-
-	__asm mov eax, original_ebp;
-	__asm mov eax, [eax + 4];
-	__asm mov no_barrel_prediction, al;
+	datum_index object_index = *(datum_index*)(registers.esp + 0x2250 - 0x2230);
+	bool no_barrel_prediction = *(bool*)(registers.ebp + 0x04);
 
 	if (no_barrel_prediction)
+	{
 		simulation_action_object_create(object_index);
+	}
 }
 
 // preserve object_force_inside_bsp return
 __declspec(naked) void throw_release_hook0()
 {
-	__asm mov[ebp + 4], eax;
-	__asm retn;
+	__asm
+	{
+		mov[ebp + 4], eax;
+		retn;
+	}
 }
 
-__declspec(safebuffers) void __fastcall throw_release_hook1()
+void __cdecl throw_release_hook1(s_hook_registers registers)
 {
-	s_new_unit_action_grenade* action_state_storage;
-	datum_index object_index;
-	bool force_inside_bsp;
-	bool stick;
-	DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(action_state_storage) + sizeof(object_index) + (sizeof(force_inside_bsp) + sizeof(stick) + 2));
-
-	__asm mov action_state_storage, ebx;
-
-	__asm mov object_index, esi;
-
-	__asm mov eax, original_ebp;
-	__asm mov eax, [eax + 4];
-	__asm mov force_inside_bsp, al;
-
-	__asm mov eax, original_ebp;
-	__asm mov eax, [eax + 24];
-	__asm mov stick, al;
+	s_new_unit_action_grenade* action_state_storage = (s_new_unit_action_grenade*)registers.ebx;
+	datum_index object_index = (datum_index)registers.esi;
+	bool force_inside_bsp = *(bool*)(registers.ebp + 0x04);
+	bool stick = *(bool*)(registers.ebp + 0x18);
 
 	// Added these checks which the update would be nested within had there been enough space to fit it
 	if (object_index != NONE && !action_state_storage->unk2_4) // TODO: figure out what this field is
@@ -106,29 +85,23 @@ __declspec(safebuffers) void __fastcall throw_release_hook1()
 	}
 }
 
-__declspec(safebuffers) void __fastcall equipment_activate_hook()
+void __cdecl equipment_activate_hook(s_hook_registers registers)
 {
-	datum_index object_index;
-	__asm mov object_index, eax;
+	datum_index object_index = (datum_index)registers.eax;
 
 	simulation_action_object_create(object_index);
 }
 
-__declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
+void __cdecl item_in_unit_inventory_hook(s_hook_registers registers)
 {
-	datum_index object_index;
-	__asm mov object_index, edi;
+	datum_index object_index = (datum_index)registers.edi;
 
 	simulation_action_object_create(object_index);
 }
 
-//__declspec(safebuffers) void __fastcall actor_place_hook() // TODO: UNTESTED!!
+//void __cdecl actor_place_hook(s_hook_registers registers) // TODO: UNTESTED!!
 //{
-//	datum_index unit_index;
-//	DEFINE_ORIGINAL_EBP_ESP(0x24C, sizeof(unit_index));
-//	__asm mov eax, original_ebp;
-//	__asm mov eax, [eax - 0x24];
-//	__asm mov unit_index, eax;
+//	datum_index unit_index = *(datum_index*)(registers.ebp - 0x24);
 //
 //	if (unit_index != NONE)
 //	{
@@ -136,13 +109,12 @@ __declspec(safebuffers) void __fastcall item_in_unit_inventory_hook()
 //	}
 //}
 
-__declspec(safebuffers) void __fastcall unit_drop_plasma_on_death_hook()
+void __cdecl unit_drop_plasma_on_death_hook(s_hook_registers registers)
 {
-	datum_index projectile_index;
-	__asm mov projectile_index, eax;
+	datum_index projectile_index = (datum_index)registers.eax;
+
 	simulation_action_object_create(projectile_index);
 }
-#pragma runtime_checks("", restore)
 
 void __fastcall player_set_facing_player_spawn_hook(datum_index player_index, real_vector3d* forward)
 {

@@ -2,17 +2,6 @@
 #include <cseries\cseries.h>
 #include <initializer_list>
 
-// ogebp = ogesp + ogsp
-// ogesp = esp + default stack space + original_ebp/esp size + variable space + 3x pre-call pushes & return address + 4x hook func prologue pushes
-// NOTE: only ebp is affected by the input sp value, so if this is wrong and you don't use ebp you may not notice
-// original_sp = take the stack pointer at the call in IDA and decrement 4 for the return address
-#define DEFINE_ORIGINAL_EBP_ESP(original_sp, variable_space)                    \
-    long original_ebp;                                                          \
-    long original_esp;                                                          \
-    __asm { mov original_esp, esp }                                             \
-    original_esp += 0x40 + 0x08 + (long)variable_space + 0x10 + 0x10;           \
-    original_ebp = (long)original_esp + (long)original_sp;
-
 // $TODO: split some of these up into flags, this is a bit messy
 enum e_hook_type
 {
@@ -25,9 +14,21 @@ enum e_hook_type
     _hook_replace_no_preserve // replaces instructions without preserving or restoring registers
 };
 
+struct s_hook_registers
+{
+    size_t eax;
+    size_t ebx;
+    size_t ecx;
+    size_t edx;
+    size_t esi;
+    size_t edi;
+    size_t ebp;
+    size_t esp;
+};
+
 namespace hook
 {
-    void insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type = _hook_execute_replaced_first, bool redirect_oob_jumps = false);
+    void insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps = false);
     void add_variable_space_to_stack_frame(size_t function_start, size_t function_end, size_t space_in_bytes);
     void function(size_t function_address, size_t length, void* function);
     void call(size_t call_address, void* function);

@@ -11,86 +11,63 @@
 #include <game\game.h>
 #include <game\game_engine_util.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall player_spawn_hook1()
+void __cdecl player_spawn_hook1(s_hook_registers registers)
 {
-    player_datum* player_data;
-    datum_index player_index;
-    __asm mov player_data, ebx;
-    __asm mov player_index, esi;
+    player_datum* player = (player_datum*)registers.ebx;
+    datum_index player_index = (datum_index)registers.esi;
 
-    if (player_data->flags.test(_player_initial_spawn_bit))
+    if (player->flags.test(_player_initial_spawn_bit))
     {
         simulation_action_game_engine_player_update(player_index, _simulation_player_update_consumable_supression);
     }
 }
 
-__declspec(safebuffers) void __fastcall player_spawn_hook2()
+void __cdecl player_spawn_hook2(s_hook_registers registers)
 {
-    datum_index player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x21C, sizeof(player_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x18];
-    __asm mov player_index, eax;
+    datum_index player_index = *(datum_index*)(registers.ebp - 0x18);
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }
 
-__declspec(safebuffers) void __fastcall player_spawn_hook3()
+void __cdecl player_spawn_hook3(s_hook_registers registers)
 {
-    datum_index player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x21C, sizeof(player_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x18];
-    __asm mov player_index, eax;
+    datum_index player_index = *(datum_index*)(registers.ebp - 0x18);
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall unit_handle_equipment_energy_cost_hook2()
+void __cdecl unit_handle_equipment_energy_cost_hook2(s_hook_registers registers)
 {
-    unit_datum* unit;
-    __asm mov unit, ebx;
+    unit_datum* unit = (unit_datum*)registers.ebx;
 
     simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_consumable_supression);
 }
 
-__declspec(safebuffers) void __fastcall player_update_loadout_hook1()
+void __cdecl player_update_loadout_hook1(s_hook_registers registers)
 {
-    datum_index player_index;
-    player_datum* player_data;
+    datum_index player_index = (datum_index)registers.esi;
+    player_datum* player = (player_datum*)registers.ebx;
 
-    __asm mov player_index, esi;
-    __asm mov player_data, ebx;
-
-    player_update_loadout(player_index, player_data);
+    player_update_loadout(player_index, player);
 }
 
-__declspec(safebuffers) void __fastcall player_update_loadout_hook2()
+void __cdecl player_update_loadout_hook2(s_hook_registers registers)
 {
-    player_datum* player;
-    __asm mov player, esi;
+    player_datum* player = (player_datum*)registers.esi;
+
     datum_index player_index = player_mapping_get_player_by_input_user(_input_user_index0);
     player_update_loadout(player_index, player);
 }
 
-__declspec(safebuffers) void __fastcall player_reset_hook()
+void __cdecl player_reset_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    player_datum* player;
-    __asm
-    {
-        mov player_index, ebx;
-        mov player, edi;
-    }
+    datum_index player_index = (datum_index)registers.ebx;
+    player_datum* player = (player_datum*)registers.edi;
+
     player_update_loadout(player_index, player);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_hook()
+void __cdecl game_engine_update_player_netdebug_state_hook(s_hook_registers registers)
 {
     for (long i = 0; i < k_maximum_players; i++)
     {
@@ -98,52 +75,41 @@ __declspec(safebuffers) void __fastcall game_engine_update_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall players_update_after_game_hook1()
+void __cdecl players_update_after_game_hook1(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, ebx;
+    datum_index player_index = (datum_index)registers.ebx;
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_blocking_teleporter);
 }
 
-__declspec(safebuffers) void __fastcall players_update_after_game_hook2()
+void __cdecl players_update_after_game_hook2(s_hook_registers registers)
 {
-    datum_index player_index;
-    player_datum* player;
-    __asm
-    {
-        mov player_index, ebx;
-        mov player, esi;
-    }
+    datum_index player_index = (datum_index)registers.ebx;
+    player_datum* player = (player_datum*)registers.esi;
+
     if (player->equipment_cooldown_ticks > 0)
+    {
         player->equipment_cooldown_ticks--;
+    }
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_consumable_supression);
 }
 
-__declspec(safebuffers) void __fastcall players_update_after_game_hook3()
+void __cdecl players_update_after_game_hook3(s_hook_registers registers)
 {
-    datum_index player_index;
-    player_datum* player;
-    __asm
-    {
-        mov player_index, ebx;
-        mov player, esi;
-    }
+    datum_index player_index = (datum_index)registers.ebx;
+    player_datum* player = (player_datum*)registers.esi;
+
     player->vehicle_entrance_ban_ticks--;
     if (player->vehicle_entrance_ban_ticks == 0)
+    {
         player->flags.set(_player_vehicle_entrance_ban_bit, false);
+    }
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_killed_hook1()
+void __cdecl game_engine_player_killed_hook1(s_hook_registers registers)
 {
-    datum_index dead_player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x40C0, sizeof(dead_player_index));
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x08];
-        mov dead_player_index, eax;
-    }
+    datum_index dead_player_index = *(datum_index*)(registers.ebp + 0x08);
 
     if (game_is_multiplayer() && game_is_authoritative() && game_engine_in_round())
     {
@@ -151,40 +117,28 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook1()
     }
 }
 
-__declspec(safebuffers) void __fastcall c_game_statborg__record_player_death_hook1()
+void __cdecl c_game_statborg__record_player_death_hook1(s_hook_registers registers)
 {
-    datum_index dead_player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x14, sizeof(dead_player_index));
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x08];
-        mov dead_player_index, eax;
-    }
+    datum_index dead_player_index = *(datum_index*)(registers.ebp + 0x08);
+
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_grief_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_fired_weapon_hook()
+void __cdecl game_engine_player_fired_weapon_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, ecx;
+    datum_index player_index = (datum_index)registers.ecx;
+
     game_engine_set_player_navpoint_action(player_index, _navpoint_action_fired_weapon);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_damaged_player_hook()
+void __cdecl game_engine_player_damaged_player_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x0C, sizeof(player_index));
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x08];
-        mov player_index, eax;
-    }
+    datum_index player_index = *(datum_index*)(registers.ebp + 0x08);
+
     game_engine_set_player_navpoint_action(player_index, _navpoint_action_player_damaged);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook3()
+void __cdecl game_engine_update_after_game_update_state_hook3(s_hook_registers registers)
 {
     c_player_in_game_iterator player_iterator;
     player_iterator.begin();
@@ -196,92 +150,64 @@ __declspec(safebuffers) void __fastcall game_engine_update_after_game_update_sta
     }
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook4()
+void __cdecl game_engine_update_after_game_update_state_hook4(s_hook_registers registers)
 {
-    c_player_in_game_iterator* player_iterator;
-    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(player_iterator));
-    __asm
-    {
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x10];
-        mov player_iterator, eax;
-    }
+    c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)(registers.ebp - 0x10);
+
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_lives_remaining);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_player_hook2()
+void __cdecl game_engine_update_player_hook2(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, esi;
+    datum_index player_index = (datum_index)registers.esi;
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_grief_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_player_sitting_out_hook()
+void __cdecl game_engine_update_player_sitting_out_hook(s_hook_registers registers)
 {
-    c_player_in_game_iterator* player_iterator;
-    DEFINE_ORIGINAL_EBP_ESP(0x10, sizeof(player_iterator));
-    __asm
-    {
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x10];
-        mov player_iterator, eax;
-    }
+    c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)(registers.ebp - 0x10);
+
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_sitting_out);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook1()
+void __cdecl game_engine_player_changed_indices_hook1(s_hook_registers registers)
 {
-    datum_index player1_index;
-    datum_index player2_index;
-    c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x3394, sizeof(player1_index) + sizeof(player2_index) + sizeof(update_flags));
-    __asm
-    {
-        mov player1_index, ebx;
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x3390 - 0x337C];
-        mov player2_index, eax;
-    }
-    update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
-    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), update_flags);
-    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
-}
+    datum_index player1_index = (datum_index)registers.ebx;
+    datum_index player2_index = *(datum_index*)(registers.esp + 0x3390 - 0x337C);
 
-__declspec(safebuffers) void __fastcall game_engine_player_changed_indices_hook2()
-{
-    datum_index player1_index;
-    datum_index player2_index;
-    __asm
-    {
-        mov player1_index, edi;
-        mov player2_index, ebx;
-    }
     c_simulation_object_update_flags update_flags;
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), update_flags);
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
 }
 
-__declspec(safebuffers) void __fastcall player_delete_hook()
+void __cdecl game_engine_player_changed_indices_hook2(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, edi;
+    datum_index player1_index = (datum_index)registers.edi;
+    datum_index player2_index = (datum_index)registers.ebx;
+
+    c_simulation_object_update_flags update_flags;
+    update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player1_index), update_flags);
+    simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
+}
+
+void __cdecl player_delete_hook(s_hook_registers registers)
+{
+    datum_index player_index = (datum_index)registers.edi;
+
     c_simulation_object_update_flags update_flags;
     update_flags.set_unsafe(MASK(k_simulation_player_update_flag_count));
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), update_flags);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
+void __cdecl game_engine_player_killed_hook2(s_hook_registers registers)
 {
-    short lives_remaining;
-    player_datum* dead_player;
-    datum_index dead_player_index;
-    __asm
-    {
-        mov lives_remaining, cx;
-        mov dead_player, edx;
-        mov dead_player_index, edi;
-    }
+    short lives_remaining = (short)registers.ecx;
+    player_datum* dead_player = (player_datum*)registers.edx;
+    datum_index dead_player_index = (datum_index)registers.edi;
+
     if (lives_remaining == 0 && game_engine_has_teams() && game_engine_teams_use_one_shared_life(dead_player->configuration.host.team_index))
     {
         dead_player->multiplayer.remaining_lives++;
@@ -289,17 +215,17 @@ __declspec(safebuffers) void __fastcall game_engine_player_killed_hook2()
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_lives_remaining);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_left_hook()
+void __cdecl game_engine_player_left_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, ebx;
+    datum_index player_index = (datum_index)registers.ebx;
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_active_in_game);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
+void __cdecl game_engine_player_rejoined_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, esi;
+    datum_index player_index = (datum_index)registers.esi;
+
     if (game_is_authoritative())
     {
         c_simulation_object_update_flags update_flags;
@@ -312,47 +238,40 @@ __declspec(safebuffers) void __fastcall game_engine_player_rejoined_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall game_engine_setup_player_for_respawn_hook()
+void __cdecl game_engine_setup_player_for_respawn_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x90, sizeof(player_index));
-    __asm
-    {
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x90 - 0x84];
-        mov player_index, eax;
-    }
+    datum_index player_index = *(datum_index*)(registers.esp + 0x90 - 0x84);
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall objective_game_player_forced_base_respawn_hook()
+void __cdecl objective_game_player_forced_base_respawn_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, edi;
+    datum_index player_index = (datum_index)registers.edi;
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall player_killed_player_perform_respawn_on_kill_check_hook()
+void __cdecl player_killed_player_perform_respawn_on_kill_check_hook(s_hook_registers registers)
 {
-    c_player_in_game_iterator* player_iterator;
-    __asm mov player_iterator, ecx;
+    c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)registers.ecx;
+
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_reset_player_respawn_timers_hook()
+void __cdecl game_engine_reset_player_respawn_timers_hook(s_hook_registers registers)
 {
-    c_player_in_game_iterator* player_iterator;
-    __asm mov player_iterator, ecx;
+    c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)registers.ecx;
+
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
 }
 
-__declspec(safebuffers) void __fastcall teleporter_teleport_object_hook()
+void __cdecl teleporter_teleport_object_hook(s_hook_registers registers)
 {
-    datum_index player_index;
-    __asm mov player_index, esi;
+    datum_index player_index = (datum_index)registers.esi;
+
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_control_aiming);
 }
-#pragma runtime_checks("", restore)
 
 void anvil_hooks_player_updates_apply()
 {
@@ -384,7 +303,7 @@ void anvil_hooks_player_updates_apply()
     hook::insert(0xB5259, 0xB532D, player_reset_hook, _hook_replace); // replace inlined player_update_loadout, added new since ms23
 
     // sync player netdebug data
-    hook::insert(0xC9ADD, 0xC9AE3, game_engine_update_hook, _hook_execute_replaced_last);
+    hook::insert(0xC9ADD, 0xC9AE3, game_engine_update_player_netdebug_state_hook, _hook_execute_replaced_last);
 
     // sync player active in game flag
     hook::function(0x54A70, 0x68, simulation_queue_player_event_apply_set_activation);

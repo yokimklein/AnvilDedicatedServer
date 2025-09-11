@@ -13,100 +13,48 @@
 #include <game\game_engine_util.h>
 #include <anvil\backend\cache.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall damage_section_deplete_hook() // destroy hologram?
+void __cdecl damage_section_deplete_hook(s_hook_registers registers) // destroy hologram?
 {
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x44, sizeof(object_index) + sizeof(damage_section_index) + sizeof(response_index));
-
-    __asm mov ecx, original_ebp;
-    __asm mov eax, [ecx - 0x0C];
-    __asm mov object_index, eax;
-    __asm mov eax, [ecx + 0x10];
-    __asm mov damage_section_index, eax;
-    __asm mov eax, [ecx - 0x08];
-    __asm mov response_index, eax;
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x0C);
+    long damage_section_index = *(long*)(registers.ebp + 0x10);
+    long response_index = *(long*)(registers.ebp - 0x08);
 
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
-__declspec(safebuffers) void __fastcall damage_section_respond_to_damage_hook() // destroy hologram with powerdrain?
+void __cdecl damage_section_respond_to_damage_hook(s_hook_registers registers) // destroy hologram with powerdrain?
 {
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(object_index) + sizeof(damage_section_index) + sizeof(response_index));
-
-    __asm mov ecx, original_ebp;
-    __asm mov eax, [ecx - 0x14];
-    __asm mov object_index, eax;
-    __asm mov eax, [ecx + 0x10];
-    __asm mov damage_section_index, eax;
-    __asm mov eax, [ecx - 0x18];
-    __asm mov response_index, eax;
-    
-    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
-}
-
-__declspec(safebuffers) void __fastcall object_damage_new_hook() // throwing deployable cover?
-{
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x94, sizeof(object_index) + sizeof(damage_section_index) + sizeof(response_index));
-
-    __asm mov object_index, edi;
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x94 - 0x6C];
-    __asm mov damage_section_index, eax;
-    __asm mov response_index, ebx;
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x14);
+    long damage_section_index = *(long*)(registers.ebp + 0x10);
+    long response_index = *(long*)(registers.ebp - 0x18);
 
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
-//__declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook2()
+void __cdecl object_damage_new_hook(s_hook_registers registers) // throwing deployable cover?
+{
+    datum_index object_index = (datum_index)registers.edi;
+    long damage_section_index = *(long*)(registers.esp + 0x94 - 0x6C);
+    long response_index = (long)registers.ebx;
+
+    simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
+}
+
+//void __cdecl object_apply_damage_aftermath_hook2(s_hook_registers registers)
 //{
-//    datum_index object_index;
-//    s_damage_aftermath_result_data* result_data;
-//    __asm mov object_index, esi;
-//    __asm mov result_data, edi;
+//    datum_index object_index = (datum_index)registers.esi;
+//    s_damage_aftermath_result_data* result_data = (s_damage_aftermath_result_data*)registers.edi;
+//    
 //    simulation_action_damage_aftermath(object_index, result_data);
 //}
 
-__declspec(safebuffers) void __fastcall object_cause_damage_hook()
+void __cdecl object_cause_damage_hook(s_hook_registers registers)
 {
-    bool update_sim_aftermath;
-    datum_index object_index;
-    s_damage_aftermath_result_data* aftermath_result;
-    bool update_sim_aftermath_list;
-    datum_index* player_indices;
-    long player_count;
-    DEFINE_ORIGINAL_EBP_ESP(0x178,
-        (sizeof(update_sim_aftermath) + 3) + sizeof(object_index) + sizeof(aftermath_result) +
-        (sizeof(update_sim_aftermath_list) + 3) + sizeof(player_indices) + sizeof(player_count) + 4); // extra 4 for loop iterator
-
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx - 0x44];
-        mov update_sim_aftermath, al;
-
-        mov eax, [ecx - 0x2C];
-        mov object_index, eax;
-
-        lea eax, [ecx - 0x168];
-        mov aftermath_result, eax;
-
-        mov eax, [ecx - 0x11];
-        mov update_sim_aftermath_list, al;
-
-        lea eax, [ecx - 0xA0];
-        mov player_indices, eax;
-    }
+    bool update_sim_aftermath = *(bool*)(registers.ebp - 0x44);
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x2C);
+    s_damage_aftermath_result_data* aftermath_result = (s_damage_aftermath_result_data*)(registers.ebp - 0x168);
+    bool update_sim_aftermath_list = *(bool*)(registers.ebp - 0x11);
+    datum_index* player_indices = (datum_index*)(registers.ebp - 0xA0);
 
     if (update_sim_aftermath)
     {
@@ -115,82 +63,43 @@ __declspec(safebuffers) void __fastcall object_cause_damage_hook()
     else if (update_sim_aftermath_list)
     {
         // restore player_count
-        player_count = 0;
+        long player_count = 0;
         for (long i = 0; i < 2; i++)
         {
             if (player_indices[i] != NONE)
+            {
                 player_count++;
+            }
         }
         simulation_action_damage_aftermath_exclusive_list(object_index, aftermath_result, player_indices, player_count);
     }
 }
 
-__declspec(safebuffers) void __fastcall projectile_attach_hook2()
+void __cdecl projectile_attach_hook2(s_hook_registers registers)
 {
-    datum_index projectile_index;
-    datum_index object_index;
-    short node_index;
-    real_point3d const* position;
-    s_location const* location;
-    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(projectile_index) + sizeof(object_index) + (sizeof(node_index) + 2) + sizeof(position) + sizeof(location));
-
-    __asm
-    {
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x58 - 0x48];
-        mov projectile_index, eax;
-
-        mov eax, [ecx + 0x58 - 0x38];
-        mov object_index, eax;
-
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x08];
-        mov node_index, ax;
-
-        mov eax, [ecx + 0x0C];
-        mov position, eax;
-
-        mov eax, [ecx + 0x10];
-        mov location, eax;
-    }
+    datum_index projectile_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
+    datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x38);
+    short node_index = *(short*)(registers.ebp + 0x08);
+    real_point3d const* position = *(real_point3d const**)(registers.ebp + 0x0C);
+    s_location const* location = *(s_location const**)(registers.ebp + 0x10);
 
     simulation_action_projectile_attached(projectile_index, object_index, node_index, position, location);
 }
 
 // add back missing variables from_impact & detonation_timer_started
-__declspec(safebuffers) void __fastcall projectile_collision_hook0()
+void __cdecl projectile_collision_hook0(s_hook_registers registers)
 {
-    c_enum<e_predictability, long, _predictability0, k_predictability_count> predictability;
-    projectile_datum* projectile;
-    bool from_impact;
-    bool detonation_timer_started;
-    // 4 bytes for each bool or 4 bytes to share?
-    DEFINE_ORIGINAL_EBP_ESP(0x258, sizeof(predictability) + sizeof(projectile) + (sizeof(from_impact) + 3) + (sizeof(detonation_timer_started) + 3) + 8);
-    __asm
-    {
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x258 - 0x240];
-        mov predictability, eax;
+    e_predictability predictability = *(e_predictability*)(registers.esp + 0x258 - 0x240);
+    projectile_datum* projectile = *(projectile_datum**)(registers.esp + 0x258 - 0x218);
 
-        mov eax, [ecx + 0x258 - 0x218];
-        mov projectile, eax;
-    }
-
-    from_impact = predictability == 0;
+    bool from_impact = predictability == 0;
     // NOT flag 5, IS flag 4
-    detonation_timer_started = !projectile->projectile.flags.test(_projectile_flags5)
-        && (projectile->projectile.flags.test(_projectile_flags4)
-            || predictability.get() == _predictability3);
+    bool detonation_timer_started = !projectile->projectile.flags.test(_projectile_flags5) &&
+        (projectile->projectile.flags.test(_projectile_flags4) ||
+            predictability == _predictability3);
 
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov al, from_impact;
-        mov [ecx + 4], al;
-
-        mov al, detonation_timer_started;
-        mov [ecx + 8], al;
-    }
+    *(bool*)(registers.ebp + 0x04) = from_impact;
+    *(bool*)(registers.ebp + 0x08) = detonation_timer_started;
 }
 
 // initialise new_effect variable as false
@@ -198,7 +107,7 @@ __declspec(naked) void projectile_collision_hook1()
 {
     __asm
     {
-        mov[ebp + 12], eax; // xor eax, eax just ran to zero two other variables
+        mov [ebp + 12], eax; // xor eax, eax just ran to zero two other variables
         retn;
     }
 }
@@ -213,62 +122,24 @@ __declspec(naked) void projectile_collision_hook2()
     }
 }
 
-__declspec(safebuffers) void __fastcall projectile_collision_hook3()
+void __cdecl projectile_collision_hook3(s_hook_registers registers)
 {
-    bool detonation_timer_started;
-    bool new_effect;
-    bool from_impact;
-    projectile_datum* projectile;
-    c_enum<e_predictability, long, _predictability0, k_predictability_count> predictability;
-    bool not_affected_by_object_collision;
-    datum_index projectile_index;
-    float material_effect_scale;
-    float material_effect_error;
-    real_vector3d const* impact_direction_normal;
-    collision_result const* collision;
-    DEFINE_ORIGINAL_EBP_ESP(0x258, 0x3C);
-
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx + 8];
-        mov detonation_timer_started, al;
-
-        mov eax, [ecx + 12];
-        mov new_effect, al;
-
-        mov eax, [ecx + 4];
-        mov from_impact, al;
-
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x258 - 0x218];
-        mov projectile, eax;
-
-        mov eax, [ecx + 0x258 - 0x240];
-        mov predictability, eax;
-
-        mov eax, [ecx + 0x258 - 0x249];
-        mov not_affected_by_object_collision, al;
-
-        mov eax, [ecx + 0x258 - 0x210];
-        mov projectile_index, eax;
-
-        movss xmm0, [ecx + 0x258 - 0x208];
-        movss material_effect_scale, xmm0;
-
-        movss xmm0, [ecx + 0x258 - 0x1F4];
-        movss material_effect_error, xmm0;
-
-        lea eax, [ecx + 0x258 - 0x1D0];
-        mov impact_direction_normal, eax;
-
-        mov collision, edi;
-    }
+    bool detonation_timer_started = *(bool*)(registers.ebp + 0x08);
+    bool new_effect = *(bool*)(registers.ebp + 0x0C);
+    bool from_impact = *(bool*)(registers.ebp + 0x04);
+    projectile_datum* projectile = *(projectile_datum**)(registers.esp + 0x258 - 0x218);
+    e_predictability predictability = *(e_predictability*)(registers.esp + 0x258 - 0x240);
+    bool not_affected_by_object_collision = *(bool*)(registers.esp + 0x258 - 0x249);
+    datum_index projectile_index = *(datum_index*)(registers.esp + 0x258 - 0x210);
+    real material_effect_scale = *(real*)(registers.esp + 0x258 - 0x208);
+    real material_effect_error = *(real*)(registers.esp + 0x258 - 0x1F4);
+    real_vector3d const* impact_direction_normal = (real_vector3d const*)(registers.esp + 0x258 - 0x1D0);
+    collision_result const* collision = (collision_result const*)registers.edi;
 
     if ((detonation_timer_started || new_effect)
         && game_is_authoritative()
         && projectile->object.gamestate_index != NONE
-        && (from_impact || predictability.get() == _predictability3)
+        && (from_impact || predictability == _predictability3)
         && !not_affected_by_object_collision)
     {
         simulation_action_projectile_impact_raw(
@@ -282,56 +153,33 @@ __declspec(safebuffers) void __fastcall projectile_collision_hook3()
     }
 }
 
-__declspec(safebuffers) void __fastcall unit_action_vehicle_board_submit_hook()
+void __cdecl unit_action_vehicle_board_submit_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0xDC, sizeof(unit_index));
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x08];
-        mov unit_index, eax;
-    }
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
+
     simulation_action_unit_board_vehicle(unit_index);
 }
 
-__declspec(safebuffers) void __fastcall motor_animation_exit_seat_internal_hook()
+void __cdecl motor_animation_exit_seat_internal_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, esi;
+    datum_index unit_index = (datum_index)registers.esi;
+
     simulation_action_unit_exit_vehicle(unit_index);
 }
 
-__declspec(safebuffers) void __fastcall unit_resolve_melee_attack_hook()
+void __cdecl unit_resolve_melee_attack_hook(s_hook_registers registers)
 {
-    weapon_definition const* weapon_tag;
-    real_point3d const* position;
-    unit_datum const* unit;
-    DEFINE_ORIGINAL_EBP_ESP(0xAC, sizeof(weapon_tag) + sizeof(position) + sizeof(unit));
-    __asm
-    {
-        mov weapon_tag, edi;
+    weapon_definition const* weapon_tag = (weapon_definition const*)registers.edi;
+    real_point3d const* position = *(real_point3d const**)(registers.ebp - 0x3C);
+    unit_datum const* unit = *(unit_datum const**)(registers.ebp - 0x14);
 
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x3C];
-        mov position, eax;
-
-        mov eax, [ecx - 0x14];
-        mov unit, eax;
-    }
     simulation_action_unit_melee_clang(weapon_tag->weapon.clash_effect.index, position, &unit->unit.melee_aiming_vector);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook2()
+void __cdecl game_engine_earn_wp_event_hook2(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_esp;
-        lea eax, [ecx + 0x40 - 0x28];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x40 - 0x28);
+
 
     // Anvil: track number of earned wp events to submit stats for later
     c_backend_data_cache::cache_wp_event(event_data);
@@ -339,71 +187,40 @@ __declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook2()
     game_engine_send_event(event_data);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_scoring_update_leaders_internal_hook()
+void __cdecl game_engine_scoring_update_leaders_internal_hook(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x50, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x40];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x40);
+
     game_engine_send_event(event_data);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_award_medal_hook()
+void __cdecl game_engine_award_medal_hook(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x3C, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_esp;
-        lea eax, [ecx + 0x38 - 0x28];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x38 - 0x28);
+
     game_engine_send_event(event_data);
 }
 
-__declspec(safebuffers) void __fastcall c_slayer_engine__emit_game_start_event_hook()
+void __cdecl c_slayer_engine__emit_game_start_event_hook(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x28, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_esp;
-        lea eax, [ecx + 0x28 - 0x28];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x28 - 0x28);
+
     game_engine_send_event(event_data);
 }
 
-__declspec(safebuffers) void __fastcall display_teleporter_blocked_message_hook()
+void __cdecl display_teleporter_blocked_message_hook(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x28, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x28];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x28);
+
     game_engine_send_event(event_data);
 }
 
-__declspec(safebuffers) void __fastcall c_teleporter_area__update_players_hook()
+void __cdecl c_teleporter_area__update_players_hook(s_hook_registers registers)
 {
-    s_game_engine_event_data* event_data;
-    DEFINE_ORIGINAL_EBP_ESP(0x28, sizeof(event_data));
-    __asm
-    {
-        mov ecx, original_ebp;
-        lea eax, [ecx - 0x28];
-        mov event_data, eax;
-    }
+    s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x28);
+
     game_engine_send_event(event_data);
 }
-#pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_events_apply()
 {

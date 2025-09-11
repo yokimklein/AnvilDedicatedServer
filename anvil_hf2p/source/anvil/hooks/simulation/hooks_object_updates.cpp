@@ -16,13 +16,9 @@
 #include <motor\action_system.h>
 #include <game\game_results.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall object_update_hook()
+void __cdecl object_update_hook(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     TLS_DATA_GET_VALUE_REFERENCE(object_headers);
     object_header_datum* object_header = (object_header_datum*)datum_get(object_headers, object_index);
@@ -37,25 +33,21 @@ __declspec(safebuffers) void __fastcall object_update_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall c_map_variant__remove_object_hook()
+void __cdecl c_map_variant__remove_object_hook(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm
-    {
-        mov eax, [edi + 0x4]; // map_variant_placement->object_index
-        mov object_index, eax;
-    }
+    // map_variant_placement->object_index
+    datum_index object_index = *(datum_index*)(registers.edi + 0x04);
+
     if (game_is_authoritative())
     {
         simulation_action_object_update(object_index, _simulation_object_update_map_variant_index);
     }
 }
 
-__declspec(safebuffers) void __fastcall c_map_variant__unknown4_hook1()
+void __cdecl c_map_variant__unknown4_hook1(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov eax, [ebx + esi + 0x134]; // map_variant->objects[object_placement_index].object_index
-    __asm mov object_index, eax;
+    // map_variant->objects[object_placement_index].object_index
+    datum_index object_index = *(datum_index*)(registers.ebx + registers.esi + 0x134);
 
     c_simulation_object_update_flags update_flags;
     update_flags.set_flag(object_index, _simulation_object_update_position);
@@ -63,83 +55,65 @@ __declspec(safebuffers) void __fastcall c_map_variant__unknown4_hook1()
     simulation_action_object_update_internal(object_index, update_flags);
 }
 
-__declspec(safebuffers) void __fastcall c_map_variant__unknown4_hook2()
+void __cdecl c_map_variant__unknown4_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-
-    __asm mov eax, [ebx + esi + 0x134]; // map_variant->objects[object_placement_index].object_index
-    __asm mov object_index, eax;
+    // map_variant->objects[object_placement_index].object_index
+    datum_index object_index = *(datum_index*)(registers.ebx + registers.esi + 0x134);
 
     simulation_action_object_update(object_index, _simulation_object_update_parent_state);
 }
 
-__declspec(safebuffers) void __fastcall player_set_unit_index_hook2()
+void __cdecl player_set_unit_index_hook2(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov eax, [edi + 0x30];
-    __asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.edi + 0x30);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_assassination_data);
 }
 
-__declspec(safebuffers) void __fastcall unit_died_hook()
+void __cdecl unit_died_hook(s_hook_registers registers)
 {
-    unit_datum* unit;
-    datum_index unit_index;
-    __asm mov unit_index, esi;
-    __asm mov unit, eax;
+    unit_datum* unit = (unit_datum*)registers.eax;
+    datum_index unit_index = (datum_index)registers.esi;
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-__declspec(safebuffers) void __fastcall grenade_throw_move_to_hand_hook()
+void __cdecl grenade_throw_move_to_hand_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(unit_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x08];
-    __asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
 }
 
-__declspec(safebuffers) void __fastcall unit_add_grenade_to_inventory_hook()
+void __cdecl unit_add_grenade_to_inventory_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(unit_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x08];
-    __asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
 }
 
-__declspec(safebuffers) void __fastcall unit_add_equipment_to_inventory_hook()
+void __cdecl unit_add_equipment_to_inventory_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
+    datum_index unit_index = *(datum_index*)(registers.esp + 0x20 - 0x0C);
+
     c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x24, sizeof(unit_index) + sizeof(update_flags));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x20 - 0x0C];
-    __asm mov unit_index, eax;
-
     update_flags.set_flag(unit_index, _simulation_unit_update_equipment);
     update_flags.set_flag(unit_index, _simulation_unit_update_equipment_charges);
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-__declspec(safebuffers) void __fastcall unit_update_control_hook()
+void __cdecl unit_update_control_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, ebx;
+    datum_index unit_index = (datum_index)registers.ebx;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_desired_aiming_vector);
 }
@@ -147,120 +121,78 @@ __declspec(safebuffers) void __fastcall unit_update_control_hook()
 // preserve player_object_index variable
 __declspec(naked) void unit_add_initial_loadout_hook0()
 {
-    __asm mov[ebp + 4], ecx;
-    __asm retn;
+    __asm
+    {
+        mov[ebp + 4], ecx;
+        retn;
+    }
 }
 
 // syncs grenade counts on spawn
-__declspec(safebuffers) void __fastcall unit_add_initial_loadout_hook1()
+void __cdecl unit_add_initial_loadout_hook1(s_hook_registers registers)
 {
-    datum_index player_object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x1C8, sizeof(player_object_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov player_object_index, eax;
+    datum_index player_object_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(player_object_index, _simulation_unit_update_grenade_counts);
 }
 
 // syncs revenge shield bonus on spawn
-__declspec(safebuffers) void __fastcall unit_add_initial_loadout_hook2()
+void __cdecl unit_add_initial_loadout_hook2(s_hook_registers registers)
 {
-    datum_index player_object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x1C8, sizeof(player_object_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov player_object_index, eax;
+    datum_index player_object_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(player_object_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall projectile_attach_hook()
+void __cdecl projectile_attach_hook(s_hook_registers registers)
 {
-    datum_index projectile_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(projectile_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x58 - 0x48];
-    __asm mov projectile_index, eax;
+    datum_index projectile_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
 
     simulation_action_object_update(projectile_index, _simulation_object_update_parent_state);
 }
 
-__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook1()
+void __cdecl unit_set_aiming_vectors_hook1(s_hook_registers registers)
 {
-    datum_index unit_index;
-    s_simulation_unit_state_data* unit_state_data;
-
-    __asm mov unit_index, ebx;
-    __asm mov unit_state_data, edi;
+    datum_index unit_index = (datum_index)registers.ebx;
+    s_simulation_unit_state_data* unit_state_data = (s_simulation_unit_state_data*)registers.edi;
 
     unit_set_aiming_vectors(unit_index, &unit_state_data->desired_aiming_vector, &unit_state_data->desired_aiming_vector);
 }
 
-__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook2()
+void __cdecl unit_set_aiming_vectors_hook2(s_hook_registers registers)
 {
-    datum_index unit_index;
-    real_vector3d* forward;
-    DEFINE_ORIGINAL_EBP_ESP(0xE0, sizeof(unit_index) + sizeof(forward));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0xE0 - 0xB4];
-    __asm mov unit_index, eax;
-    __asm mov forward, edx;
+    datum_index unit_index = *(datum_index*)(registers.esp + 0xE0 - 0xB4);
+    real_vector3d* forward = (real_vector3d*)registers.edx;
 
     unit_set_aiming_vectors(unit_index, forward, forward);
 }
 
-__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook3()
+void __cdecl unit_set_aiming_vectors_hook3(s_hook_registers registers)
 {
-    datum_index unit_index;
-    real_vector3d* forward;
-
-    __asm mov unit_index, ebx;
-    __asm lea eax, [esi + 0x8BC];
-    __asm mov forward, eax;
+    datum_index unit_index = (datum_index)registers.ebx;
+    real_vector3d* forward = (real_vector3d*)(registers.esi + 0x8BC);
 
     unit_set_aiming_vectors(unit_index, forward, forward);
 }
 
-__declspec(safebuffers) void __fastcall unit_set_aiming_vectors_hook4()
+void __cdecl unit_set_aiming_vectors_hook4(s_hook_registers registers)
 {
-    datum_index unit_index;
-    real_vector3d* forward;
-    DEFINE_ORIGINAL_EBP_ESP(0x8C, sizeof(unit_index) + sizeof(forward));
-
-    __asm mov unit_index, edi;
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x2C];
-    __asm mov forward, eax;
+    datum_index unit_index = (datum_index)registers.edi;
+    real_vector3d* forward = *(real_vector3d**)(registers.ebp - 0x2C);
 
     unit_set_aiming_vectors(unit_index, forward, forward);
-
-    // preserve overwritten assembly instructions re-used later on
-    __asm movzx edi, di;
-    __asm add edi, edi;
-    __asm add esp, 0x28;
 }
 
-__declspec(safebuffers) void __fastcall equipment_activate_hook2()
+void __cdecl equipment_activate_hook2(s_hook_registers registers)
 {
-    datum_index equipment_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x35C, sizeof(equipment_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x358 - 0x328];
-    __asm mov equipment_index, eax;
+    datum_index equipment_index = *(datum_index*)(registers.esp + 0x358 - 0x328);
 
     simulation_action_object_update(equipment_index, _simulation_item_update_equipment_creation_time);
 }
 
-__declspec(safebuffers) void __fastcall unit_update_energy_hook()
+void __cdecl unit_update_energy_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, ebx;
+    datum_index unit_index = (datum_index)registers.ebx;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
 }
@@ -268,57 +200,50 @@ __declspec(safebuffers) void __fastcall unit_update_energy_hook()
 // preserve unit_index variable
 __declspec(naked) void unit_handle_equipment_energy_cost_hook0()
 {
-    __asm mov [ebp + 4], ecx;
-    __asm retn;
+    __asm
+    {
+        mov [ebp + 4], ecx;
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall unit_handle_equipment_energy_cost_hook1()
+void __cdecl unit_handle_equipment_energy_cost_hook1(s_hook_registers registers)
 {
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(unit_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
 }
 
-__declspec(safebuffers) void __fastcall unit_set_hologram_hook()
+void __cdecl unit_set_hologram_hook(s_hook_registers registers)
 {
-    unit_datum* unit;
-    datum_index unit_index;
-    __asm mov unit_index, ebx;
-    __asm mov unit, esi;
+    unit_datum* unit = (unit_datum*)registers.esi;
+    datum_index unit_index = (datum_index)registers.ebx;
 
     c_simulation_object_update_flags update_flags;
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-__declspec(safebuffers) void __fastcall object_apply_damage_aftermath_hook()
+void __cdecl object_apply_damage_aftermath_hook(s_hook_registers registers)
 {
-    unit_datum* unit;
-    __asm mov unit, esi;
-    TLS_DATA_GET_VALUE_REFERENCE(players);
+    unit_datum* unit = (unit_datum*)registers.esi;
 
+    TLS_DATA_GET_VALUE_REFERENCE(players);
     player_datum* player_data = (player_datum*)datum_get(players, unit->unit.player_index);
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall unit_update_damage_hook()
+void __cdecl unit_update_damage_hook(s_hook_registers registers)
 {
-    unit_datum* unit;
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x70, sizeof(unit) + sizeof(unit_index));
-
-    __asm mov unit, esi;
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x70 - 0x64];
-    __asm mov unit_index, eax;
+    unit_datum* unit = (unit_datum*)registers.esi;
+    datum_index unit_index = *(datum_index*)(registers.esp + 0x70 - 0x64);
 
     if (unit->object.object_identifier.m_type.get() == _object_type_vehicle)
     {
@@ -326,13 +251,10 @@ __declspec(safebuffers) void __fastcall unit_update_damage_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
+void __cdecl unit_respond_to_emp_hook(s_hook_registers registers)
 {
-    unit_datum* unit;
-    datum_index unit_index;
-
-    __asm mov unit, edi;
-    __asm mov unit_index, esi;
+    unit_datum* unit = (unit_datum*)registers.edi;
+    datum_index unit_index = (datum_index)registers.esi;
 
     if (unit->object.object_identifier.m_type.get() == _object_type_vehicle)
     {
@@ -340,22 +262,16 @@ __declspec(safebuffers) void __fastcall unit_respond_to_emp_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall unit_delete_current_equipment_hook()
+void __cdecl unit_delete_current_equipment_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(unit_index));
-
-    _asm mov eax, original_ebp;
-    _asm mov eax, [eax + 0x08];
-    _asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
 }
 
-__declspec(safebuffers) void __fastcall unit_place_hook()
+void __cdecl unit_place_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, edi;
+    datum_index unit_index = (datum_index)registers.edi;
 
     for (long i = 0; i < 4; i++)
     {
@@ -363,108 +279,100 @@ __declspec(safebuffers) void __fastcall unit_place_hook()
     }
 }
 
-__declspec(safebuffers) void __fastcall unit_add_initial_loadout_hook3()
+void __cdecl unit_add_initial_loadout_hook3(s_hook_registers registers)
 {
-    datum_index unit_index;
-    long slot_index;
-    __asm mov unit_index, ebx;
-    __asm mov slot_index, ecx;
+    datum_index unit_index = (datum_index)registers.ebx;
+    long slot_index = (long)registers.ecx;
 
     unit_delete_equipment(unit_index, slot_index);
 }
 
 __declspec(naked) void unit_add_initial_loadout_hook4()
 {
-    __asm mov esi, [ebp - 0x08];
-    __asm retn;
+    __asm
+    {
+        mov esi, [ebp - 0x08];
+        retn;
+    }
 }
 
 // TODO: figure out how to trigger this to test
-__declspec(safebuffers) void __fastcall c_simulation_unit_entity_definition__apply_object_update_hook()
+void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    long slot_index;
-    __asm mov unit_index, ebx;
-    __asm mov slot_index, ecx;
+    datum_index unit_index = (datum_index)registers.ebx;
+    long slot_index = (long)registers.ecx;
 
     unit_delete_equipment(unit_index, slot_index);
 }
 
-__declspec(safebuffers) void __fastcall unit_active_camouflage_ding_hook()
+void __cdecl throw_release_hook2(s_hook_registers registers)
 {
-    // wrapper for usercall
-    datum_index unit_index;
-    real camo_decay;
-    real regrowth_seconds;
-    __asm mov unit_index, ecx;
-    __asm movss camo_decay, xmm1;
-    __asm movss regrowth_seconds, xmm2;
-
-    unit_active_camouflage_ding(unit_index, camo_decay, regrowth_seconds);
-}
-
-__declspec(safebuffers) void __fastcall throw_release_hook2()
-{
-    datum_index unit_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(unit_index));
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x58 - 0x44];
-    __asm mov unit_index, eax;
+    datum_index unit_index = *(datum_index*)(registers.esp + 0x58 - 0x44);
 
     unit_active_camouflage_ding(unit_index, 0.6f, 0.0f);
 }
 
-__declspec(safebuffers) void __fastcall unit_active_camouflage_disable_hook()
+__declspec(naked) void unit_active_camouflage_ding_hook()
 {
-    // usercall wrapper
-    datum_index unit_index;
-    real regrowth_seconds;
-    __asm mov unit_index, ecx;
-    __asm movss regrowth_seconds, xmm1;
-
-    unit_active_camouflage_disable(unit_index, regrowth_seconds);
+    // this is almost a vectorcall, but the real arg is in xmm1 instead of xmm0 for some reason
+    __asm
+    {
+        movaps xmm0, xmm1
+        movaps xmm1, xmm2
+        call unit_active_camouflage_ding
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall unit_active_camouflage_set_level_hook()
+__declspec(naked) void unit_active_camouflage_disable_hook()
 {
-    // usercall wrapper
-    datum_index unit_index;
-    real regrowth_seconds;
-    long camouflage_end_time;
-    __asm mov unit_index, ecx;
-    __asm movss regrowth_seconds, xmm1;
-    __asm mov camouflage_end_time, edx;
-
-    unit_active_camouflage_set_level(unit_index, regrowth_seconds, camouflage_end_time);
+    // this is almost a vectorcall, but the real arg is in xmm1 instead of xmm0 for some reason
+    __asm
+    {
+        movaps xmm0, xmm1
+        call unit_active_camouflage_disable
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall unit_scripting_set_active_camo_hook()
+__declspec(naked) void unit_active_camouflage_set_level_hook()
 {
-    datum_index unit_index;
-    real regrowth_seconds;
-    __asm mov unit_index, ecx;
-    __asm movss regrowth_seconds, xmm2;
+    // this is almost a vectorcall, but the real arg is in xmm1 instead of xmm0 for some reason
+    __asm
+    {
+        movaps xmm0, xmm1
+        call unit_active_camouflage_set_level
+        retn;
+    }
+}
 
+void __cdecl unit_scripting_set_active_camo_hook(s_hook_registers registers)
+{
+    datum_index unit_index = (datum_index)registers.ecx;
+    real regrowth_seconds;
+    __asm
+    {
+        movss regrowth_seconds, xmm2;
+    }
     unit_active_camouflage_set_level(unit_index, regrowth_seconds, NONE);
 }
 
-__declspec(safebuffers) void __fastcall player_update_invisibility_hook()
+void __cdecl player_update_invisibility_hook(s_hook_registers registers)
 {
-    player_datum* player;
+    player_datum* player = (player_datum*)registers.esi;
     real camouflage_maximum;
-    __asm mov player, esi;
-    __asm movss camouflage_maximum, xmm1;
-
+    __asm
+    {
+        movss camouflage_maximum, xmm1;
+    }
     unit_active_camouflage_set_level(player->unit_index, 4.0f, NONE);
     unit_active_camouflage_set_maximum(player->unit_index, camouflage_maximum);
 }
 
-__declspec(safebuffers) void __fastcall c_simulation_unit_entity_definition__apply_object_update_hook2()
+void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook2(s_hook_registers registers)
 {
-    s_simulation_unit_state_data* unit_state_data;
-    datum_index unit_index;
-    __asm mov unit_state_data, esi;
-    __asm mov unit_index, ebx;
+    s_simulation_unit_state_data* unit_state_data = (s_simulation_unit_state_data*)registers.esi;
+    datum_index unit_index = (datum_index)registers.ebx;
 
     if (unit_state_data->active_camo_active)
     {
@@ -476,15 +384,10 @@ __declspec(safebuffers) void __fastcall c_simulation_unit_entity_definition__app
     }
 }
 
-__declspec(safebuffers) void __fastcall c_simulation_vehicle_entity_definition__apply_object_update_hook()
+void __cdecl c_simulation_vehicle_entity_definition__apply_object_update_hook(s_hook_registers registers)
 {
-    s_simulation_vehicle_state_data* vehicle_state_data;
-    datum_index vehicle_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x24, sizeof(vehicle_state_data) + sizeof(vehicle_index));
-    __asm mov vehicle_state_data, edi;
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 0x08];
-    __asm mov vehicle_index, eax;
+    s_simulation_vehicle_state_data* vehicle_state_data = (s_simulation_vehicle_state_data*)registers.edi;
+    datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x08);
 
     if (vehicle_state_data->active_camo_active)
     {
@@ -496,212 +399,198 @@ __declspec(safebuffers) void __fastcall c_simulation_vehicle_entity_definition__
     }
 }
 
-__declspec(safebuffers) void __fastcall actor_set_active_camo_hook()
+void __cdecl actor_set_active_camo_hook(s_hook_registers registers)
 {
-    actor_datum* actor;
+    actor_datum* actor = (actor_datum*)registers.edi;
     real regrowth_seconds;
-    __asm mov actor, edi;
-    __asm movss regrowth_seconds, xmm2;
-
+    __asm
+    {
+        movss regrowth_seconds, xmm2;
+    }
     unit_active_camouflage_set_level(actor->meta.unit_index, regrowth_seconds, NONE);
 }
 
-__declspec(safebuffers) void __fastcall unit_active_camouflage_set_maximum_hook()
+void __cdecl unit_active_camouflage_set_maximum_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
+    datum_index unit_index = (datum_index)registers.ecx;
     real camouflage_maximum;
-    __asm mov unit_index, ecx;
-    __asm movss camouflage_maximum, xmm1;
-
+    __asm
+    {
+        movss camouflage_maximum, xmm1;
+    }
     unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
 }
 
-__declspec(safebuffers) void __fastcall biped_new_hook()
+void __cdecl biped_new_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
+    datum_index unit_index = (datum_index)registers.edi;
     real camouflage_maximum;
-    __asm mov unit_index, edi;
-    __asm movss camouflage_maximum, xmm0;
-
+    __asm
+    {
+        movss camouflage_maximum, xmm0;
+    }
     unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
 }
 
-__declspec(safebuffers) void __fastcall vehicle_new_hook()
+void __cdecl vehicle_new_hook(s_hook_registers registers)
 {
-    datum_index vehicle_index;
+    datum_index vehicle_index = (datum_index)registers.ebx;
     real camouflage_maximum;
-    __asm mov vehicle_index, ebx;
-    __asm movss camouflage_maximum, xmm0;
-
+    __asm
+    {
+        movss camouflage_maximum, xmm0;
+    }
     unit_active_camouflage_set_maximum(vehicle_index, camouflage_maximum);
 }
 
 // preserve unit_index variable
 __declspec(naked) void unit_update_active_camouflage_hook0()
 {
-    __asm mov [ebp + 4], ecx;
-    __asm retn;
+    __asm
+    {
+        mov [ebp + 4], ecx;
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall unit_update_active_camouflage_hook1()
+void __cdecl unit_update_active_camouflage_hook1(s_hook_registers registers)
 {
-    unit_datum* unit;
-    datum_index unit_index;
+    unit_datum* unit = (unit_datum*)registers.esi;
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
+
     c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x48, sizeof(unit_index) + sizeof(unit) + sizeof(update_flags) + 4); // where's this extra 4 bytes coming from? alignment?
-
-    __asm mov unit, esi;
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov unit_index, eax;
-
     if (unit->object.object_identifier.m_type == _object_type_vehicle)
+    {
         update_flags.set_flag(unit_index, _simulation_vehicle_update_active_camo);
+    }
     else
+    {
         update_flags.set_flag(unit_index, _simulation_unit_update_active_camo);
+    }
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-__declspec(safebuffers) void __fastcall unit_action_assassinate_finished_hook()
+void __cdecl unit_action_assassinate_finished_hook(s_hook_registers registers)
 {
-    datum_index mover_index;
-    __asm mov mover_index, edx;
+    datum_index mover_index = (datum_index)registers.edx;
+
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-__declspec(safebuffers) void __fastcall unit_action_assassinate_submit_hook1()
+void __cdecl unit_action_assassinate_submit_hook1(s_hook_registers registers)
 {
-    datum_index mover_index;
-    __asm mov mover_index, esi;
+    datum_index mover_index = (datum_index)registers.esi;
+
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-__declspec(safebuffers) void __fastcall unit_action_assassinate_submit_hook2()
+void __cdecl unit_action_assassinate_submit_hook2(s_hook_registers registers)
 {
-    s_action_request* request;
-    DEFINE_ORIGINAL_EBP_ESP(0x3C, sizeof(request));
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 0x0C];
-    __asm mov request, eax;
+    s_action_request* request = *(s_action_request**)(registers.ebp + 0x0C);
+
     simulation_action_object_update(request->assassination.victim_unit_index, _simulation_unit_update_assassination_data);
 }
 
-__declspec(safebuffers) void __fastcall unit_action_assassinate_interrupted_hook()
+void __cdecl unit_action_assassinate_interrupted_hook(s_hook_registers registers)
 {
-    datum_index mover_index;
-    __asm mov mover_index, edi;
+    datum_index mover_index = (datum_index)registers.edi;
+
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-__declspec(safebuffers) void __fastcall motor_task_enter_seat_internal_hook()
+void __cdecl motor_task_enter_seat_internal_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, edi;
+    datum_index unit_index = (datum_index)registers.edi;
+
     simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
 }
 
-__declspec(safebuffers) void __fastcall motor_animation_exit_seat_immediate_internal_hook()
+void __cdecl motor_animation_exit_seat_immediate_internal_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    __asm mov unit_index, esi;
+    datum_index unit_index = (datum_index)registers.esi;
+
     simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
 }
 
-__declspec(safebuffers) void __fastcall device_group_set_actual_value_hook1()
+void __cdecl device_group_set_actual_value_hook1(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, esi;
+    datum_index device_index = (datum_index)registers.esi;
 
     object_wake(device_index);
     simulation_action_object_update(device_index, _simulation_device_update_power);
 }
 
-__declspec(safebuffers) void __fastcall device_group_set_actual_value_hook2()
+void __cdecl device_group_set_actual_value_hook2(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, esi;
+    datum_index device_index = (datum_index)registers.esi;
 
     object_wake(device_index);
     simulation_action_object_update(device_index, _simulation_device_update_position);
 }
 
-__declspec(safebuffers) void __fastcall device_group_set_desired_value_hook1()
+void __cdecl device_group_set_desired_value_hook1(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, esi;
+    datum_index device_index = (datum_index)registers.esi;
+
     simulation_action_object_update(device_index, _simulation_device_update_power_group);
 }
 
-__declspec(safebuffers) void __fastcall device_group_set_desired_value_hook2()
+void __cdecl device_group_set_desired_value_hook2(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, esi;
+    datum_index device_index = (datum_index)registers.esi;
+
     simulation_action_object_update(device_index, _simulation_device_update_position_group);
 }
 
-__declspec(safebuffers) void __fastcall device_set_power_hook()
+void __cdecl device_set_power_hook(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, edi;
+    datum_index device_index = (datum_index)registers.edi;
+
     simulation_action_object_update(device_index, _simulation_device_update_power);
 }
 
-__declspec(safebuffers) void __fastcall machine_update_hook()
+void __cdecl machine_update_hook(s_hook_registers registers)
 {
-    datum_index device_index;
-    __asm mov device_index, esi;
+    datum_index device_index = (datum_index)registers.esi;
+
     simulation_action_object_update(device_index, _simulation_device_update_position);
 }
 
 // preserve vehicle_index variable
 __declspec(naked) void c_vehicle_auto_turret__track_auto_target_hook0()
 {
-    __asm mov [ebp + 4], ecx;
-    __asm retn;
+    __asm
+    {
+        mov [ebp + 4], ecx;
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall c_vehicle_auto_turret__track_auto_target_hook1()
+void __cdecl c_vehicle_auto_turret__track_auto_target_hook1(s_hook_registers registers)
 {
-    datum_index vehicle_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x5C, sizeof(vehicle_index));
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov vehicle_index, eax;
+    datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x04);
+
     simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret_tracking);
 }
 
-__declspec(safebuffers) void __fastcall c_vehicle_auto_turret__track_auto_target_hook2()
+void __cdecl c_vehicle_auto_turret__track_auto_target_hook2(s_hook_registers registers)
 {
-    datum_index vehicle_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x5C, sizeof(vehicle_index));
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov vehicle_index, eax;
+    datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x04);
+
     simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret);
 }
 
-__declspec(safebuffers) void __fastcall object_move_position_hook()
+void __cdecl object_move_position_hook(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_player_hook()
+void __cdecl game_engine_update_player_hook(s_hook_registers registers)
 {
-    long absolute_player_index;
-    player_datum* player;
-    c_simulation_object_update_flags flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(absolute_player_index) + sizeof(player) + sizeof(flags));
-
-    __asm
-    {
-        mov ecx, original_ebp;
-        mov eax, [ecx - 0x0C];
-        mov absolute_player_index, eax;
-        mov player, edi;
-    }
+    long absolute_player_index = *(long*)(registers.ebp - 0x0C);
+    player_datum* player = (player_datum*)registers.edi;
 
     if (!(game_time_get() % game_tick_rate()))
     {
@@ -709,16 +598,16 @@ __declspec(safebuffers) void __fastcall game_engine_update_player_hook()
     }
     if (!(game_time_get() % game_seconds_integer_to_ticks(5)))
     {
+        c_simulation_object_update_flags flags;
         flags.set_flag(player->unit_index, _simulation_object_update_position);
         simulation_action_object_force_update(player->unit_index, flags);
     }
 }
-#pragma runtime_checks("", restore)
 
-void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool unknown)
+void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool actively_controlled)
 {
     simulation_action_object_update(unit_index, _simulation_unit_update_control);
-    unit_set_actively_controlled(unit_index, unknown);
+    unit_set_actively_controlled(unit_index, actively_controlled);
 }
 
 void anvil_hooks_object_updates_apply()
@@ -791,7 +680,8 @@ void anvil_hooks_object_updates_apply()
     hook::insert(0x59EFF, 0x59F48, unit_set_aiming_vectors_hook1, _hook_replace); // UNTESTED!! c_simulation_unit_entity_definition::apply_object_update
     hook::insert(0x61093, 0x610CF, unit_set_aiming_vectors_hook2, _hook_replace); // handles recoil - c_simulation_weapon_fire_event_definition::apply_object_update
     hook::insert(0x4A0FCB, 0x4A1010, unit_set_aiming_vectors_hook3, _hook_replace); // auto turret aiming direction, but not facing? - c_vehicle_auto_turret::control
-    hook::insert(0xF87BF, 0xF87F4, unit_set_aiming_vectors_hook4, _hook_replace); // UNTESTED!! attach_biped_to_player, sandbox only
+    hook::insert(0xF87D2, 0xF87F4, unit_set_aiming_vectors_hook4, _hook_replace); // UNTESTED!! attach_biped_to_player, sandbox only
+    patch::nop_region(0xF87BF, 11); // cleanup leftover code
 
     // equipment_activate
     hook::insert(0x4514E2, 0x4514E8, equipment_activate_hook2, _hook_execute_replaced_last); // sync equipment creation time
@@ -812,10 +702,10 @@ void anvil_hooks_object_updates_apply()
     // sync shield restoration with shield_recharge_on_melee_kill modifier
     hook::insert(0x412E41, 0x412E4F, object_apply_damage_aftermath_hook, _hook_execute_replaced_first, true);
 
-    // sync vehicle emp timer - TODO: test this once vehicles sync
+    // sync vehicle emp timer
     hook::insert(0x41AE09, 0x41AE10, unit_update_damage_hook, _hook_execute_replaced_first);
 
-    // sync vehicle emp timer - TODO: ditto above
+    // sync vehicle emp timer
     hook::insert(0x417B9D, 0x417BA4, unit_respond_to_emp_hook, _hook_execute_replaced_first);
 
     // sync equipment deletion

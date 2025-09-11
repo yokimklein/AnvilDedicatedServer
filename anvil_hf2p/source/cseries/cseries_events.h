@@ -36,6 +36,17 @@ enum
 	k_spamming_event_display_timeout = 3000,
 };
 
+// $TODO:
+enum e_event_log_flags
+{
+	_event_log_flags_bit0,
+	_event_log_flags_bit1,
+	_event_log_flags_bit2,
+	_event_log_flags_bit3,
+
+	k_event_log_flags_count
+};
+
 struct s_spamming_event
 {
 	ulong last_spam_time;
@@ -181,6 +192,7 @@ extern void events_initialize();
 extern long event_interlocked_compare_exchange(long volatile* destination, long exchange, long comperand);
 extern void event_logs_flush();
 extern void events_suppress_output(bool suppress);
+extern long event_log_new(const char* log_file_name, c_flags<e_event_log_flags, ushort, k_event_log_flags_count> flags);
 
 //#define USE_CONSOLE_FOR_EVENTS
 

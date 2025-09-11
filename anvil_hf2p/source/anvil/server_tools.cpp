@@ -37,11 +37,12 @@ bool anvil_assign_player_loadout(c_network_session* session, long player_index, 
         configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFFFFFFFF;
         configuration->s3d_player_customization.colors[_armor_color_visor] = 0xFFFFFFFF;
         configuration->s3d_player_customization.colors[_armor_color_holo] = 0xFFFFFFFF;
-        configuration->s3d_player_container.loadouts[0].consumables[0] = _tripmine;
-        configuration->s3d_player_container.loadouts[0].consumables[1] = _consumable_vision;
+        configuration->s3d_player_container.loadouts[0].consumables[0] = _powerdrain;
+        configuration->s3d_player_container.loadouts[0].consumables[1] = _invisibility;
         configuration->s3d_player_container.loadouts[0].consumables[2] = _deployable_cover;
         configuration->s3d_player_container.loadouts[0].consumables[3] = _hologram;
         configuration->s3d_player_container.loadouts[0].secondary_weapon = _energy_sword;
+        configuration->s3d_player_container.modifiers[0].modifier_values[_revenge_shield_boost] = 2.0f;
         player_data_updated = true;
     }
     else if (!configuration->s3d_player_customization.override_api_data && configuration->user_xuid != USER_SYSTEM && configuration->user_xuid > USER_INVALID)

@@ -53,8 +53,9 @@ void __fastcall network_session_interface_update_session_hook(c_network_session*
 void __fastcall managed_session_delete_session_internal_hook(long managed_session_index, s_online_managed_session* managed_session)
 {
     if (managed_session->flags.test(_online_managed_session_created_bit) && managed_session->session_class == _network_session_class_online)
+    {
         XNetUnregisterKey(&transport_security_globals.address);
-
+    }
     managed_session_delete_session_internal(managed_session_index, managed_session);
 }
 

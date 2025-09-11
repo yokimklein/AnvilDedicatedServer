@@ -19,26 +19,22 @@
 #include <game\game_engine_display.h>
 #include <cseries\cseries_events.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall hf2p_podium_tick_hook()
+void __cdecl hf2p_podium_tick_hook(s_hook_registers registers)
 {
-    long player_index;
-    __asm mov player_index, esi;
+    long player_index = (long)registers.esi;
+
     hf2p_trigger_player_podium_taunt(player_index);
 }
 
-__declspec(safebuffers) void __fastcall c_simulation_player_taunt_request_event_definition__apply_game_event_hook()
+void __cdecl c_simulation_player_taunt_request_event_definition__apply_game_event_hook(s_hook_registers registers)
 {
-    long player_index;
-    __asm mov player_index, esi;
+    long player_index = (long)registers.esi;
+
     if (game_is_authoritative())
     {
         simulation_action_player_taunt_request((word)player_index);
     }
 }
-#pragma runtime_checks("", restore)
 
 long __cdecl exceptions_update_hook()
 {

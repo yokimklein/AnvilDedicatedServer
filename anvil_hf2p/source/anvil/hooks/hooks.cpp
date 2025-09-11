@@ -150,14 +150,39 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // NOTE: if using _hook_stack_frame_increase or _hook_stack_frame_cleanup, inserted_function becomes the number of bytes you wish to (de)allocate on the stack
 void hook::insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
 {
+    // $TODO: push esp, push ebp immediately, call hook cdecl with these
+    // not every hook will expect this, 
+
     long code_offset = 0;
-    byte preserve_registers[3] = { 0x50, 0x51, 0x52 }; // push eax, push ecx, push edx
-    byte restore_registers[3] = { 0x5A, 0x59, 0x58 }; // pop edx, pop ecx, pop eax
-    byte call_code[5] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder bytes where the function address will go
-    byte return_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
-    byte jump_code[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
-    byte sub_esp_code[3] = { 0x83, 0xEC, 0x00 }; // sub esp, 0
-    byte add_esp_code[3] = { 0x83, 0xC4, 0x00 }; // add esp, 0
+
+    //push        esp
+    //push        ebp
+    //push        edi
+    //push        esi
+    //push        edx
+    //push        ecx
+    //push        ebx
+    //push        eax
+    byte preserve_registers[] = { 0x54, 0x55, 0x57, 0x56, 0x52, 0x51, 0x53, 0x50 };
+
+    //pop         eax
+    //pop         ebx
+    //pop         ecx
+    //pop         edx
+    //pop         esi
+    //pop         edi
+    //add         esp, 8
+    byte restore_registers[] = { 0x58, 0x5B, 0x59, 0x5A, 0x5E, 0x5F, 0x83, 0xC4, 0x08 };
+
+    //add         esp, 32
+    byte nopreserve_registers[] = { 0x83, 0xC4, 0x20 };
+
+
+    byte call_code[] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder bytes where the function address will go
+    byte return_code[] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
+    byte jump_code[] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
+    byte sub_esp_code[] = { 0x83, 0xEC, 0x00 }; // sub esp, 0
+    byte add_esp_code[] = { 0x83, 0xC4, 0x00 }; // add esp, 0
 
     long length = return_address - start_address;
     if (length < sizeof(jump_code))
@@ -183,6 +208,10 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     if (hook_type != _hook_replace_no_preserve)
     {
         inserted_code_size += sizeof(preserve_registers) + sizeof(restore_registers);
+    }
+    else
+    {
+        inserted_code_size += sizeof(preserve_registers) + sizeof(nopreserve_registers);
     }
 
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -218,12 +247,9 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     }
     else
     {
-        if (hook_type != _hook_replace_no_preserve)
-        {
-            // preserve registers across call
-            csmemcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
-            code_offset += sizeof(preserve_registers);
-        }
+        // preserve registers across call
+        csmemcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
+        code_offset += sizeof(preserve_registers);
 
         // call inserted function
         size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
@@ -236,6 +262,12 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
             // restore registers
             csmemcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
             code_offset += sizeof(restore_registers);
+        }
+        else
+        {
+            // cleanup call
+            csmemcpy(inserted_code + code_offset, nopreserve_registers, sizeof(nopreserve_registers));
+            code_offset += sizeof(nopreserve_registers);
         }
     }
 

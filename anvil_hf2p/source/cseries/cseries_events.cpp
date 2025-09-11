@@ -783,7 +783,12 @@ void event_initialize_categories()
 		if (log_event->log_name)
 		{
 			csstrnzcpy(next_category->log_name, log_event->log_name, sizeof(next_category->log_name));
-			next_category->event_log_index = NONE;// event_log_new(event_->log_name, FLAG(3), true);
+			c_flags<e_event_log_flags, ushort, k_event_log_flags_count> flags;
+			if (event_globals.disable_event_log_trimming)
+			{
+				flags.set(_event_log_flags_bit3, true);
+			}
+			next_category->event_log_index = event_log_new(log_event->log_name, flags);
 		}
 		next_category->current_log_level = log_event->initial_log_level;
 		next_category->current_remote_log_level = log_event->initial_remote_log_level;
@@ -805,9 +810,9 @@ bool events_initialize_if_possible()
 		event_globals.disable_event_suppression = false;
 		event_globals.enable_spam_suppression = shell_application_type() != _shell_application_tool;
 		event_globals.dump_to_stderr = shell_application_type() == _shell_application_tool;
-		event_globals.current_display_level = _event_message;
-		event_globals.current_log_level = _event_message;
-		event_globals.current_remote_log_level = _event_message;
+		event_globals.current_display_level = _event_warning;
+		event_globals.current_log_level = _event_warning;
+		event_globals.current_remote_log_level = _event_warning;
 		event_globals.current_minimum_level = k_event_level_none;
 		event_globals.current_minimum_category_level = k_event_level_none;
 
@@ -832,12 +837,25 @@ bool events_initialize_if_possible()
 		event_globals.message_buffer[0] = 0;
 
 		// event_logs_initialize();
-		// function
+		
+		// unknown name log function
+		//c_flags<e_event_log_flags, ushort, k_event_log_flags_count> internal_log_flags;
+		//internal_log_flags.set(_event_log_flags_bit0, true);
+		//internal_log_flags.set(_event_log_flags_bit3, event_globals.disable_event_log_trimming);
+		//event_globals.internal_primary_event_log_index = event_log_new(k_primary_event_log_filename, internal_log_flags);
+		//ASSERT(event_globals.internal_primary_event_log_index != NONE);
+		//event_globals.internal_primary_full_event_log_index = event_log_new(k_primary_full_event_log_filename, internal_log_flags);
+		//ASSERT(event_globals.internal_primary_full_event_log_index != NONE);
+		//c_flags<e_event_log_flags, ushort, k_event_log_flags_count> subfolder_log_flags;
+		//subfolder_log_flags.set(_event_log_flags_bit2, true);
+		//subfolder_log_flags.set(_event_log_flags_bit3, event_globals.disable_event_log_trimming);
+		//event_globals.subfolder_internal_primary_event_log_index = event_log_new(k_primary_event_log_filename, subfolder_log_flags);
+		//ASSERT(event_globals.subfolder_internal_primary_event_log_index != NONE);
+		//event_globals.subfolder_internal_primary_full_event_log_index = event_log_new(k_primary_full_event_log_filename, subfolder_log_flags);
+		//ASSERT(event_globals.subfolder_internal_primary_full_event_log_index != NONE);
 
 		event_globals.category_count = 0;
-
 		event_initialize_categories();
-
 		g_events_initialized = true;
 	}
 
@@ -872,6 +890,12 @@ void event_logs_flush()
 void events_suppress_output(bool suppress)
 {
 	event_globals.suppress_console_display_and_show_spinner = suppress;
+}
+
+long event_log_new(const char* log_file_name, c_flags<e_event_log_flags, ushort, k_event_log_flags_count> flags)
+{
+	// $TODO:
+	return -1;
 }
 
 c_event::c_event(e_event_level event_level, long event_category_index, ulong event_response_suppress_flags) :

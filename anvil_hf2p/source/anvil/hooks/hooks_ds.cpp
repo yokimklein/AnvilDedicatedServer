@@ -16,35 +16,24 @@
 #include <anvil\session_voting.h>
 #include <anvil\backend\services\private_service.h>
 
-bool const k_add_local_player_in_dedicated_server_mode = false;
+bool const k_add_local_player_in_dedicated_server_mode = true;
 
-// runtime checks need to be disabled for these, make sure to write them within the pragmas
-// also don't use the standard library in inserted hooks, it can mess up the function prologue and break variable access
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-// TO RECALCULATE EBP VARIABLE OFFSET: sp + 0x10 + offset, (eg original was [ebp - 0x10], sp was 0x20, (0x20 + 0x10, -0x10) is [ebp + 0x20])
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __cdecl anvil_session_update_hook()
+void __cdecl anvil_session_update_hook(s_hook_registers registers)
 {
     anvil_session_update();
 }
 
-__declspec(safebuffers) void __fastcall c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook()
+void __cdecl c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook(s_hook_registers registers)
 {
-    c_network_session_parameter_game_start_status* parameter;
-    s_network_session_parameter_game_start_status* start_status;
-    DEFINE_ORIGINAL_EBP_ESP(0x39C, sizeof(parameter) + sizeof(start_status));
-    
-    __asm mov parameter, ecx;
-    __asm mov eax, original_esp;
-    __asm lea eax, [eax + 0x398 - 0x388];
-    __asm mov start_status, eax;
-    
+    c_network_session_parameter_game_start_status* parameter = (c_network_session_parameter_game_start_status*)registers.ecx;
+    s_network_session_parameter_game_start_status* start_status = (s_network_session_parameter_game_start_status*)(registers.esp + 0x398 - 0x388);
+
     parameter->set(start_status);
 }
 
-__declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__enter_hook()
+void __cdecl c_life_cycle_state_handler_in_game__enter_hook(s_hook_registers registers)
 {
-    c_network_session* session = nullptr;
+    c_network_session* session = NULL;
     if (network_session_interface_get_squad_session(&session) && game_is_dedicated_server())
     {
         e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_in_game;
@@ -52,9 +41,9 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__enter_h
     }
 }
 
-__declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__exit_hook()
+void __cdecl c_life_cycle_state_handler_in_game__exit_hook(s_hook_registers registers)
 {
-    c_network_session* session = nullptr;
+    c_network_session* session = NULL;
     if (network_session_interface_get_squad_session(&session) && game_is_dedicated_server())
     {
         e_dedicated_server_session_state dedi_state = _dedicated_server_session_state_matchmaking_session;
@@ -64,13 +53,9 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_in_game__exit_ho
 }
 
 // request all player containers for all players in session in case loadouts have been updated since joining & prior to game starting
-__declspec(safebuffers) void __cdecl c_life_cycle_state_handler_start_game__enter_hook()
+void __cdecl c_life_cycle_state_handler_start_game__enter_hook(s_hook_registers registers)
 {
-    c_network_session* session;
-    __asm
-    {
-        mov session, eax
-    }
+    c_network_session* session = (c_network_session*)registers.eax;
 
     if (!session->is_host())
     {
@@ -90,7 +75,6 @@ __declspec(safebuffers) void __cdecl c_life_cycle_state_handler_start_game__ente
         c_backend::user_storage_service::get_public_data::request(user_ids, membership->get_player_count(), (e_user_storage_container)container_index);
     }
 }
-#pragma runtime_checks("", restore)
 
 bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_network_session_parameter_game_start_status* thisptr, void* unused, s_network_session_parameter_game_start_status* start_status)
 {
@@ -106,13 +90,15 @@ void __fastcall peer_request_player_add_hook(c_network_session* session, void* u
     }
     session->peer_request_player_add(player_identifier, user_index, controller_index, configuration_from_client, voice_settings);
 }
+
+// ditto above
 bool __fastcall network_session_interface_get_local_user_identifier_hook(s_player_identifier* player_identifier)
 {
     return (!game_is_dedicated_server() || k_add_local_player_in_dedicated_server_mode) && network_session_interface_get_local_user_identifier(player_identifier);
 }
 
 // Set the xp rewards + consumable costs & reset wp event tracker on scenario load
-__declspec(safebuffers) void __fastcall anvil_scenario_tags_load_title_instances()
+void __cdecl anvil_scenario_tags_load_title_instances()
 {
     if (game_is_dedicated_server())
     {
@@ -137,20 +123,38 @@ __declspec(naked) void remove_from_player_list_hook(s_online_session_player* pla
     }
 }
 
+#pragma runtime_checks("", off)
 // Replace get from saber's backend TI cache with a function call which gets our own
 // used for updating the equipment costs on the HUD
-__declspec(naked) void chud_update_user_data_hook()
+__declspec(safebuffers) void __cdecl chud_update_user_data_hook(s_hook_registers registers)
 {
     __asm
     {
-        mov ecx, [ebp-0x0C] // player datum
-        mov edx, esi // consumable_slot
-        call player_get_consumable_cost
+        // preserve registers
+        push edi
+        push esi
+        push ecx
+        push ebx
+        push eax
+    }
+
+    player_datum* player = *(player_datum**)(registers.ebp - 0x0C);
+    long consumable_slot = (long)registers.esi;
+    long consumable_cost = player_get_consumable_cost(player, consumable_slot);
+
+    __asm
+    {
         // set return to edx where original code expects it to be
-        mov edx, eax
-        ret
+        mov edx, consumable_cost
+        // preserve registers
+        pop eax
+        pop ebx
+        pop ecx
+        pop esi
+        pop edi
     }
 }
+#pragma runtime_checks("", restore)
 
 void __fastcall c_life_cycle_state_handler_end_game_write_stats__update_hook(c_life_cycle_state_handler_end_game_write_stats* thisptr)
 {
@@ -216,7 +220,7 @@ void anvil_hooks_ds_apply()
     patch::nop_region(0x31AB7, 3);
 
     // Request public data on game start (hook end of c_life_cycle_state_handler_start_game::enter)
-    hook::insert(0x4C40F, 0x4C415, c_life_cycle_state_handler_start_game__enter_hook);
+    hook::insert(0x4C40F, 0x4C415, c_life_cycle_state_handler_start_game__enter_hook, _hook_execute_replaced_first);
 
     // Replace saber's backend for getting consumable TI data
     hook::insert(0x3AF851, 0x3AF857, chud_update_user_data_hook, _hook_replace_no_preserve);

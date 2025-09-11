@@ -77,7 +77,7 @@ e_object_type c_object_identifier::get_type()
 	return m_type.get();
 }
 
-void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
+void __fastcall object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update)
 {
 	object_datum* object = object_get(object_index);
 	c_simulation_object_update_flags update_flags;

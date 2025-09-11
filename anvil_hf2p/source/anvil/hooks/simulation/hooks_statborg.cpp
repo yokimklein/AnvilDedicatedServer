@@ -3,63 +3,59 @@
 #include <game\game_engine.h>
 #include <simulation\game_interface\simulation_game_statborg.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook()
+void __cdecl game_engine_update_after_game_hook(s_hook_registers registers)
 {
     simulation_action_game_statborg_update(_simulation_statborg_update_finalize_for_game_end);
 }
 
-__declspec(safebuffers) void __fastcall c_game_statborg__adjust_player_stat_hook()
+void __cdecl c_game_statborg__adjust_player_stat_hook(s_hook_registers registers)
 {
-    long absolute_player_index;
-    __asm mov absolute_player_index, esi;
+    long absolute_player_index = (long)registers.esi;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook1()
+void __cdecl game_engine_end_round_with_winner_hook1(s_hook_registers registers)
 {
-    long absolute_player_index;
-    __asm mov absolute_player_index, esi; // (ebx is full player datum index)
+    long absolute_player_index = (long)registers.esi;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook2()
+void __cdecl game_engine_end_round_with_winner_hook2(s_hook_registers registers)
 {
-    long absolute_player_index;
-    __asm mov absolute_player_index, esi; // (ebx is full player datum index)
+    long absolute_player_index = (long)registers.esi;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_earn_wp_event_hook()
+void __cdecl game_engine_earn_wp_event_hook(s_hook_registers registers)
 {
-    long absolute_player_index;
-    __asm mov absolute_player_index, esi;
+    long absolute_player_index = (long)registers.esi;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_end_round_with_winner_hook3()
+void __cdecl game_engine_end_round_with_winner_hook3(s_hook_registers registers)
 {
-    long team_index;
-    __asm mov team_index, ebx;
+    long team_index = (long)registers.ebx;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
-__declspec(safebuffers) void __fastcall c_game_engine__recompute_team_score_hook()
+void __cdecl c_game_engine__recompute_team_score_hook(s_hook_registers registers)
 {
-    long team_index;
-    __asm mov team_index, edi;
+    long team_index = (long)registers.edi;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
-__declspec(safebuffers) void __fastcall player_changed_teams_hook()
+void __cdecl player_changed_teams_hook(s_hook_registers registers)
 {
-    short player_index;
-    __asm mov player_index, bx;
+    short player_index = (short)registers.ebx;
+
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_player0 + player_index));
 }
-#pragma runtime_checks("", restore)
 
 void __fastcall adjust_team_stat_hook(c_game_statborg* thisptr, void* unused, e_game_team team_index, long statistic, short unknown, long value)
 {

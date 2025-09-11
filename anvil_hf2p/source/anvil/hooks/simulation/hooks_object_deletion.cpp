@@ -4,19 +4,12 @@
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <objects\object_scripting.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(naked) void item_in_unit_inventory_hook2()
+void __cdecl item_in_unit_inventory_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_delete(object_index);
-
-    __asm retn;
 }
-#pragma runtime_checks("", restore)
 
 void __fastcall object_scripting_clear_all_function_variables_hook(datum_index object_index)
 {

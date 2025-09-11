@@ -3,54 +3,50 @@
 #include <game\game_engine.h>
 #include <simulation\game_interface\simulation_game_engine_globals.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall game_engine_update_time_hook()
+void __cdecl game_engine_update_time_hook(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_timer);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_hook2()
+void __cdecl game_engine_update_after_game_hook2(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_game_finished);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook1()
+void __cdecl game_engine_update_after_game_update_state_hook1(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_round_index);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_update_after_game_update_state_hook2()
+void __cdecl game_engine_update_after_game_update_state_hook2(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_engine_state);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_build_initial_teams_hook1()
+void __cdecl game_engine_build_initial_teams_hook1(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_build_initial_teams_hook2()
+void __cdecl game_engine_build_initial_teams_hook2(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_team_lives_per_round);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_build_valid_team_mapping_hook()
+void __cdecl game_engine_build_valid_team_mapping_hook(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_recompute_active_teams_hook()
+void __cdecl game_engine_recompute_active_teams_hook(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_initial_teams);
 }
 
-__declspec(safebuffers) void __fastcall game_engine_teams_use_one_shared_life_hook()
+void __cdecl game_engine_teams_use_one_shared_life_hook(s_hook_registers registers)
 {
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_team_lives_per_round);
 }
-#pragma runtime_checks("", restore)
 
 void anvil_hooks_simulation_globals_apply()
 {

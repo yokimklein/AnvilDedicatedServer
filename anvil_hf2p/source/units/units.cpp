@@ -100,7 +100,7 @@ void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
     }
 }
 
-void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camouflage_decay, real regrowth_seconds)
+void __vectorcall unit_active_camouflage_ding(datum_index unit_index, real camouflage_decay, real regrowth_seconds)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
     
@@ -131,7 +131,7 @@ void __fastcall unit_active_camouflage_ding(datum_index unit_index, real camoufl
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds)
+void __vectorcall unit_active_camouflage_disable(datum_index unit_index, real regrowth_seconds)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 
@@ -151,7 +151,7 @@ void __fastcall unit_active_camouflage_disable(datum_index unit_index, real regr
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __fastcall unit_active_camouflage_set_level(datum_index unit_index, real regrowth_seconds, long camouflage_end_time)
+void __vectorcall unit_active_camouflage_set_level(datum_index unit_index, real regrowth_seconds, long camouflage_end_time)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);
 

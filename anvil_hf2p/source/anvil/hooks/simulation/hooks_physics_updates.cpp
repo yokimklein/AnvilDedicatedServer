@@ -7,39 +7,28 @@
 #include <simulation\game_interface\simulation_game_items.h>
 #include <simulation\game_interface\simulation_game_projectiles.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall object_set_position_internal_hook1()
+void __cdecl object_set_position_internal_hook1(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
+
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
 
-__declspec(safebuffers) void __fastcall object_set_position_internal_hook2()
+void __cdecl object_set_position_internal_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
+
     simulation_action_object_update(object_index, _simulation_object_update_forward_and_up);
 }
 
-__declspec(safebuffers) void __fastcall object_move_respond_to_physics_hook()
+void __cdecl object_move_respond_to_physics_hook(s_hook_registers registers)
 {
-    datum_index object_index;
-    real_point3d* desired_position;
-    real_vector3d* desired_forward;
-    real_vector3d* desired_up;
-    DEFINE_ORIGINAL_EBP_ESP(0x70, sizeof(object_index) + sizeof(desired_position) + sizeof(desired_forward) + sizeof(desired_up));
+    datum_index object_index = (datum_index)registers.ebx;
+    real_point3d* desired_position = (real_point3d*)(registers.esp + 0x70 - 0x0C);
+    real_vector3d* desired_forward = (real_vector3d*)registers.edx;
+    real_vector3d* desired_up = (real_vector3d*)registers.esi;
 
-    __asm mov object_index, ebx;
-    __asm mov eax, original_esp;
-    __asm lea eax, [eax + 0x70 - 0x0C];
-    __asm mov desired_position, eax;
-    __asm mov desired_forward, edx;
-    __asm mov desired_up, esi;
-
-    object_set_position_internal(object_index, desired_position, desired_forward, desired_up, nullptr, false, false, false, true);
+    object_set_position_internal(object_index, desired_position, desired_forward, desired_up, NULL, false, false, false, true);
 }
 
 // wrap usercall function to rewritten function
@@ -47,152 +36,129 @@ __declspec(naked) void object_set_velocities_internal_hook()
 {
     __asm
     {
+        // preserve registers
+        push edi
+        push esi
+        push edx
+        push ecx
+        push ebx
+        push eax
+
         push 0 // skip_update = false
-        push[esp + 0x8] // angular_velocity
-        push edx // transitional_velocity
-        push ecx // object_index
+        push [esp + 0x20] // angular_velocity (7x previous pushes, 1x previous call)
+        //push edx // transitional_velocity
+        //push ecx // object_index
         call object_set_velocities_internal
+
         // restore registers
+        pop eax
+        pop ebx
         pop ecx
         pop edx
-        // cleanup stack & return
-        add esp, 8
+        pop esi
+        pop edi
+
         retn
     }
 }
 
-__declspec(safebuffers) void __fastcall object_apply_acceleration_hook()
+void __cdecl object_apply_acceleration_hook(s_hook_registers registers)
 {
-    datum_index accelerated_object_index;
-    real_vector3d* translational_velocity;
-    real_vector3d* angular_velocity;
-    DEFINE_ORIGINAL_EBP_ESP(0x34, sizeof(accelerated_object_index) + sizeof(translational_velocity) + sizeof(angular_velocity));
-
-    __asm mov ecx, original_esp;
-    __asm mov eax, [ecx + 0x30 - 0x1C];
-    __asm mov accelerated_object_index, eax;
-    __asm lea eax, [ecx + 0x30 - 0x0C];
-    __asm mov translational_velocity, eax;
-    __asm lea eax, [ecx + 0x30 - 0x18];
-    __asm mov angular_velocity, eax;
+    datum_index accelerated_object_index = *(datum_index*)(registers.esp + 0x30 - 0x1C);
+    real_vector3d* translational_velocity = (real_vector3d*)(registers.esp + 0x30 - 0x0C);
+    real_vector3d* angular_velocity = (real_vector3d*)(registers.esp + 0x30 - 0x18);
 
     object_set_velocities_internal(accelerated_object_index, translational_velocity, angular_velocity, false);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook2()
+void __cdecl object_set_at_rest_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook3()
+void __cdecl object_set_at_rest_hook3(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook4()
+void __cdecl object_set_at_rest_hook4(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook5()
+void __cdecl object_set_at_rest_hook5(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x58, sizeof(object_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x58 - 0x48];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook6()
+void __cdecl object_set_at_rest_hook6(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x25C, sizeof(object_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x258 - 0x210];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.esp + 0x258 - 0x210);
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook7()
+void __cdecl object_set_at_rest_hook7(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x298, sizeof(object_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x298 - 0x28C];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.esp + 0x298 - 0x28C);
 
     object_set_at_rest(object_index, false);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook8()
+void __cdecl object_set_at_rest_hook8(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, esi;
+    datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, false);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook9()
+void __cdecl object_set_at_rest_hook9(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, esi;
+    datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, false);
 }
 
 // TODO: I'm pretty sure swarms are only used for the flood, so it's probably fine to ignore this - may be used on cold storage?
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook10()
+void __cdecl object_set_at_rest_hook10(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x3C, sizeof(object_index));
-
-    __asm mov object_index, esi;
-    // preserve overwritten variable
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0x38 - 0x28];
-    __asm mov edi, eax;
+    datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, false);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook12()
+void __cdecl object_set_at_rest_hook12(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, esi;
+    datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, true);
 }
 
-__declspec(safebuffers) void __fastcall object_set_at_rest_hook13()
+void __cdecl object_set_at_rest_hook13(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
-#pragma runtime_checks("", restore)
 
 void __cdecl object_set_at_rest_simulation_update(datum_index object_index)
 {
     if (TEST_BIT(_object_mask_item, object_get_type(object_index)))
+    {
         simulation_action_object_update(object_index, _simulation_item_update_set_at_rest);
+    }
     else if (TEST_BIT(_object_mask_projectile, object_get_type(object_index)))
+    {
         simulation_action_object_update(object_index, _simulation_projectile_update_set_at_rest);
+    }
 }
 
 void __fastcall object_set_at_rest_hook(datum_index object_index)
@@ -263,7 +229,8 @@ void anvil_hooks_physics_updates_apply()
     patch::nop_region(0x462398, 11); // cleanup redundant instructions
     hook::insert(0x46D200, 0x46D281, object_set_at_rest_hook8, _hook_replace); // UNTESTED!! // object_early_mover_delete
     hook::insert(0x46D2D0, 0x46D343, object_set_at_rest_hook9, _hook_replace); // UNTESTED!! // object_early_mover_delete
-    hook::insert(0x6D506C, 0x6D50EF, object_set_at_rest_hook10, _hook_replace); // UNTESTED!! // swarm_accelerate > creature_accelerate inlined
+    hook::insert(0x6D50C7, 0x6D50EF, object_set_at_rest_hook10, _hook_replace); // UNTESTED!! // swarm_accelerate > creature_accelerate inlined
+    patch::nop_region(0x6D506C, 0x5B); // nop leftover code
     hook::call(0x48FB9A, object_set_at_rest_hook11); // scenery_new, hooked scenery_animation_idle call
     hook::insert(0x4BEB84, 0x4BEBB7, object_set_at_rest_hook12, _hook_replace); // vehicle_program_activate // havok vehicle physics invalid flag, used only by troop hog back
     hook::insert(0x4BFF31, 0x4BFF76, object_set_at_rest_hook13, _hook_replace); // UNTESTED!! // vehicle_program_update

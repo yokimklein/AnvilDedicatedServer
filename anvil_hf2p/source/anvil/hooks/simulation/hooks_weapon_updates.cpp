@@ -8,125 +8,87 @@
 #include <items\item_definitions.h>
 #include <cache\cache_files.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall weapon_age_hook()
+void __cdecl weapon_age_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    __asm mov weapon_index, edi;
+    datum_index weapon_index = (datum_index)registers.edi;
+
     weapon_delay_predicted_state(weapon_index);
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_barrel_fire_hook()
+void __cdecl weapon_barrel_fire_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    DEFINE_ORIGINAL_EBP_ESP(0xC4, sizeof(weapon_index));
-
-    __asm mov eax, original_esp;
-    __asm mov eax, [eax + 0xC0 - 0x6C];
-    __asm mov weapon_index, eax;
+    datum_index weapon_index = *(datum_index*)(registers.esp + 0xC0 - 0x6C);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_magazine_execute_reload_hook()
+void __cdecl weapon_magazine_execute_reload_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x1C, sizeof(weapon_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x10];
-    __asm mov weapon_index, eax;
+    datum_index weapon_index = *(datum_index*)(registers.ebp - 0x10);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_magazine_update_hook()
+void __cdecl weapon_magazine_update_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    __asm mov weapon_index, ebx;
-    simulation_action_weapon_state_update(weapon_index);
-}
-
-__declspec(safebuffers) void __fastcall weapon_report_kill_hook()
-{
-    datum_index weapon_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(weapon_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x08];
-    __asm mov weapon_index, eax;
+    datum_index weapon_index = (datum_index)registers.ebx;
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-// TODO: UNTESTED!! - make sure sp value is correct
-__declspec(safebuffers) void __fastcall weapon_set_current_amount_hook()
+void __cdecl weapon_report_kill_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x10, sizeof(weapon_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x04];
-    __asm mov weapon_index, eax;
+    datum_index weapon_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_set_total_rounds_hook()
+void __cdecl weapon_set_current_amount_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x20, sizeof(weapon_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x0C];
-    __asm mov weapon_index, eax;
+    datum_index weapon_index = *(datum_index*)(registers.ebp - 0x04);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_take_inventory_rounds_hook1()
+void __cdecl weapon_set_total_rounds_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    __asm mov weapon_index, edi;
+    datum_index weapon_index = *(datum_index*)(registers.ebp - 0x0C);
+
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_take_inventory_rounds_hook2()
+void __cdecl weapon_take_inventory_rounds_hook1(s_hook_registers registers)
 {
-    datum_index unit_weapon_object_index;
-    __asm mov unit_weapon_object_index, esi;
+    datum_index weapon_index = (datum_index)registers.edi;
+
+    simulation_action_weapon_state_update(weapon_index);
+}
+
+void __cdecl weapon_take_inventory_rounds_hook2(s_hook_registers registers)
+{
+    datum_index unit_weapon_object_index = (datum_index)registers.esi;
+
     simulation_action_weapon_state_update(unit_weapon_object_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_trigger_update_hook()
+void __cdecl weapon_trigger_update_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    __asm mov weapon_index, ebx
+    datum_index weapon_index = (datum_index)registers.ebx;
+
     simulation_action_weapon_state_update(weapon_index);
 }
 
-__declspec(safebuffers) void __fastcall weapon_handle_potential_inventory_item_hook()
+void __cdecl weapon_handle_potential_inventory_item_hook(s_hook_registers registers)
 {
-    datum_index weapon_index;
-    datum_index item_index;
-    item_definition* item;
-    item_datum* item_datum;
-    DEFINE_ORIGINAL_EBP_ESP(0x40, sizeof(weapon_index) + sizeof(item_index) + sizeof(item) + sizeof(item_datum));
-    
-    __asm mov ecx, original_ebp;
-    __asm mov eax, [ecx - 0x30];
-    __asm mov weapon_index, eax;
-    __asm mov eax, [ecx - 0x24];
-    __asm mov item_index, eax;
-    __asm mov item_datum, esi;
-    
+    datum_index weapon_index = *(datum_index*)(registers.ebp - 0x30);
+    datum_index item_index = *(datum_index*)(registers.ebp - 0x24);
+    item_datum* item_data = (item_datum*)registers.esi;
+
     // retrieve item definition from existing datum variable
     // retrieving the item variable directly had reliability
     // issues and would contain invalid data in certain edge cases
-    item = (item_definition*)tag_get(ITEM_TAG, item_datum->definition_index);
+    item_definition* item = (item_definition*)tag_get(ITEM_TAG, item_data->definition_index);
 
     simulation_action_weapon_state_update(weapon_index);
     if (TEST_BIT(_object_mask_weapon, item->object.type.get()))
@@ -138,45 +100,32 @@ __declspec(safebuffers) void __fastcall weapon_handle_potential_inventory_item_h
 // preserve unit_index variable
 __declspec(naked) void unit_inventory_set_weapon_index_hook0()
 {
-    __asm mov[ebp + 4], ecx;
-    __asm retn;
+    __asm
+    {
+        mov[ebp + 4], ecx;
+        retn;
+    }
 }
 
-__declspec(safebuffers) void __fastcall unit_inventory_set_weapon_index_hook1()
+void __cdecl unit_inventory_set_weapon_index_hook1(s_hook_registers registers)
 {
-    datum_index unit_index;
-    short inventory_index;
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
+    short inventory_index = *(short*)(registers.ebp - 0x02);
+
     c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x18, sizeof(unit_index) + (sizeof(inventory_index) + 2) + sizeof(update_flags));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 4];
-    __asm mov unit_index, eax;
-
-    __asm mov eax, original_ebp;
-    __asm mov ax, [eax - 2];
-    __asm mov inventory_index, ax;
-
     update_flags.set_flag(unit_index, (e_simulation_unit_update_flag)(inventory_index + _simulation_unit_update_weapon1_type));
     update_flags.set_flag(unit_index, (e_simulation_unit_update_flag)(inventory_index + _simulation_unit_update_weapon1_state));
     simulation_action_object_update_internal(unit_index, update_flags);
     unit_inventory_cycle_weapon_set_identifier(unit_index);
 }
 
-__declspec(safebuffers) void __fastcall unit_handle_deleted_object_hook()
+void __cdecl unit_handle_deleted_object_hook(s_hook_registers registers)
 {
-    datum_index unit_index;
-    datum_index inventory_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x24, sizeof(unit_index) + sizeof(inventory_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 0x08];
-    __asm mov unit_index, eax;
-    __asm mov inventory_index, ebx;
+    datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
+    datum_index inventory_index = (datum_index)registers.ebx;
 
     unit_inventory_set_weapon_index(unit_index, inventory_index, NONE, _unit_drop_type_response_to_deletion);
 }
-#pragma runtime_checks("", restore)
 
 void anvil_hooks_weapon_updates_apply()
 {

@@ -12,5 +12,6 @@ c_visibility_collection* get_global_camera_collection()
 bool __vectorcall visibility_volume_test_sphere(visibility_volume* volume, const real_point3d* point, real radius)
 {
 	// $TODO: verify calling convention works
+	// radius arg is in xmm2, though it seems vectorcalls set the first float arg to xmm0 so this may not work
 	return INVOKE(0x1CCE30, visibility_volume_test_sphere, volume, point, radius);
 }

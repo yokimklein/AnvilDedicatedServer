@@ -8,63 +8,40 @@
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <units\units.h>
 
-// runtime checks need to be disabled non-naked hooks, make sure to write them within the pragmas
-// ALSO __declspec(safebuffers) is required - the compiler overwrites a lot of the registers from the hooked function otherwise making those variables inaccessible
-#pragma runtime_checks("", off)
-__declspec(safebuffers) void __fastcall object_damage_update_hook1()
+void __cdecl object_damage_update_hook1(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x100, sizeof(object_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x20];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x20);
 
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall object_damage_update_hook2()
+void __cdecl object_damage_update_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x100, sizeof(object_index));
-
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x20];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x20);
 
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall object_damage_update_hook3()
+void __cdecl object_damage_update_hook3(s_hook_registers registers)
 {
     // preserve xmm2
-    __asm movd eax, xmm2;
-    __asm push eax;
-
-    datum_index object_index;
-    unit_datum* unit;
-    bool unit_updated;
-    real unknown_ticks;
-    real new_body_vitality;
-    real unknown_vitality;
-    DEFINE_ORIGINAL_EBP_ESP(0x108, 0x50);
     __asm
     {
-        mov ecx, original_ebp;
+        movd eax, xmm2;
+        push eax;
+    }
 
-        mov eax, [ecx - 0x20];
-        mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x20);
+    unit_datum* unit = (unit_datum*)registers.edi;
+    bool unit_updated = *(bool*)(registers.ebp - 0x01);
+    real unknown_vitality = *(real*)(registers.ebp - 0x0C);
 
-        mov unit, edi;
-
-        mov al, [ecx - 0x01]; // [ebp - 0x01]
-        mov unit_updated, al;
-
+    real unknown_ticks;
+    real new_body_vitality;
+    __asm
+    {
         movss unknown_ticks, xmm0;
         movss new_body_vitality, xmm3;
-
-        movss xmm1, [ecx - 0x0C]; // [ebp - 0x0C]
-        movss unknown_vitality, xmm1;
     }
 
     if (unit->object.body_stun_ticks != 0)
@@ -81,7 +58,6 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
         real vitality_delta = game_time_globals->tick_length * unknown_ticks;
         if (TEST_BIT(_object_mask_unit, unit->object.object_identifier.m_type.get()))
         {
-            // TODO: see if this gets called and works now I'm not using a broken version of the call
             real vitality_multiplier = game_difficulty_get_team_value(_game_difficulty_enemy_recharge, unit->unit.team.get());
             new_body_vitality = unknown_vitality;
             vitality_delta = vitality_delta * vitality_multiplier;
@@ -101,41 +77,34 @@ __declspec(safebuffers) void __fastcall object_damage_update_hook3()
     }
     simulation_action_object_update(object_index, _simulation_object_update_body_vitality);
 
+    // set unit_updated value back to its original address
+    *(bool*)(registers.ebp - 0x01) = unit_updated;
     __asm
     {
-        // set unknown_bool value back to its original address
-        mov ecx, original_ebp;
-        mov al, unit_updated;
-        mov [ecx - 0x01], al; // [ebp - 0x01]
-
         // restore xmm2
         pop eax;
         movd xmm2, eax;
     }
 }
 
-__declspec(safebuffers) void __fastcall object_damage_shield_hook1()
+void __cdecl object_damage_shield_hook1(s_hook_registers registers)
 {
-    player_datum* player_data;
-    __asm mov player_data, esi;
+    player_datum* player_data = (player_datum*)registers.esi;
+
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall object_damage_shield_hook2()
+void __cdecl object_damage_shield_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, esi;
+    datum_index object_index = (datum_index)registers.esi;
+
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-__declspec(safebuffers) void __fastcall object_damage_body_hook1()
+void __cdecl object_damage_body_hook1(s_hook_registers registers)
 {
-    datum_index object_index;
-    float damage;
-
-    __asm mov object_index, edx;
-    __asm movss xmm0, [edi + 0x24];
-    __asm movss damage, xmm0;
+    datum_index object_index = (datum_index)registers.edx;
+    real damage = *(real*)(registers.edi + 0x24);
 
     if (damage > 0.0)
     {
@@ -143,39 +112,23 @@ __declspec(safebuffers) void __fastcall object_damage_body_hook1()
     }
 }
 
-__declspec(safebuffers) void __fastcall object_deplete_body_internal_hook1()
+void __cdecl object_deplete_body_internal_hook1(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, edi;
+    datum_index object_index = (datum_index)registers.edi;
+
     simulation_action_object_update(object_index, _simulation_object_update_dead);
 }
 
-__declspec(safebuffers) void __fastcall damage_section_response_fire_hook()
+void __cdecl damage_section_response_fire_hook(s_hook_registers registers)
 {
-    object_datum* object;
-    datum_index object_index;
-    long damage_section_index;
-    long response_index;
-    c_simulation_object_update_flags update_flags;
-    DEFINE_ORIGINAL_EBP_ESP(0x9C, sizeof(object) + sizeof(object_index) + sizeof(damage_section_index) + sizeof(response_index) + sizeof(update_flags));
-
-    __asm
-    {
-        mov ecx, original_esp;
-        mov eax, [ecx + 0x98 - 0x74]; // sp 0x98, [esp+0x94-0x74]
-        mov object, eax;
-        mov eax, [ecx + 0x98 - 0x84]; // sp 0x98, [esp+0x94-0x84]
-        mov object_index, eax;
-
-        mov ecx, original_ebp;
-        mov eax, [ecx + 0x10]; // [ebp + 0x10]
-        mov damage_section_index, eax;
-        mov eax, [ecx + 0x14]; // [ebp + 0x14]
-        mov response_index, eax;
-    }
+    object_datum* object = *(object_datum**)(registers.esp + 0x98 - 0x74);
+    datum_index object_index = *(datum_index*)(registers.esp + 0x98 - 0x84);
+    long damage_section_index = *(long*)(registers.ebp + 0x10);
+    long response_index = *(long*)(registers.ebp + 0x14);
 
     if (!game_is_predicted() && object->object.gamestate_index != NONE)
     {
+        c_simulation_object_update_flags update_flags;
         simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_all_damage);
         update_flags.set_flag(object_index, _simulation_object_update_region_state);
         update_flags.set_flag(object_index, _simulation_object_update_constraint_state);
@@ -194,54 +147,40 @@ __declspec(naked) void object_set_damage_owner_hook1()
     }
 }
 
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook2()
+void __cdecl object_set_damage_owner_hook2(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov eax, [edi + 0x30];
-    __asm mov object_index, eax;
+    datum_index object_index = *(datum_index*)(registers.edi + 0x30);
+
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook3()
+void __cdecl object_set_damage_owner_hook3(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0xE68, sizeof(object_index));
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x18);
 
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x18];
-    __asm mov object_index, eax;
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook4()
+void __cdecl object_set_damage_owner_hook4(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x178, sizeof(object_index));
+    datum_index object_index = *(datum_index*)(registers.ebp - 0x10);
 
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax - 0x10];
-    __asm mov object_index, eax;
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook5()
+void __cdecl object_set_damage_owner_hook5(s_hook_registers registers)
 {
-    datum_index object_index;
-    __asm mov object_index, ebx;
+    datum_index object_index = (datum_index)registers.ebx;
+
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-__declspec(safebuffers) void __fastcall object_set_damage_owner_hook6()
+void __cdecl object_set_damage_owner_hook6(s_hook_registers registers)
 {
-    datum_index object_index;
-    DEFINE_ORIGINAL_EBP_ESP(0x8C, sizeof(object_index));
+    datum_index object_index = *(datum_index*)(registers.ebp + 0x08);
 
-    __asm mov eax, original_ebp;
-    __asm mov eax, [eax + 0x08];
-    __asm mov object_index, eax;
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
-#pragma runtime_checks("", restore)
 
 void anvil_hooks_damage_updates_apply()
 {

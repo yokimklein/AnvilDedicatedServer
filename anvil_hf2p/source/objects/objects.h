@@ -271,7 +271,7 @@ bool object_is_multiplayer_cinematic_object(datum_index object_index);
 datum_index object_get_ultimate_parent(datum_index object_index);
 void object_attach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
 void object_detach_gamestate_entity(datum_index object_index, datum_index gamestate_index);
-void __cdecl object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update);
+void __fastcall object_set_velocities_internal(datum_index object_index, real_vector3d const* transitional_velocity, real_vector3d const* angular_velocity, bool skip_update);
 void __fastcall object_set_at_rest(datum_index object_index, bool force_activate);
 const char* object_describe(datum_index object_index);
 void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner* damage_owner, bool skip_update);
