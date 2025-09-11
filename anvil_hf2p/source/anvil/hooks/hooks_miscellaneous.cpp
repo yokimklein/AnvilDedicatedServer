@@ -49,7 +49,7 @@ long __cdecl exceptions_update_hook()
 
 c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
 {
-    static_string->print("Halo Online " VERSION_WINDOW_NAME " %s", VERSION_WINDOW_VERSION);
+    static_string->print("Halo Online " VERSION_WINDOW_NAME " %s", version_get_window_version());
     return static_string;
 }
 

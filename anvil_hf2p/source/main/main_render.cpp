@@ -22,10 +22,6 @@ void __fastcall game_engine_render_frame_watermarks(bool pregame)
 	bounds.x1 = (real)display_bounds.x1;
 	bounds.y0 = (real)display_bounds.y0;
 	bounds.y1 = (real)display_bounds.y1;
-	wchar_t build_date[128];
-	ascii_string_to_wchar_string(VERSION_BUILD_DATE, build_date, NUMBEROF(VERSION_BUILD_DATE), NULL);
-	wchar_t build_time[128];
-	ascii_string_to_wchar_string(VERSION_BUILD_TIME, build_time, NUMBEROF(VERSION_BUILD_TIME), NULL);
 	c_static_wchar_string<256> cache_version;
 	cache_version.print(L"%hs", cache_file_get_build_number());
 	c_static_wchar_string<256> session_string;
@@ -41,7 +37,7 @@ void __fastcall game_engine_render_frame_watermarks(bool pregame)
 
 	const char* build_version = version_get_build_string();
 	c_static_wchar_string<512> build_info;
-	build_info.print(L"%s|n%s|n%hs %s %s|n%s", session_string.get_string(), game_session_string.get_string(), build_version, build_date, build_time, cache_version.get_string());
+	build_info.print(L"%s|n%s|n%hs %hs %hs|n%s", session_string.get_string(), game_session_string.get_string(), build_version, version_get_build_date(), version_get_build_time(), cache_version.get_string());
 
 	bool multiplayer_in_progress = false;
 	bool is_splitscreen = false;
@@ -86,10 +82,6 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 	rectangle2d bounds = display_title_safe_bounds;
 	real_bounds scale = { 1.0f, 1.0f };
 
-	wchar_t build_date[128];
-	ascii_string_to_wchar_string(VERSION_BUILD_DATE, build_date, NUMBEROF(VERSION_BUILD_DATE), NULL);
-	wchar_t build_time[128];
-	ascii_string_to_wchar_string(VERSION_BUILD_TIME, build_time, NUMBEROF(VERSION_BUILD_TIME), NULL);
 	c_static_wchar_string<512> watermark;
 	watermark.print(L"cache %hs|n", cache_file_get_build_number());
 	s_transport_secure_address session_id;
@@ -101,11 +93,11 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 		watermark.append_print(L"%hs|n", transport_secure_identifier_get_string(&game_session_id));
 		lines++;
 	}
-	watermark.append_print(L"%hs %hs %s %s",
+	watermark.append_print(L"%hs %hs %hs %hs",
 		version_get_build_string(),
 		version_get_target_configuration(),
-		build_date,
-		build_time);
+		version_get_build_date(),
+		version_get_build_time());
 
 	bool multiplayer_in_progress = false;
 	bool is_splitscreen = false;
