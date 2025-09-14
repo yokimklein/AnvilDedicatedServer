@@ -15,7 +15,7 @@
 #include <ctype.h>
 #include <wtypes.h>
 #include <math\integer_math.h>
-#include <config\version.h>
+#include <cseries\version.h>
 #include <math\color_math.h>
 
 const char* const k_reports_directory_name = "reports\\";
@@ -810,9 +810,9 @@ bool events_initialize_if_possible()
 		event_globals.disable_event_suppression = false;
 		event_globals.enable_spam_suppression = shell_application_type() != _shell_application_tool;
 		event_globals.dump_to_stderr = shell_application_type() == _shell_application_tool;
-		event_globals.current_display_level = _event_warning;
-		event_globals.current_log_level = _event_warning;
-		event_globals.current_remote_log_level = _event_warning;
+		event_globals.current_display_level = _event_message;
+		event_globals.current_log_level = _event_message;
+		event_globals.current_remote_log_level = _event_message;
 		event_globals.current_minimum_level = k_event_level_none;
 		event_globals.current_minimum_category_level = k_event_level_none;
 
@@ -1114,6 +1114,7 @@ bool console_update_spam_prevention(e_event_level event_level)
 
 void write_to_console(e_event_level event_level, long category_index, const char* string)
 {
+	ASSERT(g_events_initialized);
 	enum
 	{
 		copy_size = NUMBEROF("[...too many errors to print...]\r\n") - 1,

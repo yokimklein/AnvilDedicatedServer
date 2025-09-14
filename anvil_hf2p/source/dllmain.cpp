@@ -1,7 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <anvil\server_tools.h>
-#include <config\version.h>
+#include <cseries\version.h>
 #include <anvil\hooks\hooks.h>
 #include <anvil\config.h>
 #include <main\main.h>

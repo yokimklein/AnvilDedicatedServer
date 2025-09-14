@@ -2,7 +2,7 @@
 #include <anvil\hooks\hooks.h>
 #include <cseries\cseries.h>
 #include <cseries\cseries_windows_debug_pc.h>
-#include <config\version.h>
+#include <cseries\version.h>
 #include <networking\logic\network_life_cycle.h>
 #include <networking\messages\network_message_gateway.h>
 #include <networking\messages\network_message_type_collection.h>

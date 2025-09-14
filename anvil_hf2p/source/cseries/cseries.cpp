@@ -347,11 +347,6 @@ long __fastcall bit_vector_count_bits(const dword* bit_mask, int bit_count)
     return INVOKE(0xC39D0, bit_vector_count_bits, bit_mask, bit_count);
 }
 
-__int64 make_int64(__int64 a, __int64 b)
-{
-    return ((a << 0) | (b << 32));
-}
-
 long bit_count(long val)
 {
     long result = 0;

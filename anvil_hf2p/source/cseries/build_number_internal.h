@@ -1,0 +1,5 @@
+#pragma once
+
+#define VERSION_COMMIT_HASH STRINGIFY(aaaaaaa)
+#define VERSION_BUILD_NUMBER 00000
+#define VERSION_BRANCH_NAME STRINGIFY(branch)

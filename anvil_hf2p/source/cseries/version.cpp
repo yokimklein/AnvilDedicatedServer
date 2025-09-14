@@ -1,22 +1,49 @@
 #include "version.h"
+#include "cseries\build_number_internal.h"
 
-#define VERSION_PROJECT_VERSION STRINGIFY(VERSION_BUILD_NUMBER_VERSION) "." STRINGIFY(VERSION_BUILD_NUMBER)
-#if VERSION_TRACKED_BUILD
-#define VERSION_BUILD_STRING VERSION_PROJECT_VERSION " " VERSION_BRANCH_NAME
-#else
-#define VERSION_BUILD_STRING "untracked version"
-#endif
+constexpr long stoi(const char* str)
+{
+    long value = 0;
+    long i = 0;
+    for (i = 0; str[i] != 0; i++)
+    {
+        // return -1 if the character isn't a number
+        if (str[i] < '0' || str[i] > '9')
+        {
+            return NONE;
+        }
+
+        value = value * 10 + (str[i] - '0');
+    }
+    return i != 0 ? value : NONE;
+}
+
 #define VERSION_BUILD_DATE __DATE__
 #define VERSION_BUILD_TIME __TIME__
+
+#if !VERSION_TRACKED_BUILD
+#define VERSION_BUILD_STRING "untracked version " VERSION_BRANCH_NAME
+#define VERSION_BUILD_IDENTIFIER "untracked_" VERSION_BRANCH_NAME "__" VERSION_TARGET_CONFIGURATION
+#define VERSION_PROJECT_VERSION "NONE"
+#if defined(VERSION_BUILD_NUMBER_VERSION)
+#undef VERSION_BUILD_NUMBER_VERSION
+#endif
+#define VERSION_BUILD_NUMBER_VERSION NONE
+#if defined(VERSION_BUILD_NUMBER)
+#undef VERSION_BUILD_NUMBER
+#endif
+#define VERSION_BUILD_NUMBER NONE
+#else
+#define VERSION_PROJECT_VERSION STRINGIFY(VERSION_BUILD_NUMBER_VERSION) "." STRINGIFY(VERSION_BUILD_NUMBER)
+#define VERSION_BUILD_STRING VERSION_PROJECT_VERSION " " VERSION_BRANCH_NAME "-" VERSION_COMMIT_HASH
+#define VERSION_WINDOW_VERSION VERSION_BRANCH_NAME "_" VERSION_TARGET_CONFIGURATION "_" VERSION_PROJECT_VERSION
+#define VERSION_BUILD_IDENTIFIER VERSION_PROJECT_VERSION "_" VERSION_BRANCH_NAME "___" VERSION_TARGET_CONFIGURATION
+#endif
+
+#define VERSION_WINDOW_VERSION VERSION_BRANCH_NAME "_" VERSION_TARGET_CONFIGURATION "_" VERSION_PROJECT_VERSION
+
 #define VERSION_FULL_STRING VERSION_TARGET_APPLICATION " " VERSION_TARGET_VARIANT " " VERSION_TARGET_CONFIGURATION " " \
 		VERSION_TARGET_PLATFORM " " VERSION_BUILD_STRING "  " VERSION_BUILD_DATE " " VERSION_BUILD_TIME
-#define VERSION_TRACKED_STRING VERSION_PROJECT_VERSION "_" VERSION_BRANCH_NAME "___" VERSION_TARGET_CONFIGURATION
-#define VERSION_UNTRACKED_STRING "untracked_" VERSION_BRANCH_NAME "__" VERSION_TARGET_CONFIGURATION
-#if VERSION_TRACKED_BUILD
-#define VERSION_WINDOW_VERSION VERSION_BRANCH_NAME "_" VERSION_TARGET_CONFIGURATION "_" VERSION_PROJECT_VERSION
-#else
-#define VERSION_WINDOW_VERSION VERSION_BRANCH_NAME "_" VERSION_TARGET_CONFIGURATION "_untracked"
-#endif
 
 const bool k_tracked_build = VERSION_TRACKED_BUILD;
 
@@ -26,7 +53,7 @@ char const k_version_target_configuration[] = VERSION_TARGET_CONFIGURATION;
 char const k_version_target_platform[] = VERSION_TARGET_PLATFORM;
 
 long const k_version_build_number_version = VERSION_BUILD_NUMBER_VERSION;
-long const k_version_build_number = VERSION_BUILD_NUMBER;
+long const k_version_build_number = stoi(STRINGIFY(VERSION_BUILD_NUMBER));
 
 char const k_version_branch_name[] = VERSION_BRANCH_NAME;
 char const k_version_project_version[] = VERSION_PROJECT_VERSION;
@@ -35,9 +62,9 @@ char const k_version_build_string[] = VERSION_BUILD_STRING;
 char const k_version_build_name[] = VERSION_BUILD_NAME;
 char const k_version_full_string[] = VERSION_FULL_STRING;
 
-char const k_version_tracked_string[] = VERSION_TRACKED_STRING;
-char const k_version_untracked_string[] = VERSION_UNTRACKED_STRING;
+char const k_version_build_identifier[] = VERSION_BUILD_IDENTIFIER;
 
+// No idea what this is but it's 2 in ms23 & its crash reporter
 long const k_version_build_number_sequence_identifier = VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER;
 
 char const k_version_window_version[] = VERSION_WINDOW_VERSION;
@@ -81,7 +108,7 @@ const char* version_get_full_string()
 
 const char* version_get_build_identifier()
 {
-    return version_is_tracked_build() ? k_version_tracked_string : k_version_untracked_string;
+    return k_version_build_identifier;
 }
 
 long version_get_build_number_sequence_identifier()
@@ -111,5 +138,9 @@ const char* version_get_build_time()
 
 long64 version_get_build_number_identifier()
 {
+#if (VERSION_TRACKED_BUILD)
     return make_int64(version_get_build_number(), version_get_build_number_sequence_identifier());
+#else
+    return NONE;
+#endif
 }

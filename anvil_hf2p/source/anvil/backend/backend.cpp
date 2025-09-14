@@ -1,5 +1,5 @@
 #include "backend.h"
-#include <config\version.h>
+#include <cseries\version.h>
 #include <iostream>
 #include <networking\network_time.h>
 #include <anvil\config.h>

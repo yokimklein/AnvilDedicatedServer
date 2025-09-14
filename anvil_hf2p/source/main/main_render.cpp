@@ -2,7 +2,7 @@
 #include "game\game.h"
 #include "text\font_cache.h"
 #include "text\draw_string.h"
-#include "config\version.h"
+#include "cseries\version.h"
 #include "interface\interface_constants.h"
 #include "hf2p\hf2p.h"
 #include "cache\cache_files.h"
