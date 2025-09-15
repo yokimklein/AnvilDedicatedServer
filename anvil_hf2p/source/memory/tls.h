@@ -182,7 +182,7 @@ struct s_thread_local_storage
 	byte* __unknown1DC; // contrail
 	byte* __unknown1E0; // light_volume
 	byte* __unknown1E4; // beam
-	byte* __unknown1E8;
+	bool g_file_errors_suppressed;
 	byte* __unknown1EC; // actor firing-position owner
 	byte* __unknown1F0;
 	byte* __unknown1F4; // ragdolls

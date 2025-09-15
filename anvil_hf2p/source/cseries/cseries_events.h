@@ -36,15 +36,13 @@ enum
 	k_spamming_event_display_timeout = 3000,
 };
 
-// $TODO:
-enum e_event_log_flags
+enum e_event_context_query_destination_type
 {
-	_event_log_flags_bit0,
-	_event_log_flags_bit1,
-	_event_log_flags_bit2,
-	_event_log_flags_bit3,
+	_event_context_query_destination_console = 0,
+	_event_context_query_destination_log,
+	_event_context_query_destination_remote_log,
 
-	k_event_log_flags_count
+	k_event_context_query_destination_console_type_count
 };
 
 struct s_spamming_event
@@ -148,6 +146,7 @@ public:
 
 	bool query();
 	long generate(const char* format, ...);
+	long generate_va(const char* format, char* argument_list);
 
 protected:
 	e_event_level m_event_level;
@@ -155,6 +154,22 @@ protected:
 	ulong m_event_response_suppress_flags;
 };
 static_assert(sizeof(c_event) == 0xC);
+
+class c_event_context_string_builder
+{
+public:
+	c_event_context_string_builder(const char* description, ...);
+	const char* get_string() const;
+
+	char m_string[128];
+};
+
+class c_event_context
+{
+public:
+	c_event_context(const char* type, bool display_to_console, c_event_context_string_builder* event_context_string_builder);
+	~c_event_context();
+};
 
 struct s_event_context
 {
@@ -164,6 +179,13 @@ struct s_event_context
 };
 static_assert(sizeof(s_event_context) == 0xC1);
 
+extern bool g_events_debug_render_enable;
+extern const char* const k_error_snapshot_directory;
+extern const char* const k_reports_directory_root_name;
+extern const char* const k_reports_directory_name;
+extern const char* const k_primary_event_log_filename;
+extern const char* const k_primary_full_event_log_filename;
+
 inline thread_local bool g_recursion_lock = false;
 inline thread_local long g_event_context_stack_depth = 0;
 inline thread_local long g_event_context_stack_failure_depth = 0;
@@ -171,28 +193,24 @@ inline thread_local s_event_context g_event_context_stack[32]{};
 
 extern s_event_globals event_globals;
 extern bool g_events_initialized;
-extern bool g_events_initializing_cookie;
 extern bool events_force_no_log;
+extern bool g_events_initializing_cookie;
 extern c_read_write_lock g_event_read_write_lock;
 
 extern const char* const k_event_level_names[k_event_level_count + 1];
 extern const char* const k_event_level_severity_strings[k_event_level_count];
-extern const char* const k_primary_event_log_filename;
-extern const char* const k_primary_full_event_log_filename;
-
-extern bool g_events_debug_render_enable;
 
 struct s_file_reference;
-extern s_file_reference* __cdecl create_report_file_reference(s_file_reference* info, const char* filename, bool use_sub_directory);
+extern s_file_reference* create_report_file_reference(s_file_reference* reference, const char* name, bool place_in_report_directory);
 extern void events_clear();
 extern void events_debug_render();
 extern void events_dispose();
 extern const char* events_get();
 extern void events_initialize();
+extern void event_initialize_primary_logs();
 extern long event_interlocked_compare_exchange(long volatile* destination, long exchange, long comperand);
-extern void event_logs_flush();
 extern void events_suppress_output(bool suppress);
-extern long event_log_new(const char* log_file_name, c_flags<e_event_log_flags, ushort, k_event_log_flags_count> flags);
+extern void reset_event_message_buffer();
 
 //#define USE_CONSOLE_FOR_EVENTS
 
@@ -215,11 +233,27 @@ do { \
 		} \
 	} \
 } while (false)
+
+#define event_va(severity, ...) \
+do { \
+	static long volatile x_event_category_index = NONE; \
+	c_event local_event(severity, x_event_category_index, 0); \
+	if (local_event.query()) \
+	{ \
+		long event_category_index = local_event.generate_va(__VA_ARGS__); \
+		if (x_event_category_index == NONE) \
+		{ \
+			event_interlocked_compare_exchange(&x_event_category_index, event_category_index, NONE); \
+		} \
+	} \
+} while (false)
+
 #define event_no_console(severity, ...) do { /* $TODO: implement me */ } while (false)
 #endif
 
 #else
 #define event(severity, ...) do { } while (false)
+#define event_va(severity, ...) do { } while (false)
 #define event_no_console(severity, ...) do { } while (false)
 #endif
 

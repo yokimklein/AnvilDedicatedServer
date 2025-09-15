@@ -7,20 +7,20 @@
 #include <Windows.h>
 #include <stringapiset.h>
 
-int ustrcmp(wchar_t const* string1, wchar_t const* string2)
+long ustrcmp(wchar_t const* string1, wchar_t const* string2)
 {
     ASSERT(string1 != NULL);
     ASSERT(string2 != NULL);
     return wcscmp(string1, string2);
 }
 
-unsigned int ustrlen(wchar_t const* string)
+ulong ustrlen(wchar_t const* string)
 {
     ASSERT(string != NULL);
     return wcslen(string);
 }
 
-unsigned int ustrnlen(wchar_t const* string, long count)
+ulong ustrnlen(wchar_t const* string, ulong count)
 {
     ASSERT(string != NULL);
     return wcsnlen(string, count);
@@ -30,13 +30,26 @@ unsigned int ustrnlen(wchar_t const* string, long count)
 //int ustrcoll(wchar_t const *,wchar_t const *)
 //unsigned int ustrcspn(wchar_t const *,wchar_t const *)
 
-wchar_t* ustrnzcat(wchar_t* dest, wchar_t const* src, long count)
+wchar_t* ustrnzcat(wchar_t* dest, wchar_t const* src, ulong count)
 {
-    wcsncat_s(dest, count - 1, src, count);
+    ASSERT(dest != NULL);
+    ASSERT(src != NULL);
+
+    ulong dest_len = wcsnlen(dest, count);
+    ulong src_len = wcsnlen(src, count);
+    wcsncpy_s(&dest[dest_len], count - dest_len, src, (unsigned)-1);
+    if (src_len + dest_len >= count)
+    {
+        dest[count - 1] = 0;
+    }
+    else
+    {
+        memset(&dest[src_len + dest_len], 0, 2 * (count - src_len - dest_len));
+    }
     return dest;
 }
 
-int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count)
+long ustrncmp(wchar_t const* string1, wchar_t const* string2, ulong count)
 {
     ASSERT(string1 != NULL);
     ASSERT(string2 != NULL);
@@ -44,17 +57,19 @@ int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count)
     return wcsncmp(string1, string2, count);
 }
 
-int ustrncpy(wchar_t* dest, wchar_t const* src, long count)
+long ustrncpy(wchar_t* dest, wchar_t const* src, ulong count)
 {
     ASSERT(dest != NULL);
     ASSERT(src != NULL);
 
-    for (long i = 0; i <= count; i++)
+    for (ulong i = 0; i <= count; i++)
     {
         wchar_t chr = src[i];
         dest[i] = chr;
         if (chr == L'\0')
+        {
             break;
+        }
     }
     return 0;
     //return wcsncpy_s(dest, size, src, count);
@@ -62,7 +77,7 @@ int ustrncpy(wchar_t* dest, wchar_t const* src, long count)
     // the above implementation is what saber used in ms23
 }
 
-wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count)
+wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, ulong count)
 {
     ASSERT(dest != NULL);
     ASSERT(src != NULL);
@@ -90,7 +105,12 @@ void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, 
     dest[src_len] = 0;
 }
 
-int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count)
+void char_string_to_wchar_string(wchar_t* dest, const char* src)
+{
+    MultiByteToWideChar(0, 0, src, -1, dest, 0x100);
+}
+
+long ustrnicmp(wchar_t const* string1, wchar_t const* string2, ulong count)
 {
     return _wcsnicmp(string1, string2, count);
 }
@@ -119,12 +139,12 @@ int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count)
 //int uprintf(wchar_t const *,...)
 //int usnprintf(wchar_t *,long,wchar_t const *,...)
 
-int usnzprintf(wchar_t* string, long size, wchar_t const* format, ...)
+long usnzprintf(wchar_t* string, long size, wchar_t const* format, ...)
 {
     va_list list;
     va_start(list, format);
 
-    int result = uvsnzprintf(string, size, format, list);
+    long result = uvsnzprintf(string, size, format, list);
 
     va_end(list);
     return result;
@@ -133,7 +153,7 @@ int usnzprintf(wchar_t* string, long size, wchar_t const* format, ...)
 //int uvfprintf(struct _iobuf *,wchar_t const *,char *)
 //int uvprintf(wchar_t const *,char *)
 
-int uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_list list)
+long uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_list list)
 {
     ASSERT(string && format);
     ASSERT(size > 0);

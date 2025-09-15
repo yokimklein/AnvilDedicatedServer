@@ -23,7 +23,7 @@
 char const* k_session_type_strings[k_network_session_type_count] = {
     "none",
     "squad"
-    //"group" // No longer exists in ms29
+    "group"
 };
 
 char const* k_session_state_strings[k_network_session_state_count] = {
@@ -1059,10 +1059,11 @@ void c_network_session::process_pending_joins()
         for (long peer_index = 0; waiting_peers_mask != 0; peer_index++)
         {
             long peer_mask = FLAG(peer_index);
-            s_network_session_peer* peer = membership->get_peer(peer_index);
             // If the current peer iteration is in the waiting mask
             if (TEST_MASK(peer_mask, waiting_peers_mask))
             {
+                s_network_session_peer* peer = membership->get_peer(peer_index);
+
                 bool peer_states_match = true;
                 e_network_session_peer_state state = membership->get_peer_connection_state(peer_index);
 

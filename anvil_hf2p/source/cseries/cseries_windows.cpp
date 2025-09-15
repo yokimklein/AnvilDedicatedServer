@@ -30,3 +30,37 @@ void display_debug_string(const char* format, ...)
 
 	va_end(list);
 }
+
+void system_get_date_and_time(char* buffer, short buffer_size, bool short_date_and_time)
+{
+    SYSTEMTIME system_time;
+    GetLocalTime(&system_time);
+
+    if (short_date_and_time)
+    {
+        csnzprintf(
+            buffer,
+            buffer_size,
+            "%02d%02d%02d_%02d%02d%02d",
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wYear % 100,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond);
+    }
+    else
+    {
+        csnzprintf(
+            buffer,
+            buffer_size,
+            "%02d.%02d.%02d %02d:%02d:%02d.%03d",
+            system_time.wMonth,
+            system_time.wDay,
+            system_time.wYear % 100,
+            system_time.wHour,
+            system_time.wMinute,
+            system_time.wSecond,
+            system_time.wMilliseconds);
+    }
+}

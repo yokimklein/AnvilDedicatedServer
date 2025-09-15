@@ -82,15 +82,15 @@ const long SHORT_BITS = SIZEOF_BITS(short);
 const long LONG_BITS = SIZEOF_BITS(long);
 const long QWORD_BITS = SIZEOF_BITS(qword);
 
-#define FLAG(bit) (1ULL << (bit))
-//#define MASK(bit) ((1ULL << (bit)) - 1)
-#define MASK(bit) ( (FLAG((bit)-1)) | ((bit) <= 1 ? 0 : ( (FLAG((bit)-1) - 1) )) )
-#define TEST_BIT(flags, bit) (((flags) & (1ULL << (bit))) != 0)
+#define FLAG(bit) (1ULL << (unsigned)(bit))
+#define RANGE(bit) (FLAG((bit) - 1))
+#define MASK(bit) ((RANGE((bit))) | ((bit) <= 1 ? 0 : ((RANGE((bit)) - 1))))
+#define TEST_BIT(flags, bit) (((flags) & FLAG((bit))) != 0)
 #define TEST_RANGE(flags, start_bit, end_bit) (((flags) & (((1 << ((end_bit) - (start_bit) + 1)) - 1) << (start_bit))) != 0)
 #define TEST_FLAG(flags, bit) (flags.test((bit)))
 #define TEST_MASK(flags, mask) (((flags) & mask) != 0)
-#define ALIGN(value, bit) (((value) & ~((1 << (bit)) - 1)) + (1 << (bit)))
-#define ALIGN_UP(value, bit) ((((value) & ((1 << (bit)) - 1)) == 0) ? (value) : ((value) | ((1 << (bit)) - 1)) + 1)
+#define ALIGN(value, bit) (((value) & ~(FLAG((bit)) - 1)) + FLAG((bit)))
+#define ALIGN_UP(value, bit) ((((value) & (FLAG((bit)) - 1)) == 0) ? (value) : ((value) | ((1 << (bit)) - 1)) + 1)
 #define SET_BIT(flags, bit, enable) { if ((enable)) { (flags) |= FLAG((bit)); } else { (flags) &= ~FLAG((bit)); } }
 #define SET_MASK(flags, mask, enable) { if ((enable)) { (flags) |= (mask); } else { (flags) &= ~(mask); } }
 #define VALID_BITS(flags, max_bits) ((flags) & ~((1 << (max_bits)) - 1))
@@ -380,7 +380,9 @@ public:
 	void set_all(t_type const& value)
 	{
 		for (long i = 0; i < k_count; i++)
+		{
 			m_storage[i] = value;
+		}
 	}
 
 	long get_total_element_size() const
@@ -406,6 +408,200 @@ protected:
 	t_type m_storage[k_count];
 };
 
+template<typename t_type, long k_count>
+class c_static_sized_dynamic_array
+{
+public:
+	c_static_sized_dynamic_array() :
+		m_storage(),
+		m_allocated_count(0)
+	{
+	}
+
+	c_static_sized_dynamic_array<t_type, k_count>& reverse()
+	{
+		_reverse(begin(), end() - 1);
+
+		return *this;
+	}
+
+	t_type* begin()
+	{
+		return m_storage.begin();
+	}
+
+	t_type* end()
+	{
+		return begin() + m_allocated_count;
+	}
+
+	const t_type* begin() const
+	{
+		return m_storage.begin();
+	}
+
+	const t_type* end() const
+	{
+		return begin() + m_allocated_count;
+	}
+
+	void clear()
+	{
+		csmemset(m_storage, 0, sizeof(m_storage));
+		m_allocated_count = 0;
+	}
+
+	long count() const
+	{
+		return m_allocated_count;
+	}
+
+	bool full() const
+	{
+		return m_allocated_count == m_storage.get_count();
+	}
+
+	bool valid_index(long index) const
+	{
+		return VALID_INDEX(index, m_allocated_count);
+	}
+
+	long new_element_index()
+	{
+		long new_index = m_allocated_count;
+		ASSERT(m_storage.valid(new_index));
+
+		m_allocated_count++;
+
+		return new_index;
+	}
+
+	void resize(long new_size)
+	{
+		ASSERT(new_size >= 0 && new_size <= m_storage.get_count());
+		m_allocated_count = new_size;
+	}
+
+	t_type& operator[](long index)
+	{
+		ASSERT(valid_index(index));
+
+		return m_storage[index];
+	}
+
+protected:
+	c_static_array<t_type, k_count> m_storage;
+	long m_allocated_count;
+};
+
+template<typename t_type, long k_count>
+class c_static_stack
+{
+public:
+	c_static_stack() :
+		m_count(0),
+		m_elements()
+	{
+	}
+
+	t_type* get(long index)
+	{
+		ASSERT(valid(index));
+
+		return &m_elements[index];
+	}
+
+	t_type* get_top()
+	{
+		return get(top());
+	}
+
+	t_type* get_elements()
+	{
+		return m_elements;
+	}
+
+	long push()
+	{
+		ASSERT(!full());
+
+		return m_count++;
+	}
+
+	void pop()
+	{
+		ASSERT(!empty());
+
+		m_count--;
+	}
+
+	void push_back(const t_type& cache)
+	{
+		*get(push()) = cache;
+	}
+
+	void clear()
+	{
+		m_count = 0;
+	}
+
+	long count() const
+	{
+		return m_count;
+	}
+
+	void resize(long count)
+	{
+		m_count = count;
+
+		ASSERT(valid());
+	}
+
+	bool empty() const
+	{
+		ASSERT(valid());
+
+		return m_count == 0;
+	}
+
+	bool full() const
+	{
+		ASSERT(valid());
+
+		return m_count == k_count;
+	}
+
+	long top() const
+	{
+		ASSERT(!empty());
+
+		return m_count - 1;
+	}
+
+	bool valid(long index) const
+	{
+		ASSERT(valid());
+
+		return VALID_INDEX(index, m_count);
+	}
+
+	bool valid() const
+	{
+		return VALID_COUNT(m_count, k_count);
+	}
+
+	t_type& operator[](long index)
+	{
+		ASSERT(valid(index));
+
+		return m_elements[index];
+	}
+
+protected:
+	long m_count;
+	t_type m_elements[k_count];
+};
+
 template<typename t_type, long k_type_size = sizeof(t_type), long k_alignment_mask = __alignof(t_type) - 1>
 struct c_typed_opaque_data
 {
@@ -419,7 +615,7 @@ struct c_typed_opaque_data
 	//t_type* m_live_object;
 };
 
-template<typename t_type, typename t_storage_type, long k_count>
+template<typename t_type, typename t_storage_type, t_storage_type k_count>
 struct c_flags_no_init
 {
 public:
@@ -464,14 +660,14 @@ public:
 
 	bool valid() const
 	{
-		t_storage_type mask = ~MASK(k_maximum_count); // this should be the inversion of all valid bits
-		bool result = (m_flags & mask) == 0;
-		return result;
+		static_assert((ushort)~MASK(11) == 0xF800);
+		return !TEST_MASK(m_flags, ~MASK(k_count));
 	}
 
 	bool is_empty() const
 	{
-		return (m_flags & (MASK(SIZEOF_BITS(t_storage_type)) >> (SIZEOF_BITS(t_storage_type) - k_maximum_count))) == 0;
+		static_assert(MASK(11) == 0x7FF);
+		return !TEST_MASK(m_flags, MASK(k_count));
 	}
 
 	t_type count() const
@@ -509,25 +705,18 @@ public:
 		m_flags = new_flags;
 	}
 
-	c_flags_no_init<t_type, t_storage_type, k_count>* operator|=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
+	c_flags_no_init<t_type, t_storage_type, k_count>& operator|=(const c_flags_no_init<t_type, t_storage_type, k_count>& rsa)
 	{
 		m_flags |= rsa.m_flags;
 		ASSERT(valid());
-		return this;
+		return *this;
 	}
 
-	//c_flags_no_init<t_type, t_storage_type, k_count>* operator|=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
-	//{
-	//	m_flags |= rsa.m_flags;
-	//	ASSERT(valid());
-	//	return this;
-	//}
-
-	c_flags_no_init<t_type, t_storage_type, k_count>& operator&=(c_flags_no_init<t_type, t_storage_type, k_count> const& rsa)
+	c_flags_no_init<t_type, t_storage_type, k_count>& operator&=(const c_flags_no_init<t_type, t_storage_type, k_count>& rsa)
 	{
 		m_flags &= rsa.m_flags;
 		ASSERT(valid());
-		return this;
+		return *this;
 	}
 
 	c_flags_no_init<t_type, t_storage_type, k_count> operator~() const
@@ -570,7 +759,7 @@ protected:
 	t_storage_type m_flags;
 };
 
-template<typename t_type, typename t_storage_type, long k_count>
+template<typename t_type, typename t_storage_type, t_storage_type k_count>
 struct c_flags :
 	public c_flags_no_init<t_type, t_storage_type, k_count>
 {
@@ -914,7 +1103,9 @@ public:
 		//}
 
 		if (!m_string[index])
+		{
 			m_string[index + 1] = 0;
+		}
 
 		m_string[index] = character;
 	}
@@ -942,7 +1133,9 @@ public:
 	void append_line(char const* s = nullptr)
 	{
 		if (s != nullptr)
+		{
 			csstrnzcat(m_string, s, k_maximum_count);
+		}
 		csstrnzcat(m_string, "\r\n", k_maximum_count);
 	}
 
@@ -1139,6 +1332,45 @@ public:
 	c_string_builder(const char* format, ...);
 	~c_string_builder();
 };
+
+class c_debug_output_path
+{
+public:
+	c_debug_output_path() :
+		m_root(),
+		m_path()
+	{
+		m_root.clear();
+		m_path.clear();
+	}
+
+	const char* get_path(const char* file_path)
+	{
+		m_path.print("%s%s", c_debug_output_path::get_root(), file_path);
+
+		return m_path.get_string();
+	}
+
+	const char* get_root()
+	{
+		build_root_if_necessary();
+
+		return m_root.get_string();
+	}
+
+private:
+	void build_root_if_necessary()
+	{
+		if (m_root.is_empty())
+		{
+			m_root.set("");
+		}
+	}
+
+	c_static_string<260> m_root;
+	c_static_string<260> m_path;
+};
+static_assert(sizeof(c_debug_output_path) == 260 * 2);
 
 extern char* tag_to_string(tag _tag, char* buffer);
 

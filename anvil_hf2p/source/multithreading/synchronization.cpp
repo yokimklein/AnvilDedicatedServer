@@ -45,6 +45,21 @@ bool internal_critical_section_try_and_enter(long critical_section_id)
 	return result != FALSE;
 }
 
+void internal_event_reset(long event_id)
+{
+	ResetEvent(g_synch_globals.sync_event[event_id].handle);
+}
+
+void internal_event_set(long event_id)
+{
+	SetEvent(g_synch_globals.sync_event[event_id].handle);
+}
+
+bool internal_event_wait_timeout(long event_id, ulong timeout_in_milliseconds)
+{
+	return wait_for_single_object_internal(g_synch_globals.sync_event[event_id].handle, timeout_in_milliseconds);
+}
+
 long __fastcall internal_semaphore_release(long semaphore_id)
 {
     return INVOKE(0x94200, internal_semaphore_release, semaphore_id);
@@ -58,6 +73,12 @@ void __fastcall internal_semaphore_take(long semaphore_id)
 bool synchronization_objects_initialized()
 {
 	return g_synch_globals.initialized;
+}
+
+bool wait_for_single_object_internal(void* handle, ulong timeout_in_milliseconds)
+{
+	DWORD wait_result;
+	return !handle || (wait_result = WaitForSingleObjectEx(handle, timeout_in_milliseconds, FALSE)) == 0 || wait_result == WAIT_ABANDONED;
 }
 
 c_critical_section_scope::c_critical_section_scope(long critical_section_id)

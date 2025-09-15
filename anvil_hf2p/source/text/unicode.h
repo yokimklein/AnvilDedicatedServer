@@ -1,23 +1,19 @@
 #pragma once
-
+#include "cseries\cseries.h"
 #include <stdarg.h>
 
 // Taken from https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/text/unicode.hpp
 
-extern int ustrcmp(wchar_t const*, wchar_t const*);
-extern unsigned int ustrlen(wchar_t const *);
-extern unsigned int ustrnlen(wchar_t const*, long);
-
+extern long ustrcmp(wchar_t const* string1, wchar_t const* string2);
+extern ulong ustrlen(wchar_t const* string);
+extern ulong ustrnlen(wchar_t const* string, ulong count);
 //extern wchar_t const * ustrchr(wchar_t const *,wchar_t);
 //extern int ustrcoll(wchar_t const *,wchar_t const *);
 //extern unsigned int ustrcspn(wchar_t const *,wchar_t const *);
-
-extern wchar_t* ustrnzcat(wchar_t*, wchar_t const*, long);
-
-extern int ustrncmp(wchar_t const* string1, wchar_t const* string2, long count);
-extern int ustrncpy(wchar_t* dest, wchar_t const* src, long count);
-extern wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count);
-
+extern wchar_t* ustrnzcat(wchar_t* dest, wchar_t const* src, ulong count);
+extern long ustrncmp(wchar_t const* string1, wchar_t const* string2, ulong count);
+extern long ustrncpy(wchar_t* dest, wchar_t const* src, ulong count);
+extern wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, ulong count);
 //extern wchar_t const * ustrpbrk(wchar_t const *,wchar_t const *);
 //extern wchar_t const * ustrrchr(wchar_t const *,wchar_t);
 //extern unsigned int ustrspn(wchar_t const *,wchar_t const *);
@@ -27,7 +23,7 @@ extern wchar_t* ustrnzcpy(wchar_t* dest, wchar_t const* src, long count);
 //extern wchar_t * ustrnlwr(wchar_t *,long);
 //extern wchar_t * ustrnupr(wchar_t *,long);
 //extern int ustricmp(wchar_t const*, wchar_t const*);
-extern int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count);
+extern long ustrnicmp(wchar_t const* string1, wchar_t const* string2, ulong count);
 //extern int uisalpha(wchar_t);
 //extern int uisupper(wchar_t);
 //extern int uislower(wchar_t);
@@ -51,14 +47,10 @@ extern int ustrnicmp(wchar_t const* string1, wchar_t const* string2, long count)
 //extern int ufprintf(struct _iobuf *,wchar_t const *,...);
 //extern int uprintf(wchar_t const *,...);
 //extern int usnprintf(wchar_t *,long,wchar_t const *,...);
-
-extern int usnzprintf(wchar_t*, long, wchar_t const*, ...);
-
+extern long usnzprintf(wchar_t* string, long size, wchar_t const* format, ...);
 //extern int uvfprintf(struct _iobuf *,wchar_t const *,char *);
 //extern int uvprintf(wchar_t const *,char *);
-
-extern int uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_list list);
-
+extern long uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_list list);
 //extern struct _iobuf * ufdopen(int,wchar_t const *);
 //extern struct _iobuf * ufopen(wchar_t const *,wchar_t const *);
 //extern int ufclose(struct _iobuf *);
@@ -74,14 +66,12 @@ extern int uvsnzprintf(wchar_t* string, long size, wchar_t const* format, va_lis
 //extern int uatoi(wchar_t const *);
 
 extern void wchar_string_to_ascii_string(wchar_t const* src, char* dst, long source_length, long* destination_length);
-
 //extern struct utf32 ascii_string_to_utf32_characters(char const *,struct s_escape_table const *,char const * *,long *,struct utf32 *,long,long *);
 //extern struct utf32 wchar_string_to_utf32_characters(wchar_t const *,struct s_escape_table const *,wchar_t const * *,long *,struct utf32 *,long,long *);
 //extern void ascii_string_to_utf32_string(char const *,struct s_escape_table const *,struct utf32 *,long,long *);
 //extern void wchar_string_to_utf32_string(wchar_t const *,struct s_escape_table const *,struct utf32 *,long,long *);
-
-extern void __cdecl ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len);
-
+extern void ascii_string_to_wchar_string(char const* src, wchar_t* dest, long src_len, long* out_dest_len);
+extern void char_string_to_wchar_string(wchar_t* dest, const char* src);
 //extern long utf32_character_to_utf16_string(struct utf32,struct utf16 *,long);
 //extern struct utf32 utf16_string_to_utf32_character(struct utf16 const *,struct utf16 const * *);
 //extern bool utf32_in_list(struct utf32,struct s_utf32_range const *,long);
@@ -112,6 +102,7 @@ public:
 	c_static_wchar_string(wchar_t const* s) :
 		c_static_wchar_string()
 	{
+		clear();
 		set(s);
 	}
 
@@ -120,9 +111,17 @@ public:
 		ustrnzcpy(m_string, s, k_buffer_size);
 	}
 
+	void set_length(long length)
+	{
+		if (VALID_COUNT(length, k_buffer_size - 1))
+		{
+			m_string[length] = 0;
+		}
+	}
+
 	void clear()
 	{
-		*m_string = 0;
+		csmemset(m_string, 0, sizeof(m_string));
 	}
 
 	bool is_empty() const
@@ -135,10 +134,17 @@ public:
 		return m_string;
 	}
 
+	wchar_t* get_buffer()
+	{
+		return m_string;
+	}
+
 	char const* get_offset(long offset) const
 	{
 		if (VALID_INDEX(offset, length()))
+		{
 			return &m_string[offset];
+		}
 
 		return "";
 	}
@@ -156,7 +162,9 @@ public:
 	void append_line(wchar_t const* s = nullptr)
 	{
 		if (s != nullptr)
+		{
 			ustrnzcat(m_string, s, k_buffer_size);
+		}
 		ustrnzcat(m_string, L"\r\n", k_buffer_size);
 	}
 
@@ -230,7 +238,9 @@ public:
 	bool is_equal(wchar_t const* s, bool case_sensitive) const
 	{
 		if (case_sensitive)
+		{
 			return ustrncmp(m_string, s, k_buffer_size) == 0;
+		}
 
 		return ustrnicmp(m_string, s, k_buffer_size) == 0;
 	}
@@ -243,7 +253,9 @@ public:
 	wchar_t* copy_to(wchar_t* s, unsigned int size)const
 	{
 		if (size > k_buffer_size)
+		{
 			size = k_buffer_size;
+		}
 
 		return ustrnzcpy(s, m_string, size);
 	}

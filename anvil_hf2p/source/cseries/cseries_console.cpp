@@ -139,7 +139,10 @@ void c_console::write_line_va(const char* format, va_list list)
 	{
 		printf(str.get_string());
 	}
-	OutputDebugStringA(str.get_string());
+	else
+	{
+		OutputDebugStringA(str.get_string());
+	}
 }
 
 void c_console::write_va(const wchar_t* format, va_list list)
