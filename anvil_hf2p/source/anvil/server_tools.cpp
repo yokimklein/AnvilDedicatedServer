@@ -14,6 +14,7 @@
 #include <winuser.h>
 #include <cseries\cseries_events.h>
 #include "session_control.h"
+#include <game\game.h>
 
 bool anvil_assign_player_loadout(c_network_session* session, long player_index, s_player_configuration_from_host* configuration)
 {
@@ -162,6 +163,13 @@ void anvil_boot_peer(long peer_index)
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
     if (!session->get_session_membership()->is_peer_valid(peer_index))
     {
+        event(_event_warning, "networking:anvil:session: specified peer index [%d] was invalid", peer_index);
+        return;
+    }
+
+    if (!game_is_authoritative())
+    {
+        event(_event_warning, "networking:anvil:session: not authority - cannot boot peer!");
         return;
     }
 

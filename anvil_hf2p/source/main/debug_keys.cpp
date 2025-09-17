@@ -3,9 +3,85 @@
 #include "game\game.h"
 #include "main\console.h"
 #include "editor\editor_stubs.h"
+#include "main\main_time.h"
+#include "anvil\session_voting.h"
+#include "networking\session\network_session.h"
+#include "networking\logic\network_life_cycle.h"
+#include "networking\session\network_session_parameters.h"
+#include "anvil\session_control.h"
+
+// Modifier Table
+// 
+// Index, Shift,  Control, Alt
+// 0,     No,     No,      No
+// 1,     Yes,    No,      No
+// 2,     No,     Yes,     No
+// 3,     Ignore, No,      Yes
+// 4,     Yes,    Yes,     Yes
+// 5,     No,     Yes,     Yes
 
 debug_key global_debug_key_list[]
 {
+	{
+		.name = "display framerate",
+		.key_code = _key_f,
+		.modifier = 2,
+		.function = NULL,
+		.allow_out_of_game = false,
+		.allow_in_editor = false,
+		.toggle_variable = true,
+		.variable = base_address<bool*>(0x103E7C4)
+	},
+	{
+		.name = "anvil session begin vote",
+		.key_code = _key_page_down,
+		.modifier = 0,
+		.function = debug_key_begin_vote,
+		.allow_out_of_game = true,
+		.allow_in_editor = false,
+		.toggle_variable = false,
+		.variable = NULL
+	},
+	{
+		.name = "anvil session launch",
+		.key_code = _key_home,
+		.modifier = 0,
+		.function = debug_key_session_launch,
+		.allow_out_of_game = true,
+		.allow_in_editor = false,
+		.toggle_variable = false,
+		.variable = NULL
+	},
+	{
+		.name = "anvil session disconnect",
+		.key_code = _key_page_up,
+		.modifier = 0,
+		.function = debug_key_session_disconnect,
+		.allow_out_of_game = true,
+		.allow_in_editor = false,
+		.toggle_variable = false,
+		.variable = NULL
+	},
+	{
+		.name = "anvil session end",
+		.key_code = _key_end,
+		.modifier = 0,
+		.function = debug_key_session_end,
+		.allow_out_of_game = true,
+		.allow_in_editor = false,
+		.toggle_variable = false,
+		.variable = NULL
+	},
+	{
+		.name = "anvil session test mode",
+		.key_code = _key_insert,
+		.modifier = 0,
+		.function = debug_key_session_test_mode,
+		.allow_out_of_game = true,
+		.allow_in_editor = false,
+		.toggle_variable = false,
+		.variable = NULL
+	},
 	{
 		.name = NULL,
 		.key_code = _key_not_a_key,
@@ -146,4 +222,94 @@ void debug_keys_update()
 	//}
 
 	//random_seed_disallow_use();
+}
+
+void __cdecl debug_key_begin_vote(bool key_is_down)
+{
+	if (!key_is_down)
+	{
+		return;
+	}
+
+	console_printf("starting session vote...");
+	anvil_session_begin_vote();
+}
+
+void __cdecl debug_key_session_launch(bool key_is_down)
+{
+	if (!key_is_down)
+	{
+		return;
+	}
+
+	console_printf("launching session...");
+
+	c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+	if (!session)
+	{
+		return;
+	}
+
+	c_network_session_parameters* parameters = session->get_session_parameters();
+	if (!parameters)
+	{
+		return;
+	}
+
+	parameters->m_parameters.session_mode.set(_network_session_mode_setup);
+}
+
+void __cdecl debug_key_session_disconnect(bool key_is_down)
+{
+	if (!key_is_down)
+	{
+		return;
+	}
+
+	console_printf("disconnecting session...");
+
+	c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+	if (!session)
+	{
+		return;
+	}
+
+	session->disconnect();
+}
+
+void __cdecl debug_key_session_end(bool key_is_down)
+{
+	if (!key_is_down)
+	{
+		return;
+	}
+
+	console_printf("ending session game...");
+
+	c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+	if (!session)
+	{
+		return;
+	}
+
+	c_network_session_parameters* parameters = session->get_session_parameters();
+	if (!parameters)
+	{
+		return;
+	}
+
+	parameters->m_parameters.session_mode.set(_network_session_mode_end_game);
+}
+
+void __cdecl debug_key_session_test_mode(bool key_is_down)
+{
+	if (!key_is_down)
+	{
+		return;
+	}
+
+	console_printf("setting session test mode...");
+
+	anvil_session_set_gamemode(_game_engine_type_slayer, 0, 0);
+	anvil_session_set_map(_riverworld);
 }

@@ -32,28 +32,31 @@ void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long play
 // taken from ms30
 void hf2p_trigger_player_podium_taunt(long player_podium_index)
 {
-	// TODO: ms30 has some check at the top I don't understand which presumably is for triggering the taunt via keypress
 	s_player_podium* player_podium = &g_player_podiums[player_podium_index];
 	static bool key_held_delete = false;
-	if (player_is_local(player_podium->player_index) && player_podium->loop_count <= 0 && anvil_key_pressed(VK_DELETE, &key_held_delete)) // TODO: wtf are the byte checks in this statement in ms30?
+	// $TODO: ms30 has unknown checks at the top of the function which are presumably for triggering taunts via a keypress
+	// $TODO: replace input checks with input globals - will this still work whilst saber's UI is active?
+	if (!player_is_local(player_podium->player_index) && player_podium->loop_count <= 0 && anvil_key_pressed(VK_DELETE, &key_held_delete))
 	{
-		hf2p_player_podium_increment_loop_count(player_podium->player_index);
-		if (game_is_multiplayer())
-		{
-			if (!game_is_playback())
-			{
-				if (game_is_predicted())
-				{
-					s_simulation_player_taunt_request_data payload_data = {};
-					payload_data.player_index = (word)player_podium->player_index;
-					simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, nullptr, NONE, sizeof(s_simulation_player_taunt_request_data), &payload_data);
-				}
-				else
-				{
-					simulation_action_player_taunt_request((word)player_podium->player_index);
-				}
-			}
-		}
+		return;
+	}
+
+	hf2p_player_podium_increment_loop_count(player_podium->player_index);
+
+	if (!game_is_multiplayer() || game_is_playback())
+	{
+		return;
+	}
+
+	if (game_is_predicted())
+	{
+		s_simulation_player_taunt_request_data payload_data = {};
+		payload_data.player_index = DATUM_INDEX_TO_ABSOLUTE_INDEX(player_podium->player_index);
+		simulation_event_generate_for_remote_peers(_simulation_event_type_player_taunt_request, 0, NULL, NONE, sizeof(s_simulation_player_taunt_request_data), &payload_data);
+	}
+	else
+	{
+		simulation_action_player_taunt_request(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_podium->player_index));
 	}
 }
 

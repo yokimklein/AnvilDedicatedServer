@@ -26,12 +26,10 @@ enum e_game_simulation_type
 {
     _game_simulation_none = 0,
     _game_simulation_local,
-
-    _game_simulation_synchronous_client, // predicted
-    _game_simulation_synchronous_server, // authoritative
-
-    _game_simulation_distributed_client, // predicted
-    _game_simulation_distributed_server, // authoritative
+    _game_simulation_synchronous_client,
+    _game_simulation_synchronous_server,
+    _game_simulation_distributed_client,
+    _game_simulation_distributed_server,
 
     k_game_simulation_count
 };

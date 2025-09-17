@@ -7,5 +7,5 @@ class c_network_session;
 bool anvil_session_create();
 void anvil_session_update();
 bool anvil_session_set_map(e_map_id map_id);
-bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_index, long variant_index, ulong time_limit);
-void anvil_session_start_countdown(c_network_session* session);
+bool anvil_session_set_gamemode(e_game_engine_type engine_index, long variant_index, ulong time_limit);
+bool anvil_session_start_countdown();

@@ -35,3 +35,9 @@ void debug_keys_update();
 extern debug_key global_debug_key_list[];
 extern dword g_debug_button_down_flags;
 extern s_debug_button g_debug_button_list[];
+
+void __cdecl debug_key_begin_vote(bool key_is_down);
+void __cdecl debug_key_session_launch(bool key_is_down);
+void __cdecl debug_key_session_disconnect(bool key_is_down);
+void __cdecl debug_key_session_end(bool key_is_down);
+void __cdecl debug_key_session_test_mode(bool key_is_down);

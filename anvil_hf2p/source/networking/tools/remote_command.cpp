@@ -1,6 +1,8 @@
 #include "remote_command.h"
 #include "anvil\server_tools.h"
 #include "text\unicode.h"
+#include "anvil\session_control.h"
+#include "anvil\session_voting.h"
 #include <string>
 
 void command_tokenize(const char* input, tokens_t& tokens, long* token_count)
@@ -83,6 +85,59 @@ callback_result_t anvil_launch_scenario_callback(const void* userdata, long toke
 	map_name_wide.print(L"%hs", map_name);
 
 	anvil_launch_scenario(scenario_path, map_name_wide.get_string());
+
+	return result;
+}
+
+callback_result_t anvil_session_set_map_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	e_map_id map_id = (e_map_id)atol(tokens[1]->get_string());
+
+	anvil_session_set_map(map_id);
+
+	return result;
+}
+
+callback_result_t anvil_session_set_gamemode_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	e_game_engine_type engine_index = (e_game_engine_type)atol(tokens[1]->get_string());
+	long variant_index = (long)atol(tokens[1]->get_string());
+	ulong time_limit = (ulong)atol(tokens[1]->get_string());
+
+	anvil_session_set_gamemode(engine_index, variant_index, time_limit);
+
+	return result;
+}
+
+callback_result_t anvil_session_start_countdown_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	anvil_session_start_countdown();
+
+	return result;
+}
+
+callback_result_t anvil_boot_peer_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	long peer_index = (long)atol(tokens[1]->get_string());
+
+	anvil_boot_peer(peer_index);
+
+	return result;
+}
+
+callback_result_t anvil_session_begin_vote_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	anvil_session_begin_vote();
 
 	return result;
 }

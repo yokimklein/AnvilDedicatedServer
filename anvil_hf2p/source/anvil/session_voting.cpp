@@ -3,14 +3,16 @@
 #include "game\game_engine_variant.h"
 #include "game\player_configuration.h"
 #include "game\game_engine_simulation.h"
-#include <stdlib.h>
 #include "networking\session\network_session.h"
 #include "game\game.h"
 #include "anvil\session_control.h"
 #include "anvil\config.h"
 #include "anvil\backend\cache.h"
-#include <networking\network_time.h>
-#include <cseries\cseries_events.h>
+#include "networking\network_time.h"
+#include "cseries\cseries_events.h"
+#include "networking\logic\network_life_cycle.h"
+#include <stdlib.h>
+#include <main\console.h>
 
 e_player_vote_selection g_anvil_vote_selections[k_maximum_multiplayer_players]{};
 dword g_anvil_return_from_game_time = NONE;
@@ -27,9 +29,20 @@ long rand_range(long min, long max)
     long num = rand() % range + min;
     return num;
 };
-void anvil_session_start_voting(c_network_session* session)
+void anvil_session_begin_vote()
 {
-    event(_event_message, "networking:anvil:session:" __FUNCTION__ ": starting vote...");
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (!session)
+    {
+        event(_event_warning, "networking:anvil:session: cannot begin vote with invalid session!");
+        return;
+    }
+
+    if (!game_is_authoritative())
+    {
+        event(_event_warning, "networking:anvil:session: not authority - cannot begin vote!");
+        return;
+    }
 
     // $TODO: pull default playlist from multiplayer defaults if we don't have one or if the assigned playlist is invalid
     if (!g_backend_data_cache.m_playlists.contains(g_anvil_configuration["playlist_id"]))
@@ -38,6 +51,8 @@ void anvil_session_start_voting(c_network_session* session)
             g_anvil_configuration["playlist_id"].c_str());
         return;
     }
+
+    event(_event_status, "networking:anvil:session: vote starting...");
 
     s_cached_playlist& playlist = g_backend_data_cache.m_playlists[g_anvil_configuration["playlist_id"]];
     c_network_session_parameters* parameters = session->get_session_parameters();
@@ -142,7 +157,7 @@ void anvil_session_update_voting(c_network_session* session)
                 }
             }
 
-            anvil_session_set_gamemode(session, engine_index, variant_index, time_limit);
+            anvil_session_set_gamemode(engine_index, variant_index, time_limit);
             anvil_session_set_map(map_id);
 
             e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
@@ -214,7 +229,7 @@ void anvil_session_update_voting(c_network_session* session)
         s_cached_playlist& playlist = g_backend_data_cache.m_playlists[g_anvil_configuration["playlist_id"]];
         if (membership->get_player_count() >= playlist.minimum_players)
         {
-            anvil_session_start_voting(session);
+            anvil_session_begin_vote();
         }
     }
     // wait 30 seconds once loaded back to mainmenu after game with 'PREPARE FOR BATTLE' text, kick all players from session back to matchmake

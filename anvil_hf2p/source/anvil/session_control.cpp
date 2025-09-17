@@ -12,8 +12,8 @@
 #include "anvil\config.h"
 #include "anvil\server_tools.h"
 #include "anvil\session_voting.h"
-#include <networking\network_utilities.h>
-#include <cseries\cseries_events.h>
+#include "networking\network_utilities.h"
+#include "cseries\cseries_events.h"
 
 bool anvil_session_create()
 {
@@ -31,14 +31,7 @@ bool anvil_session_create()
 
 void anvil_session_update()
 {
-    // $TODO: move these debug keys somewhere better
     static bool logged_connection_info = true;
-    static bool key_held_home = false;
-    static bool key_held_end = false;
-    static bool key_held_insert = false;
-    static bool key_held_pgup = false;
-    static bool key_held_pgdown = false;
-    //static bool key_held_delete = false; // used for podium taunts
 
     if (!life_cycle_globals.initialized || !network_initialized())
     {
@@ -106,44 +99,10 @@ void anvil_session_update()
         }
     }
 
-    // run anvil session loop once the session is setup
-    if (!session->established())
-    {
-        return;
-    }
-
-    c_network_session_membership* membership = session->get_session_membership_for_update();
     c_network_session_parameters* parameters = session->get_session_parameters();
 
-    // debug server controls
-    if (anvil_key_pressed(VK_NEXT, &key_held_pgdown)) // begin voting
-    {
-        anvil_session_start_voting(session);
-    }
-    else if (anvil_key_pressed(VK_HOME, &key_held_home))
-    {
-        event(_event_message, "networking:" __FUNCTION__ ": launching session...");
-        parameters->m_parameters.session_mode.set(_network_session_mode_setup);
-    }
-    else if (anvil_key_pressed(VK_PRIOR, &key_held_pgup))
-    {
-        event(_event_message, "networking:" __FUNCTION__ ": disconnecting session...");
-        session->disconnect();
-    }
-    else if (anvil_key_pressed(VK_END, &key_held_end))
-    {
-        event(_event_message, "networking:" __FUNCTION__ ": ending game...");
-        parameters->m_parameters.session_mode.set(_network_session_mode_end_game);
-    }
-    else if (anvil_key_pressed(VK_INSERT, &key_held_insert))
-    {
-        event(_event_message, "networking:" __FUNCTION__ ": setting test mode...");
-        anvil_session_set_gamemode(session, _game_engine_type_slayer, 0, 0);
-        anvil_session_set_map(_riverworld);
-    }
-
-    // update voting
-    if (parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
+    // update voting once session is setup
+    if (session->established() && parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
     {
         anvil_session_update_voting(session);
     }
@@ -163,8 +122,27 @@ bool anvil_session_set_map(e_map_id map_id)
     return success;
 }
 
-bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type engine_index, long variant_index, ulong time_limit)
+bool anvil_session_set_gamemode(e_game_engine_type engine_index, long variant_index, ulong time_limit)
 {
+    if (!VALID_INDEX(engine_index, k_game_engine_type_count))
+    {
+        event(_event_warning, "networking:anvil:session: cannot set invalid engine index [%d]!", engine_index);
+        return false;
+    }
+
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (!session)
+    {
+        event(_event_warning, "networking:anvil:session: cannot set gamemode with invalid session!");
+        return false;
+    }
+
+    if (!game_is_authoritative())
+    {
+        event(_event_warning, "networking:anvil:session: not authority - cannot set gamemode!");
+        return false;
+    }
+
     c_game_variant game_variant = c_game_variant();
     if (!game_engine_tag_defined_variant_get_built_in_variant(engine_index, variant_index, &game_variant))
     {
@@ -187,11 +165,34 @@ bool anvil_session_set_gamemode(c_network_session* session, e_game_engine_type e
     return true;
 }
 
-void anvil_session_start_countdown(c_network_session* session)
+bool anvil_session_start_countdown()
 {
-    event(_event_message, "networking:anvil:session: starting session countdown...");
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (!session)
+    {
+        event(_event_warning, "networking:anvil:session: cannot start countdown with invalid session!");
+        return false;
+    }
+
+    if (!game_is_authoritative())
+    {
+        event(_event_warning, "networking:anvil:session: not authority - cannot start countdown!");
+        return false;
+    }
+
+    event(_event_status, "networking:anvil:session: starting session countdown...");
+
     c_network_session_parameters* parameters = session->get_session_parameters();
-    parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_none, 5);
+    if (!parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_none, 5))
+    {
+        return false;
+    }
+
     e_dedicated_server_session_state session_state = _dedicated_server_session_state_game_start_countdown;
-    parameters->m_parameters.dedicated_server_session_state.set(&session_state);
+    if (!parameters->m_parameters.dedicated_server_session_state.set(&session_state))
+    {
+        return false;
+    }
+
+    return true;
 }
