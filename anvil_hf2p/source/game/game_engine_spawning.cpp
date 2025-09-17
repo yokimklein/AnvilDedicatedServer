@@ -4,6 +4,7 @@
 #include <game\players.h>
 #include <memory\tls.h>
 #include <game\game.h>
+#include <game\game_engine.h>
 
 long game_engine_get_pre_round_ticks()
 {

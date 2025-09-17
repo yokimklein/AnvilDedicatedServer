@@ -1,6 +1,7 @@
 #include "simulation_queue_global_events.h"
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <game\game_engine.h>
 
 void __fastcall simulation_queue_player_event_apply_set_activation(datum_index player_index, bool player_active)
 {

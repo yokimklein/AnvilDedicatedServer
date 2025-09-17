@@ -23,3 +23,16 @@ long player_mapping_get_player_by_input_user(e_input_user_index input_user_index
 
 	return player_index;
 }
+
+long player_mapping_get_unit_by_output_user(long user_index)
+{
+	if (user_index == NONE)
+	{
+		return NONE;
+	}
+	else
+	{
+		TLS_DATA_GET_VALUE_REFERENCE(player_mapping_globals);
+		return player_mapping_globals->output_user_unit_mapping[user_index];
+	}
+}

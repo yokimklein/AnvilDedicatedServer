@@ -1,6 +1,7 @@
 #include "podium.h"
 #include <memory\tls.h>
 #include <game\game.h>
+#include <game\game_time.h>
 #include <simulation\game_interface\simulation_game_events.h>
 #include <anvil\server_tools.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>

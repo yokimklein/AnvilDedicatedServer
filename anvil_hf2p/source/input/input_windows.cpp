@@ -73,3 +73,18 @@ byte input_key_frames_down(e_input_key_code key_code, e_input_type input_type)
 	
 	return input_globals.keys[key_code].frames;
 }
+
+mouse_state* input_get_mouse_state(e_input_type input_type)
+{
+	if (!input_globals.raw_input_mouse_state_update)
+	{
+		return NULL;
+	}
+
+	if (input_globals.input_type_suppressed[input_type] || input_globals.input_suppressed)
+	{
+		return &input_globals.suppressed_raw_mouse_state;
+	}
+
+	return &input_globals.raw_mouse_state;
+}

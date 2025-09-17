@@ -56,3 +56,5 @@ struct c_null_camera : public c_camera
 	byte unused[0x3C];
 };
 static_assert(sizeof(c_null_camera) == 0x4C);
+
+extern const char* const global_camera_mode_names[k_number_of_camera_modes];

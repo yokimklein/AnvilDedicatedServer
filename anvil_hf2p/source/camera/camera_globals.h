@@ -31,3 +31,6 @@ enum e_global_periodic_function
 
 	k_global_periodic_function_count
 };
+
+extern real& g_director_camera_speed_scale;
+extern bool g_editor_director_mouse_wheel_speed_enabled;

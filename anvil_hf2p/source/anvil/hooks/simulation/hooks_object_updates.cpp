@@ -15,6 +15,7 @@
 #include <units\units.h>
 #include <motor\action_system.h>
 #include <game\game_results.h>
+#include <game\game_time.h>
 
 void __cdecl object_update_hook(s_hook_registers registers)
 {

@@ -19,6 +19,7 @@
 #include <simulation\game_interface\simulation_game_engine_globals.h>
 #include <scenario\scenario.h>
 #include <game\multiplayer_definitions.h>
+#include <game\player_mapping.h>
 
 REFERENCE_DECLARE_ARRAY(0xE9C240, char const*, k_game_engine_end_conditions, k_game_engine_game_end_condition_count);
 REFERENCE_DECLARE_ARRAY(0xF01EC0, c_game_engine*, game_engines, k_game_engine_type_count);
@@ -90,9 +91,13 @@ void __fastcall game_engine_player_added(datum_index player_index)
 		for (long i = NONE; ; game_engine_globals->fade_to_black_cache_latch |= FLAG(i))
 		{
 			if (player_index != NONE)
+			{
 				i = player_mapping_get_next_output_user(DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), i);
+			}
 			if (i == NONE)
+			{
 				break;
+			}
 			game_engine_globals->fade_to_black_amount[i] = 1.0;
 		}
 

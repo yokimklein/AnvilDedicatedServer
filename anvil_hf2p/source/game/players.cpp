@@ -4,11 +4,13 @@
 #include <game\game_engine_util.h>
 #include <memory\tls.h>
 #include <simulation\game_interface\simulation_game_units.h>
-#include <stdio.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
 #include <scenario\scenario.h>
 #include <game\multiplayer_definitions.h>
 #include <anvil\backend\cache.h>
+#include <game\game_time.h>
+#include <game\player_mapping.h>
+#include <stdio.h>
 
 bool player_identifier_is_valid(s_player_identifier const* identifier)
 {

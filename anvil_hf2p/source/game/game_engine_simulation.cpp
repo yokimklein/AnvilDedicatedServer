@@ -3,6 +3,7 @@
 #include <game\game_engine_util.h>
 #include <game\game_engine_event_definitions.h>
 #include <game\game_engine_events.h>
+#include <game\game_engine.h>
 
 // do these belong in game_globals.cpp?
 void game_engine_globals_set_statborg_gamestate_index(datum_index index)

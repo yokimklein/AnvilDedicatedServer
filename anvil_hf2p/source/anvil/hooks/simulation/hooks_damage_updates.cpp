@@ -7,6 +7,7 @@
 #include <simulation\game_interface\simulation_game_damage.h>
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <units\units.h>
+#include <game\game_time.h>
 
 void __cdecl object_damage_update_hook1(s_hook_registers registers)
 {

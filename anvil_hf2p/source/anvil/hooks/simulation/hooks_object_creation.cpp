@@ -6,6 +6,7 @@
 #include <objects\crates.h>
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_action.h>
+#include <game\game_engine_candy_monitor.h>
 
 void __cdecl event_generate_part_hook(s_hook_registers registers)
 {

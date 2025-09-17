@@ -1,17 +1,12 @@
 #pragma once
 #include <cseries\cseries.h>
-#include <game\players.h>
 #include <memory\data.h>
-#include <game\game_globals.h>
-#include <game\game_engine.h>
-#include <simulation\simulation_gamestate_entities.h>
-#include <game\player_mapping.h>
-#include <game\game_time.h>
-#include <game\survival_mode.h>
-#include <ai\actors.h>
-#include <camera\director_globals.h>
-#include <cache\restricted_memory_regions.h>
 #include <multithreading\threads.h>
+#include <cache\restricted_memory_regions.h>
+#include <ai\actors.h>
+#include <game\players.h>
+#include <objects\objects.h>
+#include <simulation\simulation_gamestate_entities.h>
 
 template<long index, void(__cdecl* tls_pre_overwrite_fixup_callback)(void*) = nullptr, void(__cdecl* tls_post_copy_fixup_callback)(void*) = nullptr, void(__cdecl* tls_update_callback)(void*) = nullptr>
 struct t_restricted_allocation_manager : public c_allocation_base
@@ -58,6 +53,14 @@ protected:
 };
 static_assert(sizeof(t_restricted_allocation_manager<NONE>) == 0xC);
 
+struct s_director_globals;
+struct s_game_engine_globals;
+struct game_globals_storage;
+struct players_global_data;
+struct game_time_globals_definition;
+struct s_player_mapping_globals;
+struct s_survival_mode_globals;
+struct simulation_gamestate_entity_datum;
 struct s_thread_local_storage
 {
 	byte* __unknown0;
@@ -202,7 +205,7 @@ struct s_thread_local_storage
 	byte* __unknown22C; // list object reference
 	byte* __unknown230;
 	byte* __unknown234;
-	byte* __unknown238;
+	bool* director_camera_scripted;
 	byte* g_object_message_queue;
 	byte* __unknown240;
 	byte* __unknown244;

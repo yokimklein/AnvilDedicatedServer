@@ -11,6 +11,8 @@
 #include "text\font_fallback.h"
 #include "text\font_loading.h"
 #include "text\draw_string.h"
+#include "camera\director.h"
+#include "camera\debug_director.h"
 
 void __cdecl main_game_reset_map_hook(s_hook_registers registers)
 {
@@ -448,6 +450,19 @@ void __fastcall c_draw_string__set_font_hook(c_draw_string* thisptr, void* unuse
 	thisptr->set_font(font);
 }
 
+void __cdecl director_update_hook(s_hook_registers registers)
+{
+	long user_index = (long)registers.edi;
+
+	survival_mode_update_flying_camera(user_index);
+	control_toggling_of_debug_directors(user_index);
+}
+
+void __fastcall c_debug_director__update_hook(c_debug_director* thisptr, void* unused, real dt)
+{
+	thisptr->update_(dt);
+}
+
 void anvil_hooks_debug_apply()
 {
 	// events
@@ -539,4 +554,9 @@ void anvil_hooks_debug_apply()
 
 	// events_dispose in inlined cseries_dispose @ shell_dispose
 	hook::insert(0x123A, 0x123F, shell_dispose_hook, _hook_execute_replaced_last);
+
+	// director
+	hook::insert(0xE280D, 0xE2813, director_update_hook, _hook_execute_replaced_last);
+	//patch::bytes(0x1BE2AE, { _key_backspace }); // rebind camera mode swap from f12 to backspace to avoid breakpoint keybind
+	patch::function(0xD81A24, c_debug_director__update_hook);
 }

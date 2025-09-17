@@ -166,7 +166,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)external_libraries\lookup3\;$(PROJECTDIR)external_libraries\nmd\;$(PROJECTDIR)external_libraries\patch\;$(PROJECTDIR)external_libraries\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <SupportJustMyCode>false</SupportJustMyCode>
+      <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
@@ -200,7 +200,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(PROJECTDIR)source\;$(PROJECTDIR)external_libraries\lookup3\;$(PROJECTDIR)external_libraries\nmd\;$(PROJECTDIR)external_libraries\patch\;$(PROJECTDIR)external_libraries\boost-1.88.0\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <SupportJustMyCode>false</SupportJustMyCode>
+      <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ForcedIncludeFiles>$(PROJECTDIR)source\_force_includes\_force_included_types.h;</ForcedIncludeFiles>
     </ClCompile>
@@ -424,8 +424,8 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClInclude Include="source\camera\camera_globals.h" />
     <ClInclude Include="source\camera\debug_director.h" />
     <ClInclude Include="source\camera\director.h" />
-    <ClInclude Include="source\camera\director_globals.h" />
     <ClInclude Include="source\camera\editor_director.h" />
+    <ClInclude Include="source\camera\flying_camera.h" />
     <ClInclude Include="source\camera\game_director.h" />
     <ClInclude Include="source\camera\observer.h" />
     <ClInclude Include="source\camera\observer_director.h" />
@@ -764,6 +764,10 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClCompile Include="source\cache\cache_file_tag_resource_runtime.cpp" />
     <ClCompile Include="source\cache\restricted_memory.cpp" />
     <ClCompile Include="source\cache\restricted_memory_regions.cpp" />
+    <ClCompile Include="source\camera\camera.cpp" />
+    <ClCompile Include="source\camera\camera_globals.cpp" />
+    <ClCompile Include="source\camera\debug_director.cpp" />
+    <ClCompile Include="source\camera\director.cpp" />
     <ClCompile Include="source\cseries\cseries_event_logs.cpp" />
     <ClCompile Include="source\cseries\version.cpp" />
     <ClCompile Include="source\cseries\cseries_console.cpp" />

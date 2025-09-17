@@ -4,6 +4,7 @@
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_vehicles.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <game\game_time.h>
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
 {

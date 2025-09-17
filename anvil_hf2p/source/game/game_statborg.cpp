@@ -5,6 +5,7 @@
 #include <simulation\game_interface\simulation_game_action.h>
 #include <game\game_results.h>
 #include <simulation\game_interface\simulation_game_statborg.h>
+#include <game\game_engine.h>
 
 c_game_statborg* game_engine_get_statborg()
 {

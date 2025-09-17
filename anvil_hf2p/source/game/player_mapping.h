@@ -48,3 +48,4 @@ struct s_player_mapping_globals
 
 long __fastcall player_mapping_get_next_output_user(short absolute_player_index, long user_index); // e_output_user_index
 long player_mapping_get_player_by_input_user(e_input_user_index input_user_index);
+long player_mapping_get_unit_by_output_user(long user_index);
