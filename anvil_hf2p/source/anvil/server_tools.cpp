@@ -109,30 +109,6 @@ void anvil_log_game_start_status(s_network_session_parameter_game_start_status* 
     }
 }
 
-bool anvil_key_pressed(long vkey, bool* key_held)
-{
-    bool key_pressed = false;
-
-    if ((GetKeyState(vkey) & 0x8000))
-    {
-        if (*key_held == false)
-        {
-            key_pressed = true;
-        }
-        else
-        {
-            key_pressed = false;
-        }
-        *key_held = true;
-    }
-    else
-    {
-        *key_held = false;
-        key_pressed = false;
-    }
-    return key_pressed;
-}
-
 // map_name is optional to retrieve a map id from a .map
 void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
 {

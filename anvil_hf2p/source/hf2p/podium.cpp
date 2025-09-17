@@ -5,6 +5,7 @@
 #include <simulation\game_interface\simulation_game_events.h>
 #include <anvil\server_tools.h>
 #include <simulation\game_interface\simulation_game_engine_player.h>
+#include <input\input_windows.h>
 #include <winuser.rh>
 
 REFERENCE_DECLARE(0x4A2973C, long, g_player_podium_count);
@@ -36,8 +37,7 @@ void hf2p_trigger_player_podium_taunt(long player_podium_index)
 	s_player_podium* player_podium = &g_player_podiums[player_podium_index];
 	static bool key_held_delete = false;
 	// $TODO: ms30 has unknown checks at the top of the function which are presumably for triggering taunts via a keypress
-	// $TODO: replace input checks with input globals - will this still work whilst saber's UI is active?
-	if (!player_is_local(player_podium->player_index) && player_podium->loop_count <= 0 && anvil_key_pressed(VK_DELETE, &key_held_delete))
+	if (!player_is_local(player_podium->player_index) || player_podium->loop_count > 0 || !(input_key_frames_down(_key_delete, _input_type_ui) == 1))
 	{
 		return;
 	}
