@@ -14,7 +14,7 @@ bool g_terminal_render_enable = true;
 real const k_output_total_seconds = 4.0f + 1.0f;
 short const k_tab_stops[] = { 160, 320, 470, 620, 770 };
 
-void __cdecl terminal_printf(const real_argb_color* color, const char* format, ...)
+void terminal_printf(const real_argb_color* color, const char* format, ...)
 {
 	ASSERT(format != NULL);
 
@@ -44,7 +44,7 @@ void __cdecl terminal_printf(const real_argb_color* color, const char* format, .
 	}
 }
 
-void __cdecl terminal_initialize()
+void terminal_initialize()
 {
 	if (terminal_globals.initialized)
 	{
@@ -61,7 +61,7 @@ void __cdecl terminal_initialize()
 	terminal_globals.initialized = true;
 }
 
-void __cdecl terminal_dispose()
+void terminal_dispose()
 {
 	if (!terminal_globals.initialized)
 	{
@@ -82,7 +82,7 @@ void __cdecl terminal_dispose()
 	terminal_globals.initialized = false;
 }
 
-void __cdecl terminal_clear()
+void terminal_clear()
 {
 	if (!terminal_globals.initialized)
 	{
@@ -116,14 +116,14 @@ void terminal_handle_key(s_key_state* key)
 	terminal_globals.insertion_point_toggle_timer = 0.0f;
 }
 
-bool __cdecl terminal_update_input(real shell_seconds_elapsed)
+bool terminal_update_input(real shell_seconds_elapsed)
 {
 	if (terminal_gets_active())
 	{
 		terminal_globals.input_state->key_count = 0;
 
 		s_key_state key{};
-		while (input_get_key(&key, _input_type_game))
+		while (input_get_key(&key, _input_type_special))
 		{
 			terminal_handle_key(&key);
 		}
@@ -163,7 +163,7 @@ bool __cdecl terminal_update_input(real shell_seconds_elapsed)
 	return false;
 }
 
-void __cdecl terminal_update_output(real shell_seconds_elapsed)
+void terminal_update_output(real shell_seconds_elapsed)
 {
 	if (!terminal_globals.suppress_output && shell_seconds_elapsed < 0.5f)
 	{
@@ -185,7 +185,7 @@ void __cdecl terminal_update_output(real shell_seconds_elapsed)
 	}
 }
 
-bool __cdecl terminal_update(real shell_seconds_elapsed)
+bool terminal_update(real shell_seconds_elapsed)
 {
 	bool result = false;
 	if (terminal_globals.initialized)
@@ -202,7 +202,7 @@ bool __cdecl terminal_update(real shell_seconds_elapsed)
 	return result;
 }
 
-void __cdecl terminal_remove_line(long line_index)
+void terminal_remove_line(long line_index)
 {
 	c_critical_section_scope critical_section_scope(k_crit_section_terminal);
 
@@ -231,7 +231,7 @@ void __cdecl terminal_remove_line(long line_index)
 	datum_delete(terminal_globals.output_lines, line_index);
 }
 
-long __cdecl terminal_new_line(const char* buffer, const real_argb_color* color, bool tabstop)
+long terminal_new_line(const char* buffer, const real_argb_color* color, bool tabstop)
 {
 	c_font_cache_mt_safe font_cache;
 	c_critical_section_scope critical_section_scope(k_crit_section_terminal);
@@ -268,22 +268,22 @@ long __cdecl terminal_new_line(const char* buffer, const real_argb_color* color,
 	return new_line_index;
 }
 
-void __cdecl terminal_output_to_console(bool console_output)
+void terminal_output_to_console(bool console_output)
 {
 	terminal_globals.console_output = console_output;
 }
 
-void __cdecl terminal_suppress_output(bool suppress_output)
+void terminal_suppress_output(bool suppress_output)
 {
 	terminal_globals.suppress_output = suppress_output;
 }
 
-bool __cdecl terminal_gets_active()
+bool terminal_gets_active()
 {
 	return terminal_globals.input_state != NULL;
 }
 
-bool __cdecl terminal_gets_begin(terminal_gets_state* state)
+bool terminal_gets_begin(terminal_gets_state* state)
 {
 	c_critical_section_scope critical_section_scope(k_crit_section_terminal);
 
@@ -304,7 +304,7 @@ bool __cdecl terminal_gets_begin(terminal_gets_state* state)
 	return false;
 }
 
-void __cdecl terminal_gets_end(terminal_gets_state* state)
+void terminal_gets_end(terminal_gets_state* state)
 {
 	c_critical_section_scope critical_section_scope(k_crit_section_terminal);
 
@@ -314,7 +314,7 @@ void __cdecl terminal_gets_end(terminal_gets_state* state)
 	}
 }
 
-void __cdecl terminal_draw(rectangle2d* screen_bounds, rectangle2d* frame_bounds)
+void terminal_draw(rectangle2d* screen_bounds, rectangle2d* frame_bounds)
 {
 	if (terminal_globals.initialized)
 	{

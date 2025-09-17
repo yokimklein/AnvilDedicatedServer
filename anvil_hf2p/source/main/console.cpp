@@ -437,11 +437,11 @@ void __cdecl console_update(real shell_seconds_elapsed)
 		else if (!debugging_system_has_focus())
 		{
 			s_key_state key{};
-			if (input_peek_key(&key, _input_type_game))
+			if (input_peek_key(&key, _input_type_special))
 			{
 				if (!key.repeating && !key.modifier_flags && key.key_type == _key_type_down && (key.ascii_code == _key_tilde || key.ascii_code == _key_f1))
 				{
-					input_get_key(&key, _input_type_game);
+					input_get_key(&key, _input_type_special);
 					console_open(false);
 				}
 			}

@@ -930,7 +930,7 @@ bool events_initialize_if_possible()
 		event_globals.disable_event_suppression = false;
 		event_globals.enable_spam_suppression = shell_application_type() != _shell_application_tool;
 		event_globals.dump_to_stderr = shell_application_type() == _shell_application_tool;
-		event_globals.current_display_level = _event_message;
+		event_globals.current_display_level = _event_warning;
 		event_globals.current_log_level = _event_critical;
 		event_globals.current_remote_log_level = _event_critical;
 		event_globals.current_minimum_level = k_event_level_none;
