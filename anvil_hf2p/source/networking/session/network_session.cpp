@@ -20,13 +20,13 @@
 #include <input\input_windows.h>
 #include <cseries\cseries_events.h>
 
-char const* k_session_type_strings[k_network_session_type_count] = {
+const char* k_session_type_strings[k_network_session_type_count] = {
     "none",
-    "squad"
+    "squad",
     "group"
 };
 
-char const* k_session_state_strings[k_network_session_state_count] = {
+const char* k_session_state_strings[k_network_session_state_count] = {
     "none",
     "peer-creating",
     "peer-joining",
@@ -38,6 +38,13 @@ char const* k_session_state_strings[k_network_session_state_count] = {
     // "host-handoff",
     // "host-reestablish",
     // "election"
+};
+
+const char* g_session_disconnection_policy_strings[k_network_session_disconnection_policy_count]
+{
+    "waiting-for-establishment",
+    "allowed",
+    "reestablish-as-host",
 };
 
 bool c_network_session::acknowledge_join_request(transport_address const* address, e_network_join_refuse_reason reason)
@@ -702,7 +709,7 @@ void c_network_session::idle()
     {
         m_session_membership.idle();
         ASSERT(m_time_exists);
-        if (established() && m_session_membership.all_peers_established() && m_disconnection_policy == _network_session_disconnection_waiting_for_establishment)
+        if (established() && m_session_membership.all_peers_established() && m_disconnection_policy == _network_session_disconnection_allow_waiting_for_establishment)
         {
             m_disconnection_policy = _network_session_disconnection_allowed;
         }
@@ -1795,7 +1802,7 @@ bool c_network_session::handle_leave_internal(long peer_index)
     }
     if (membership_is_locked() || !m_session_membership.get_current_membership()->peer_valid_mask.test(peer_index))
     {
-        event(_event_warning, "MP/NET/SESSION,CTRL: c_network_session::handle_leave_internal: Warning. [%s] leave-request from peer [%s] denied, session membership is locked (state %s)",
+        event(_event_warning, "networking:session:membership: Warning. [%s] leave-request from peer [%s] denied, session membership is locked (state %s)",
             managed_session_get_id_string(m_managed_session_index),
             get_peer_description(peer_index),
             get_state_string());
@@ -1803,7 +1810,7 @@ bool c_network_session::handle_leave_internal(long peer_index)
     }
     else
     {
-        event(_event_message, "MP/NET/SESSION,CTRL: c_network_session::handle_leave_internal: %s leave-request accepted for peer [%s]",
+        event(_event_message, "networking:session:membership: %s leave-request accepted for peer [%s]",
             managed_session_get_id_string(m_managed_session_index),
             get_peer_description(peer_index));
         ASSERT(observer_channel_index != NONE);
@@ -1811,6 +1818,7 @@ bool c_network_session::handle_leave_internal(long peer_index)
         csmemset(&message, 0, sizeof(message));
         managed_session_get_id(m_managed_session_index, &message.session_id);
         m_observer->observer_channel_send_message(observer_owner(), observer_channel_index, true, _network_message_leave_acknowledge, sizeof(message), &message);
+        m_session_membership.remove_peer(peer_index);
         return true;
     }
 }
@@ -1824,4 +1832,39 @@ e_network_session_class c_network_session::session_class() const
 {
     ASSERT(m_session_class >= 0 && m_session_class < k_network_session_class_count);
     return m_session_class;
+}
+
+void c_network_session::force_disconnect()
+{
+    if (disconnected())
+    {
+        return;
+    }
+
+    event(_event_message, "networking:session: [%s] %s session forcing disconnection (state %s)",
+        get_id_string(),
+        get_type_string(m_session_type),
+        get_state_string());
+
+    set_disconnection_policy(_network_session_disconnection_allowed);
+    disconnect();
+}
+
+void c_network_session::set_disconnection_policy(e_network_session_disconnection_policy disconnection_policy)
+{
+    ASSERT(disconnection_policy != _network_session_disconnection_allow_waiting_for_establishment);
+    m_disconnection_policy = disconnection_policy;
+    event(_event_message, "networking:session: [%s] disconnection policy now %s", get_id_string(), get_disconnection_policy_string());
+}
+
+const char* c_network_session::get_disconnection_policy_string()
+{
+    ASSERT(VALID_INDEX(m_disconnection_policy, k_network_session_disconnection_policy_count));
+    return g_session_disconnection_policy_strings[m_disconnection_policy];
+}
+
+void c_network_session::leave_session_and_disconnect()
+{
+    set_disconnection_policy(_network_session_disconnection_allowed);
+    initiate_leave_protocol(false);
 }

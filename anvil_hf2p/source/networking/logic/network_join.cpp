@@ -245,3 +245,19 @@ void network_join_remove_join_from_queue(qword join_nonce)
 		// do not increment counter after removal
 	}
 }
+
+void network_join_squad_join_abort()
+{
+	c_network_session* session = network_life_cycle_get_target_session_for_join();
+	if (!session)
+	{
+		return;
+	}
+
+	if (session->disconnected())
+	{
+		return;
+	}
+
+	session->force_disconnect();
+}

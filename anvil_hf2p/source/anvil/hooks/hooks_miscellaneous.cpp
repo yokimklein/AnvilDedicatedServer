@@ -18,6 +18,7 @@
 #include <anvil\backend\uri_map.h>
 #include <game\game_engine_display.h>
 #include <cseries\cseries_events.h>
+#include <interface\user_interface_session.h>
 
 void __cdecl hf2p_podium_tick_hook(s_hook_registers registers)
 {
@@ -138,6 +139,16 @@ void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* lo
 }
 #pragma runtime_checks("", restore)
 
+void __cdecl sub_319CE0_hook(s_hook_registers registers)
+{
+    user_interface_join_squad_abort();
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (session && !session->disconnected())
+    {
+        session->leave_session_and_disconnect();
+    }
+}
+
 void anvil_hooks_miscellaneous_apply()
 {
     // hook exceptions_update to catch esoteric crashes
@@ -211,4 +222,7 @@ void anvil_hooks_miscellaneous_apply()
 
     // load string ids
     hook::insert(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
+
+    // leave sessions gracefully instead of force disconnecting
+    hook::insert(0x319D38, 0x319D3D, sub_319CE0_hook, _hook_replace);
 }

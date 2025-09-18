@@ -45,7 +45,7 @@ enum e_session_game_mode
 
 enum e_network_session_disconnection_policy
 {
-	_network_session_disconnection_waiting_for_establishment = 0,
+	_network_session_disconnection_allow_waiting_for_establishment = 0,
 	_network_session_disconnection_allowed,
 	_network_session_disconnection_reestablish_as_host,
 
@@ -150,6 +150,10 @@ public:
 	bool handle_leave_internal(long peer_index);
 	bool peer_joining() const;
 	e_network_session_class session_class() const;
+	void force_disconnect();
+	void set_disconnection_policy(e_network_session_disconnection_policy disconnection_policy);
+	const char* get_disconnection_policy_string();
+	void leave_session_and_disconnect();
 
 	// non source original getter
 	const c_network_message_gateway* message_gateway() const { return m_message_gateway; };

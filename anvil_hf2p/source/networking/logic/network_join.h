@@ -165,5 +165,6 @@ void network_join_add_join_to_queue(c_network_session* session, transport_addres
 bool network_join_process_joins_from_queue();
 void __cdecl network_join_flush_join_queue();
 void network_join_remove_join_from_queue(qword join_nonce);
+void network_join_squad_join_abort();
 
 extern s_networking_join_data& g_network_join_data;

@@ -61,4 +61,5 @@ void __fastcall network_life_cycle_end();
 bool __fastcall network_life_cycle_create_local_squad(enum e_network_session_class session_class);
 bool network_life_cycle_get_observer(c_network_observer** out_observer);
 c_network_session* network_life_cycle_get_squad_session_for_join();
+c_network_session* network_life_cycle_get_target_session_for_join();
 bool network_life_cycle_in_squad_session(c_network_session** out_session);
