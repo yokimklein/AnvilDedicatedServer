@@ -568,7 +568,7 @@ void anvil_hooks_debug_apply()
 	hook::function(0x2B4780, 0x5A, TopLevelExceptionFilter);
 
 	// hook tag_get to store last tag index
-	// In the vast majority of instances tag_get has been inlined, so the 'last tag accessed' may not necessarily be accurate
+	// The vast majority of tag_get instances have been inlined, so the 'last tag accessed' may not necessarily be accurate
 	// There are only 265 calls to tag_get in ms29, vs 2652 in ms23
 	// ms29's call has also optimised away the group_tag argument, so this will read invalid data
 	//hook::function(0x83C70, 0x21, tag_get);

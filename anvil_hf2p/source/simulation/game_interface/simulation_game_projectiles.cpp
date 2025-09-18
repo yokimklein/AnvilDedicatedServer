@@ -108,8 +108,7 @@ void simulation_action_projectile_impact_raw(bool detonation_timer_started, datu
 		return;
 	}
 
-	object_datum* collision_object = object_get(collision->object_index);
-	if (collision->type.get() != _collision_result_object || collision->object_index == NONE || collision_object->object.gamestate_index == NONE)
+	if (collision->type.get() != _collision_result_object || collision->object_index == NONE || object_get(collision->object_index)->object.gamestate_index == NONE)
 	{
 		s_simulation_projectile_impact_effect_event_data event_data;
 		csmemset(&event_data, 0, sizeof(s_simulation_projectile_impact_effect_event_data));
