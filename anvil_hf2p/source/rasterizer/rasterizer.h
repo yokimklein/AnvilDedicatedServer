@@ -325,6 +325,9 @@ public:
 	static void set_indices(IDirect3DIndexBuffer9* index_buffer);
 	static void __fastcall set_pixel_shader_constant(long constant_index, long count, const real_vector4d* constants);
 	static void __fastcall set_alpha_blend_mode_custom_device_no_cache(IDirect3DDevice9Ex* device, e_alpha_blend_mode alpha_blend_mode);
+	static bool __fastcall begin_frame();
+	static void __fastcall setup_targets_simple();
+	static bool __fastcall end_frame();
 
 	static s_rasterizer_render_globals& render_globals;
 	static rectangle2d& g_last_viewport;
@@ -677,4 +680,5 @@ public:
 static_assert(sizeof(c_rasterizer_globals) == 0xBC);
 
 extern bool rasterizer_set_explicit_debug_shader(c_rasterizer_globals::e_explicit_shader shader_type);
-bool rasterizer_get_is_widescreen();
+extern bool rasterizer_get_is_widescreen();
+extern bool rasterizer_dump_display_to_bmp(const char* file_name);

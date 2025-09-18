@@ -13,6 +13,9 @@
 #include "text\draw_string.h"
 #include "camera\director.h"
 #include "camera\debug_director.h"
+#include "cseries\cseries_windows_debug_pc.h"
+#include "cache\cache_files.h"
+#include "shell\shell_windows.h"
 
 void __cdecl main_game_reset_map_hook(s_hook_registers registers)
 {
@@ -559,4 +562,17 @@ void anvil_hooks_debug_apply()
 	hook::insert(0xE280D, 0xE2813, director_update_hook, _hook_execute_replaced_last);
 	//patch::bytes(0x1BE2AE, { _key_backspace }); // rebind camera mode swap from f12 to backspace to avoid breakpoint keybind
 	patch::function(0xD81A24, c_debug_director__update_hook);
+
+	// exceptions/asserts
+	hook::function(0x167CF0, 0x190, exceptions_update);
+	hook::function(0x2B4780, 0x5A, TopLevelExceptionFilter);
+
+	// hook tag_get to store last tag index
+	// In the vast majority of instances tag_get has been inlined, so the 'last tag accessed' may not necessarily be accurate
+	// There are only 265 calls to tag_get in ms29, vs 2652 in ms23
+	// ms29's call has also optimised away the group_tag argument, so this will read invalid data
+	//hook::function(0x83C70, 0x21, tag_get);
+
+	// catch fire
+	hook::function(0x96BD0, 0x140, main_halt_and_catch_fire);
 }

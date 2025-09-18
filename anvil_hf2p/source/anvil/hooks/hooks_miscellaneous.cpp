@@ -37,17 +37,6 @@ void __cdecl c_simulation_player_taunt_request_event_definition__apply_game_even
     }
 }
 
-long __cdecl exceptions_update_hook()
-{
-    PEXCEPTION_POINTERS g_exception_param_exception_pointers = *base_address<PEXCEPTION_POINTERS*>(0x106DEC8);
-    if (g_exception_param_exception_pointers && g_exception_param_exception_pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE)
-    {
-        return 0;
-    }
-
-    return exceptions_update();
-}
-
 c_static_string<64>* __cdecl c_static_string_64_print_hook(c_static_string<64>* static_string, char const* format, ...)
 {
     static_string->print("Halo Online " VERSION_WINDOW_NAME " %s", version_get_window_version());
@@ -151,20 +140,6 @@ void __cdecl sub_319CE0_hook(s_hook_registers registers)
 
 void anvil_hooks_miscellaneous_apply()
 {
-    // hook exceptions_update to catch esoteric crashes
-    hook::call(0x95C0F, exceptions_update_hook);
-    hook::call(0x98BCB, exceptions_update_hook);
-    hook::call(0x9AB6B, exceptions_update_hook);
-    hook::call(0x9ABAB, exceptions_update_hook);
-    hook::call(0x9EFE3, exceptions_update_hook);
-    hook::call(0x9F07C, exceptions_update_hook);
-    hook::call(0x9F8B1, exceptions_update_hook);
-    hook::call(0xC3E8B, exceptions_update_hook);
-    hook::call(0xDCCBD, exceptions_update_hook);
-    hook::call(0x16A63B, exceptions_update_hook);
-    hook::call(0x17C5FE, exceptions_update_hook);
-    hook::call(0x3DBB5B, exceptions_update_hook);
-
     // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
     hook::call(0x13C3, c_static_string_64_print_hook);
 

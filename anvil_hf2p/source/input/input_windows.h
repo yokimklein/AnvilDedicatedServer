@@ -501,5 +501,7 @@ extern void input_suppress();
 bool input_peek_key(s_key_state* key, e_input_type input_type);
 byte input_key_frames_down(e_input_key_code key_code, e_input_type input_type);
 extern mouse_state* input_get_mouse_state(e_input_type input_type);
+void input_clear_all_rumblers();
+extern void __fastcall input_update();
 
 extern s_input_globals& input_globals;

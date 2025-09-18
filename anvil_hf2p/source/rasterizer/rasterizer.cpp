@@ -201,7 +201,28 @@ void __fastcall c_rasterizer::set_alpha_blend_mode_custom_device_no_cache(IDirec
 	INVOKE(0x25AC40, c_rasterizer::set_alpha_blend_mode_custom_device_no_cache, NULL, alpha_blend_mode);
 }
 
+bool __fastcall c_rasterizer::begin_frame()
+{
+	return INVOKE(0x2598B0, c_rasterizer::begin_frame);
+}
+
+void __fastcall c_rasterizer::setup_targets_simple()
+{
+	INVOKE(0x25D200, c_rasterizer::setup_targets_simple);
+}
+
+bool __fastcall c_rasterizer::end_frame()
+{
+	return INVOKE(0x259E40, c_rasterizer::end_frame);
+}
+
 bool rasterizer_get_is_widescreen()
 {
 	return ((real)c_rasterizer::render_globals.resolution_width / (real)c_rasterizer::render_globals.resolution_height) > 1.5f;
+}
+
+bool rasterizer_dump_display_to_bmp(const char* file_name)
+{
+	// $TODO: !!!
+	return true;
 }

@@ -12,7 +12,7 @@ void __fastcall update_establishing_view_hook(c_simulation_world* simulation_wor
 
 long __cdecl internal_halt_render_thread_and_lock_resources_hook(const char* file_name, long line_number)
 {
-    long result = internal_halt_render_thread_and_lock_resources(file_name, line_number);
+    long result = _internal_halt_render_thread_and_lock_resources(file_name, line_number);
 
     game_engine_attach_to_simulation();
     return result;

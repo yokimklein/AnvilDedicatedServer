@@ -26,3 +26,8 @@ object_type_definition* object_type_definition_get(e_object_type object_type)
 	ASSERT(object_type_definitions[object_type]->group_tag);
 	return (object_type_definitions)[object_type];
 }
+
+const char* object_type_get_name(e_object_type object_type)
+{
+	return object_type_definitions[object_type]->name;
+}

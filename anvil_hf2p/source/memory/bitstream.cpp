@@ -57,12 +57,8 @@ void c_bitstream::write_bool(const char* debug_string, bool value)
 
 void c_bitstream::finish_writing(long* bits_wasted)
 {
-	//if (overflowed())
-	//{
-	//	VASSERT(c_string_builder("bitstream overflowed (%d bits > %d max-size), cannot be written successfully",
-	//		m_bitstream_data.current_stream_bit_position, CHAR_BITS * m_data_size_bytes).get_string());
-	//}
-
+	//VASSERT(!overflowed(), c_string_builder("bitstream overflowed (%d bits > %d max-size), cannot be written successfully",
+	//	m_bitstream_data.current_stream_bit_position, CHAR_BITS * m_data_size_bytes).get_string());
 	DECLFUNC(0xA6030, void, __thiscall, c_bitstream*, long*)(this, bits_wasted);
 }
 
@@ -88,11 +84,8 @@ void c_bitstream::finish_reading()
 {
 	ASSERT(reading());
 
-	//if (overflowed())
-	//{
-	//	VASSERT(c_string_builder("finish_reading: bitstream read off the end of the stream (%d bits > %d max-size)",
-	//		m_bitstream_data.current_memory_bit_position, CHAR_BITS * m_data_size_bytes).get_string());
-	//}
+	//VASSERT(!overflowed(), c_string_builder("finish_reading: bitstream read off the end of the stream (%d bits > %d max-size)",
+	//	m_bitstream_data.current_memory_bit_position, CHAR_BITS * m_data_size_bytes).get_string());
 
 	m_state = _bitstream_state_read_finished;
 }

@@ -9,3 +9,7 @@ bool editor_input_inhibited()
 {
 	return true;
 }
+
+void editor_save_progress()
+{
+}

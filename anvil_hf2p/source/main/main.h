@@ -10,6 +10,21 @@ enum e_game_state_revert_bit
 	k_game_state_revert_bits
 };
 
+enum e_main_pregame_frame
+{
+	_main_pregame_frame_none = 0,
+	_main_pregame_frame_normal,
+	_main_pregame_frame_loading_debug,
+	_main_pregame_frame_cache_loading,
+	_main_pregame_frame_crash_uploading,
+	_main_pregame_frame_crash_done,
+	_main_pregame_frame_upload,
+	_main_pregame_frame_notify_out_of_sync,
+	_main_pregame_frame_loading_screen,
+
+	k_main_pregame_frame_count
+};
+
 struct s_scenario_zone_activation
 {
 	void clear()
@@ -81,7 +96,16 @@ struct _main_globals
 };
 static_assert(sizeof(_main_globals) == 0x84);
 
+struct s_main_status_value
+{
+	char status_type[0x100];
+	char status_data[0x200];
+};
+static_assert(sizeof(s_main_status_value) == 0x300);
+
+extern s_main_status_value(&g_status_values)[32];
 extern _main_globals& main_globals;
+extern bool g_force_upload_even_if_untracked;
 
 class c_tag_resources_game_lock
 {
@@ -94,11 +118,30 @@ protected:
 };
 #define LOCAL_TAG_RESOURCE_SCOPE_LOCK c_tag_resources_game_lock __local_tag_resource_scope_lock{}
 
+class c_wait_for_render_thread
+{
+public:
+	c_wait_for_render_thread(const char* file, long line);
+	~c_wait_for_render_thread();
+
+protected:
+	ulong m_flags;
+};
+#define RENDER_THREAD_LOCK c_wait_for_render_thread STRCONCAT(__render_thread_lock, __LINE__)(__FILE__, __LINE__)
+
+struct s_file_reference;
+
 bool main_is_in_main_loop_pregame();
-long __cdecl internal_halt_render_thread_and_lock_resources(const char* file_name, long line_number);
+long __cdecl _internal_halt_render_thread_and_lock_resources(const char* file_name, long line_number);
 void __fastcall main_exit_game();
 void main_loop_pregame_disable(bool disable);
-extern bool main_time_halted();
+bool main_time_halted();
+void main_write_stack_to_crash_info_status_file(const char* crash_info, void* context);
+void main_status_dump(s_file_reference* file);
+void main_halt_and_catch_fire();
+void main_loop_pregame_halt_and_catch_fire_pop();
+void main_loop_pregame_halt_and_catch_fire_push();
+void __fastcall unlock_resources_and_resume_render_thread(ulong flags);
 
 template<typename... parameters_t, long k_parameter_count = sizeof...(parameters_t)>
 bool main_status(const char* status_type, const char* format, parameters_t... parameters)

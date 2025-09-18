@@ -186,6 +186,7 @@ struct s_thread_local_storage
 	byte* __unknown1E0; // light_volume
 	byte* __unknown1E4; // beam
 	bool g_file_errors_suppressed;
+	bool g_thread_assert_triggered;
 	byte* __unknown1EC; // actor firing-position owner
 	byte* __unknown1F0;
 	byte* __unknown1F4; // ragdolls
@@ -258,10 +259,7 @@ struct s_thread_local_storage
 	byte* __unknown310;
 	byte* __unknown314;
 	byte* __unknown318;
-	byte* __unknown31C;
-	byte* __unknown320;
-	byte* __unknown324;
-	byte* __unknown328;
+	s_thread_assert_arguments g_thread_assert_arguments;
 	byte* __unknown32C;
 	byte* __unknown330;
 	byte* __unknown334;

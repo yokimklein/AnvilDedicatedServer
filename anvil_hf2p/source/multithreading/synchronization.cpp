@@ -70,6 +70,11 @@ void __fastcall internal_semaphore_take(long semaphore_id)
     INVOKE(0x941A0, internal_semaphore_take, semaphore_id);
 }
 
+void __fastcall release_locks_safe_for_crash_release()
+{
+	INVOKE(0x94430, release_locks_safe_for_crash_release);
+}
+
 bool synchronization_objects_initialized()
 {
 	return g_synch_globals.initialized;

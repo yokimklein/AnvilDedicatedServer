@@ -55,3 +55,5 @@ protected:
 	long m_line;
 };
 static_assert(sizeof(c_overlapped_task) == 0x10);
+
+extern void __fastcall overlapped_update();

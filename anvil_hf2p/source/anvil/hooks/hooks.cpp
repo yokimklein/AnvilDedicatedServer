@@ -187,7 +187,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     long length = return_address - start_address;
     if (length < sizeof(jump_code))
     {
-        VASSERT(c_string_builder("The hook requires at least %d bytes available to overwrite!", sizeof(jump_code)).get_string());
+        VASSERT(0, c_string_builder("The hook requires at least %d bytes available to overwrite!", sizeof(jump_code)).get_string());
         return;
     }
 
@@ -218,7 +218,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
 
     if (inserted_code == NULL)
     {
-        VASSERT("Failed to allocate memory for hook!");
+        VASSERT(0, "Failed to allocate memory for hook!");
         return;
     }
 
@@ -532,7 +532,7 @@ ulong patch::set_memory_protect(size_t address, ulong new_protect, size_t size)
     ulong old_protect;
     if (!VirtualProtect(base_address<void*>(address), size, new_protect, &old_protect))
     {
-        VASSERT(c_string_builder("failed to set memory protection at baseless address 0x%08x!", address).get_string());
+        VASSERT(0, c_string_builder("failed to set memory protection at baseless address 0x%08x!", address).get_string());
         return PAGE_NOACCESS;
     }
     return old_protect;

@@ -21,3 +21,5 @@ struct s_windows_params
 static_assert(sizeof(s_windows_params));
 
 extern s_windows_params& g_windows_params;
+
+LONG WINAPI TopLevelExceptionFilter(_EXCEPTION_POINTERS* ExceptionInfo);

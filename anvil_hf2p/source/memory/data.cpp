@@ -113,20 +113,14 @@ void* __cdecl datum_try_and_get(s_data_array const* data, long index)
 
 	if (index != NONE || absolute_index != NONE)
 	{
-		if (!identifier)
-		{
-			VASSERT(c_string_builder("tried to access %s using datum_try_and_get() with an absolute index #%d",
-				data->name,
-				absolute_index).get_string());
-		}
+		VASSERT(identifier, c_string_builder("tried to access %s using datum_try_and_get() with an absolute index #%d",
+			data->name,
+			absolute_index).get_string());
 		
-		if (!VALID_INDEX(absolute_index, data->maximum_count))
-		{
-			VASSERT(c_string_builder("tried to access %s using datum_try_and_get() with an index 0x%08X outside maximum range [0, %d)",
-				data->name,
-				index,
-				data->maximum_count).get_string());
-		}
+		VASSERT(VALID_INDEX(absolute_index, data->maximum_count), c_string_builder("tried to access %s using datum_try_and_get() with an index 0x%08X outside maximum range [0, %d)",
+			data->name,
+			index,
+			data->maximum_count).get_string());
 
 		if (absolute_index < data->count)
 		{

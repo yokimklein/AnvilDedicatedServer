@@ -112,3 +112,4 @@ extern object_type_definition* (&object_type_definitions)[k_object_type_count];
 
 void object_type_detach_gamestate_entity(datum_index object_index);
 object_type_definition* object_type_definition_get(e_object_type object_type);
+const char* object_type_get_name(e_object_type object_type);

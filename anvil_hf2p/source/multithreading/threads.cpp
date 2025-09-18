@@ -3,6 +3,7 @@
 #include "multithreading\synchronization.h"
 #include <windows.h>
 
+REFERENCE_DECLARE_ARRAY(0xD3D5F8, s_thread_definition, k_registered_thread_definitions, k_registered_thread_count);
 REFERENCE_DECLARE(0x1044AD0, s_thread_system_globals, g_thread_globals);
 REFERENCE_DECLARE(0x49B1298, c_interlocked_long, g_thread_owning_device);
 
@@ -12,10 +13,7 @@ c_interlocked_long thread_should_crash[k_registered_thread_count]{};
 bool current_thread_should_exit()
 {
 	long thread_index = get_current_thread_index();
-	if (!VALID_INDEX(thread_index, k_registered_thread_count))
-	{
-		VASSERT("invalid thread index");
-	}
+	VASSERT(VALID_INDEX(thread_index, k_registered_thread_count), "invalid thread index");
 	return g_thread_globals.thread_should_exit[thread_index].peek() == TRUE;
 }
 
@@ -50,10 +48,50 @@ void current_thread_update_test_functions()
 	}
 }
 
+ulong get_main_thread_id()
+{
+	return g_thread_globals.thread_id[k_thread_main];
+}
+
+const char* get_registered_thread_name(long thread_index)
+{
+	VASSERT(VALID_INDEX(thread_index, k_registered_thread_count), "invalid thread index");
+
+	return k_registered_thread_definitions[thread_index].name;
+}
+
+const char* get_thread_name_from_thread_id(long thread_id)
+{
+	for (long thread_index = 0; thread_index < k_registered_thread_count; thread_index++)
+	{
+		if (g_thread_globals.thread_id[thread_index] == thread_id)
+		{
+			return get_registered_thread_name(thread_index);
+		}
+	}
+	return "unknown thread";
+}
+
 bool is_main_thread()
 {
     TLS_DATA_GET_VALUE_REFERENCE(g_registered_thread_index);
     return !g_thread_globals.initialized.peek() || g_registered_thread_index == k_thread_main;
+}
+
+void post_thread_assert_arguments(s_thread_assert_arguments* arguments)
+{
+	TLS_DATA_GET_VALUE_REFERENCE(g_thread_assert_arguments);
+	TLS_DATA_GET_VALUE_REFERENCE(g_thread_assert_triggered);
+	if (arguments)
+	{
+		csmemcpy(&g_thread_assert_arguments, arguments, sizeof(s_thread_assert_arguments));
+	}
+	g_thread_assert_triggered = true;
+}
+
+void sleep(ulong milliseconds)
+{
+	Sleep(milliseconds);
 }
 
 void __fastcall start_thread(e_registered_threads thread_index)

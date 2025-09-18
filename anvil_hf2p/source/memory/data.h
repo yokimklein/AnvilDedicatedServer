@@ -27,17 +27,8 @@ enum e_data_alignment
 	k_number_of_data_alignments
 };
 
-// 32-bit data array index handle
-typedef unsigned long datum_index;
-static_assert(sizeof(datum_index) == 0x4);
-
-enum : datum_index
-{
-	_datum_index_none = 0xFFFFFFFF
-};
-
 #define DATUM_IS_FREE(VALUE) (VALUE->identifier == 0)
-#define DATUM_INDEX_TO_ABSOLUTE_INDEX(VALUE) ((VALUE) & 0x3FF)
+#define DATUM_INDEX_TO_ABSOLUTE_INDEX(VALUE) ((VALUE) & 0xFFFF)
 #define DATUM_INDEX_TO_IDENTIFIER(VALUE) ((VALUE) >> 16)
 #define BUILD_DATUM_INDEX(IDENTIFIER, ABSOLUTE_INDEX) ((IDENTIFIER << 16) | ABSOLUTE_INDEX)
 #define DATUM_GET(DATA, TYPE, INDEX) ((TYPE*)datum_get(DATA, INDEX))

@@ -88,3 +88,13 @@ mouse_state* input_get_mouse_state(e_input_type input_type)
 
 	return &input_globals.raw_mouse_state;
 }
+
+void input_clear_all_rumblers()
+{
+	INVOKE(0x817E0, input_clear_all_rumblers);
+}
+
+void __fastcall input_update()
+{
+	INVOKE(0x80C10, input_update);
+}

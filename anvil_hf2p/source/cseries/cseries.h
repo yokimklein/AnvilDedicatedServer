@@ -4,12 +4,12 @@
 
 #include "cseries\cseries_windows.h"
 #include "cseries\cseries_console.h"
+#include "cseries\cseries_windows_debug_pc.h"
 
 #include <math\integer_math.h>
 #include <math\real_math.h>
 
 #include <stdarg.h>
-#include <assert.h>
 #include <stdio.h>
 
 #include <memory\member_to_static.h>
@@ -114,36 +114,38 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 	return ((unsigned long)pointer & ((1 << alignment_bits) - 1)) == 0;
 }
 
+extern bool g_catch_exceptions;
+
 #if defined(ASSERTS_ENABLED)
 
-// TODO: PROPER ASSERTION DEFINITIONS
-#define ASSERT(STATEMENT, ...) do { assert(STATEMENT); } while (false)
-//#define ASSERT(STATEMENT, ...) do { if (!(STATEMENT)) ASSERT_EXCEPTION(STATEMENT, true, __VA_ARGS__); } while (false)
-//#define ASSERT_EXCEPTION(STATEMENT, IS_EXCEPTION, ...) \
-//do { \
-//	if (!(STATEMENT) && !handle_assert_as_exception(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
-//	{ \
-//	    display_assert(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION); \
-//	    if (!is_debugger_present() && g_catch_exceptions) \
-//	        system_abort(); \
-//	    else \
-//	        system_exit(); \
-//	} \
-//} while (false)
+#define ASSERT(STATEMENT, ...) do { if (!(STATEMENT)) ASSERT_EXCEPTION(STATEMENT, true, __VA_ARGS__); } while (false)
+#define ASSERT_EXCEPTION(STATEMENT, IS_EXCEPTION, ...) \
+do { \
+	if (!(STATEMENT) && !handle_assert_as_exception(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
+	{ \
+	    display_assert(#STATEMENT, __FILE__, __LINE__, IS_EXCEPTION); \
+	    if (is_debugger_present() || !g_catch_exceptions) \
+	        __debugbreak(); \
+	    else \
+	        system_abort(); \
+	} \
+} while (false)
 
-#define VASSERT(STATEMENT) assert(STATEMENT)
-//#define VASSERT(STATEMENT) VASSERT_EXCEPTION(STATEMENT, true)
-//#define VASSERT_EXCEPTION(STATEMENT, IS_EXCEPTION, ...) \
-//do { \
-//	if (!handle_assert_as_exception(STATEMENT, __FILE__, __LINE__, IS_EXCEPTION)) \
-//	{ \
-//	    display_assert(STATEMENT, __FILE__, __LINE__, IS_EXCEPTION); \
-//	    if (!is_debugger_present() && g_catch_exceptions) \
-//	        system_abort(); \
-//	    else \
-//	        system_exit(); \
-//	} \
-//} while (false)
+#define VASSERT(STATEMENT, MESSAGE, ...) VASSERT_EXCEPTION(STATEMENT, MESSAGE, true)
+#define VASSERT_EXCEPTION(STATEMENT, MESSAGE, IS_EXCEPTION, ...) \
+do { \
+	if (!(STATEMENT) && !handle_assert_as_exception(MESSAGE, __FILE__, __LINE__, IS_EXCEPTION)) \
+	{ \
+	    display_assert(MESSAGE, __FILE__, __LINE__, IS_EXCEPTION); \
+	    if (is_debugger_present() || !g_catch_exceptions) \
+	        __debugbreak(); \
+	    else \
+	        system_abort(); \
+	} \
+} while (false)
+
+#define UNREACHABLE(...) VASSERT(0, "unreachable")
+#define HALT(...) VASSERT(0, "halt()")
 
 #else
 
@@ -153,7 +155,13 @@ constexpr bool pointer_is_aligned(void* pointer, long alignment_bits)
 #define VASSERT(STATEMENT, ...) do { } while (false)
 #define VASSERT_EXCEPTION(STATEMENT, ...) do { } while (false)
 
+#define UNREACHABLE(...) do { } while (false)
+#define HALT(...) do { } while (false)
+
 #endif
+
+extern void display_assert(const char* statement, const char* file, long line, bool fatal);
+extern bool handle_assert_as_exception(const char* statement, const char* file, long line, bool fatal);
 
 extern int(__cdecl* csmemcmp)(void const* _Buf1, void const* _Buf2, size_t _Size);
 extern void* (__cdecl* csmemcpy)(void* _Dst, void const* _Src, size_t _Size);

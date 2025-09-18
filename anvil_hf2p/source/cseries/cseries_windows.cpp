@@ -1,8 +1,12 @@
 #include "cseries_windows.h"
-#include <time.h>
+#include "cseries\cseries.h"
+#include "main\main.h"
+
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
+#include <time.h>
 #include <timeapi.h>
+#include <cstdlib>
 
 ulong system_seconds()
 {
@@ -63,4 +67,14 @@ void system_get_date_and_time(char* buffer, short buffer_size, bool short_date_a
             system_time.wSecond,
             system_time.wMilliseconds);
     }
+}
+
+void system_abort()
+{
+    main_halt_and_catch_fire();
+}
+
+void system_exit()
+{
+    exit(NONE);
 }

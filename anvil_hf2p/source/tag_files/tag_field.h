@@ -72,12 +72,3 @@ struct s_tag_field_definition
 	void* definition;
 };
 static_assert(sizeof(s_tag_field_definition) == 0xC);
-
-struct s_tag_reference
-{
-	tag group_tag;
-	const char* name;
-	long name_length;
-	datum_index index;
-};
-static_assert(sizeof(s_tag_reference) == 0x10);

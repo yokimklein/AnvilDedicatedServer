@@ -3,9 +3,12 @@
 #include <memory\tls.h>
 #include <simulation\simulation_gamestate_entities.h>
 #include <simulation\simulation_world.h>
-#include <stdio.h>
 #include <simulation\game_interface\simulation_game_statborg.h>
 #include <simulation\game_interface\simulation_game_action.h>
+#include <simulation\simulation_type_collection.h>
+#include <tag_files\tag_groups.h>
+#include <cache\cache_files.h>
+#include <stdio.h>
 
 void __cdecl simulation_action_object_create(datum_index object_index)
 {
@@ -51,11 +54,11 @@ void __cdecl simulation_action_object_create(datum_index object_index)
 			ASSERT(!object_header->flags.test(_object_header_being_deleted_bit));
 			ASSERT(entity->gamestate_index != NONE);
 			event(_event_status, "networking:simulation:objects: %s '%s' index 0x%08X created entity type %d/%s index 0x%08X",
-				/*object_type_get_name(object->object_identifier->get_type(object_identifier->type))*/"object_type_name", // $TODO: 
-				/*tag_name_strip_path(tag_get_name(*object_identifier))*/"tag_name", // $TODO: 
+				object_type_get_name(object->object.object_identifier.get_type()),
+				tag_name_strip_path(tag_get_name(object->definition_index)),
 				entity_object_index,
 				entity_types[i],
-				/*simulation_entity_type_get_name(entity_types[i])*/"entity_type_name", // $TODO: 
+				simulation_entity_type_get_name(entity_types[i]),
 				entity_index);
 			entity_database->entity_capture_creation_data(entity_index);
 		}

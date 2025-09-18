@@ -131,3 +131,9 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 	c_font_cache_mt_safe font_cache;
 	draw_string.draw(&font_cache, watermark.get_string());
 }
+
+void __fastcall main_render_pregame(e_main_pregame_frame pregame_frame_type, const char* pregame_frame_text)
+{
+	// $TODO: hook and rewrite this
+	INVOKE(0x163B00, main_render_pregame, pregame_frame_type, pregame_frame_text);
+}

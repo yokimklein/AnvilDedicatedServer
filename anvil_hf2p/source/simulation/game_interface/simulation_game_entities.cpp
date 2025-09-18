@@ -168,15 +168,15 @@ void simulation_entity_delete(long entity_index, datum_index object_index, datum
 	{
 		if (object_index == NONE)
 		{
-			VASSERT(c_string_builder("networking:simulation:entity: game engine entity deleted with non-local entity 0x%08x type %d",
+			VASSERT(0, c_string_builder("networking:simulation:entity: game engine entity deleted with non-local entity 0x%08x type %d",
 				entity_index,
 				entity->entity_type).get_string());
 		}
 		else
 		{
-			VASSERT(c_string_builder("networking:simulation:entity: object 0x%08x (%s) deleted with non-local entity 0x%08x type %d",
+			VASSERT(0, c_string_builder("networking:simulation:entity: object 0x%08x (%s) deleted with non-local entity 0x%08x type %d",
 				object_index,
-				/*tag_name_strip_path(tag_get_name(object_get(object_index)->definition_index))*/"tag_name", // $TODO:
+				tag_name_strip_path(tag_get_name(object_get(object_index)->definition_index)),
 				entity_index,
 				entity->entity_type).get_string());
 		}

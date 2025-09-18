@@ -209,4 +209,57 @@
 #define WEAPON_TAG 'weap'
 #define WIND_TAG 'wind'
 
-extern void* __cdecl tag_block_get_element_with_size(s_tag_block const* block, long index, long size);
+enum : tag
+{
+	_tag_none = 0xFFFFFFFF,
+};
+
+struct s_tag_reference
+{
+	tag group_tag = _tag_none;
+	const char* name;
+	long name_length;
+	datum_index index = NONE;
+
+	void* get_definition();
+
+	template<typename t_type>
+	t_type* cast_to()
+	{
+		return static_cast<t_type*>(get_definition());
+	}
+
+	const char* get_name();
+	const char* get_group_name();
+};
+static_assert(sizeof(s_tag_reference) == 0x10);
+
+template<tag ...k_group_tags>
+using c_typed_tag_reference = s_tag_reference;
+
+struct s_cache_file_tag_group
+{
+	tag group_tag;
+	tag parent_group_tags[2];
+	c_string_id name;
+
+	bool is_group(tag group_tag_)
+	{
+		return group_tag_ == group_tag || group_tag_ == parent_group_tags[0] || group_tag_ == parent_group_tags[1];
+	}
+
+	bool operator==(tag group_tag_)
+	{
+		return is_group(group_tag_);
+	}
+
+	bool operator!=(tag group_tag_)
+	{
+		return !is_group(group_tag_);
+	}
+};
+static_assert(sizeof(s_cache_file_tag_group) == 0x10);
+
+extern void* tag_block_get_element_with_size(s_tag_block const* block, long index, long size);
+extern const char* tag_name_strip_path(const char* path);
+extern const wchar_t* tag_name_strip_path(const wchar_t* path);

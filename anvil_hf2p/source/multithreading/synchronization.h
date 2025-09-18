@@ -378,7 +378,7 @@ extern void __fastcall internal_semaphore_take(long semaphore_id);
 //extern void __cdecl release_all_mutexes_owned_by_thread();
 //extern void __cdecl release_all_semaphores_owned_by_thread();
 //extern void __cdecl release_critical_section_owned_by_thread(long thread_index, e_critical_sections critical_section_id);
-//extern void __cdecl release_locks_safe_for_crash_release();
+extern void __fastcall release_locks_safe_for_crash_release();
 //extern void __cdecl render_synchronization_stats();
 //extern long __cdecl sempahore_get_max_signal_count(long semaphore_id);
 extern bool synchronization_objects_initialized();

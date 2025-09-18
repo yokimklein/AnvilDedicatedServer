@@ -174,7 +174,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>
       </ImportLibrary>
@@ -208,7 +208,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>
       </ImportLibrary>
@@ -230,7 +230,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER_VERSION=0;VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Dedicated Server";VERSION_TARGET_APPLICATION="anvil_dedicated_server";VERSION_BUILD_NAME="";EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER_VERSION=0;VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;RELEASE_ENABLED;VERSION_WINDOW_NAME="Dedicated Server";VERSION_TARGET_APPLICATION="anvil_dedicated_server";VERSION_BUILD_NAME="";EVENTS_ENABLED;DEDICATED_SERVER_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -246,7 +246,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary />
@@ -283,7 +283,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -305,7 +305,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER_VERSION=0;VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;VERSION_WINDOW_NAME="Game Client";VERSION_TARGET_APPLICATION="anvil_game_client";VERSION_BUILD_NAME="";GAME_CLIENT_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;VERSION_PROJECT_NAME="anvil_$(TargetProjectName)";VERSION_TARGET_VARIANT="$(TargetVariant)";VERSION_TARGET_CONFIGURATION="$(TargetConfiguration)";VERSION_TARGET_PLATFORM="pc";VERSION_TARGET_VERSION="untracked version";VERSION_BUILD_NUMBER_VERSION=0;VERSION_TRACKED_BUILD=false;VERSION_BUILD_NUMBER_SEQUENCE_IDENTIFIER=-1;RELEASE_ENABLED;VERSION_WINDOW_NAME="Game Client";VERSION_TARGET_APPLICATION="anvil_game_client";VERSION_BUILD_NAME="";GAME_CLIENT_ENABLED;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_WIN32_WINNT=0x0601</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -321,7 +321,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -359,7 +359,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -431,6 +431,8 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClInclude Include="source\camera\observer_director.h" />
     <ClInclude Include="source\camera\saved_film_director.h" />
     <ClInclude Include="source\cseries\cseries_event_logs.h" />
+    <ClInclude Include="source\cseries\progress.h" />
+    <ClInclude Include="source\cseries\stack_walk_windows.h" />
     <ClInclude Include="source\cseries\version.h" />
     <ClInclude Include="source\cseries\build_number_internal.h" />
     <ClInclude Include="source\cseries\async_xoverlapped.h" />
@@ -534,6 +536,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClInclude Include="source\networking\session\network_session_parameters_generic.h" />
     <ClInclude Include="source\networking\session\network_session_state.h" />
     <ClInclude Include="source\networking\tools\remote_command.h" />
+    <ClInclude Include="source\networking\transport\transport.h" />
     <ClInclude Include="source\networking\transport\transport_qos.h" />
     <ClInclude Include="source\objects\crates.h" />
     <ClInclude Include="source\objects\damage.h" />
@@ -543,6 +546,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClInclude Include="source\objects\object_types.h" />
     <ClInclude Include="source\objects\scenery.h" />
     <ClInclude Include="source\objects\target_tracking.h" />
+    <ClInclude Include="source\online\online_lsp.h" />
     <ClInclude Include="source\physics\character_physics.h" />
     <ClInclude Include="source\physics\collisions.h" />
     <ClInclude Include="source\physics\collision_bsp_references.h" />
@@ -768,7 +772,10 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClCompile Include="source\camera\camera_globals.cpp" />
     <ClCompile Include="source\camera\debug_director.cpp" />
     <ClCompile Include="source\camera\director.cpp" />
+    <ClCompile Include="source\cseries\async_xoverlapped.cpp" />
     <ClCompile Include="source\cseries\cseries_event_logs.cpp" />
+    <ClCompile Include="source\cseries\progress.cpp" />
+    <ClCompile Include="source\cseries\stack_walk_windows.cpp" />
     <ClCompile Include="source\cseries\version.cpp" />
     <ClCompile Include="source\cseries\cseries_console.cpp" />
     <ClCompile Include="source\cseries\cseries_events.cpp" />
@@ -860,12 +867,14 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClCompile Include="source\networking\replication\replication_entity_manager.cpp" />
     <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp" />
     <ClCompile Include="source\networking\tools\remote_command.cpp" />
+    <ClCompile Include="source\networking\transport\transport.cpp" />
     <ClCompile Include="source\networking\transport\transport_endpoint_winsock.cpp" />
     <ClCompile Include="source\objects\crates.cpp" />
     <ClCompile Include="source\objects\objects.cpp" />
     <ClCompile Include="source\objects\object_scripting.cpp" />
     <ClCompile Include="source\objects\object_types.cpp" />
     <ClCompile Include="source\objects\scenery.cpp" />
+    <ClCompile Include="source\online\online_lsp.cpp" />
     <ClCompile Include="source\physics\collision_bsp_references.cpp" />
     <ClCompile Include="source\physics\havok_component.cpp" />
     <ClCompile Include="source\rasterizer\dx9\rasterizer_dx9_dynamic_geometry.cpp" />

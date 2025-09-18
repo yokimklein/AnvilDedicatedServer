@@ -89,9 +89,6 @@ public:
 	}
 };
 
-template<tag ...k_group_tags>
-using c_typed_tag_reference = s_tag_reference;
-
 struct s_tag_block_stub
 {
 

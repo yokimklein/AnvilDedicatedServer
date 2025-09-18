@@ -4,6 +4,10 @@
 typedef unsigned long tag;
 static_assert(sizeof(tag) == 0x4);
 
+// 32-bit data array index handle
+typedef unsigned long datum_index;
+static_assert(sizeof(datum_index) == 0x4);
+
 // 8-bit unsigned integer ranging from 0 to 255
 typedef unsigned char uchar;
 static_assert(sizeof(uchar) == 0x1);

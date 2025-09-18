@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #define WIN32_MEAN_AND_LEAN
-#include <Windows.h>
+#include <windows.h>
 #include <stringapiset.h>
 
 long ustrcmp(wchar_t const* string1, wchar_t const* string2)

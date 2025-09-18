@@ -557,7 +557,7 @@ void event_context_push(const char* type, bool display_to_console, const char* d
 	}
 	else
 	{
-		VASSERT("exceeded the maximum event context depth!");
+		VASSERT(0, "exceeded the maximum event context depth!");
 		g_event_context_stack_failure_depth++;
 	}
 }
@@ -713,7 +713,7 @@ long event_parse_categories(const char* event_name, long max_categories, long ca
 			}
 			else
 			{
-				VASSERT(c_string_builder("network event category substring #%d '%s' exceeded %d characters", category_index, category_name, category_name_max_length).get_string());
+				VASSERT(0, c_string_builder("network event category substring #%d '%s' exceeded %d characters", category_index, category_name, category_name_max_length).get_string());
 
 				failed = true;
 			}
@@ -745,7 +745,7 @@ long event_parse_categories(const char* event_name, long max_categories, long ca
 
 	if (failed)
 	{
-		VASSERT(c_string_builder("failed to parse network event '%s'", event_name).get_string());
+		VASSERT(0, c_string_builder("failed to parse network event '%s'", event_name).get_string());
 	}
 
 	if (category_index > category_count)
