@@ -16,6 +16,7 @@
 #include "cseries\cseries_windows_debug_pc.h"
 #include "cache\cache_files.h"
 #include "shell\shell_windows.h"
+#include <tag_files\tag_resource_cache_control.h>
 
 void __cdecl main_game_reset_map_hook(s_hook_registers registers)
 {
@@ -466,6 +467,11 @@ void __fastcall c_debug_director__update_hook(c_debug_director* thisptr, void* u
 	thisptr->update_(dt);
 }
 
+void __fastcall mark_necessary_resources_hook(c_tag_resource_cache_controller* thisptr, void* unused, c_tag_resource_runtime_active_set* runtime_active_set, c_tag_resource_address_cache_control_interface* controller_interface, bool* out_unknown)
+{
+	thisptr->mark_necessary_resources(runtime_active_set, controller_interface, out_unknown);
+}
+
 void anvil_hooks_debug_apply()
 {
 	// events
@@ -575,4 +581,7 @@ void anvil_hooks_debug_apply()
 
 	// catch fire
 	hook::function(0x96BD0, 0x140, main_halt_and_catch_fire);
+
+	// WIP headless (no audio & video)
+	hook::function(0x246B40, 0x301, mark_necessary_resources_hook); // take control of mark_necessary_resources to block audio & video resources
 }

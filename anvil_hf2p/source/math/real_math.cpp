@@ -211,9 +211,13 @@ real __cdecl normalize3d(real_vector3d* vector)
 {
 	real result = magnitude3d(vector);
 	if (fabsf(result - 0.0f) < k_real_epsilon)
+	{
 		result = 0.0f;
+	}
 	else
+	{
 		scale_vector3d(vector, 1.0f / result, vector);
+	}
 
 	return result;
 }

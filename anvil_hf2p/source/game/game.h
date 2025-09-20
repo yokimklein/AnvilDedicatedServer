@@ -30,3 +30,7 @@ e_campaign_difficulty_level game_difficulty_level_get();
 void game_get_determinism_versions(long* determinism_version, long* determinism_compatible_version);
 bool __fastcall game_engine_teams_use_one_shared_life(e_game_team team);
 bool game_options_valid();
+bool game_is_ui_shell();
+
+bool game_disable_rendering();
+bool game_disable_sound();

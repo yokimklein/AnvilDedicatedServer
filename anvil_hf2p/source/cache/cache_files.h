@@ -6,6 +6,7 @@
 #include <tag_files\tag_groups.h>
 
 void* __fastcall tag_get(tag group_tag, datum_index tag_index);
+tag tag_get_group_tag(datum_index tag_index);
 long __fastcall cache_file_get_global_tag_index(tag group_tag);
 const char* cache_file_get_build_number();
 
@@ -18,8 +19,8 @@ enum e_cache_file_shared_file_type
 	_cache_file_shared_file_type_ui = 0,
 	_cache_file_shared_file_type_resources,
 	_cache_file_shared_file_type_textures,
-	_cache_file_shared_file_type_textures_b,
 	_cache_file_shared_file_type_audio,
+	_cache_file_shared_file_type_textures_b,
 	_cache_file_shared_file_type_video,
 	_cache_file_shared_file_type_render_models,
 	_cache_file_shared_file_type_lightmaps,

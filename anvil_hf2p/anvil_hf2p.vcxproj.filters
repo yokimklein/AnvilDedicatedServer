@@ -522,9 +522,6 @@
     <ClInclude Include="source\game\game_engine_spawning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="third_party\nmd\nmd_assembly.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\main\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -792,9 +789,6 @@
     <ClInclude Include="source\camera\editor_director.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\camera\director_globals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\anvil\hooks\effects\hooks_effect_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -904,9 +898,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\cache\restricted_memory_regions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\config\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\cseries\cseries_console.h">
@@ -1060,6 +1051,48 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\interface\user_interface_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\camera\flying_camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\cseries_event_logs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\progress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\stack_walk_windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\build_number_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\networking\transport\transport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\online\online_lsp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\render\render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external_libraries\nmd\nmd_assembly.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\cache_files_windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tag_files\tag_resource_cache_control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tag_files\tag_resource_cache_external_access.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tag_files\tag_resource_cache_address_cache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1284,9 +1317,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_spawning.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\lookup3\lookup3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_scoring.cpp">
@@ -1574,9 +1604,6 @@
     <ClCompile Include="source\cache\restricted_memory_regions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\config\version.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\cseries\cseries_console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1716,6 +1743,60 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\math\integer_math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\camera\camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\camera\camera_globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\camera\debug_director.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\camera\director.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\async_xoverlapped.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\cseries_event_logs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\progress.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\stack_walk_windows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\transport\transport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\online\online_lsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\files_windows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external_libraries\lookup3\lookup3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cache\cache_files_windows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\tag_resource_cache_control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\tag_resource_cache_external_access.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tag_files\tag_resource_cache_address_cache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

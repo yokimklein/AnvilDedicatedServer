@@ -44,3 +44,4 @@ struct s_main_game_globals
 
 bool main_game_change_in_progress();
 bool main_game_loaded_map();
+bool main_game_pending_mainmenu();

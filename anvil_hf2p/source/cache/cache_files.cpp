@@ -48,6 +48,11 @@ void* __fastcall tag_get(tag group_tag, datum_index tag_index)
 	return data;
 }
 
+tag tag_get_group_tag(datum_index tag_index)
+{
+	return g_cache_file_globals.tag_instances[g_cache_file_globals.tag_index_absolute_mapping[tag_index]]->tag_group.group_tag;
+}
+
 long __fastcall cache_file_get_global_tag_index(tag group_tag)
 {
 	return INVOKE(0x82E30, cache_file_get_global_tag_index, group_tag);

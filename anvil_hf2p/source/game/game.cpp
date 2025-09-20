@@ -249,3 +249,19 @@ bool game_options_valid()
 	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
 	return game_globals && (game_globals->initializing || game_globals->map_active);
 }
+
+bool game_is_ui_shell()
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
+	return game_globals->options.game_mode == _game_mode_mainmenu;;
+}
+
+bool game_disable_rendering()
+{
+	return false;
+}
+
+bool game_disable_sound()
+{
+	return false;
+}
