@@ -3,54 +3,54 @@
 #include <game\game_engine.h>
 #include <simulation\game_interface\simulation_game_statborg.h>
 
-void __cdecl game_engine_update_after_game_hook(s_hook_registers registers)
+void __cdecl game_engine_update_after_game_hook(s_hook_registers& registers)
 {
     simulation_action_game_statborg_update(_simulation_statborg_update_finalize_for_game_end);
 }
 
-void __cdecl c_game_statborg__adjust_player_stat_hook(s_hook_registers registers)
+void __cdecl c_game_statborg__adjust_player_stat_hook(s_hook_registers& registers)
 {
     long absolute_player_index = (long)registers.esi;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-void __cdecl game_engine_end_round_with_winner_hook1(s_hook_registers registers)
+void __cdecl game_engine_end_round_with_winner_hook1(s_hook_registers& registers)
 {
     long absolute_player_index = (long)registers.esi;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-void __cdecl game_engine_end_round_with_winner_hook2(s_hook_registers registers)
+void __cdecl game_engine_end_round_with_winner_hook2(s_hook_registers& registers)
 {
     long absolute_player_index = (long)registers.esi;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-void __cdecl game_engine_earn_wp_event_hook(s_hook_registers registers)
+void __cdecl game_engine_earn_wp_event_hook(s_hook_registers& registers)
 {
     long absolute_player_index = (long)registers.esi;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)absolute_player_index);
 }
 
-void __cdecl game_engine_end_round_with_winner_hook3(s_hook_registers registers)
+void __cdecl game_engine_end_round_with_winner_hook3(s_hook_registers& registers)
 {
     long team_index = (long)registers.ebx;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
-void __cdecl c_game_engine__recompute_team_score_hook(s_hook_registers registers)
+void __cdecl c_game_engine__recompute_team_score_hook(s_hook_registers& registers)
 {
     long team_index = (long)registers.edi;
 
     simulation_action_game_statborg_update((e_simulation_statborg_update_flag)(_simulation_statborg_update_team0 + team_index));
 }
 
-void __cdecl player_changed_teams_hook(s_hook_registers registers)
+void __cdecl player_changed_teams_hook(s_hook_registers& registers)
 {
     short player_index = (short)registers.ebx;
 

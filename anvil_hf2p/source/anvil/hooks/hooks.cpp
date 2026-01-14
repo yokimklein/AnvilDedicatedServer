@@ -68,6 +68,7 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
                 ASSERT(instruction_length == 2);
                 // verify offset fits in buffer
                 short_offset = code_buffer[i + 1];
+                // $TODO: check bounds both ways
                 near_jump_is_in_bounds = (short_offset + 2 + i) < length; // if this assert fails you've likely ended your replaced instructions with a short jump
                 if (!near_jump_is_in_bounds && redirect_oob_jumps)
                 {
@@ -143,40 +144,50 @@ void insert_hook_copy_instructions(void* destination, void* source, size_t lengt
 // This only works with parameterless functions - start_address is a baseless offset
 // Inserted function must have runtime checks, safebuffers & JustMyCode disabled
 // Make sure the destination of any short jumps included in your replaced instructions is also included
-// NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
-// NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
-// NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
-// NOTE: ensure the area you're overwriting is at least 5 bytes in size
-// NOTE: if using _hook_stack_frame_increase or _hook_stack_frame_cleanup, inserted_function becomes the number of bytes you wish to (de)allocate on the stack
-void hook::insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, bool redirect_oob_jumps)
+// $NOTE: if you use the disassembly debug view whilst this is writing, the view will NOT update to the new instructions & bytes - this can make it look like there's a bug when there isn't
+// $NOTE: set redirect_oob_jumps to true to redirect out of bounds near jumps to the end of the replaced instructions
+// $NOTE: this does not preserve xmm registers - ensure that required xmm registers after your call aren't overwritten
+// $NOTE: ensure the area you're overwriting is at least 5 bytes in size
+// $NOTE: if using _hook_stack_frame_increase or _hook_stack_frame_cleanup, inserted_function becomes the number of bytes you wish to (de)allocate on the stack
+// $NOTE: hooks must avoid running after a test or cmp instruction as the EFL register may be overwritten by the hook
+void hook::insert(size_t start_address, size_t return_address, void* inserted_function, e_hook_type hook_type, ulong hook_flags, bool redirect_oob_jumps)
 {
-    // $TODO: push esp, push ebp immediately, call hook cdecl with these
-    // not every hook will expect this, 
-
     long code_offset = 0;
 
-    //push        esp
-    //push        ebp
-    //push        edi
-    //push        esi
-    //push        edx
-    //push        ecx
-    //push        ebx
-    //push        eax
-    byte preserve_registers[] = { 0x54, 0x55, 0x57, 0x56, 0x52, 0x51, 0x53, 0x50 };
+    // PRESERVE - creates and populates s_hook_registers before pushing as a reference
+    constexpr byte preserve_registers_new[] =
+    {
+        0x54,                                       // push esp (pushed first so its value isn't modified by push instructions)
+        0x55,                                       // push ebp
+        0x57,                                       // push edi
+        0x56,                                       // push esi
+        0x52,                                       // push edx
+        0x51,                                       // push ecx
+        0x53,                                       // push ebx
+        0x50,                                       // push eax
+        0x8D, 0x04, 0x24,                           // lea eax, [esp]
+        0x50                                        // push eax
+    };
 
-    //pop         eax
-    //pop         ebx
-    //pop         ecx
-    //pop         edx
-    //pop         esi
-    //pop         edi
-    //add         esp, 8
-    byte restore_registers[] = { 0x58, 0x5B, 0x59, 0x5A, 0x5E, 0x5F, 0x83, 0xC4, 0x08 };
+    // RESTORE - write register values from struct back to registers (no preserve should skip this step)
+    constexpr byte restore_registers_new[] =
+    {
+        0x8D, 0x64, 0x24, 0x04,                     // lea esp, [esp+4] (cleanup call)
+                                                    // ignoring esp & ebp here as we don't want to restore these
+        0x58,                                       // pop eax
+        0x5B,                                       // pop ebx
+        0x59,                                       // pop ecx
+        0x5A,                                       // pop edx
+        0x5E,                                       // pop esi
+        0x5F,                                       // pop edi
+        0x8D, 0x64, 0x24, 0x08,                     // lea esp, [esp+8] (using lea here to cleanup stack without affecting the EFL register, so we can hook test or cmp operations)
+    };
 
-    //add         esp, 32
-    byte nopreserve_registers[] = { 0x83, 0xC4, 0x20 };
-
+    // NO RESTORE - $TODO: restore this functionality
+    constexpr byte no_restore_registers[] =
+    {
+        0x8D, 0x64, 0x24, sizeof(s_hook_registers), // lea esp, [esp+sizeof(s_hook_registers)] (ditto above)
+    };
 
     byte call_code[] = { 0xE8, 0x90, 0x90, 0x90, 0x90 }; // call w/ 4x placeholder bytes where the function address will go
     byte return_code[] = { 0xE9, 0x90, 0x90, 0x90, 0x90 }; // jump w/ 4x placeholder bytes
@@ -193,7 +204,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
 
     // initialise our new code block
     long inserted_code_size = sizeof(return_code);
-    if ((hook_type != _hook_replace && hook_type != _hook_replace_no_preserve) && hook_type != _hook_replace_no_nop)
+    if (hook_type != _hook_replace && !TEST_BIT(hook_flags, _hook_no_preserve) && !TEST_BIT(hook_flags, _hook_no_nop))
     {
         inserted_code_size += length;
     }
@@ -205,13 +216,13 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     {
         inserted_code_size += sizeof(call_code);
     }
-    if (hook_type != _hook_replace_no_preserve)
+    if (!TEST_BIT(hook_flags, _hook_no_preserve))
     {
-        inserted_code_size += sizeof(preserve_registers) + sizeof(restore_registers);
+        inserted_code_size += sizeof(preserve_registers_new) + sizeof(restore_registers_new);
     }
     else
     {
-        inserted_code_size += sizeof(preserve_registers) + sizeof(nopreserve_registers);
+        inserted_code_size += sizeof(preserve_registers_new) + sizeof(no_restore_registers);
     }
 
     byte* inserted_code = (byte*)VirtualAlloc(NULL, inserted_code_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -248,8 +259,8 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     else
     {
         // preserve registers across call
-        csmemcpy(inserted_code + code_offset, preserve_registers, sizeof(preserve_registers));
-        code_offset += sizeof(preserve_registers);
+        csmemcpy(inserted_code + code_offset, preserve_registers_new, sizeof(preserve_registers_new));
+        code_offset += sizeof(preserve_registers_new);
 
         // call inserted function
         size_t call_offset = ((size_t)inserted_function - (size_t)(inserted_code + code_offset) - sizeof(call_code));
@@ -257,20 +268,19 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
         csmemcpy(inserted_code + code_offset, call_code, sizeof(call_code));
         code_offset += sizeof(call_code);
 
-        if (hook_type != _hook_replace_no_preserve)
+        if (!TEST_BIT(hook_flags, _hook_no_preserve))
         {
             // restore registers
-            csmemcpy(inserted_code + code_offset, restore_registers, sizeof(restore_registers));
-            code_offset += sizeof(restore_registers);
+            csmemcpy(inserted_code + code_offset, restore_registers_new, sizeof(restore_registers_new));
+            code_offset += sizeof(restore_registers_new);
         }
         else
         {
             // cleanup call
-            csmemcpy(inserted_code + code_offset, nopreserve_registers, sizeof(nopreserve_registers));
-            code_offset += sizeof(nopreserve_registers);
+            csmemcpy(inserted_code + code_offset, no_restore_registers, sizeof(no_restore_registers));
+            code_offset += sizeof(no_restore_registers);
         }
     }
-
 
     if (hook_type == _hook_execute_replaced_last || hook_type == _hook_stack_frame_increase)
     {
@@ -296,8 +306,7 @@ void hook::insert(size_t start_address, size_t return_address, void* inserted_fu
     // restore memory protection
     patch::set_memory_protect(start_address, old_protect, sizeof(jump_code));
     patch::set_memory_protect((size_t)inserted_code - base_address(), PAGE_EXECUTE_READ, inserted_code_size);
-
-    if (hook_type != _hook_replace_no_nop)
+    if (!TEST_BIT(hook_flags, _hook_no_nop))
     {
         // nop the bytes leftover between the original overwritten instructions and the return point for sanity
         // makes looking at the modified disassembly less chaotic

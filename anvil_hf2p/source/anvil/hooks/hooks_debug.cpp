@@ -16,23 +16,22 @@
 #include "cseries\cseries_windows_debug_pc.h"
 #include "cache\cache_files.h"
 #include "shell\shell_windows.h"
-#include <tag_files\tag_resource_cache_control.h>
 
-void __cdecl main_game_reset_map_hook(s_hook_registers registers)
+void __cdecl main_game_reset_map_hook(s_hook_registers& registers)
 {
 #if defined(EVENTS_ENABLED)
     events_clear();
 #endif
 }
 
-void __cdecl main_game_change_immediate_hook(s_hook_registers registers)
+void __cdecl main_game_change_immediate_hook(s_hook_registers& registers)
 {
 #if defined(EVENTS_ENABLED)
     events_clear();
 #endif
 }
 
-void __cdecl render_debug_window_render_hook(s_hook_registers registers)
+void __cdecl render_debug_window_render_hook(s_hook_registers& registers)
 {
     long user_index = (long)registers.ecx;
 
@@ -41,14 +40,14 @@ void __cdecl render_debug_window_render_hook(s_hook_registers registers)
 #endif
 }
 
-void __cdecl shell_initialized_hook(s_hook_registers registers)
+void __cdecl shell_initialized_hook(s_hook_registers& registers)
 {
 #if defined(EVENTS_ENABLED)
     events_initialize();
 #endif
 }
 
-void __cdecl main_loop_body_hook1(s_hook_registers registers)
+void __cdecl main_loop_body_hook1(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	real shell_seconds_elapsed = *(real*)(registers.ebp - 0x18);
@@ -79,56 +78,57 @@ void __cdecl main_loop_body_hook1(s_hook_registers registers)
 #endif
 }
 
-void __cdecl main_loop_enter_hook1(s_hook_registers registers)
+void __cdecl main_loop_enter_hook1(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	console_initialize();
 #endif
 }
 
-void __cdecl main_loop_enter_hook2(s_hook_registers registers)
+void __cdecl main_loop_enter_hook2(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	console_execute_initial_commands();
 #endif
 }
 
-void __cdecl main_loop_exit_hook(s_hook_registers registers)
+void __cdecl main_loop_exit_hook(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	console_dispose();
 #endif
 }
 
-void __cdecl render_initialize_hook(s_hook_registers registers)
+void __cdecl render_initialize_hook(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	render_debug_initialize();
 #endif
 }
 
-void __cdecl main_loop_body_hook2(s_hook_registers registers)
+void __cdecl main_loop_body_hook2(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	render_debug_reset_cache_to_game_tick_entires();
 #endif
 }
 
-void __cdecl game_tick_hook1(s_hook_registers registers)
+void __cdecl game_tick_hook1(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	render_debug_notify_game_tick_begin();
 #endif
 }
 
-void __cdecl game_tick_hook2(s_hook_registers registers)
+void __cdecl game_tick_hook2(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
 	render_debug_notify_game_tick_end();
 #endif
 }
 
-void __cdecl main_loop_body_hook4(s_hook_registers registers)
+#pragma runtime_checks("", off)
+__declspec(safebuffers) void __cdecl main_loop_body_hook4(s_hook_registers& registers)
 {
 	bool halted = main_time_halted();
 	__asm
@@ -137,7 +137,7 @@ void __cdecl main_loop_body_hook4(s_hook_registers registers)
 	}
 }
 
-void __cdecl rumble_update_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl rumble_update_hook(s_hook_registers& registers)
 {
 	bool halted = main_time_halted();
 	__asm
@@ -145,214 +145,78 @@ void __cdecl rumble_update_hook(s_hook_registers registers)
 		cmp halted, 0
 	}
 }
+#pragma runtime_checks("", restore)
 
-void __cdecl font_initialize_hook(s_hook_registers registers)
+void __cdecl font_initialize_hook(s_hook_registers& registers)
 {
 	fallback_font_initialize();
 }
 
-void __cdecl font_initialize_emergency_hook(s_hook_registers registers)
+void __cdecl font_initialize_emergency_hook(s_hook_registers& registers)
 {
 	fallback_font_initialize();
 }
 
 #pragma runtime_checks("", off)
-__declspec(safebuffers) void __cdecl main_loop_body_hook3(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl main_loop_body_hook3(s_hook_registers& registers)
 {
-	__asm
-	{
-		// preserve registers
-		push edi
-		push esi
-		push edx
-		push ebx
-		push eax
-	}
-
 	bool halted = main_time_halted();
 
-	__asm
-	{
-		// return halted to cl
-		mov cl, halted
-		// restore registers
-		pop eax
-		pop ebx
-		pop edx
-		pop esi
-		pop edi
-	}
+	// return halted to cl
+	registers.ecx = halted;
 }
 
-__declspec(safebuffers) void __cdecl c_draw_string__ctor_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl c_draw_string__ctor_hook(s_hook_registers& registers)
 {
-	__asm
-	{
-		// preserve registers
-		push edi
-		push esi
-		push ecx
-		push ebx
-		push eax
-	}
-
 	const s_font_header* font_header = font_get_header(_terminal_font);
 
-	__asm
-	{
-		// return font_header to edx register
-		mov edx, font_header
-		// restore registers
-		pop eax
-		pop ebx
-		pop ecx
-		pop esi
-		pop edi
-	}
+	// return font_header to edx register
+	registers.edx = reinterpret_cast<size_t>(font_header);
 }
 
-__declspec(safebuffers) void __cdecl c_draw_string__draw_internal_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl c_draw_string__draw_internal_hook(s_hook_registers& registers)
 {
-	__asm
-	{
-		// preserve registers
-		push edi
-		push edx
-		push ecx
-		push ebx
-		push eax
-	}
 	e_font_id font = (e_font_id)registers.esi;
 
 	const s_font_header* font_header = font_get_header(font);
 
-	__asm
-	{
-		// return font_header to esi register
-		mov esi, font_header
-		// restore registers
-		pop eax
-		pop ebx
-		pop ecx
-		pop edx
-		pop edi
-	}
+	// return font_header to esi register
+	registers.esi = reinterpret_cast<size_t>(font_header);
 }
 
-__declspec(safebuffers) void __cdecl c_draw_string__parse_string_new_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl c_draw_string__parse_string_new_hook(s_hook_registers& registers)
 {
-	// preserve registers
-	__asm
-	{
-		push edi
-		push esi
-		push edx
-		push ebx
-		push eax
-	}
 	e_font_id font = (e_font_id)registers.ecx;
 
 	const s_font_header* font_header = font_get_header(font);
 
-	__asm
-	{
-		// return font_header to ecx
-		mov ecx, font_header
-		// restore registers
-		pop eax
-		pop ebx
-		pop edx
-		pop esi
-		pop edi
-	}
+	// return font_header to ecx register
+	registers.ecx = reinterpret_cast<size_t>(font_header);
 }
 
-__declspec(safebuffers) void __cdecl font_cache_load_internal_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl font_cache_load_internal_hook(s_hook_registers& registers)
 {
 	e_font_id font_id = (e_font_id)registers.edx;
-	__asm
-	{
-		// preserve registers
-		push edi
-		push esi
-		push edx
-		push ecx
-		push ebx
-	}
-
 	e_font_index font_index = font_get_font_index(font_id);
-
-	__asm
-	{
-		// return value
-		mov eax, font_index
-		// restore registers
-		pop ebx
-		pop ecx
-		pop edx
-		pop esi
-		pop edi
-	}
+	registers.eax = font_index; // return font_index value to eax register
 }
 
-__declspec(safebuffers) void __cdecl hardware_cache_load_character_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl hardware_cache_load_character_hook(s_hook_registers& registers)
 {
 	e_font_id font_id = (e_font_id)registers.eax;
-	__asm
-	{
-		// preserve registers
-		push edi
-		push esi
-		push ecx
-		push ebx
-		push eax
-	}
-
 	e_font_index font_index = font_get_font_index(font_id);
-
-	__asm
-	{
-		// return value
-		mov edx, font_index
-		// restore registers
-		pop eax
-		pop ebx
-		pop ecx
-		pop esi
-		pop edi
-	}
+	registers.edx = font_index; // return font_index value to edx register
 }
 
-__declspec(safebuffers) void __cdecl hardware_cache_predict_character_hook(s_hook_registers registers)
+__declspec(safebuffers) void __cdecl hardware_cache_predict_character_hook(s_hook_registers& registers)
 {
 	e_font_id font_id = (e_font_id)registers.esi;
-	__asm
-	{
-		// preserve registers
-		push edi
-		push esi
-		push edx
-		push ecx
-		push ebx
-	}
-
 	e_font_index font_index = font_get_font_index(font_id);
-
-	__asm
-	{
-		// return value
-		mov eax, font_index
-		// restore registers
-		pop ebx
-		pop ecx
-		pop edx
-		pop esi
-		pop edi
-	}
+	registers.eax = font_index; // return font_index value to eax register
 }
 #pragma runtime_checks("", restore)
 
-void __cdecl main_time_frame_rate_display_hook(s_hook_registers registers)
+void __cdecl main_time_frame_rate_display_hook(s_hook_registers& registers)
 {
 	c_rasterizer_draw_string* display_pulse_rates_draw_string = (c_rasterizer_draw_string*)(registers.ebp - 0x10F0);
 	c_rasterizer_draw_string* display_framerate_draw_string = (c_rasterizer_draw_string*)(registers.ebp - 0x8C8);
@@ -361,21 +225,21 @@ void __cdecl main_time_frame_rate_display_hook(s_hook_registers registers)
 	display_framerate_draw_string->set_font(_full_screen_hud_message_font);
 }
 
-void __cdecl director_render_hook(s_hook_registers registers)
+void __cdecl director_render_hook(s_hook_registers& registers)
 {
 	c_rasterizer_draw_string* rasterizer_draw_string = (c_rasterizer_draw_string*)(registers.esp + 0x9C4 - 0x868);
 
 	rasterizer_draw_string->set_font(_large_body_text_font);
 }
 
-void __cdecl subtitle_render_hook(s_hook_registers registers)
+void __cdecl subtitle_render_hook(s_hook_registers& registers)
 {
 	c_rasterizer_draw_string* rasterizer_draw_string = (c_rasterizer_draw_string*)(registers.esp + 0x1488 - 0x1238);
 
 	rasterizer_draw_string->set_font(_subtitle_font);
 }
 
-void __cdecl game_engine_render_frame_watermarks_hook(s_hook_registers registers)
+void __cdecl game_engine_render_frame_watermarks_hook(s_hook_registers& registers)
 {
 	e_font_id font = (e_font_id)registers.ebx;
 	c_rasterizer_draw_string* rasterizer_draw_string = (c_rasterizer_draw_string*)(registers.ebp - 0xFB0);
@@ -383,21 +247,21 @@ void __cdecl game_engine_render_frame_watermarks_hook(s_hook_registers registers
 	rasterizer_draw_string->set_font(font);
 }
 
-void __cdecl render_fullscreen_text_hook(s_hook_registers registers)
+void __cdecl render_fullscreen_text_hook(s_hook_registers& registers)
 {
 	c_rasterizer_draw_string* rasterizer_draw_string = (c_rasterizer_draw_string*)(registers.ebp - 0xA50);
 
 	rasterizer_draw_string->set_font(_font_id_fallback);
 }
 
-void __cdecl chud_get_string_width_hook(s_hook_registers registers)
+void __cdecl chud_get_string_width_hook(s_hook_registers& registers)
 {
 	c_draw_string* draw_string = (c_draw_string*)(registers.ebp - 0x140);
 
 	draw_string->set_font(_full_screen_hud_message_font);
 }
 
-void __cdecl c_user_interface_text__render_hook(s_hook_registers registers)
+void __cdecl c_user_interface_text__render_hook(s_hook_registers& registers)
 {
 	e_font_id font = (e_font_id)registers.eax;
 	c_draw_string* draw_string = (c_draw_string*)(registers.ebp - 0x870);
@@ -405,7 +269,7 @@ void __cdecl c_user_interface_text__render_hook(s_hook_registers registers)
 	draw_string->set_font(font);
 }
 
-void __cdecl c_user_interface_text__compute_text_bounds_hook(s_hook_registers registers)
+void __cdecl c_user_interface_text__compute_text_bounds_hook(s_hook_registers& registers)
 {
 	e_font_id font = (e_font_id)registers.eax;
 	c_draw_string* draw_string = (c_draw_string*)(registers.ebp - 0x110);
@@ -413,7 +277,7 @@ void __cdecl c_user_interface_text__compute_text_bounds_hook(s_hook_registers re
 	draw_string->set_font(font);
 }
 
-void __cdecl chud_build_text_geometry_hook(s_hook_registers registers)
+void __cdecl chud_build_text_geometry_hook(s_hook_registers& registers)
 {
 	e_font_id font = *(e_font_id*)(registers.ebp + 0x08);
 	c_draw_string* draw_string = (c_draw_string*)(registers.ebp - 0x140);
@@ -421,7 +285,7 @@ void __cdecl chud_build_text_geometry_hook(s_hook_registers registers)
 	draw_string->set_font(font);
 }
 
-void __cdecl font_loading_idle_hook(s_hook_registers registers)
+void __cdecl font_loading_idle_hook(s_hook_registers& registers)
 {
 	font_load_idle(&g_font_globals.package_loading_state, &g_font_globals.fonts_unavailable);
 }
@@ -444,7 +308,7 @@ e_character_status __fastcall font_cache_retrieve_character_hook(ulong character
 }
 #pragma runtime_checks("", restore)
 
-void __cdecl shell_dispose_hook(s_hook_registers registers)
+void __cdecl shell_dispose_hook(s_hook_registers& registers)
 {
 	events_dispose();
 }
@@ -454,7 +318,7 @@ void __fastcall c_draw_string__set_font_hook(c_draw_string* thisptr, void* unuse
 	thisptr->set_font(font);
 }
 
-void __cdecl director_update_hook(s_hook_registers registers)
+void __cdecl director_update_hook(s_hook_registers& registers)
 {
 	long user_index = (long)registers.edi;
 
@@ -465,11 +329,6 @@ void __cdecl director_update_hook(s_hook_registers registers)
 void __fastcall c_debug_director__update_hook(c_debug_director* thisptr, void* unused, real dt)
 {
 	thisptr->update_(dt);
-}
-
-void __fastcall mark_necessary_resources_hook(c_tag_resource_cache_controller* thisptr, void* unused, c_tag_resource_runtime_active_set* runtime_active_set, c_tag_resource_address_cache_control_interface* controller_interface, bool* out_unknown)
-{
-	thisptr->mark_necessary_resources(runtime_active_set, controller_interface, out_unknown);
 }
 
 void anvil_hooks_debug_apply()
@@ -501,7 +360,7 @@ void anvil_hooks_debug_apply()
 	patch::function(0xD4C678, events_suppress_display_events_suppress_output_1_evaluate);
 
 	// main_time_halted for console pausing
-	hook::insert(0x958FD, 0x95903, main_loop_body_hook3, _hook_replace_no_preserve);
+	hook::insert(0x958FD, 0x95903, main_loop_body_hook3, _hook_replace);
 	hook::insert(0x95A9D, 0x95AA4, main_loop_body_hook4, _hook_replace);
 	hook::insert(0x164856, 0x16485D, rumble_update_hook, _hook_replace);
 
@@ -525,9 +384,9 @@ void anvil_hooks_debug_apply()
 	patch::nop_region(0x16B76F, 3); // cleanup usercall
 	patch::nop_region(0x16B788, 3); // cleanup usercall
 	// font_get_header inlines
-	hook::insert(0x16C152, 0x16C17A, c_draw_string__ctor_hook, _hook_replace_no_preserve);
-	hook::insert(0x16CEF8, 0x16CF25, c_draw_string__draw_internal_hook, _hook_replace_no_preserve);
-	hook::insert(0x16D429, 0x16D455, c_draw_string__parse_string_new_hook, _hook_replace_no_preserve);
+	hook::insert(0x16C152, 0x16C17A, c_draw_string__ctor_hook, _hook_replace);
+	hook::insert(0x16CEF8, 0x16CF25, c_draw_string__draw_internal_hook, _hook_replace);
+	hook::insert(0x16D429, 0x16D455, c_draw_string__parse_string_new_hook, _hook_replace);
 	// c_draw_string::set_font
 	hook::function(0x16C760, 0x65, c_draw_string__set_font_hook);
 	// inlines
@@ -557,9 +416,9 @@ void anvil_hooks_debug_apply()
 	patch::nop_region(0x3E0EFF, 6); // remove leftover code from inline
 	
 	// font_get_font_index
-	hook::insert(0x16B675, 0x16B689, font_cache_load_internal_hook, _hook_replace_no_preserve);
-	hook::insert(0x25F3E8, 0x25F3FE, hardware_cache_load_character_hook, _hook_replace_no_preserve);
-	hook::insert(0x25F2E3, 0x25F300, hardware_cache_predict_character_hook, _hook_replace_no_preserve);
+	hook::insert(0x16B675, 0x16B689, font_cache_load_internal_hook, _hook_replace);
+	hook::insert(0x25F3E8, 0x25F3FE, hardware_cache_load_character_hook, _hook_replace);
+	hook::insert(0x25F2E3, 0x25F300, hardware_cache_predict_character_hook, _hook_replace);
 
 	// events_dispose in inlined cseries_dispose @ shell_dispose
 	hook::insert(0x123A, 0x123F, shell_dispose_hook, _hook_execute_replaced_last);
@@ -581,7 +440,4 @@ void anvil_hooks_debug_apply()
 
 	// catch fire
 	hook::function(0x96BD0, 0x140, main_halt_and_catch_fire);
-
-	// WIP headless (no audio & video)
-	hook::function(0x246B40, 0x301, mark_necessary_resources_hook); // take control of mark_necessary_resources to block audio & video resources
 }

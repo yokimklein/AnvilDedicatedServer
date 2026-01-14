@@ -13,7 +13,7 @@
 #include <game\game_engine_util.h>
 #include <anvil\backend\cache.h>
 
-void __cdecl damage_section_deplete_hook(s_hook_registers registers) // destroy hologram?
+void __cdecl damage_section_deplete_hook(s_hook_registers& registers) // destroy hologram?
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x0C);
     long damage_section_index = *(long*)(registers.ebp + 0x10);
@@ -22,7 +22,7 @@ void __cdecl damage_section_deplete_hook(s_hook_registers registers) // destroy 
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
-void __cdecl damage_section_respond_to_damage_hook(s_hook_registers registers) // destroy hologram with powerdrain?
+void __cdecl damage_section_respond_to_damage_hook(s_hook_registers& registers) // destroy hologram with powerdrain?
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x14);
     long damage_section_index = *(long*)(registers.ebp + 0x10);
@@ -31,7 +31,7 @@ void __cdecl damage_section_respond_to_damage_hook(s_hook_registers registers) /
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
-void __cdecl object_damage_new_hook(s_hook_registers registers) // throwing deployable cover?
+void __cdecl object_damage_new_hook(s_hook_registers& registers) // throwing deployable cover?
 {
     datum_index object_index = (datum_index)registers.edi;
     long damage_section_index = *(long*)(registers.esp + 0x94 - 0x6C);
@@ -40,7 +40,7 @@ void __cdecl object_damage_new_hook(s_hook_registers registers) // throwing depl
     simulation_action_damage_section_response(object_index, damage_section_index, response_index, _damage_section_receives_area_effect_damage);
 }
 
-//void __cdecl object_apply_damage_aftermath_hook2(s_hook_registers registers)
+//void __cdecl object_apply_damage_aftermath_hook2(s_hook_registers& registers)
 //{
 //    datum_index object_index = (datum_index)registers.esi;
 //    s_damage_aftermath_result_data* result_data = (s_damage_aftermath_result_data*)registers.edi;
@@ -48,7 +48,7 @@ void __cdecl object_damage_new_hook(s_hook_registers registers) // throwing depl
 //    simulation_action_damage_aftermath(object_index, result_data);
 //}
 
-void __cdecl object_cause_damage_hook(s_hook_registers registers)
+void __cdecl object_cause_damage_hook(s_hook_registers& registers)
 {
     bool update_sim_aftermath = *(bool*)(registers.ebp - 0x44);
     datum_index object_index = *(datum_index*)(registers.ebp - 0x2C);
@@ -75,7 +75,7 @@ void __cdecl object_cause_damage_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl projectile_attach_hook2(s_hook_registers registers)
+void __cdecl projectile_attach_hook2(s_hook_registers& registers)
 {
     datum_index projectile_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
     datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x38);
@@ -87,7 +87,7 @@ void __cdecl projectile_attach_hook2(s_hook_registers registers)
 }
 
 // add back missing variables from_impact & detonation_timer_started
-void __cdecl projectile_collision_hook0(s_hook_registers registers)
+void __cdecl projectile_collision_hook0(s_hook_registers& registers)
 {
     e_predictability predictability = *(e_predictability*)(registers.esp + 0x258 - 0x240);
     projectile_datum* projectile = *(projectile_datum**)(registers.esp + 0x258 - 0x218);
@@ -103,26 +103,20 @@ void __cdecl projectile_collision_hook0(s_hook_registers registers)
 }
 
 // initialise new_effect variable as false
-__declspec(naked) void projectile_collision_hook1()
+void __cdecl projectile_collision_hook1(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov [ebp + 12], eax; // xor eax, eax just ran to zero two other variables
-        retn;
-    }
+    bool* new_effect = (bool*)(registers.ebp + 0x0C);
+    *new_effect = false;
 }
 
 // set new_effect variable to true
-__declspec(naked) void projectile_collision_hook2()
+void __cdecl projectile_collision_hook2(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov [ebp + 12], 1;
-        retn;
-    }
+    bool* new_effect = (bool*)(registers.ebp + 0x0C);
+    *new_effect = true;
 }
 
-void __cdecl projectile_collision_hook3(s_hook_registers registers)
+void __cdecl projectile_collision_hook3(s_hook_registers& registers)
 {
     bool detonation_timer_started = *(bool*)(registers.ebp + 0x08);
     bool new_effect = *(bool*)(registers.ebp + 0x0C);
@@ -153,21 +147,21 @@ void __cdecl projectile_collision_hook3(s_hook_registers registers)
     }
 }
 
-void __cdecl unit_action_vehicle_board_submit_hook(s_hook_registers registers)
+void __cdecl unit_action_vehicle_board_submit_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
 
     simulation_action_unit_board_vehicle(unit_index);
 }
 
-void __cdecl motor_animation_exit_seat_internal_hook(s_hook_registers registers)
+void __cdecl motor_animation_exit_seat_internal_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.esi;
 
     simulation_action_unit_exit_vehicle(unit_index);
 }
 
-void __cdecl unit_resolve_melee_attack_hook(s_hook_registers registers)
+void __cdecl unit_resolve_melee_attack_hook(s_hook_registers& registers)
 {
     weapon_definition const* weapon_tag = (weapon_definition const*)registers.edi;
     real_point3d const* position = *(real_point3d const**)(registers.ebp - 0x3C);
@@ -176,7 +170,7 @@ void __cdecl unit_resolve_melee_attack_hook(s_hook_registers registers)
     simulation_action_unit_melee_clang(weapon_tag->weapon.clash_effect.index, position, &unit->unit.melee_aiming_vector);
 }
 
-void __cdecl game_engine_earn_wp_event_hook2(s_hook_registers registers)
+void __cdecl game_engine_earn_wp_event_hook2(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x40 - 0x28);
 
@@ -187,35 +181,35 @@ void __cdecl game_engine_earn_wp_event_hook2(s_hook_registers registers)
     game_engine_send_event(event_data);
 }
 
-void __cdecl game_engine_scoring_update_leaders_internal_hook(s_hook_registers registers)
+void __cdecl game_engine_scoring_update_leaders_internal_hook(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x40);
 
     game_engine_send_event(event_data);
 }
 
-void __cdecl game_engine_award_medal_hook(s_hook_registers registers)
+void __cdecl game_engine_award_medal_hook(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x38 - 0x28);
 
     game_engine_send_event(event_data);
 }
 
-void __cdecl c_slayer_engine__emit_game_start_event_hook(s_hook_registers registers)
+void __cdecl c_slayer_engine__emit_game_start_event_hook(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.esp + 0x28 - 0x28);
 
     game_engine_send_event(event_data);
 }
 
-void __cdecl display_teleporter_blocked_message_hook(s_hook_registers registers)
+void __cdecl display_teleporter_blocked_message_hook(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x28);
 
     game_engine_send_event(event_data);
 }
 
-void __cdecl c_teleporter_area__update_players_hook(s_hook_registers registers)
+void __cdecl c_teleporter_area__update_players_hook(s_hook_registers& registers)
 {
     s_game_engine_event_data* event_data = (s_game_engine_event_data*)(registers.ebp - 0x28);
 

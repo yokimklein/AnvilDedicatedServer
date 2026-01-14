@@ -11,7 +11,7 @@
 #include <game\game.h>
 #include <game\game_engine_util.h>
 
-void __cdecl player_spawn_hook1(s_hook_registers registers)
+void __cdecl player_spawn_hook1(s_hook_registers& registers)
 {
     player_datum* player = (player_datum*)registers.ebx;
     datum_index player_index = (datum_index)registers.esi;
@@ -22,28 +22,28 @@ void __cdecl player_spawn_hook1(s_hook_registers registers)
     }
 }
 
-void __cdecl player_spawn_hook2(s_hook_registers registers)
+void __cdecl player_spawn_hook2(s_hook_registers& registers)
 {
     datum_index player_index = *(datum_index*)(registers.ebp - 0x18);
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_spawn_timer);
 }
 
-void __cdecl player_spawn_hook3(s_hook_registers registers)
+void __cdecl player_spawn_hook3(s_hook_registers& registers)
 {
     datum_index player_index = *(datum_index*)(registers.ebp - 0x18);
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-void __cdecl unit_handle_equipment_energy_cost_hook2(s_hook_registers registers)
+void __cdecl unit_handle_equipment_energy_cost_hook2(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.ebx;
 
     simulation_action_game_engine_player_update(unit->unit.player_index, _simulation_player_update_consumable_supression);
 }
 
-void __cdecl player_update_loadout_hook1(s_hook_registers registers)
+void __cdecl player_update_loadout_hook1(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.esi;
     player_datum* player = (player_datum*)registers.ebx;
@@ -51,7 +51,7 @@ void __cdecl player_update_loadout_hook1(s_hook_registers registers)
     player_update_loadout(player_index, player);
 }
 
-void __cdecl player_update_loadout_hook2(s_hook_registers registers)
+void __cdecl player_update_loadout_hook2(s_hook_registers& registers)
 {
     player_datum* player = (player_datum*)registers.esi;
 
@@ -59,7 +59,7 @@ void __cdecl player_update_loadout_hook2(s_hook_registers registers)
     player_update_loadout(player_index, player);
 }
 
-void __cdecl player_reset_hook(s_hook_registers registers)
+void __cdecl player_reset_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ebx;
     player_datum* player = (player_datum*)registers.edi;
@@ -67,7 +67,7 @@ void __cdecl player_reset_hook(s_hook_registers registers)
     player_update_loadout(player_index, player);
 }
 
-void __cdecl game_engine_update_player_netdebug_state_hook(s_hook_registers registers)
+void __cdecl game_engine_update_player_netdebug_state_hook(s_hook_registers& registers)
 {
     for (long i = 0; i < k_maximum_players; i++)
     {
@@ -75,14 +75,14 @@ void __cdecl game_engine_update_player_netdebug_state_hook(s_hook_registers regi
     }
 }
 
-void __cdecl players_update_after_game_hook1(s_hook_registers registers)
+void __cdecl players_update_after_game_hook1(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ebx;
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_blocking_teleporter);
 }
 
-void __cdecl players_update_after_game_hook2(s_hook_registers registers)
+void __cdecl players_update_after_game_hook2(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ebx;
     player_datum* player = (player_datum*)registers.esi;
@@ -94,7 +94,7 @@ void __cdecl players_update_after_game_hook2(s_hook_registers registers)
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_consumable_supression);
 }
 
-void __cdecl players_update_after_game_hook3(s_hook_registers registers)
+void __cdecl players_update_after_game_hook3(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ebx;
     player_datum* player = (player_datum*)registers.esi;
@@ -107,7 +107,7 @@ void __cdecl players_update_after_game_hook3(s_hook_registers registers)
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_vehicle_entrance_ban);
 }
 
-void __cdecl game_engine_player_killed_hook1(s_hook_registers registers)
+void __cdecl game_engine_player_killed_hook1(s_hook_registers& registers)
 {
     datum_index dead_player_index = *(datum_index*)(registers.ebp + 0x08);
 
@@ -117,28 +117,28 @@ void __cdecl game_engine_player_killed_hook1(s_hook_registers registers)
     }
 }
 
-void __cdecl c_game_statborg__record_player_death_hook1(s_hook_registers registers)
+void __cdecl c_game_statborg__record_player_death_hook1(s_hook_registers& registers)
 {
     datum_index dead_player_index = *(datum_index*)(registers.ebp + 0x08);
 
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_grief_player_index);
 }
 
-void __cdecl game_engine_player_fired_weapon_hook(s_hook_registers registers)
+void __cdecl game_engine_player_fired_weapon_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ecx;
 
     game_engine_set_player_navpoint_action(player_index, _navpoint_action_fired_weapon);
 }
 
-void __cdecl game_engine_player_damaged_player_hook(s_hook_registers registers)
+void __cdecl game_engine_player_damaged_player_hook(s_hook_registers& registers)
 {
     datum_index player_index = *(datum_index*)(registers.ebp + 0x08);
 
     game_engine_set_player_navpoint_action(player_index, _navpoint_action_player_damaged);
 }
 
-void __cdecl game_engine_update_after_game_update_state_hook3(s_hook_registers registers)
+void __cdecl game_engine_update_after_game_update_state_hook3(s_hook_registers& registers)
 {
     c_player_in_game_iterator player_iterator;
     player_iterator.begin();
@@ -150,28 +150,28 @@ void __cdecl game_engine_update_after_game_update_state_hook3(s_hook_registers r
     }
 }
 
-void __cdecl game_engine_update_after_game_update_state_hook4(s_hook_registers registers)
+void __cdecl game_engine_update_after_game_update_state_hook4(s_hook_registers& registers)
 {
     c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)(registers.ebp - 0x10);
 
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_lives_remaining);
 }
 
-void __cdecl game_engine_update_player_hook2(s_hook_registers registers)
+void __cdecl game_engine_update_player_hook2(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.esi;
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_grief_player_index);
 }
 
-void __cdecl game_engine_update_player_sitting_out_hook(s_hook_registers registers)
+void __cdecl game_engine_update_player_sitting_out_hook(s_hook_registers& registers)
 {
     c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)(registers.ebp - 0x10);
 
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_sitting_out);
 }
 
-void __cdecl game_engine_player_changed_indices_hook1(s_hook_registers registers)
+void __cdecl game_engine_player_changed_indices_hook1(s_hook_registers& registers)
 {
     datum_index player1_index = (datum_index)registers.ebx;
     datum_index player2_index = *(datum_index*)(registers.esp + 0x3390 - 0x337C);
@@ -182,7 +182,7 @@ void __cdecl game_engine_player_changed_indices_hook1(s_hook_registers registers
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
 }
 
-void __cdecl game_engine_player_changed_indices_hook2(s_hook_registers registers)
+void __cdecl game_engine_player_changed_indices_hook2(s_hook_registers& registers)
 {
     datum_index player1_index = (datum_index)registers.edi;
     datum_index player2_index = (datum_index)registers.ebx;
@@ -193,7 +193,7 @@ void __cdecl game_engine_player_changed_indices_hook2(s_hook_registers registers
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player2_index), update_flags);
 }
 
-void __cdecl player_delete_hook(s_hook_registers registers)
+void __cdecl player_delete_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.edi;
 
@@ -202,7 +202,7 @@ void __cdecl player_delete_hook(s_hook_registers registers)
     simulation_action_game_engine_player_update((short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index), update_flags);
 }
 
-void __cdecl game_engine_player_killed_hook2(s_hook_registers registers)
+void __cdecl game_engine_player_killed_hook2(s_hook_registers& registers)
 {
     short lives_remaining = (short)registers.ecx;
     player_datum* dead_player = (player_datum*)registers.edx;
@@ -215,14 +215,14 @@ void __cdecl game_engine_player_killed_hook2(s_hook_registers registers)
     simulation_action_game_engine_player_update(dead_player_index, _simulation_player_update_lives_remaining);
 }
 
-void __cdecl game_engine_player_left_hook(s_hook_registers registers)
+void __cdecl game_engine_player_left_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.ebx;
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_active_in_game);
 }
 
-void __cdecl game_engine_player_rejoined_hook(s_hook_registers registers)
+void __cdecl game_engine_player_rejoined_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.esi;
 
@@ -238,35 +238,35 @@ void __cdecl game_engine_player_rejoined_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl game_engine_setup_player_for_respawn_hook(s_hook_registers registers)
+void __cdecl game_engine_setup_player_for_respawn_hook(s_hook_registers& registers)
 {
     datum_index player_index = *(datum_index*)(registers.esp + 0x90 - 0x84);
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-void __cdecl objective_game_player_forced_base_respawn_hook(s_hook_registers registers)
+void __cdecl objective_game_player_forced_base_respawn_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.edi;
 
     simulation_action_game_engine_player_update(player_index, _simulation_player_update_early_respawn);
 }
 
-void __cdecl player_killed_player_perform_respawn_on_kill_check_hook(s_hook_registers registers)
+void __cdecl player_killed_player_perform_respawn_on_kill_check_hook(s_hook_registers& registers)
 {
     c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)registers.ecx;
 
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
 }
 
-void __cdecl game_engine_reset_player_respawn_timers_hook(s_hook_registers registers)
+void __cdecl game_engine_reset_player_respawn_timers_hook(s_hook_registers& registers)
 {
     c_player_in_game_iterator* player_iterator = (c_player_in_game_iterator*)registers.ecx;
 
     simulation_action_game_engine_player_update(player_iterator->get_index(), _simulation_player_update_early_respawn);
 }
 
-void __cdecl teleporter_teleport_object_hook(s_hook_registers registers)
+void __cdecl teleporter_teleport_object_hook(s_hook_registers& registers)
 {
     datum_index player_index = (datum_index)registers.esi;
 

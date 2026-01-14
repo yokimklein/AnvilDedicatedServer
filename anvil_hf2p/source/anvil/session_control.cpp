@@ -102,7 +102,7 @@ void anvil_session_update()
     c_network_session_parameters* parameters = session->get_session_parameters();
 
     // update voting once session is setup
-    if (session->established() && parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
+    if (session->established() && game_options_valid() && parameters->m_parameters.dedicated_server_session_state.get_allowed()) // skip if data is not available
     {
         anvil_session_update_voting(session);
     }

@@ -8,7 +8,7 @@
 #include <items\item_definitions.h>
 #include <cache\cache_files.h>
 
-void __cdecl weapon_age_hook(s_hook_registers registers)
+void __cdecl weapon_age_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = (datum_index)registers.edi;
 
@@ -16,70 +16,70 @@ void __cdecl weapon_age_hook(s_hook_registers registers)
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_barrel_fire_hook(s_hook_registers registers)
+void __cdecl weapon_barrel_fire_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.esp + 0xC0 - 0x6C);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_magazine_execute_reload_hook(s_hook_registers registers)
+void __cdecl weapon_magazine_execute_reload_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.ebp - 0x10);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_magazine_update_hook(s_hook_registers registers)
+void __cdecl weapon_magazine_update_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = (datum_index)registers.ebx;
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_report_kill_hook(s_hook_registers registers)
+void __cdecl weapon_report_kill_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_set_current_amount_hook(s_hook_registers registers)
+void __cdecl weapon_set_current_amount_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.ebp - 0x04);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_set_total_rounds_hook(s_hook_registers registers)
+void __cdecl weapon_set_total_rounds_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.ebp - 0x0C);
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_take_inventory_rounds_hook1(s_hook_registers registers)
+void __cdecl weapon_take_inventory_rounds_hook1(s_hook_registers& registers)
 {
     datum_index weapon_index = (datum_index)registers.edi;
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_take_inventory_rounds_hook2(s_hook_registers registers)
+void __cdecl weapon_take_inventory_rounds_hook2(s_hook_registers& registers)
 {
     datum_index unit_weapon_object_index = (datum_index)registers.esi;
 
     simulation_action_weapon_state_update(unit_weapon_object_index);
 }
 
-void __cdecl weapon_trigger_update_hook(s_hook_registers registers)
+void __cdecl weapon_trigger_update_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = (datum_index)registers.ebx;
 
     simulation_action_weapon_state_update(weapon_index);
 }
 
-void __cdecl weapon_handle_potential_inventory_item_hook(s_hook_registers registers)
+void __cdecl weapon_handle_potential_inventory_item_hook(s_hook_registers& registers)
 {
     datum_index weapon_index = *(datum_index*)(registers.ebp - 0x30);
     datum_index item_index = *(datum_index*)(registers.ebp - 0x24);
@@ -98,16 +98,13 @@ void __cdecl weapon_handle_potential_inventory_item_hook(s_hook_registers regist
 }
 
 // preserve unit_index variable
-__declspec(naked) void unit_inventory_set_weapon_index_hook0()
+void __cdecl unit_inventory_set_weapon_index_hook0(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov[ebp + 4], ecx;
-        retn;
-    }
+    datum_index* unit_index = (datum_index*)(registers.ebp + 0x04);
+    *unit_index = registers.ecx;
 }
 
-void __cdecl unit_inventory_set_weapon_index_hook1(s_hook_registers registers)
+void __cdecl unit_inventory_set_weapon_index_hook1(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
     short inventory_index = *(short*)(registers.ebp - 0x02);
@@ -119,7 +116,7 @@ void __cdecl unit_inventory_set_weapon_index_hook1(s_hook_registers registers)
     unit_inventory_cycle_weapon_set_identifier(unit_index);
 }
 
-void __cdecl unit_handle_deleted_object_hook(s_hook_registers registers)
+void __cdecl unit_handle_deleted_object_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
     datum_index inventory_index = (datum_index)registers.ebx;

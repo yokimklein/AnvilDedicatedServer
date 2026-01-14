@@ -8,7 +8,7 @@
 #include <simulation\game_interface\simulation_game_action.h>
 #include <game\game_engine_candy_monitor.h>
 
-void __cdecl event_generate_part_hook(s_hook_registers registers)
+void __cdecl event_generate_part_hook(s_hook_registers& registers)
 {
 	datum_index object_index = registers.esi;
 
@@ -23,19 +23,15 @@ void __cdecl event_generate_part_hook(s_hook_registers registers)
 }
 
 // preserve no_barrel_prediction variable
-__declspec(naked) void weapon_barrel_create_projectiles_hook0()
+void __cdecl weapon_barrel_create_projectiles_hook0(s_hook_registers& registers)
 {
 	// esp + original sp - variable offset + new stack space
-	__asm
-	{
-		mov eax, [esp + 0x2254 - 0x2244 + 0x20]; // 0x20 = 8 push preservation calls * 4
-		mov[ebp + 4], eax;
-		retn;
-	}
+	bool* no_barrel_prediction = (bool*)(registers.ebp + 0x04);
+	*no_barrel_prediction = *(bool*)(registers.esp + 0x2250 - 0x2244);
 }
 
 // crate projectiles
-void __cdecl weapon_barrel_create_projectiles_hook1(s_hook_registers registers)
+void __cdecl weapon_barrel_create_projectiles_hook1(s_hook_registers& registers)
 {
 	s_object_placement_data* placement_data = (s_object_placement_data*)(registers.esp + 0x2250 - 0x2048);
 
@@ -47,7 +43,7 @@ void __cdecl weapon_barrel_create_projectiles_hook1(s_hook_registers registers)
 }
 
 // non-predicted standard projectiles
-void __cdecl weapon_barrel_create_projectiles_hook2(s_hook_registers registers)
+void __cdecl weapon_barrel_create_projectiles_hook2(s_hook_registers& registers)
 {
 	datum_index object_index = *(datum_index*)(registers.esp + 0x2250 - 0x2230);
 	bool no_barrel_prediction = *(bool*)(registers.ebp + 0x04);
@@ -59,48 +55,55 @@ void __cdecl weapon_barrel_create_projectiles_hook2(s_hook_registers registers)
 }
 
 // preserve object_force_inside_bsp return
-__declspec(naked) void throw_release_hook0()
+void __cdecl throw_release_hook0(s_hook_registers& registers)
 {
-	__asm
-	{
-		mov[ebp + 4], eax;
-		retn;
-	}
+	bool* force_inside_bsp = (bool*)(registers.ebp + 0x04);
+	*force_inside_bsp = (bool)registers.eax;
 }
 
-void __cdecl throw_release_hook1(s_hook_registers registers)
+void __cdecl throw_release_hook1(s_hook_registers& registers)
 {
 	s_new_unit_action_grenade* action_state_storage = (s_new_unit_action_grenade*)registers.ebx;
 	datum_index object_index = (datum_index)registers.esi;
 	bool force_inside_bsp = *(bool*)(registers.ebp + 0x04);
-	bool stick = *(bool*)(registers.ebp + 0x18);
+	bool force_inside_bsp_valid = (force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
+	bool stick = *(bool*)(registers.ebp + 0x20); // should always be valid
+	VASSERT(stick == 0x00 || stick == 0x01, "stick contains undefined data! this should never happen!");
 
 	// Added these checks which the update would be nested within had there been enough space to fit it
-	if (object_index != NONE && !action_state_storage->unk2_4) // TODO: figure out what this field is
+	if (object_index != NONE && !action_state_storage->throw_predicted)
 	{
-		ASSERT(force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
-		if (stick || force_inside_bsp) // needs to stay in this order - force inside may not have a valid value if object_force_inside_bsp hasn't run?
+		// needs to stay in this order - force_inside_bsp will contain an undefined value if object_force_inside_bsp hasn't run
+		if (stick || (force_inside_bsp_valid && force_inside_bsp))
 		{
 			simulation_action_object_create(object_index);
 		}
 	}
 }
 
-void __cdecl equipment_activate_hook(s_hook_registers registers)
+// redirect code away from above hook so it isn't accidentally called from this path
+void __cdecl throw_release_hook3(s_hook_registers& registers)
+{
+	datum_index object_index = registers.esi;
+	object_delete(object_index);
+	registers.esi = NONE;
+}
+
+void __cdecl equipment_activate_hook(s_hook_registers& registers)
 {
 	datum_index object_index = (datum_index)registers.eax;
 
 	simulation_action_object_create(object_index);
 }
 
-void __cdecl item_in_unit_inventory_hook(s_hook_registers registers)
+void __cdecl item_in_unit_inventory_hook(s_hook_registers& registers)
 {
 	datum_index object_index = (datum_index)registers.edi;
 
 	simulation_action_object_create(object_index);
 }
 
-//void __cdecl actor_place_hook(s_hook_registers registers) // TODO: UNTESTED!!
+//void __cdecl actor_place_hook(s_hook_registers& registers) // TODO: UNTESTED!!
 //{
 //	datum_index unit_index = *(datum_index*)(registers.ebp - 0x24);
 //
@@ -110,7 +113,7 @@ void __cdecl item_in_unit_inventory_hook(s_hook_registers registers)
 //	}
 //}
 
-void __cdecl unit_drop_plasma_on_death_hook(s_hook_registers registers)
+void __cdecl unit_drop_plasma_on_death_hook(s_hook_registers& registers)
 {
 	datum_index projectile_index = (datum_index)registers.eax;
 
@@ -165,7 +168,9 @@ void anvil_hooks_object_creation_apply()
 	hook::insert(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
 	hook::insert(0x47D185, 0x47D18D, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
 	hook::insert(0x47D211, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
-	
+	hook::insert(0x47D17B, 0x47D18D, throw_release_hook3, _hook_replace, FLAG(_hook_no_nop)); // redirect code path to avoid accidentally calling above hook
+	patch::nop_region(0x47D180, 5); // cleanup leftover instruction bytes
+
 	// hologram spawning
 	hook::insert(0x45113A, 0x451144, equipment_activate_hook, _hook_execute_replaced_last);
 

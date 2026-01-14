@@ -7,21 +7,21 @@
 #include <simulation\game_interface\simulation_game_items.h>
 #include <simulation\game_interface\simulation_game_projectiles.h>
 
-void __cdecl object_set_position_internal_hook1(s_hook_registers registers)
+void __cdecl object_set_position_internal_hook1(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
 
-void __cdecl object_set_position_internal_hook2(s_hook_registers registers)
+void __cdecl object_set_position_internal_hook2(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_update(object_index, _simulation_object_update_forward_and_up);
 }
 
-void __cdecl object_move_respond_to_physics_hook(s_hook_registers registers)
+void __cdecl object_move_respond_to_physics_hook(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.ebx;
     real_point3d* desired_position = (real_point3d*)(registers.esp + 0x70 - 0x0C);
@@ -62,7 +62,7 @@ __declspec(naked) void object_set_velocities_internal_hook()
     }
 }
 
-void __cdecl object_apply_acceleration_hook(s_hook_registers registers)
+void __cdecl object_apply_acceleration_hook(s_hook_registers& registers)
 {
     datum_index accelerated_object_index = *(datum_index*)(registers.esp + 0x30 - 0x1C);
     real_vector3d* translational_velocity = (real_vector3d*)(registers.esp + 0x30 - 0x0C);
@@ -71,56 +71,56 @@ void __cdecl object_apply_acceleration_hook(s_hook_registers registers)
     object_set_velocities_internal(accelerated_object_index, translational_velocity, angular_velocity, false);
 }
 
-void __cdecl object_set_at_rest_hook2(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook2(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook3(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook3(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook4(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook4(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook5(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook5(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook6(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook6(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.esp + 0x258 - 0x210);
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook7(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook7(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.esp + 0x298 - 0x28C);
 
     object_set_at_rest(object_index, false);
 }
 
-void __cdecl object_set_at_rest_hook8(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook8(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, false);
 }
 
-void __cdecl object_set_at_rest_hook9(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook9(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.esi;
 
@@ -128,21 +128,21 @@ void __cdecl object_set_at_rest_hook9(s_hook_registers registers)
 }
 
 // TODO: I'm pretty sure swarms are only used for the flood, so it's probably fine to ignore this - may be used on cold storage?
-void __cdecl object_set_at_rest_hook10(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook10(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, false);
 }
 
-void __cdecl object_set_at_rest_hook12(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook12(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.esi;
 
     object_set_at_rest(object_index, true);
 }
 
-void __cdecl object_set_at_rest_hook13(s_hook_registers registers)
+void __cdecl object_set_at_rest_hook13(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 

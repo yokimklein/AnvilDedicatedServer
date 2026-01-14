@@ -4,7 +4,7 @@
 #include <simulation\game_interface\simulation_game_objects.h>
 #include <objects\object_scripting.h>
 
-void __cdecl item_in_unit_inventory_hook2(s_hook_registers registers)
+void __cdecl item_in_unit_inventory_hook2(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 

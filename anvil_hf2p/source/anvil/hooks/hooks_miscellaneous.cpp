@@ -20,14 +20,14 @@
 #include <cseries\cseries_events.h>
 #include <interface\user_interface_session.h>
 
-void __cdecl hf2p_podium_tick_hook(s_hook_registers registers)
+void __cdecl hf2p_podium_tick_hook(s_hook_registers& registers)
 {
     long player_index = (long)registers.esi;
 
     hf2p_trigger_player_podium_taunt(player_index);
 }
 
-void __cdecl c_simulation_player_taunt_request_event_definition__apply_game_event_hook(s_hook_registers registers)
+void __cdecl c_simulation_player_taunt_request_event_definition__apply_game_event_hook(s_hook_registers& registers)
 {
     long player_index = (long)registers.esi;
 
@@ -128,7 +128,7 @@ void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* lo
 }
 #pragma runtime_checks("", restore)
 
-void __cdecl sub_319CE0_hook(s_hook_registers registers)
+void __cdecl sub_319CE0_hook(s_hook_registers& registers)
 {
     user_interface_join_squad_abort();
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
@@ -159,7 +159,7 @@ void anvil_hooks_miscellaneous_apply()
 
     // podium taunt triggering & syncing
     hook::insert(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
-    hook::insert(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, true);
+    hook::insert(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, 0, true);
 
     // hook watermark
     hook::function(0x1B0AB0, 0x5CF, game_engine_render_watermarks);

@@ -17,7 +17,7 @@
 #include <game\game_results.h>
 #include <game\game_time.h>
 
-void __cdecl object_update_hook(s_hook_registers registers)
+void __cdecl object_update_hook(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
@@ -34,7 +34,7 @@ void __cdecl object_update_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl c_map_variant__remove_object_hook(s_hook_registers registers)
+void __cdecl c_map_variant__remove_object_hook(s_hook_registers& registers)
 {
     // map_variant_placement->object_index
     datum_index object_index = *(datum_index*)(registers.edi + 0x04);
@@ -45,7 +45,7 @@ void __cdecl c_map_variant__remove_object_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl c_map_variant__unknown4_hook1(s_hook_registers registers)
+void __cdecl c_map_variant__unknown4_hook1(s_hook_registers& registers)
 {
     // map_variant->objects[object_placement_index].object_index
     datum_index object_index = *(datum_index*)(registers.ebx + registers.esi + 0x134);
@@ -56,7 +56,7 @@ void __cdecl c_map_variant__unknown4_hook1(s_hook_registers registers)
     simulation_action_object_update_internal(object_index, update_flags);
 }
 
-void __cdecl c_map_variant__unknown4_hook2(s_hook_registers registers)
+void __cdecl c_map_variant__unknown4_hook2(s_hook_registers& registers)
 {
     // map_variant->objects[object_placement_index].object_index
     datum_index object_index = *(datum_index*)(registers.ebx + registers.esi + 0x134);
@@ -64,14 +64,14 @@ void __cdecl c_map_variant__unknown4_hook2(s_hook_registers registers)
     simulation_action_object_update(object_index, _simulation_object_update_parent_state);
 }
 
-void __cdecl player_set_unit_index_hook2(s_hook_registers registers)
+void __cdecl player_set_unit_index_hook2(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.edi + 0x30);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_assassination_data);
 }
 
-void __cdecl unit_died_hook(s_hook_registers registers)
+void __cdecl unit_died_hook(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.eax;
     datum_index unit_index = (datum_index)registers.esi;
@@ -88,21 +88,21 @@ void __cdecl unit_died_hook(s_hook_registers registers)
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __cdecl grenade_throw_move_to_hand_hook(s_hook_registers registers)
+void __cdecl grenade_throw_move_to_hand_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
 }
 
-void __cdecl unit_add_grenade_to_inventory_hook(s_hook_registers registers)
+void __cdecl unit_add_grenade_to_inventory_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp - 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_grenade_counts);
 }
 
-void __cdecl unit_add_equipment_to_inventory_hook(s_hook_registers registers)
+void __cdecl unit_add_equipment_to_inventory_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.esp + 0x20 - 0x0C);
 
@@ -112,7 +112,7 @@ void __cdecl unit_add_equipment_to_inventory_hook(s_hook_registers registers)
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __cdecl unit_update_control_hook(s_hook_registers registers)
+void __cdecl unit_update_control_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
 
@@ -120,17 +120,14 @@ void __cdecl unit_update_control_hook(s_hook_registers registers)
 }
 
 // preserve player_object_index variable
-__declspec(naked) void unit_add_initial_loadout_hook0()
+void __cdecl unit_add_initial_loadout_hook0(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov[ebp + 4], ecx;
-        retn;
-    }
+    datum_index* player_object_index = (datum_index*)(registers.ebp + 0x04);
+    *player_object_index = registers.ecx;
 }
 
 // syncs grenade counts on spawn
-void __cdecl unit_add_initial_loadout_hook1(s_hook_registers registers)
+void __cdecl unit_add_initial_loadout_hook1(s_hook_registers& registers)
 {
     datum_index player_object_index = *(datum_index*)(registers.ebp + 0x04);
 
@@ -138,21 +135,21 @@ void __cdecl unit_add_initial_loadout_hook1(s_hook_registers registers)
 }
 
 // syncs revenge shield bonus on spawn
-void __cdecl unit_add_initial_loadout_hook2(s_hook_registers registers)
+void __cdecl unit_add_initial_loadout_hook2(s_hook_registers& registers)
 {
     datum_index player_object_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(player_object_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl projectile_attach_hook(s_hook_registers registers)
+void __cdecl projectile_attach_hook(s_hook_registers& registers)
 {
     datum_index projectile_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
 
     simulation_action_object_update(projectile_index, _simulation_object_update_parent_state);
 }
 
-void __cdecl unit_set_aiming_vectors_hook1(s_hook_registers registers)
+void __cdecl unit_set_aiming_vectors_hook1(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
     s_simulation_unit_state_data* unit_state_data = (s_simulation_unit_state_data*)registers.edi;
@@ -160,7 +157,7 @@ void __cdecl unit_set_aiming_vectors_hook1(s_hook_registers registers)
     unit_set_aiming_vectors(unit_index, &unit_state_data->desired_aiming_vector, &unit_state_data->desired_aiming_vector);
 }
 
-void __cdecl unit_set_aiming_vectors_hook2(s_hook_registers registers)
+void __cdecl unit_set_aiming_vectors_hook2(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.esp + 0xE0 - 0xB4);
     real_vector3d* forward = (real_vector3d*)registers.edx;
@@ -168,7 +165,7 @@ void __cdecl unit_set_aiming_vectors_hook2(s_hook_registers registers)
     unit_set_aiming_vectors(unit_index, forward, forward);
 }
 
-void __cdecl unit_set_aiming_vectors_hook3(s_hook_registers registers)
+void __cdecl unit_set_aiming_vectors_hook3(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
     real_vector3d* forward = (real_vector3d*)(registers.esi + 0x8BC);
@@ -176,7 +173,7 @@ void __cdecl unit_set_aiming_vectors_hook3(s_hook_registers registers)
     unit_set_aiming_vectors(unit_index, forward, forward);
 }
 
-void __cdecl unit_set_aiming_vectors_hook4(s_hook_registers registers)
+void __cdecl unit_set_aiming_vectors_hook4(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.edi;
     real_vector3d* forward = *(real_vector3d**)(registers.ebp - 0x2C);
@@ -184,38 +181,36 @@ void __cdecl unit_set_aiming_vectors_hook4(s_hook_registers registers)
     unit_set_aiming_vectors(unit_index, forward, forward);
 }
 
-void __cdecl equipment_activate_hook2(s_hook_registers registers)
+void __cdecl equipment_activate_hook2(s_hook_registers& registers)
 {
     datum_index equipment_index = *(datum_index*)(registers.esp + 0x358 - 0x328);
 
     simulation_action_object_update(equipment_index, _simulation_item_update_equipment_creation_time);
 }
 
-void __cdecl unit_update_energy_hook(s_hook_registers registers)
+void __cdecl unit_update_energy_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
 }
 
-// preserve unit_index variable
-__declspec(naked) void unit_handle_equipment_energy_cost_hook0()
-{
-    __asm
-    {
-        mov [ebp + 4], ecx;
-        retn;
-    }
-}
+// not referenced anymore? must be from an old hook $TODO: investigate
+//// preserve unit_index variable
+//void __cdecl unit_handle_equipment_energy_cost_hook0(s_hook_registers& registers)
+//{
+//    datum_index* unit_index = (datum_index*)(registers.ebp + 0x04);
+//    *unit_index = registers.ecx;
+//}
+//
+//void __cdecl unit_handle_equipment_energy_cost_hook1(s_hook_registers& registers)
+//{
+//    datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
+//
+//    simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
+//}
 
-void __cdecl unit_handle_equipment_energy_cost_hook1(s_hook_registers registers)
-{
-    datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
-
-    simulation_action_object_update(unit_index, _simulation_unit_update_consumable_energy);
-}
-
-void __cdecl unit_set_hologram_hook(s_hook_registers registers)
+void __cdecl unit_set_hologram_hook(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.esi;
     datum_index unit_index = (datum_index)registers.ebx;
@@ -232,7 +227,7 @@ void __cdecl unit_set_hologram_hook(s_hook_registers registers)
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __cdecl object_apply_damage_aftermath_hook(s_hook_registers registers)
+void __cdecl object_apply_damage_aftermath_hook(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.esi;
 
@@ -241,7 +236,7 @@ void __cdecl object_apply_damage_aftermath_hook(s_hook_registers registers)
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl unit_update_damage_hook(s_hook_registers registers)
+void __cdecl unit_update_damage_hook(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.esi;
     datum_index unit_index = *(datum_index*)(registers.esp + 0x70 - 0x64);
@@ -252,7 +247,7 @@ void __cdecl unit_update_damage_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl unit_respond_to_emp_hook(s_hook_registers registers)
+void __cdecl unit_respond_to_emp_hook(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.edi;
     datum_index unit_index = (datum_index)registers.esi;
@@ -263,14 +258,14 @@ void __cdecl unit_respond_to_emp_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl unit_delete_current_equipment_hook(s_hook_registers registers)
+void __cdecl unit_delete_current_equipment_hook(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.ebp + 0x08);
 
     simulation_action_object_update(unit_index, _simulation_unit_update_equipment);
 }
 
-void __cdecl unit_place_hook(s_hook_registers registers)
+void __cdecl unit_place_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.edi;
 
@@ -280,7 +275,7 @@ void __cdecl unit_place_hook(s_hook_registers registers)
     }
 }
 
-void __cdecl unit_add_initial_loadout_hook3(s_hook_registers registers)
+void __cdecl unit_add_initial_loadout_hook3(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
     long slot_index = (long)registers.ecx;
@@ -288,17 +283,13 @@ void __cdecl unit_add_initial_loadout_hook3(s_hook_registers registers)
     unit_delete_equipment(unit_index, slot_index);
 }
 
-__declspec(naked) void unit_add_initial_loadout_hook4()
+void __cdecl unit_add_initial_loadout_hook4(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov esi, [ebp - 0x08];
-        retn;
-    }
+    registers.esi = *(long*)(registers.ebp - 0x08);
 }
 
 // TODO: figure out how to trigger this to test
-void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook(s_hook_registers registers)
+void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ebx;
     long slot_index = (long)registers.ecx;
@@ -306,7 +297,7 @@ void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook(s_hoo
     unit_delete_equipment(unit_index, slot_index);
 }
 
-void __cdecl throw_release_hook2(s_hook_registers registers)
+void __cdecl throw_release_hook2(s_hook_registers& registers)
 {
     datum_index unit_index = *(datum_index*)(registers.esp + 0x58 - 0x44);
 
@@ -347,7 +338,7 @@ __declspec(naked) void unit_active_camouflage_set_level_hook()
     }
 }
 
-void __cdecl unit_scripting_set_active_camo_hook(s_hook_registers registers)
+void __cdecl unit_scripting_set_active_camo_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ecx;
     real regrowth_seconds;
@@ -358,7 +349,7 @@ void __cdecl unit_scripting_set_active_camo_hook(s_hook_registers registers)
     unit_active_camouflage_set_level(unit_index, regrowth_seconds, NONE);
 }
 
-void __cdecl player_update_invisibility_hook(s_hook_registers registers)
+void __cdecl player_update_invisibility_hook(s_hook_registers& registers)
 {
     player_datum* player = (player_datum*)registers.esi;
     real camouflage_maximum;
@@ -370,7 +361,7 @@ void __cdecl player_update_invisibility_hook(s_hook_registers registers)
     unit_active_camouflage_set_maximum(player->unit_index, camouflage_maximum);
 }
 
-void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook2(s_hook_registers registers)
+void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook2(s_hook_registers& registers)
 {
     s_simulation_unit_state_data* unit_state_data = (s_simulation_unit_state_data*)registers.esi;
     datum_index unit_index = (datum_index)registers.ebx;
@@ -385,7 +376,7 @@ void __cdecl c_simulation_unit_entity_definition__apply_object_update_hook2(s_ho
     }
 }
 
-void __cdecl c_simulation_vehicle_entity_definition__apply_object_update_hook(s_hook_registers registers)
+void __cdecl c_simulation_vehicle_entity_definition__apply_object_update_hook(s_hook_registers& registers)
 {
     s_simulation_vehicle_state_data* vehicle_state_data = (s_simulation_vehicle_state_data*)registers.edi;
     datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x08);
@@ -400,7 +391,7 @@ void __cdecl c_simulation_vehicle_entity_definition__apply_object_update_hook(s_
     }
 }
 
-void __cdecl actor_set_active_camo_hook(s_hook_registers registers)
+void __cdecl actor_set_active_camo_hook(s_hook_registers& registers)
 {
     actor_datum* actor = (actor_datum*)registers.edi;
     real regrowth_seconds;
@@ -411,7 +402,7 @@ void __cdecl actor_set_active_camo_hook(s_hook_registers registers)
     unit_active_camouflage_set_level(actor->meta.unit_index, regrowth_seconds, NONE);
 }
 
-void __cdecl unit_active_camouflage_set_maximum_hook(s_hook_registers registers)
+void __cdecl unit_active_camouflage_set_maximum_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.ecx;
     real camouflage_maximum;
@@ -422,7 +413,7 @@ void __cdecl unit_active_camouflage_set_maximum_hook(s_hook_registers registers)
     unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
 }
 
-void __cdecl biped_new_hook(s_hook_registers registers)
+void __cdecl biped_new_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.edi;
     real camouflage_maximum;
@@ -433,7 +424,7 @@ void __cdecl biped_new_hook(s_hook_registers registers)
     unit_active_camouflage_set_maximum(unit_index, camouflage_maximum);
 }
 
-void __cdecl vehicle_new_hook(s_hook_registers registers)
+void __cdecl vehicle_new_hook(s_hook_registers& registers)
 {
     datum_index vehicle_index = (datum_index)registers.ebx;
     real camouflage_maximum;
@@ -445,16 +436,13 @@ void __cdecl vehicle_new_hook(s_hook_registers registers)
 }
 
 // preserve unit_index variable
-__declspec(naked) void unit_update_active_camouflage_hook0()
+void __cdecl unit_update_active_camouflage_hook0(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov [ebp + 4], ecx;
-        retn;
-    }
+    datum_index* unit_index = (datum_index*)(registers.ebp + 0x04);
+    *unit_index = registers.ecx;
 }
 
-void __cdecl unit_update_active_camouflage_hook1(s_hook_registers registers)
+void __cdecl unit_update_active_camouflage_hook1(s_hook_registers& registers)
 {
     unit_datum* unit = (unit_datum*)registers.esi;
     datum_index unit_index = *(datum_index*)(registers.ebp + 0x04);
@@ -471,49 +459,49 @@ void __cdecl unit_update_active_camouflage_hook1(s_hook_registers registers)
     simulation_action_object_update_internal(unit_index, update_flags);
 }
 
-void __cdecl unit_action_assassinate_finished_hook(s_hook_registers registers)
+void __cdecl unit_action_assassinate_finished_hook(s_hook_registers& registers)
 {
     datum_index mover_index = (datum_index)registers.edx;
 
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-void __cdecl unit_action_assassinate_submit_hook1(s_hook_registers registers)
+void __cdecl unit_action_assassinate_submit_hook1(s_hook_registers& registers)
 {
     datum_index mover_index = (datum_index)registers.esi;
 
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-void __cdecl unit_action_assassinate_submit_hook2(s_hook_registers registers)
+void __cdecl unit_action_assassinate_submit_hook2(s_hook_registers& registers)
 {
     s_action_request* request = *(s_action_request**)(registers.ebp + 0x0C);
 
     simulation_action_object_update(request->assassination.victim_unit_index, _simulation_unit_update_assassination_data);
 }
 
-void __cdecl unit_action_assassinate_interrupted_hook(s_hook_registers registers)
+void __cdecl unit_action_assassinate_interrupted_hook(s_hook_registers& registers)
 {
     datum_index mover_index = (datum_index)registers.edi;
 
     simulation_action_object_update(mover_index, _simulation_unit_update_assassination_data);
 }
 
-void __cdecl motor_task_enter_seat_internal_hook(s_hook_registers registers)
+void __cdecl motor_task_enter_seat_internal_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.edi;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
 }
 
-void __cdecl motor_animation_exit_seat_immediate_internal_hook(s_hook_registers registers)
+void __cdecl motor_animation_exit_seat_immediate_internal_hook(s_hook_registers& registers)
 {
     datum_index unit_index = (datum_index)registers.esi;
 
     simulation_action_object_update(unit_index, _simulation_unit_update_parent_vehicle);
 }
 
-void __cdecl device_group_set_actual_value_hook1(s_hook_registers registers)
+void __cdecl device_group_set_actual_value_hook1(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.esi;
 
@@ -521,7 +509,7 @@ void __cdecl device_group_set_actual_value_hook1(s_hook_registers registers)
     simulation_action_object_update(device_index, _simulation_device_update_power);
 }
 
-void __cdecl device_group_set_actual_value_hook2(s_hook_registers registers)
+void __cdecl device_group_set_actual_value_hook2(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.esi;
 
@@ -529,28 +517,28 @@ void __cdecl device_group_set_actual_value_hook2(s_hook_registers registers)
     simulation_action_object_update(device_index, _simulation_device_update_position);
 }
 
-void __cdecl device_group_set_desired_value_hook1(s_hook_registers registers)
+void __cdecl device_group_set_desired_value_hook1(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.esi;
 
     simulation_action_object_update(device_index, _simulation_device_update_power_group);
 }
 
-void __cdecl device_group_set_desired_value_hook2(s_hook_registers registers)
+void __cdecl device_group_set_desired_value_hook2(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.esi;
 
     simulation_action_object_update(device_index, _simulation_device_update_position_group);
 }
 
-void __cdecl device_set_power_hook(s_hook_registers registers)
+void __cdecl device_set_power_hook(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.edi;
 
     simulation_action_object_update(device_index, _simulation_device_update_power);
 }
 
-void __cdecl machine_update_hook(s_hook_registers registers)
+void __cdecl machine_update_hook(s_hook_registers& registers)
 {
     datum_index device_index = (datum_index)registers.esi;
 
@@ -558,37 +546,34 @@ void __cdecl machine_update_hook(s_hook_registers registers)
 }
 
 // preserve vehicle_index variable
-__declspec(naked) void c_vehicle_auto_turret__track_auto_target_hook0()
+void __cdecl c_vehicle_auto_turret__track_auto_target_hook0(s_hook_registers& registers)
 {
-    __asm
-    {
-        mov [ebp + 4], ecx;
-        retn;
-    }
+    datum_index* vehicle_index = (datum_index*)(registers.ebp + 0x04);
+    *vehicle_index = registers.ecx;
 }
 
-void __cdecl c_vehicle_auto_turret__track_auto_target_hook1(s_hook_registers registers)
+void __cdecl c_vehicle_auto_turret__track_auto_target_hook1(s_hook_registers& registers)
 {
     datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret_tracking);
 }
 
-void __cdecl c_vehicle_auto_turret__track_auto_target_hook2(s_hook_registers registers)
+void __cdecl c_vehicle_auto_turret__track_auto_target_hook2(s_hook_registers& registers)
 {
     datum_index vehicle_index = *(datum_index*)(registers.ebp + 0x04);
 
     simulation_action_object_update(vehicle_index, _simulation_vehicle_update_auto_turret);
 }
 
-void __cdecl object_move_position_hook(s_hook_registers registers)
+void __cdecl object_move_position_hook(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_update(object_index, _simulation_object_update_position);
 }
 
-void __cdecl game_engine_update_player_hook(s_hook_registers registers)
+void __cdecl game_engine_update_player_hook(s_hook_registers& registers)
 {
     long absolute_player_index = *(long*)(registers.ebp - 0x0C);
     player_datum* player = (player_datum*)registers.edi;
@@ -620,7 +605,7 @@ void anvil_hooks_object_updates_apply()
     hook::function(0xB6300, 0xAE, player_set_facing);
 
     // c_map_variant::remove_object - should fix map variant object respawn times
-    hook::insert(0xADB2B, 0xADB45, c_map_variant__remove_object_hook, _hook_execute_replaced_first, true);
+    hook::insert(0xADB2B, 0xADB45, c_map_variant__remove_object_hook, _hook_execute_replaced_first, 0, true);
 
     // c_map_variant::unknown4 - called when objects spawn/respawn on sandtrap's elephants
     hook::insert(0xABA7E, 0xABA86, c_map_variant__unknown4_hook1, _hook_execute_replaced_last); // UNTESTED!!
@@ -701,7 +686,7 @@ void anvil_hooks_object_updates_apply()
     hook::insert(0x42C56E, 0x42C578, unit_set_hologram_hook, _hook_execute_replaced_first);
 
     // sync shield restoration with shield_recharge_on_melee_kill modifier
-    hook::insert(0x412E41, 0x412E4F, object_apply_damage_aftermath_hook, _hook_execute_replaced_first, true);
+    hook::insert(0x412E41, 0x412E4F, object_apply_damage_aftermath_hook, _hook_execute_replaced_first, 0, true);
 
     // sync vehicle emp timer
     hook::insert(0x41AE09, 0x41AE10, unit_update_damage_hook, _hook_execute_replaced_first);
@@ -743,7 +728,7 @@ void anvil_hooks_object_updates_apply()
     // unit camo update
     hook::add_variable_space_to_stack_frame(0x41AF50, 0x41B1D7, 4); // Add 4 bytes of variable space to the stack frame
     hook::insert(0x41AF6C, 0x41AF73, unit_update_active_camouflage_hook0, _hook_execute_replaced_first);
-    hook::insert(0x41B1B9, 0x41B1D0, unit_update_active_camouflage_hook1, _hook_execute_replaced_first, true);
+    hook::insert(0x41B1B9, 0x41B1D0, unit_update_active_camouflage_hook1, _hook_execute_replaced_first, 0, true);
     hook::insert(0x41B17F, 0x41B185, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
     hook::insert(0x41B193, 0x41B199, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
     hook::insert(0x41B1D0, 0x41B1D6, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
@@ -767,7 +752,7 @@ void anvil_hooks_object_updates_apply()
     // device group values
     hook::insert(0x45D9F9, 0x45DA2E, device_group_set_actual_value_hook1, _hook_replace); // UNTESTED!!
     hook::insert(0x45DA53, 0x45DA8C, device_group_set_actual_value_hook2, _hook_replace); // UNTESTED!!
-    hook::insert(0x45D6E1, 0x45D6F4, device_group_set_desired_value_hook1, _hook_execute_replaced_last, true); // UNTESTED!!
+    hook::insert(0x45D6E1, 0x45D6F4, device_group_set_desired_value_hook1, _hook_execute_replaced_last, 0, true); // UNTESTED!!
     hook::insert(0x45D745, 0x45D74B, device_group_set_desired_value_hook2, _hook_execute_replaced_last);
 
     // device power

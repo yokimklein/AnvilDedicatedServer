@@ -293,7 +293,7 @@ struct s_new_unit_action_grenade
 	byte unk2_1;
 	byte unk2_2;
 	byte unk_type;
-	bool unk2_4; // from client?
+	bool throw_predicted;
 	byte unk3_1;
 	char unk3_2;
 	byte unk3_3;

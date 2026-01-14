@@ -9,21 +9,21 @@
 #include <units\units.h>
 #include <game\game_time.h>
 
-void __cdecl object_damage_update_hook1(s_hook_registers registers)
+void __cdecl object_damage_update_hook1(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x20);
 
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl object_damage_update_hook2(s_hook_registers registers)
+void __cdecl object_damage_update_hook2(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x20);
 
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl object_damage_update_hook3(s_hook_registers registers)
+void __cdecl object_damage_update_hook3(s_hook_registers& registers)
 {
     // preserve xmm2
     __asm
@@ -88,21 +88,21 @@ void __cdecl object_damage_update_hook3(s_hook_registers registers)
     }
 }
 
-void __cdecl object_damage_shield_hook1(s_hook_registers registers)
+void __cdecl object_damage_shield_hook1(s_hook_registers& registers)
 {
     player_datum* player_data = (player_datum*)registers.esi;
 
     simulation_action_object_update(player_data->unit_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl object_damage_shield_hook2(s_hook_registers registers)
+void __cdecl object_damage_shield_hook2(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.esi;
 
     simulation_action_object_update(object_index, _simulation_object_update_shield_vitality);
 }
 
-void __cdecl object_damage_body_hook1(s_hook_registers registers)
+void __cdecl object_damage_body_hook1(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edx;
     real damage = *(real*)(registers.edi + 0x24);
@@ -113,14 +113,14 @@ void __cdecl object_damage_body_hook1(s_hook_registers registers)
     }
 }
 
-void __cdecl object_deplete_body_internal_hook1(s_hook_registers registers)
+void __cdecl object_deplete_body_internal_hook1(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.edi;
 
     simulation_action_object_update(object_index, _simulation_object_update_dead);
 }
 
-void __cdecl damage_section_response_fire_hook(s_hook_registers registers)
+void __cdecl damage_section_response_fire_hook(s_hook_registers& registers)
 {
     object_datum* object = *(object_datum**)(registers.esp + 0x98 - 0x74);
     datum_index object_index = *(datum_index*)(registers.esp + 0x98 - 0x84);
@@ -148,35 +148,35 @@ __declspec(naked) void object_set_damage_owner_hook1()
     }
 }
 
-void __cdecl object_set_damage_owner_hook2(s_hook_registers registers)
+void __cdecl object_set_damage_owner_hook2(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.edi + 0x30);
 
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-void __cdecl object_set_damage_owner_hook3(s_hook_registers registers)
+void __cdecl object_set_damage_owner_hook3(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x18);
 
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-void __cdecl object_set_damage_owner_hook4(s_hook_registers registers)
+void __cdecl object_set_damage_owner_hook4(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.ebp - 0x10);
 
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-void __cdecl object_set_damage_owner_hook5(s_hook_registers registers)
+void __cdecl object_set_damage_owner_hook5(s_hook_registers& registers)
 {
     datum_index object_index = (datum_index)registers.ebx;
 
     simulation_action_object_update(object_index, _simulation_object_update_owner_team_index);
 }
 
-void __cdecl object_set_damage_owner_hook6(s_hook_registers registers)
+void __cdecl object_set_damage_owner_hook6(s_hook_registers& registers)
 {
     datum_index object_index = *(datum_index*)(registers.ebp + 0x08);
 
@@ -186,8 +186,8 @@ void __cdecl object_set_damage_owner_hook6(s_hook_registers registers)
 void anvil_hooks_damage_updates_apply()
 {
     // object_damage_update
-    hook::insert(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace_no_nop); // sync shield recharge vitality
-    hook::insert(0x40D526, 0x40D542, object_damage_update_hook2, _hook_execute_replaced_last, true); // sync shield recharge vitality
+    hook::insert(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace, FLAG(_hook_no_nop)); // sync shield recharge vitality
+    hook::insert(0x40D526, 0x40D542, object_damage_update_hook2, _hook_execute_replaced_last, 0, true); // sync shield recharge vitality
     hook::insert(0x40D5C1, 0x40D660, object_damage_update_hook3, _hook_replace); // sync body recharge vitality
 
     // object_damage_shield - syncs immediate shield values on damage

@@ -307,3 +307,8 @@ void object_get_damage_owner(datum_index object_index, s_damage_owner* out_owner
 	object_datum* object = object_get(object_index);
 	*out_owner = object->object.damage_owner;
 }
+
+void __fastcall object_delete(datum_index object_index)
+{
+	INVOKE(0x3FE0C0, object_delete, object_index);
+}
