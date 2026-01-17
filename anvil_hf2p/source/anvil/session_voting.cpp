@@ -31,10 +31,10 @@ long rand_range(long min, long max)
 };
 void anvil_session_begin_vote()
 {
-    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
-    if (!session)
+    c_network_session* session = NULL;
+    if (!network_life_cycle_in_squad_session(&session) || !session)
     {
-        event(_event_warning, "networking:anvil:session: cannot begin vote with invalid session!");
+        event(_event_warning, "networking:anvil:session: session invalid, cannot begin vote!");
         return;
     }
 

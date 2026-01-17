@@ -99,7 +99,7 @@ bool c_network_session_parameter_countdown_timer::set(e_network_game_countdown_d
     {
         m_data.delayed_reason = delayed_reason;
         m_data.countdown_timer = countdown_timer;
-        set_update_required(); // TODO: set_internal method call, this gets compiled out to a redundant duplicate call
+        set_update_required(); // $TODO: set_internal method call, this gets compiled out to a redundant duplicate call
         if (!get_allowed())
         {
             set_update_required();

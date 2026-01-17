@@ -56,7 +56,7 @@ void c_network_session_parameter_base::set_update_required()
 		m_parameter_type,
 		m_parameter_type_description);
 	m_flags |= FLAG(_network_session_parameter_valid_bit);
-	m_transmitted_peer_updates.clear();
+	m_transmitted_peer_updates.set_all(false);
 	notify_set_update_required();
 }
 
