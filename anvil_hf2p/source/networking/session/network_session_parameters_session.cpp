@@ -56,15 +56,24 @@ bool c_network_session_parameter_session_mode::set(e_network_session_mode sessio
 
 bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter_lobby_vote_set* vote_set)
 {
-	if (csmemcmp(&m_data.vote_options, &vote_set->vote_options, sizeof(s_network_session_parameter_lobby_vote_set::vote_options)) != 0
-		|| m_data.winning_vote_index != vote_set->winning_vote_index
-		|| !get_allowed())
+	// $NOTE: modified to include set_allowed to prevent set_update_required() calling when set is disabled
+	if (set_allowed())
 	{
-		csmemcpy(m_data.vote_options, vote_set->vote_options, sizeof(m_data.vote_options));
-		m_data.winning_vote_index = vote_set->winning_vote_index;
-		set_update_required();
+		if (csmemcmp(&m_data.vote_options, &vote_set->vote_options, sizeof(s_network_session_parameter_lobby_vote_set::vote_options)) != 0
+			|| m_data.winning_vote_index != vote_set->winning_vote_index
+			|| !get_allowed())
+		{
+			csmemcpy(m_data.vote_options, vote_set->vote_options, sizeof(m_data.vote_options));
+			m_data.winning_vote_index = vote_set->winning_vote_index;
+			set_update_required();
+		}
+		return true;
 	}
-	return true;
+	else
+	{
+		event(_event_error, "networking:session_parameters:lobby_vote_set: [%s] can't set [%s]", get_session_description(), get_set_denied_reason());
+		return false;
+	}
 }
 
 void c_network_session_parameter_lobby_vote_set::get(s_network_session_parameter_lobby_vote_set* output)
