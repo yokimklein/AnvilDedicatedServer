@@ -1095,6 +1095,9 @@
     <ClInclude Include="source\motor\actions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking\transport\transport_dns_winsock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="source\memory\byte_swapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1800,6 +1803,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\tag_files\tag_resource_cache_address_cache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\networking\transport\transport_dns_winsock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

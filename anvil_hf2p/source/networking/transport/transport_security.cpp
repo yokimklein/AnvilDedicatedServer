@@ -1,10 +1,12 @@
 #include "transport_security.h"
+#include <cseries\cseries_events.h>
 #include <networking\transport\transport_shim.h>
-#include <stdio.h>
+#include <networking\transport\transport_dns_winsock.h>
 #include <anvil\backend\lobby.h>
 #include <game\game.h>
+
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
-#include <cseries\cseries_events.h>
 
 REFERENCE_DECLARE(0x4EBE9D0, s_transport_security_globals, transport_security_globals);
 REFERENCE_DECLARE(0x49C1060, s_transport_secure_address const, g_session_secure_address);
@@ -109,14 +111,11 @@ bool transport_secure_identifier_retrieve(transport_address const* usable_addres
     ASSERT(usable_address);
     ASSERT(secure_identifier);
     ASSERT(secure_address);
-    if (usable_address->address_size == 4 && usable_address && transport_platform != _transport_platform_xenon)
+    if (usable_address->address_length == IPV4_ADDRESS_LENGTH && usable_address->ipv4_address && transport_platform != _transport_platform_xenon)
     {
         return XNetInAddrToXnAddr(usable_address, secure_address, secure_identifier);
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 const char* transport_secure_address_get_mac_string(s_transport_secure_address const* secure_address)
@@ -164,30 +163,55 @@ void transport_secure_address_generate(s_transport_secure_address* secure_addres
     }
 }
 
+// $NOTE: modified to search for desired adapters rather than always choosing the first
 bool __cdecl transport_secure_address_resolve()
 {
     if (!transport_security_globals.local_address_valid)
     {
-        s_xnet_address xnet_address;
-        csmemset(&xnet_address, 0, sizeof(s_xnet_address::addresses));
-        gethostname(xnet_address.hostname, sizeof(s_xnet_address::hostname));
-        xnet_address.hostname[sizeof(s_xnet_address::hostname) - 1] = NULL;
+        dns_result result;
+        csmemset(&result, 0, sizeof(dns_result::address));
+        //gethostname(result.name, sizeof(dns_result::name));
+        //result.name[sizeof(dns_result::name) - 1] = NULL;
 
-        if (!XNetGetTitleXnAddr(&xnet_address))
+        if (transport_dns_name_to_address(&result))
         {
-            event(_event_warning, "networking:transport: Address resolution failed, networking is unavailable");
-            transport_security_globals.local_address_valid = false;
+            // $TODO: search for most desirable adapter
+            // if an internet enabled adapter is found, push it to the start of the list (or push its public IP instead?)
+            // Ranking:
+            // 1 - Internet enabled adapter
+            // 2 - LAN enabled adapter
+            // 3 - everything else
+
+            // Find first valid IPV4 adapter address ($TODO: IPV6 support)
+            transport_address* address = NULL;
+            c_static_wchar_string<256>* adapter_name = NULL;
+            for (long address_index = 0; address_index < NUMBEROF(dns_result::address); address_index++)
+            {
+                //event(_event_error, "transport: address [%s] adapter [%s]", transport_address_get_string(&result.address[address_index]), result.address_adapter_names[address_index]);
+                if (transport_address_valid(&result.address[address_index]) && result.address[address_index].address_length == IPV4_ADDRESS_LENGTH)
+                {
+                    address = &result.address[address_index];
+                    adapter_name = &result.adapter_names[address_index];
+                    break;
+                }
+            }
+
+            if (address)
+            {
+                transport_security_globals.address = *address;
+                transport_security_globals.address.port = g_game_port;
+                csmemset(&transport_security_globals.local_secure_address, 0, sizeof(s_transport_secure_address));
+                transport_secure_address_generate(&transport_security_globals.local_secure_address);
+                transport_security_globals.local_address_valid = true;
+                //transport_secure_address_resolve();
+                csmemcpy(&transport_security_globals.local_unique_identifier, &transport_security_globals.local_secure_address, sizeof(s_transport_unique_identifier));
+                event(_event_message, "networking:transport: resolved address [%s] from adapter [%ws]", transport_address_get_string(address), adapter_name->get_string());
+                return true;
+            }
         }
-        else
-        {
-            transport_security_globals.address = xnet_address.addresses[0]; // TODO: get default gateway IP instead of just grabbing the first
-            transport_security_globals.address.port = g_game_port;
-            csmemset(&transport_security_globals.local_secure_address, 0, sizeof(s_transport_secure_address));
-            transport_secure_address_generate(&transport_security_globals.local_secure_address);
-            transport_security_globals.local_address_valid = true;
-            transport_secure_address_resolve();
-            csmemcpy(&transport_security_globals.local_unique_identifier, &transport_security_globals.local_secure_address, sizeof(s_transport_unique_identifier));
-        }
+
+        event(_event_warning, "networking:transport: Address resolution failed, networking is unavailable");
+        transport_security_globals.local_address_valid = false;
     }
     return transport_security_globals.local_address_valid;
 }

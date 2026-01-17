@@ -54,7 +54,7 @@ void __cdecl main_loop_body_hook1(s_hook_registers& registers)
 
 	PROFILER(update_console_terminal_and_debug_menu)
 	{
-		LOCAL_TAG_RESOURCE_SCOPE_LOCK;
+		TAG_RESOURCES_GAME_LOCK();
 
 		//if (main_globals.drop_cheat_tag)
 		//{

@@ -34,3 +34,8 @@ void transport_startup()
 {
 	INVOKE(0x3A50, transport_startup);
 }
+
+bool transport_available()
+{
+	return transport_globals.initialized && transport_globals.winsock_initialized;
+}

@@ -95,12 +95,6 @@ bool XNetXnAddrToInAddr(const s_transport_secure_address* secure_address, transp
 	return true;
 }
 
-// Returns the transport addresses of a max of 8 network adapters from a given hostname
-bool __fastcall XNetGetTitleXnAddr(s_xnet_address* out_addresses)
-{
-	return INVOKE(0x6DE0, XNetGetTitleXnAddr, out_addresses);
-}
-
 void XNetCreateKey(s_transport_secure_identifier* out_secure_identifier)
 {
 	if (game_is_dedicated_server())

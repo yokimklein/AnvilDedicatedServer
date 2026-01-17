@@ -24,3 +24,4 @@ void transport_initialize();
 void transport_global_update();
 bool transport_network_available();
 void transport_startup();
+bool transport_available();

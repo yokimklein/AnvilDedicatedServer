@@ -174,7 +174,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>
       </ImportLibrary>
@@ -208,7 +208,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-gd-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-gd-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>
       </ImportLibrary>
@@ -246,7 +246,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary />
@@ -283,7 +283,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -321,7 +321,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -359,7 +359,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Ws2_32.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Iphlpapi.lib;winmm.lib;DbgHelp.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_json-vc143-mt-x32-1_88.lib;$(PROJECTDIR)external_libraries\boost-1.88.0\lib32-msvc-14.3\libboost_container-vc143-mt-x32-1_88.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/NOIMPLIB %(AdditionalOptions)</AdditionalOptions>
       <ImportLibrary>
@@ -540,6 +540,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClInclude Include="source\networking\session\network_session_state.h" />
     <ClInclude Include="source\networking\tools\remote_command.h" />
     <ClInclude Include="source\networking\transport\transport.h" />
+    <ClInclude Include="source\networking\transport\transport_dns_winsock.h" />
     <ClInclude Include="source\networking\transport\transport_qos.h" />
     <ClInclude Include="source\objects\crates.h" />
     <ClInclude Include="source\objects\damage.h" />
@@ -874,6 +875,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClCompile Include="source\networking\session\network_session_parameters_ui.cpp" />
     <ClCompile Include="source\networking\tools\remote_command.cpp" />
     <ClCompile Include="source\networking\transport\transport.cpp" />
+    <ClCompile Include="source\networking\transport\transport_dns_winsock.cpp" />
     <ClCompile Include="source\networking\transport\transport_endpoint_winsock.cpp" />
     <ClCompile Include="source\objects\crates.cpp" />
     <ClCompile Include="source\objects\objects.cpp" />

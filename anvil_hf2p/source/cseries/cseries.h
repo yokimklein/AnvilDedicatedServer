@@ -1503,7 +1503,17 @@ extern const real_rgb_color* const global_real_rgb_darkgreen;
 extern const real_rgb_color* const global_real_rgb_salmon;
 extern const real_rgb_color* const global_real_rgb_violet;
 
-long bit_count(long val);
+constexpr long bit_count(long val)
+{
+	long result = 0;
+	while (val != 0)
+	{
+		val >>= 1;
+		result++;
+	}
+	return result;
+}
+
 long __fastcall index_from_mask(const dword* mask, long bit_count); // first index?
 
 struct c_allocation_base

@@ -446,17 +446,6 @@ long __fastcall bit_vector_count_bits(const dword* bit_mask, int bit_count)
     return INVOKE(0xC39D0, bit_vector_count_bits, bit_mask, bit_count);
 }
 
-long bit_count(long val)
-{
-    long result = 0;
-    while (val != 0)
-    {
-        val >>= 1;
-        result++;
-    }
-    return result;
-}
-
 long __fastcall index_from_mask(const dword* mask, long bit_count)
 {
     return INVOKE(0xC3C10, index_from_mask, mask, bit_count);

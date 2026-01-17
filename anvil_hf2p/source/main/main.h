@@ -116,7 +116,7 @@ public:
 protected:
 	long m_resource_key;
 };
-#define LOCAL_TAG_RESOURCE_SCOPE_LOCK c_tag_resources_game_lock __local_tag_resource_scope_lock{}
+#define TAG_RESOURCES_GAME_LOCK(...) c_tag_resources_game_lock __local_tag_resource_scope_lock{}
 
 class c_wait_for_render_thread
 {
