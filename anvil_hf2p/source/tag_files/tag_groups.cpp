@@ -87,3 +87,13 @@ const wchar_t* tag_name_strip_path(const wchar_t* path)
 	}
 	return path;
 }
+
+void tag_block_set_elements(s_tag_block* block, void* elements)
+{
+	block->address = elements;
+}
+
+void tag_block_set_element_count(s_tag_block* block, long count)
+{
+	block->count = count;
+}

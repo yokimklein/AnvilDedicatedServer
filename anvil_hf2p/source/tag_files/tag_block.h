@@ -20,8 +20,14 @@ struct s_tag_data
 {
 	long size;
 	c_flags<e_tag_data_flags, long, k_number_of_tag_data_flags> flags;
-	long stream_position;
-	void* address;
+	long file_offset;
+
+	union
+	{
+		void* address;
+		byte* base;
+	};
+
 	s_tag_block_definition* definition;
 };
 static_assert(sizeof(s_tag_data) == 0x14);
@@ -92,4 +98,14 @@ public:
 struct s_tag_block_stub
 {
 
+};
+
+template<typename t_data_type, ulong ...t_extra>
+class c_typed_tag_data : public s_tag_data
+{
+public:
+	t_data_type* get()
+	{
+		return reinterpret_cast<t_data_type*>(base);
+	}
 };

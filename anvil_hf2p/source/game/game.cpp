@@ -5,6 +5,9 @@
 #include <networking\network_configuration.h>
 #include <memory\tls.h>
 
+REFERENCE_DECLARE(0x104DE54, bool, g_disable_video);
+REFERENCE_DECLARE(0x104DD9A, bool, g_disable_audio);
+
 game_options* game_options_get()
 {
 	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
@@ -125,7 +128,11 @@ bool game_is_dedicated_server()
 
 bool game_is_bot_client()
 {
+#if defined(BOT_CLIENT_ENABLED)
+	return true;
+#else
 	return false;
+#endif
 }
 
 bool game_is_sapien()
@@ -253,7 +260,7 @@ bool game_options_valid()
 bool game_is_ui_shell()
 {
 	TLS_DATA_GET_VALUE_REFERENCE(game_globals);
-	return game_globals->options.game_mode == _game_mode_mainmenu;;
+	return game_globals->options.game_mode == _game_mode_mainmenu;
 }
 
 bool game_disable_rendering()

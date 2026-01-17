@@ -34,3 +34,6 @@ bool game_is_ui_shell();
 
 bool game_disable_rendering();
 bool game_disable_sound();
+
+extern bool& g_disable_video;
+extern bool& g_disable_audio;

@@ -260,6 +260,21 @@ struct s_cache_file_tag_group
 };
 static_assert(sizeof(s_cache_file_tag_group) == 0x10);
 
+struct s_cache_file_tag_resource_data;
+struct s_tag_resource
+{
+	union
+	{
+		ulong resource_handle;
+		s_cache_file_tag_resource_data* resource_data;
+	};
+
+	ulong definition_address;
+};
+static_assert(sizeof(s_tag_resource) == 0x8);
+
 extern void* tag_block_get_element_with_size(s_tag_block const* block, long index, long size);
 extern const char* tag_name_strip_path(const char* path);
 extern const wchar_t* tag_name_strip_path(const wchar_t* path);
+extern void tag_block_set_elements(s_tag_block* block, void* elements);
+extern void tag_block_set_element_count(s_tag_block* block, long count);

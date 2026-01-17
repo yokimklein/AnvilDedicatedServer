@@ -15,6 +15,9 @@
 #include <networking\network_time.h>
 #include <anvil\session_voting.h>
 #include <anvil\backend\services\private_service.h>
+#include <tag_files\tag_resource_cache_control.h>
+#include <cache\cache_files_windows.h>
+#include <cache\cache_files.h>
 
 bool const k_add_local_player_in_dedicated_server_mode = true;
 
@@ -142,6 +145,64 @@ void __fastcall c_life_cycle_state_handler_end_game_write_stats__update_hook(c_l
     thisptr->update_();
 }
 
+void __fastcall mark_necessary_resources_hook(c_tag_resource_cache_controller* thisptr, void* unused, c_tag_resource_runtime_active_set* runtime_active_set, c_tag_resource_address_cache_control_interface* controller_interface, bool* out_unknown)
+{
+    thisptr->mark_necessary_resources(runtime_active_set, controller_interface, out_unknown);
+}
+
+void __cdecl cached_map_files_open_all_hook(s_hook_registers& registers)
+{
+    s_cache_file_share_map* shared_file = (s_cache_file_share_map*)(registers.edi - 4);
+
+    if (cached_map_file_is_shared(shared_file->previous_index))
+    {
+        cached_map_file_open_for_running_off_dvd(shared_file->index, shared_file->file_path);
+    }
+}
+
+// $TODO: test this works properly
+#pragma runtime_checks("", off)
+__declspec(safebuffers) void __cdecl cached_map_file_dependencies_loaded_hook(s_hook_registers& registers)
+{
+    __asm
+    {
+        jz hook_end;
+    }
+
+    e_cache_file_shared_file_type shared_file_type = (e_cache_file_shared_file_type)registers.esi;
+    bool result = cached_map_file_is_shared((e_map_file_index)(shared_file_type - 1));
+
+    __asm
+    {
+        mov al, result;
+        test al, al;
+    }
+
+hook_end:
+    return;
+}
+
+__declspec(safebuffers) void __cdecl c_cache_file_tag_resource_runtime_manager__initialize_files_hook(s_hook_registers& registers)
+{
+    e_map_file_index map_file_index = (e_map_file_index)registers.esi;
+    bool result = cached_map_file_is_shared(map_file_index) && map_file_index != k_no_cached_map_file_index;
+    __asm
+    {
+        mov al, result;
+        test al, al;
+    }
+}
+#pragma runtime_checks("", restore)
+
+void __cdecl game_initialize_hook(s_hook_registers& registers)
+{
+    if (game_is_dedicated_server() || game_is_bot_client() || !game_is_client())
+    {
+        g_disable_video = game_disable_rendering();
+        g_disable_audio = game_disable_sound();
+    }
+}
+
 void anvil_hooks_ds_apply()
 {
     // add anvil_session_update to network_update after network_session_interface_update
@@ -211,4 +272,19 @@ void anvil_hooks_ds_apply()
 
     // Restore end game write stats to submit game stats to the API
     hook::function(0x4C630, 0x218, c_life_cycle_state_handler_end_game_write_stats__update_hook);
+
+    //// WIP headless (no audio & video)
+    //// take control of mark_necessary_resources to block audio & video resources
+    //hook::function(0x246B40, 0x301, mark_necessary_resources_hook);
+    //// restore cached_map_file_is_shared
+    ////hook::insert(0xEDCB3, 0xEDCBD, cached_map_files_open_all_hook, _hook_replace);
+    ////hook::insert(0xEF179, 0xEF17F, cached_map_file_dependencies_loaded_hook, _hook_execute_replaced_first);
+    ////hook::insert(0xD898E, 0xD8991, c_cache_file_tag_resource_runtime_manager__initialize_files_hook, _hook_replace);
+    //hook::function(0x83170, 0x1D3, cache_files_populate_resource_offsets);
+    //hook::function(0x83350, 0x196, cache_files_populate_resource_gestalt);
+    //// add back disable video & audio bool sets
+    //hook::insert(0xB0E1D, 0xB0E22, game_initialize_hook, _hook_execute_replaced_last);
+    //// add back calls to game_disable_sound
+    //// hf2p_engine_ctrl_play_sound
+    //// hf2p_engine_ctrl_stop_sound
 }

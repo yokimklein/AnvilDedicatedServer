@@ -1092,6 +1092,15 @@
     <ClInclude Include="source\tag_files\tag_resource_cache_address_cache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\tag_files\tag_resource_internals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\async_helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cseries\async.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="source\motor\actions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1099,6 +1108,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\memory\byte_swapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\cache_file_builder_tag_resource_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\cache_file_tag_resource_location_table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\physical_memory_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1805,7 +1823,16 @@
     <ClCompile Include="source\tag_files\tag_resource_cache_address_cache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\cseries\async_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cseries\async.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="source\networking\transport\transport_dns_winsock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cache\physical_memory_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
