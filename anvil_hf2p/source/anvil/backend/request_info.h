@@ -3,9 +3,6 @@
 #include <functional>
 #include <atomic>
 
-// 5 second cooldown between failed requests
-constexpr ulong SERVICE_REQUEST_REFRESH_INTERVAL = 5000;
-
 enum e_request_status
 {
     _request_status_none,

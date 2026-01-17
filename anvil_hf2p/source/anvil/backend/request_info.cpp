@@ -1,5 +1,6 @@
 #include "request_info.h"
-#include <networking\network_time.h>
+#include "networking\network_time.h"
+#include "anvil\backend\backend.h"
 
 s_request_info::s_request_info()
     : status(_request_status_none)
@@ -40,7 +41,7 @@ void s_request_info::update_request(std::function<bool()> send_request, std::fun
         }
         case _request_status_timeout:
         {
-            if (network_time_since(failure_time) >= SERVICE_REQUEST_REFRESH_INTERVAL)
+            if (network_time_since(failure_time) >= g_backend_services.get()->service_request_refresh_interval())
             {
                 failure_time = NONE;
                 status = _request_status_none;

@@ -146,6 +146,36 @@ void c_backend::initialise()
 
     endpoints_service::endpoint().resolve(_endpoint_eds, g_anvil_configuration["endpoints_dispatcher_domain"], g_anvil_configuration["endpoints_dispatcher_port"]);
     private_service::endpoint().resolve(_endpoint_private, g_anvil_configuration["private_service_domain"], g_anvil_configuration["private_service_port"]);
+    
+    try
+    {
+        g_backend_services.get()->m_service_request_timeout_interval = std::chrono::milliseconds(stoi(g_anvil_configuration["service-request-timeout-interval"]));
+    }
+    catch (...)
+    {
+        event(_event_error, "backend: failed to read service-request-timeout-interval from server configuration! using 15 second default value");
+        g_backend_services.get()->m_service_request_timeout_interval = std::chrono::seconds(15);
+    }
+
+    try
+    {
+        g_backend_services.get()->m_backend_token_refresh_interval = stoi(g_anvil_configuration["backend-token-refresh-interval"]);
+    }
+    catch (...)
+    {
+        event(_event_error, "backend: failed to read backend-token-refresh-interval from server configuration! using 2 minute default value");
+        g_backend_services.get()->m_backend_token_refresh_interval = 120000;
+    }
+
+    try
+    {
+        g_backend_services.get()->m_service_request_refresh_interval = stoi(g_anvil_configuration["service-request-refresh-interval"]);
+    }
+    catch (...)
+    {
+        event(_event_error, "backend: failed to read service-request-refresh-interval from server configuration! using 5 second default value");
+        g_backend_services.get()->m_service_request_refresh_interval = 5000;
+    }
 }
 
 // $TODO: split up into service update methods
@@ -230,7 +260,7 @@ void c_backend::update()
     // Refresh tokens every 2 minutes
     authorization_service::refresh_tokens::m_status.update_request([]
     {
-        if (network_time_since(authorization_service::m_last_token_refresh) >= BACKEND_TOKEN_REFRESH_INTERVAL)
+        if (network_time_since(authorization_service::m_last_token_refresh) >= g_backend_services.get()->m_backend_token_refresh_interval)
         {
             authorization_service::refresh_tokens::request();
             return true;
@@ -272,7 +302,7 @@ void c_backend::on_connect(std::shared_ptr<s_backend_request_data> backend_data,
 
     if (ec)
     {
-        event(_event_error, "backend: failed to connect to host %s:%s! [error: %d - %s]",
+        event(_event_error, "backend: connection failed [%s:%s] [error: %d - %s]",
             backend_data.get()->resolved->m_host.c_str(),
             backend_data.get()->resolved->m_port.c_str(),
             ec.value(),
@@ -285,7 +315,7 @@ void c_backend::on_connect(std::shared_ptr<s_backend_request_data> backend_data,
         return;
     }
 
-    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    backend_data.get()->stream.expires_after(m_service_request_timeout_interval);
     http::async_write(backend_data.get()->stream, backend_data.get()->request, beast::bind_front_handler(&c_backend::on_write, shared_from_this(), backend_data));
 }
 
@@ -295,7 +325,7 @@ void c_backend::on_write(std::shared_ptr<s_backend_request_data> backend_data, b
 
     if (ec)
     {
-        event(_event_error, "backend: failed to write! [error: %d - %s]", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: write failed [error: %d - %s]", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -304,7 +334,7 @@ void c_backend::on_write(std::shared_ptr<s_backend_request_data> backend_data, b
         return;
     }
 
-    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    backend_data.get()->stream.expires_after(m_service_request_timeout_interval);
     http::async_read(backend_data.get()->stream, backend_data.get()->buffer, backend_data.get()->response, beast::bind_front_handler(&c_backend::on_read, shared_from_this(), backend_data));
 }
 
@@ -314,7 +344,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
 
     if (ec)
     {
-        event(_event_error, "backend: failed to read response! [error: %d - %s]", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: read response failed [error: %d - %s]", ec.value(), ec.message().c_str());
 
         s_backend_response failure_response;
         failure_response.retCode = (e_backend_return_codes)ec.value();
@@ -339,7 +369,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
                 response.retCode = (e_backend_return_codes)obj.at("retCode").as_int64();
                 if (response.retCode != _backend_success)
                 {
-                    event(_event_warning, "backend: response returned failed retcode! [%d]!", response.retCode);
+                    event(_event_warning, "backend: response returned failed retcode [%d]!", response.retCode);
                     s_backend_response failure_response;
                     failure_response.retCode = response.retCode;
                     backend_data.get()->response_handler(&failure_response);
@@ -357,7 +387,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
     }
     catch (const std::exception& e)
     {
-        event(_event_error, "backend: failed to parse JSON! [%s]\n%s", e.what(), response_body.c_str());
+        event(_event_error, "backend: failed to parse json [%s]\n%s", e.what(), response_body.c_str());
         s_backend_response failure_response;
         failure_response.retCode = _backend_unhandled_error;
         backend_data.get()->response_handler(&failure_response);
@@ -368,7 +398,7 @@ void c_backend::on_read(std::shared_ptr<s_backend_request_data> backend_data, be
 
     if (ec && ec != beast::errc::not_connected)
     {
-        event(_event_error, "backend: failed to shutdown connection! [error: %d - %s]!", ec.value(), ec.message().c_str());
+        event(_event_error, "backend: shutdown failed [error: %d - %s]!", ec.value(), ec.message().c_str());
     }
 }
 
@@ -401,7 +431,7 @@ ulong c_backend::make_request(s_backend_request& request_body, http::verb http_v
 
     event(_event_status, "backend: sending request to %s:%s%s", resolved_endpoint.m_host.c_str(), resolved_endpoint.m_port.c_str(), backend_data.get()->endpoint.c_str());
 
-    backend_data.get()->stream.expires_after(std::chrono::milliseconds(SERVICE_REQUEST_TIMEOUT_INTERVAL));
+    backend_data.get()->stream.expires_after(g_backend_services->m_service_request_timeout_interval);
     backend_data.get()->stream.async_connect(resolved_endpoint.m_resolver_results, beast::bind_front_handler(&c_backend::on_connect, g_backend_services->shared_from_this(), backend_data));
 
     return backend_data.get()->request_identifier;

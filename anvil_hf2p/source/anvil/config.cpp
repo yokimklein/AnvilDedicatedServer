@@ -5,14 +5,17 @@
 
 std::map<std::string, std::string> g_anvil_configuration =
 {
-    { "server_address", "127.0.0.1" },
-    { "playlist_id", "playlist_team_slayer_small" },
-    { "endpoints_dispatcher_domain", "eds.svc.anvilstation.net" },
-    { "endpoints_dispatcher_port", "11705" },
-    { "private_service_domain", "prv.svc.anvilstation.net" },
-    { "private_service_port", "11001" },
-    { "account", "account" },
-    { "sign-in-code", "sign-in-code" },
+    { "server_address", "127.0.0.1" },                              // The IPV4 address of this dedicated server instance
+    { "playlist_id", "playlist_team_slayer_small" },                // The playlist this dedicated server instance is running
+    { "endpoints_dispatcher_domain", "eds.svc.anvilstation.net" },  // The domain or IPV4 address for the Endpoints Dispatcher Service
+    { "endpoints_dispatcher_port", "11705" },                       // The port for the Endpoints Dispatcher Service
+    { "private_service_domain", "prv.svc.anvilstation.net" },       // The domain or IPV4 address for the Private Service
+    { "private_service_port", "11001" },                            // The port for the Private Service
+    { "account", "account" },                                       // The username for the API login
+    { "sign-in-code", "sign-in-code" },                             // The password for the API login
+    { "service-request-timeout-interval", "15000" },                // Time before a request is failed due to a timeout (15 seconds default)
+    { "backend-token-refresh-interval", "120000" },                 // API token refresh interval (2 minutes default)
+    { "service-request-refresh-interval", "5000" },                 // The time before a failed request is requested again (5 seconds defualt)
 };
 
 void anvil_load_configuration()

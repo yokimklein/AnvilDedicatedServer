@@ -87,7 +87,7 @@ void anvil_session_update()
                 c_backend::private_service::update_game_server::request
                 (
                     transport_secure_address_get_string(&server_identifier),
-                    // $TODO: pull this IP from somewhere
+                    // $TODO: pull public IP from 8.8.8.8 or use transport_security_globals address
                     g_anvil_configuration["server_address"], //transport_address_to_string(&transport_security_globals.address, NULL, address_str, 0x100, false, false);
                     transport_security_globals.address.port,
                     g_anvil_configuration["playlist_id"]

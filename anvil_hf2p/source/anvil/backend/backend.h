@@ -17,12 +17,6 @@ namespace http = beast::http;
 namespace json = boost::json;
 using tcp = net::ip::tcp;
 
-// Fail async task if nothing is heard back within 15 seconds
-constexpr ulong SERVICE_REQUEST_TIMEOUT_INTERVAL = 15000;
-
-// refresh every 2 minutes
-constexpr ulong BACKEND_TOKEN_REFRESH_INTERVAL = 120000;
-
 enum e_backend_return_codes
 {
     _backend_missing_params = -2,
@@ -89,6 +83,10 @@ public:
     void resolve(e_resolved_endpoints endpoint_type, std::string host, std::string port);
     void resolve(e_resolved_endpoints endpoint_type);
 
+    const std::chrono::steady_clock::duration service_request_timeout_interval() { return m_service_request_timeout_interval; };
+    const ulong backend_token_refresh_interval() { return m_backend_token_refresh_interval; };
+    const ulong service_request_refresh_interval() { return m_service_request_refresh_interval; };
+
 private:
     c_backend();
 
@@ -104,6 +102,9 @@ private:
     std::thread m_thread;
     tcp::resolver m_resolver;
     std::atomic<ulong> m_last_request_number = NONE;
+    std::chrono::steady_clock::duration m_service_request_timeout_interval;
+    ulong m_backend_token_refresh_interval;
+    ulong m_service_request_refresh_interval;
 
     // $TODO: find a better solution
     // Ideally I would store these as statics in the services, but I've been running into memory related crashes when I do this
