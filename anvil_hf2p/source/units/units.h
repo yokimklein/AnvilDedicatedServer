@@ -287,21 +287,6 @@ struct unit_datum
 };
 static_assert(sizeof(unit_datum) == 0x598);
 
-struct s_new_unit_action_grenade
-{
-	long unk1;
-	byte unk2_1;
-	byte unk2_2;
-	byte unk_type;
-	bool throw_predicted;
-	byte unk3_1;
-	char unk3_2;
-	byte unk3_3;
-	byte unk3_4;
-	long throw_type_index;
-	long projectile_index;
-};
-
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled);
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);

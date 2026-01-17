@@ -7,6 +7,7 @@
 #include <simulation\game_interface\simulation_game_units.h>
 #include <simulation\game_interface\simulation_game_action.h>
 #include <game\game_engine_candy_monitor.h>
+#include <motor\actions.h>
 
 void __cdecl event_generate_part_hook(s_hook_registers& registers)
 {
@@ -63,7 +64,7 @@ void __cdecl throw_release_hook0(s_hook_registers& registers)
 
 void __cdecl throw_release_hook1(s_hook_registers& registers)
 {
-	s_new_unit_action_grenade* action_state_storage = (s_new_unit_action_grenade*)registers.ebx;
+	s_action_state* action_state_storage = (s_action_state*)registers.ebx;
 	datum_index object_index = (datum_index)registers.esi;
 	bool force_inside_bsp = *(bool*)(registers.ebp + 0x04);
 	bool force_inside_bsp_valid = (force_inside_bsp == 0x0 || force_inside_bsp == 0x1);

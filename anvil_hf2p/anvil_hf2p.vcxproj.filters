@@ -342,9 +342,6 @@
     <ClInclude Include="source\networking\network_time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\memory\byte_swapping.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\tag_files\string_ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1093,6 +1090,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\tag_files\tag_resource_cache_address_cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\motor\actions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memory\byte_swapping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
