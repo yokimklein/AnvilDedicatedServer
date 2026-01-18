@@ -596,6 +596,12 @@ void __fastcall player_set_unit_index_hook1(datum_index unit_index, bool activel
     unit_set_actively_controlled(unit_index, actively_controlled);
 }
 
+void __cdecl c_game_engine__player_update_hook(s_hook_registers& registers)
+{
+    player_datum* player = (player_datum*)registers.esi;
+    simulation_action_object_update(player->unit_index, _simulation_unit_update_grenade_counts);
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -775,4 +781,7 @@ void anvil_hooks_object_updates_apply()
 
     // force update player position
     hook::insert(0xC95EE, 0xC9611, game_engine_update_player_hook, _hook_replace);
+    
+    // sync grenade regeneration player trait
+    hook::insert(0x1C8681, 0x1C8687, c_game_engine__player_update_hook, _hook_execute_replaced_last);
 }
