@@ -1,5 +1,6 @@
 #include "cseries/cseries_console.h"
 #include "cseries/cseries.h"
+#include "cseries/cseries_events.h"
 #include "text/unicode.h"
 
 #include <windows.h>
@@ -11,8 +12,6 @@ void c_console::initialize(const char* window_title)
 {
 	if (!m_initialized)
 	{
-		m_initialized = true;
-
 		AllocConsole();
 		AttachConsole(GetCurrentProcessId());
 		SetConsoleTitleA(window_title);
@@ -24,6 +23,8 @@ void c_console::initialize(const char* window_title)
 #if !defined(PLAY_ENABLED)
 		toggle_window_visibility();
 #endif
+
+		m_initialized = true;
 	}
 }
 
@@ -72,58 +73,47 @@ bool c_console::console_allocated()
 	return GetConsoleWindow() != NULL;
 }
 
-void c_console::write(const char* format, ...)
+void c_console::enable_ansi()
+{
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD mode;
+	GetConsoleMode(h, &mode);
+	SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+}
+
+void c_console::write(const real_argb_color* color, const char* format, ...)
 {
 	va_list list;
 	va_start(list, format);
-	write_va(format, list);
+	write_va(color, format, list);
 	va_end(list);
 }
 
-void c_console::write_line(const char* format, ...)
+void c_console::write_line(const real_argb_color* color, const char* format, ...)
 {
 	va_list list;
 	va_start(list, format);
-	write_line_va(format, list);
+	write_line_va(color, format, list);
 	va_end(list);
 }
 
-void c_console::write(const wchar_t* format, ...)
+void c_console::write(const real_argb_color* color, const wchar_t* format, ...)
 {
 	va_list list;
 	va_start(list, format);
-	write_va(format, list);
+	write_va(color, format, list);
 	va_end(list);
 }
 
-void c_console::write_line(const wchar_t* format, ...)
+void c_console::write_line(const real_argb_color* color, const wchar_t* format, ...)
 {
 	va_list list;
 	va_start(list, format);
-	write_line_va(format, list);
+	write_line_va(color, format, list);
 	va_end(list);
 }
 
-void c_console::write_va(const char* format, va_list list)
-{
-	if (!m_initialized)
-		return;
-
-	c_static_string<4096> str;
-
-	str.print_va(format, list);
-
-	if (console_allocated())
-	{
-		printf(str.get_string());
-	}
-	else
-	{
-		OutputDebugStringA(str.get_string());
-	}
-}
-
-void c_console::write_line_va(const char* format, va_list list)
+void c_console::write_va(const real_argb_color* color, const char* format, va_list list)
 {
 	if (!m_initialized)
 	{
@@ -132,11 +122,14 @@ void c_console::write_line_va(const char* format, va_list list)
 
 	c_static_string<4096> str;
 
-	str.print_va(format, list);
-	str.append("\r\n");
-
 	if (console_allocated())
 	{
+		const char* fmt = format;
+		if (color)
+		{
+			fmt = color_format_debug_print(color, format);
+		}
+		str.print_va(fmt, list);
 		printf(str.get_string());
 	}
 	else
@@ -145,7 +138,35 @@ void c_console::write_line_va(const char* format, va_list list)
 	}
 }
 
-void c_console::write_va(const wchar_t* format, va_list list)
+void c_console::write_line_va(const real_argb_color* color, const char* format, va_list list)
+{
+	if (!m_initialized)
+	{
+		return;
+	}
+
+	c_static_string<4096> str;
+
+	if (console_allocated())
+	{
+		const char* fmt = format;
+		if (color)
+		{
+			fmt = color_format_debug_print(color, format);
+		}
+		str.print_va(fmt, list);
+		str.append("\n");
+		printf(str.get_string());
+	}
+	else
+	{
+		str.print_va(format, list);
+		str.append("\n");
+		OutputDebugStringA(str.get_string());
+	}
+}
+
+void c_console::write_va(const real_argb_color* color, const wchar_t* format, va_list list)
 {
 	if (!m_initialized)
 	{
@@ -158,6 +179,11 @@ void c_console::write_va(const wchar_t* format, va_list list)
 
 	if (console_allocated())
 	{
+		if (color)
+		{
+			// $TODO: full colour formatting for wide strings (color_format_debug_print)
+			str.set_foreground_color(&color->rgb);
+		}
 		wprintf(str.get_string());
 	}
 	else
@@ -166,7 +192,7 @@ void c_console::write_va(const wchar_t* format, va_list list)
 	}
 }
 
-void c_console::write_line_va(const wchar_t* format, va_list list)
+void c_console::write_line_va(const real_argb_color* color, const wchar_t* format, va_list list)
 {
 	if (!m_initialized)
 	{
@@ -180,6 +206,11 @@ void c_console::write_line_va(const wchar_t* format, va_list list)
 
 	if (console_allocated())
 	{
+		if (color)
+		{
+			// $TODO: full colour formatting for wide strings (color_format_debug_print)
+			str.set_foreground_color(&color->rgb);
+		}
 		wprintf(str.get_string());
 	}
 	else

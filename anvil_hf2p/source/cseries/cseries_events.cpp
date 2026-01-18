@@ -1227,7 +1227,7 @@ bool console_update_spam_prevention(e_event_level event_level)
 	return true;
 }
 
-void write_to_console(e_event_level event_level, long category_index, const char* string)
+void write_to_console(e_event_level event_level, long category_index, const char* string, va_list list)
 {
 	ASSERT(g_events_initialized);
 	enum
@@ -1237,13 +1237,31 @@ void write_to_console(e_event_level event_level, long category_index, const char
 
 	bool should_update = console_update_spam_prevention(event_level);
 
-	display_debug_string(string);
-	c_console::write_line(string);
+	// format w/o colour here
+	c_static_string<4096> formatted_str;
+	formatted_str.print_va(string, list);
+	display_debug_string(formatted_str.get_string());
+
+	real_argb_color color = *global_real_argb_white;
+
+	if (event_level == _event_critical)
+	{
+		color = *global_real_argb_red;
+	}
+	else
+	{
+		g_event_read_write_lock.read_lock();
+		s_event_category* category = event_category_get(category_index);
+		color.rgb = category->current_display_color;
+		g_event_read_write_lock.read_unlock();
+	}
+
+	c_console::write_line_va(&color, string, list);
 
 	if (!should_update)
 	{
 		char buffer[1040]{};
-		csstrnzcpy(buffer, string, 1027);
+		csstrnzcpy(buffer, formatted_str.get_string(), 1027);
 
 		if (event_globals.dump_to_stderr)
 		{
@@ -1251,20 +1269,6 @@ void write_to_console(e_event_level event_level, long category_index, const char
 		}
 		else
 		{
-			real_argb_color color = *global_real_argb_white;
-
-			if (event_level == _event_critical)
-			{
-				color = *global_real_argb_red;
-			}
-			else
-			{
-				g_event_read_write_lock.read_lock();
-				s_event_category* category = event_category_get(category_index);
-				color.rgb = category->current_display_color;
-				g_event_read_write_lock.read_unlock();
-			}
-
 			terminal_printf(&color, "%s", buffer);
 		}
 
@@ -1324,7 +1328,7 @@ void write_to_console(e_event_level event_level, long category_index, const char
 	}
 }
 
-void event_generated_handle_console(e_event_level event_level, long category_index, const char* event_text, bool force)
+void event_generated_handle_console(e_event_level event_level, long category_index, const char* event_text, bool force, va_list list)
 {
 	ASSERT(g_events_initialized);
 
@@ -1368,7 +1372,7 @@ void event_generated_handle_console(e_event_level event_level, long category_ind
 		csnzprintf(final_text, NUMBEROF(final_text), "%s %s", severity_string, event_text);
 	}
 
-	write_to_console(event_level, category_index, final_text);
+	write_to_console(event_level, category_index, final_text, list);
 }
 
 void event_generated_handle_listeners(e_event_level event_level, const char* event_text)
@@ -1514,7 +1518,7 @@ void event_generate(e_event_level event_level, long category_index, ulong event_
 	{
 		if (TEST_BIT(updated_flags, _category_properties_display_level_bit) || TEST_BIT(updated_flags, _category_properties_force_display_level_bit))
 		{
-			event_generated_handle_console(event_level, category_index, event_text, TEST_BIT(updated_flags, _category_properties_force_display_level_bit));
+			event_generated_handle_console(event_level, category_index, format, TEST_BIT(updated_flags, _category_properties_force_display_level_bit), argument_list);
 		}
 
 		if (TEST_BIT(updated_flags, _category_properties_log_level_bit))
@@ -1626,4 +1630,141 @@ void reset_event_message_buffer()
 {
 	event_globals.message_buffer_size = 0;
 	event_globals.message_buffer[0] = 0;
+}
+
+struct log_colors
+{
+	const real_rgb_color* int_spec;       // %d, %i, %u, %I64d, %I32d
+	const real_rgb_color* hex_spec;       // %x, %X, %04X, %llX
+	const real_rgb_color* float_spec;     // %f, %g, %e
+	const real_rgb_color* string_spec;    // %s, %S
+	const real_rgb_color* pointer_spec;   // %p
+	const real_rgb_color* fallback_spec;  // anything else
+};
+
+static const log_colors k_log_colors =
+{
+	.int_spec = global_real_rgb_orange,
+	.hex_spec = global_real_rgb_yellow,
+	.float_spec = global_real_rgb_cyan,
+	.string_spec = global_real_rgb_green,
+	.pointer_spec = global_real_rgb_magenta,
+	.fallback_spec = global_real_rgb_white,
+};
+
+// Code modified from color_network_debug_print in ManagedDonkey
+const char* color_format_debug_print(const real_argb_color* event_colour, const char* str)
+{
+	static c_string_builder builder;
+	builder.clear();
+
+	const char* first_sep = ": ";
+	const char* second_sep = ": ";
+
+	const char* first_split = csstrstr(str, first_sep);
+	const char* after_first = first_split ? first_split + csstrnlen(first_sep, 2) : str;
+
+	// 1. Log path
+	if (first_split)
+	{
+		long first_len = first_split - str;
+		builder.set_foreground_color(&event_colour->rgb);
+		builder.append_print("%.*s", first_len, str);
+		builder.set_reset_color();
+		builder.append(first_sep);
+	}
+
+	// 2. Function/method
+	//const char* second_split = csstrstr(after_first, second_sep);
+	const char* remaining = after_first;
+	//
+	//if (second_split)
+	//{
+	//	long second_len = second_split - after_first;
+	//	builder.set_foreground_color(colors.func_name);
+	//	builder.append_print("%.*s", second_len, after_first);
+	//	builder.set_reset_color();
+	//	builder.append(second_sep);
+	//	remaining = second_split + csstrnlen(second_sep, 2);
+	//}
+
+	// 3. Scan remaining string for printf specifiers and color per type
+	const char* p = remaining;
+	const char* text_start = p;
+
+	while (*p)
+	{
+		if (*p == '%')
+		{
+			if (*(p + 1) == '%') { p += 2; continue; }
+
+			if (p > text_start)
+			{
+				builder.append_print("%.*s", (int)(p - text_start), text_start);
+			}
+
+			const char* spec = p;
+			p++; // skip '%'
+
+			// Flags
+			while (*p && strchr("-+ #0", *p)) p++;
+
+			// Width
+			while (*p && isdigit(*p)) p++;
+
+			// Precision
+			if (*p == '.') { p++; while (*p && isdigit(*p)) p++; }
+
+			// Length modifiers
+			if (*p)
+			{
+				if (*p == 'I') // MSVC-specific (I32, I64)
+				{
+					p++;
+					while (*p && isdigit(*p)) p++;
+				}
+				else if ((*p == 'h' && *(p + 1) == 'h') || (*p == 'l' && *(p + 1) == 'l'))
+				{
+					p += 2;
+				}
+				else if (strchr("hlLzjt", *p))
+				{
+					p++;
+				}
+			}
+
+			// Conversion character
+			char conv = *p;
+			if (*p) p++;
+
+			int spec_len = p - spec;
+
+			const real_rgb_color* chosen_color = k_log_colors.fallback_spec;
+			switch (conv)
+			{
+				case 'd': case 'i': case 'u': case 'D': chosen_color = k_log_colors.int_spec; break;
+				case 'x': case 'X': chosen_color = k_log_colors.hex_spec; break;
+				case 'f': case 'F': case 'g': case 'G': case 'e': case 'E': chosen_color = k_log_colors.float_spec; break;
+				case 's': case 'S': chosen_color = k_log_colors.string_spec; break;
+				case 'p': chosen_color = k_log_colors.pointer_spec; break;
+			}
+
+			builder.set_foreground_color(chosen_color);
+			builder.append_print("%.*s", spec_len, spec);
+			builder.set_reset_color();
+
+			text_start = p;
+		}
+		else
+		{
+			p++;
+		}
+	}
+
+	if (*text_start)
+	{
+		builder.append(text_start);
+	}
+
+	return builder.get_string();
 }

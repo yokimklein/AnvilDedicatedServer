@@ -205,7 +205,7 @@ bool __cdecl transport_secure_address_resolve()
                 transport_security_globals.local_address_valid = true;
                 //transport_secure_address_resolve();
                 csmemcpy(&transport_security_globals.local_unique_identifier, &transport_security_globals.local_secure_address, sizeof(s_transport_unique_identifier));
-                event(_event_message, "networking:transport: resolved address [%s] from adapter [%ws]", transport_address_get_string(address), adapter_name->get_string());
+                event(_event_message, "networking:transport: resolved address [%s] from adapter [%ls]", transport_address_get_string(address), adapter_name->get_string());
                 return true;
             }
         }

@@ -211,6 +211,7 @@ extern void event_initialize_primary_logs();
 extern long event_interlocked_compare_exchange(long volatile* destination, long exchange, long comperand);
 extern void events_suppress_output(bool suppress);
 extern void reset_event_message_buffer();
+extern const char* color_format_debug_print(const real_argb_color* event_colour, const char* str);
 
 //#define USE_CONSOLE_FOR_EVENTS
 

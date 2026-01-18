@@ -102,5 +102,5 @@ void c_backend::endpoints_service::get_authorization_endpoints_and_date::respons
 
     m_authorization_endpoint_valid = true;
     m_status.status = _request_status_received;
-    event(_event_status, "backend:endpoints_service: received %d endpoints, using [%s]", endpoints_count, authorisation_endpoint.Name.c_str());
+    event(_event_message, "backend:endpoints_service: received %d endpoints, using [%s]", endpoints_count, authorisation_endpoint.Name.c_str());
 }

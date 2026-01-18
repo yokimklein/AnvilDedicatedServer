@@ -316,7 +316,7 @@ void __cdecl console_printf(const char* format, ...)
 		const char* message_string = message.get_string();
 
 		terminal_printf(nullptr, message_string);
-		c_console::write_line(message_string);
+		c_console::write_line(NULL, message_string);
 
 		if (console_dump_to_debug_display)
 		{
@@ -332,7 +332,7 @@ void __cdecl console_printf_color(const real_argb_color* color, const char* form
 	va_list list;
 	va_start(list, format);
 
-	c_console::write_line(format, list);
+	c_console::write_line(color, format, list);
 	if (is_main_thread())
 	{
 		c_static_string<255> message{};
@@ -340,7 +340,7 @@ void __cdecl console_printf_color(const real_argb_color* color, const char* form
 		const char* message_string = message.get_string();
 
 		terminal_printf(color, message_string);
-		c_console::write_line(message_string);
+		c_console::write_line(color, message_string);
 
 		if (console_dump_to_debug_display)
 		{
@@ -473,7 +473,7 @@ void __cdecl console_warning(const char* format, ...)
 		const char* message_string = message.get_string();
 
 		terminal_printf(global_real_argb_red, message_string);
-		c_console::write_line(message_string);
+		c_console::write_line(global_real_argb_red, message_string);
 
 		if (console_dump_to_debug_display)
 		{
@@ -676,7 +676,7 @@ bool __cdecl console_process_command(const char* command, bool interactive)
 
 				callback_result_t callback_result = k_registered_commands[i].callback(&k_registered_commands[i], token_count, tokens);
 
-				c_console::write(callback_result.get_string());
+				c_console::write(NULL, callback_result.get_string());
 
 				long succeeded = callback_result.index_of(": succeeded");
 				result = succeeded != NONE || tokens[0]->is_equal("help");

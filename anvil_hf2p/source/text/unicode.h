@@ -154,6 +154,27 @@ public:
 		return ustrnlen(m_string, k_buffer_size);
 	}
 
+	void set_foreground_color(const real_rgb_color* color)
+	{
+		append_print(L"\x1b[38;2;%d;%d;%dm",
+			(long)(255.0f * color->red),
+			(long)(255.0f * color->green),
+			(long)(255.0f * color->blue));
+	}
+
+	void set_background_color(const real_rgb_color* color)
+	{
+		append_print(L"\x1b[48;2;%d;%d;%dm",
+			(long)(255.0f * color->red),
+			(long)(255.0f * color->green),
+			(long)(255.0f * color->blue));
+	}
+
+	void set_reset_color()
+	{
+		append_print(L"\x1b[0m");
+	}
+
 	void append(wchar_t const* s)
 	{
 		ustrnzcat(m_string, s, k_buffer_size);

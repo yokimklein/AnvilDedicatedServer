@@ -1169,6 +1169,27 @@ public:
 
 	//void set_wchar(const wchar_t* src);
 
+	void set_foreground_color(const real_rgb_color* color)
+	{
+		append_print("\x1b[38;2;%d;%d;%dm",
+			(long)(255.0f * color->red),
+			(long)(255.0f * color->green),
+			(long)(255.0f * color->blue));
+	}
+
+	void set_background_color(const real_rgb_color* color)
+	{
+		append_print("\x1b[48;2;%d;%d;%dm",
+			(long)(255.0f * color->red),
+			(long)(255.0f * color->green),
+			(long)(255.0f * color->blue));
+	}
+
+	void set_reset_color()
+	{
+		append_print("\x1b[0m");
+	}
+
 	void append(char const* s)
 	{
 		csstrnzcat(m_string, s, k_maximum_count);

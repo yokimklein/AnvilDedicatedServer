@@ -42,13 +42,15 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     {
         case DLL_PROCESS_ATTACH:
         {
+            SetProcessDPIAware(); // disable dpi scaling
+            DisableThreadLibraryCalls(hModule); // disable DLL_THREAD_ATTACH and DLL_THREAD_DETACH (reduces the working set size)
+
 #ifdef EVENTS_ENABLED
             c_console::initialize(version_get_full_string());
+            c_console::enable_ansi();
             SetConsoleCtrlHandler(HandlerRoutine, TRUE);
             setlocale(LC_ALL, "");
 #endif
-            SetProcessDPIAware(); // disable dpi scaling
-            DisableThreadLibraryCalls(hModule); // disable DLL_THREAD_ATTACH and DLL_THREAD_DETACH (reduces the working set size)
             anvil_initialize();
             return true;
         }
