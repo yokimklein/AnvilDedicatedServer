@@ -122,6 +122,15 @@ callback_result_t anvil_session_start_countdown_callback(const void* userdata, l
 	return result;
 }
 
+callback_result_t anvil_session_launch_callback(const void* userdata, long token_count, tokens_t const tokens)
+{
+	COMMAND_CALLBACK_PARAMETER_CHECK;
+
+	anvil_session_launch();
+
+	return result;
+}
+
 callback_result_t anvil_boot_peer_callback(const void* userdata, long token_count, tokens_t const tokens)
 {
 	COMMAND_CALLBACK_PARAMETER_CHECK;

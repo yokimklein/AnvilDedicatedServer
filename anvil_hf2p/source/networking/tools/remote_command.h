@@ -99,6 +99,7 @@ COMMAND_CALLBACK_DECLARE(anvil_launch_scenario);
 COMMAND_CALLBACK_DECLARE(anvil_session_set_map);
 COMMAND_CALLBACK_DECLARE(anvil_session_set_gamemode);
 COMMAND_CALLBACK_DECLARE(anvil_session_start_countdown);
+COMMAND_CALLBACK_DECLARE(anvil_session_launch);
 COMMAND_CALLBACK_DECLARE(anvil_boot_peer);
 COMMAND_CALLBACK_DECLARE(anvil_session_begin_vote);
 
@@ -111,6 +112,7 @@ s_command const k_registered_commands[] =
 	COMMAND_CALLBACK_REGISTER(anvil_session_set_map, 1, "<long>", "sets the map id for the current network session.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
 	COMMAND_CALLBACK_REGISTER(anvil_session_set_gamemode, 3, "<long> <long> <long>", "sets the gametype for the current network session.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
 	COMMAND_CALLBACK_REGISTER(anvil_session_start_countdown, 0, "", "starts the launch countdown for the current network session.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
+	COMMAND_CALLBACK_REGISTER(anvil_session_launch, 0, "", "instantly launches the current network session so long as a valid map and gamemode are set and players are present.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
 	COMMAND_CALLBACK_REGISTER(anvil_boot_peer, 1, "<long>", "boots the specified peer from the current network session.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
 	COMMAND_CALLBACK_REGISTER(anvil_session_begin_vote, 0, "", "starts the map & gamemode vote for the current network session.\r\nNETWORK SAFE: Unknown, assumed unsafe"),
 };

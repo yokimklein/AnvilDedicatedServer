@@ -9,3 +9,4 @@ void anvil_session_update();
 bool anvil_session_set_map(e_map_id map_id);
 bool anvil_session_set_gamemode(e_game_engine_type engine_index, long variant_index, ulong time_limit);
 bool anvil_session_start_countdown();
+bool anvil_session_launch();

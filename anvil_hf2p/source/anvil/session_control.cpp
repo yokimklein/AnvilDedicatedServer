@@ -196,3 +196,22 @@ bool anvil_session_start_countdown()
 
     return true;
 }
+
+bool anvil_session_launch()
+{
+    c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
+    if (!session)
+    {
+        return false;
+    }
+
+    c_network_session_parameters* parameters = session->get_session_parameters();
+    if (!parameters)
+    {
+        return false;
+    }
+
+    parameters->m_parameters.session_mode.set(_network_session_mode_setup);
+
+    return true;
+}
