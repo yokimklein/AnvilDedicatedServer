@@ -16,6 +16,9 @@ void c_console::initialize(const char* window_title)
 		AttachConsole(GetCurrentProcessId());
 		SetConsoleTitleA(window_title);
 
+		// Maximise console window
+		ShowWindow(GetConsoleWindow(), SW_SHOWMAXIMIZED);
+
 		freopen_s(&m_file, "CONIN$", "r", stdin);
 		freopen_s(&m_file, "CONOUT$", "w", stderr);
 		freopen_s(&m_file, "CONOUT$", "w", stdout);
