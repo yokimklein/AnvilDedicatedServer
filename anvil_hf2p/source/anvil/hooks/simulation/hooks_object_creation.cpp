@@ -144,6 +144,20 @@ void __fastcall game_engine_register_object_hook(datum_index object_index)
 	simulation_action_object_create(object_index);
 }
 
+void __cdecl create_flag_at_position_hook(s_hook_registers& registers)
+{
+	s_object_placement_data* placement_data = (s_object_placement_data*)registers.ecx;
+
+	datum_index object_index = object_new(placement_data);
+
+	if (object_index != NONE)
+	{
+		simulation_action_object_create(object_index);
+	}
+
+	registers.eax = object_index; // return object index
+}
+
 void anvil_hooks_object_creation_apply()
 {
 	// create & update player biped on spawn (player_spawn)
@@ -187,4 +201,7 @@ void anvil_hooks_object_creation_apply()
 
 	// final gambit modifier plasma grenade
 	hook::insert(0x426F19, 0x426F20, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
+
+	// ctf & derived gamemodes flag spawning
+	hook::insert(0x22A596, 0x22A59B, create_flag_at_position_hook, _hook_replace);
 }
