@@ -44,6 +44,22 @@ public:
 		}
 	}
 
+	//void initialize(long area_object_type_flags, long area_iteration_match_flags, long team_designator)
+	//{
+	//	m_team_designator = team_designator;
+	//	m_area_object_type_flags = area_object_type_flags;
+	//	m_area_iteration_match_flags = area_iteration_match_flags;
+	//	update_areas();
+	//	if (game_is_authoritative())
+	//	{
+	//		c_area* selected_area = find_selected_area();
+	//		if (selected_area)
+	//		{
+	//			selected_area->set_selected(false);
+	//		}
+	//	}
+	//}
+
 	c_static_array<t_area_type, k_area_max_count> m_areas;
 	long m_number_of_areas;
 	long m_team_designator;

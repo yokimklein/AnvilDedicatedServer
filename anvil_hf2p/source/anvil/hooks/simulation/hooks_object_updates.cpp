@@ -615,6 +615,84 @@ void __cdecl game_engine_initialize_for_new_map_hook(s_hook_registers& registers
     selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
 }
 
+void __cdecl c_ctf_engine__initialize_for_new_round_hook1(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_ctf_engine__initialize_for_new_round_hook2(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_3__initialize_hook(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_10__initialize_hook(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_10__select_area_hook1(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edi;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_10__select_area_hook2(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edx;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_12__initialize_hook(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_12__select_area_hook1(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edi;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_area_12__select_area_hook2(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edx;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_s_territory_data_8__initialize_hook(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_destination_zone_12__initialize_hook(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl c_area_set_c_destination_zone_12__select_area_hook1(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edi;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl  c_area_set_c_destination_zone_12__select_area_hook2(s_hook_registers& registers)
+{
+    c_area* selected_area = (c_area*)registers.edx;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -801,4 +879,24 @@ void anvil_hooks_object_updates_apply()
     // sync teleporter multiplayer properties
     hook::insert(0x117072, 0x117079, game_engine_teleporters_update_hook, _hook_replace);
     hook::insert(0xC6A3E, 0xC6A57, game_engine_initialize_for_new_map_hook, _hook_replace);
+
+    // $TODO: test these, I'm not entirely sure when/where they are triggered
+    // ctf area multiplayer properties
+    hook::insert(0x2282D6, 0x2282EF, c_ctf_engine__initialize_for_new_round_hook1, _hook_replace);
+    hook::insert(0x228339, 0x228352, c_ctf_engine__initialize_for_new_round_hook2, _hook_replace);
+    hook::insert(0x22B7E3, 0x22B7FC, c_area_set_c_area_3__initialize_hook, _hook_replace);
+    // king area multiplayer properties
+    hook::insert(0x22F172, 0x22F18B, c_area_set_c_area_10__initialize_hook, _hook_replace);
+    hook::insert(0x22F1B8, 0x22F1D1, c_area_set_c_area_10__select_area_hook1, _hook_replace);
+    hook::insert(0x22F26D, 0x22F286, c_area_set_c_area_10__select_area_hook2, _hook_replace);
+    // juggernaut & infection area multiplayer properties
+    hook::insert(0x22D314, 0x22D32D, c_area_set_c_area_12__initialize_hook, _hook_replace);
+    hook::insert(0x22D368, 0x22D381, c_area_set_c_area_12__select_area_hook1, _hook_replace);
+    hook::insert(0x22D41D, 0x22D436, c_area_set_c_area_12__select_area_hook2, _hook_replace);
+    // territories area multiplayer properties
+    hook::insert(0x2339D3, 0x2339EC, c_area_set_s_territory_data_8__initialize_hook, _hook_replace);
+    // vip area multiplayer properties
+    hook::insert(0x230C43, 0x230C5C, c_area_set_c_destination_zone_12__initialize_hook, _hook_replace);
+    hook::insert(0x230C98, 0x230CB1, c_area_set_c_destination_zone_12__select_area_hook1, _hook_replace);
+    hook::insert(0x230D4D, 0x230D6A, c_area_set_c_destination_zone_12__select_area_hook2, _hook_replace);
 }
