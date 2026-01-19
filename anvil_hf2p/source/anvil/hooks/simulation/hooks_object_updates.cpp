@@ -609,6 +609,12 @@ void __cdecl game_engine_teleporters_update_hook(s_hook_registers& registers)
     teleporters->activate_all(); // use our reimplementation of activate_all w/ sim update
 }
 
+void __cdecl game_engine_initialize_for_new_map_hook(s_hook_registers& registers)
+{
+    c_teleporter_area* selected_area = (c_teleporter_area*)registers.eax;
+    selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -794,4 +800,5 @@ void anvil_hooks_object_updates_apply()
 
     // sync teleporter multiplayer properties
     hook::insert(0x117072, 0x117079, game_engine_teleporters_update_hook, _hook_replace);
+    hook::insert(0xC6A3E, 0xC6A57, game_engine_initialize_for_new_map_hook, _hook_replace);
 }
