@@ -1,4 +1,5 @@
 #include "hf2p.h"
+#include <cseries\cseries.h>
 #include <game\game.h>
 
 void hf2p_initialize()

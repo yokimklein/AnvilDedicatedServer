@@ -16,6 +16,7 @@
 #include <motor\action_system.h>
 #include <game\game_results.h>
 #include <game\game_time.h>
+#include <game\game_engine_teleporters.h>
 
 void __cdecl object_update_hook(s_hook_registers& registers)
 {
@@ -602,6 +603,12 @@ void __cdecl c_game_engine__player_update_hook(s_hook_registers& registers)
     simulation_action_object_update(player->unit_index, _simulation_unit_update_grenade_counts);
 }
 
+void __cdecl game_engine_teleporters_update_hook(s_hook_registers& registers)
+{
+    c_area_set<c_teleporter_area, 32>* teleporters = (c_area_set<c_teleporter_area, 32>*)(registers.esi);
+    teleporters->activate_all(); // use our reimplementation of activate_all w/ sim update
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -784,4 +791,7 @@ void anvil_hooks_object_updates_apply()
     
     // sync grenade regeneration player trait
     hook::insert(0x1C8681, 0x1C8687, c_game_engine__player_update_hook, _hook_execute_replaced_last);
+
+    // sync teleporter multiplayer properties
+    hook::insert(0x117072, 0x117079, game_engine_teleporters_update_hook, _hook_replace);
 }

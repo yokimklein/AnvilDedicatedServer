@@ -3,6 +3,7 @@
 #include <items\projectiles.h>
 #include <math\matrix_math.h>
 #include <simulation\game_interface\simulation_game_events.h>
+#include <simulation\simulation.h>
 
 void simulation_action_projectile_attached(datum_index projectile_index, datum_index object_index, short node_index, real_point3d const* position, s_location const* location)
 {

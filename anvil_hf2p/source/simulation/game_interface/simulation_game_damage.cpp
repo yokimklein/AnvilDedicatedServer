@@ -8,6 +8,7 @@
 #include <objects\object_definitions.h>
 #include <math.h>
 #include <cseries\cseries_events.h>
+#include <units\units.h>
 
 void simulation_action_damage_section_response(datum_index object_index, long damage_section_index, long response_index, e_damage_section_response_type damage_section_response_type)
 {

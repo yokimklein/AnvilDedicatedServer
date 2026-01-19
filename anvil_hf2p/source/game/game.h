@@ -1,5 +1,10 @@
 #pragma once
-#include <game\game_options.h>
+
+struct game_options;
+enum e_game_simulation_type;
+enum e_game_playback_type;
+enum e_campaign_difficulty_level;
+enum e_game_team;
 
 game_options* game_options_get();
 e_game_simulation_type game_simulation_get();

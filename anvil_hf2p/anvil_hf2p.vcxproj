@@ -803,6 +803,7 @@ powershell "$content = \"#pragma once`n`n#define VERSION_COMMIT_HASH STRINGIFY(\
     <ClCompile Include="source\editor\editor_stubs.cpp" />
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\game\game_allegiance.cpp" />
+    <ClCompile Include="source\game\game_engine_area_set.cpp" />
     <ClCompile Include="source\game\game_engine_assault.cpp" />
     <ClCompile Include="source\game\game_engine_candy_monitor.cpp" />
     <ClCompile Include="source\game\game_engine_ctf.cpp" />

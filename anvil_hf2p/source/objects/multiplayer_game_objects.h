@@ -147,3 +147,54 @@ struct s_multiplayer_object_definition
 	s_multiplayer_object_boundary_shader_definition boundary_shaders[k_number_of_multiplayer_object_boundary_shapes];
 };
 static_assert(sizeof(s_multiplayer_object_definition) == 0xC4);
+
+enum e_multiplayer_object_data_flags
+{
+	_multiplayer_object_data_unknown0,
+	_multiplayer_object_data_unknown1,
+	_multiplayer_object_data_unknown2,
+	_multiplayer_object_data_unknown3,
+	_multiplayer_object_data_unknown4,
+	_multiplayer_object_data_unknown5,
+	_multiplayer_object_data_unknown6,
+	_multiplayer_object_data_unknown7,
+	_multiplayer_object_data_unknown8,
+	_multiplayer_object_data_unknown9,
+	_multiplayer_object_data_unknown10,
+
+	k_multiplayer_object_data_flags_count = 11
+};
+
+struct s_multiplayer_object_properties
+{
+	c_flags<e_multiplayer_object_data_flags, short, k_multiplayer_object_data_flags_count> flags;
+	char_enum type;
+	char_enum boundary_shape;
+	char remapping_policy;
+	char teleporter_channel;
+	byte_flags teleporter_passability;
+	char game_engine_symmetric_placement;
+	word_flags game_engine_flags;
+	short_enum owner_team;
+	char spawn_order;
+	char quota_minimum;
+	char quota_maximum;
+	char_enum spawn_timer_type;
+	short default_spawn_time;
+	short default_abandonment_time;
+	real boundary_width_or_radius;
+	real boundary_box_length;
+	real boundary_positive_height;
+	real boundary_negative_height;
+	real normal_weight;
+	real random_weight;
+	real flag_away_weight;
+	real flag_at_home_weight;
+	string_id boundary_center_marker;
+	string_id spawned_object_marker_name;
+	long spawned_object_index;
+	string_id NYI_boundary_material;
+	long boundary_standard_shader_index;
+	long boundary_opaque_shader_index;
+};
+static_assert(sizeof(s_multiplayer_object_properties) == 0x4C);

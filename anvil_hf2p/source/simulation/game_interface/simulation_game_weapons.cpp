@@ -2,6 +2,7 @@
 #include <game\game.h>
 #include <items\weapons.h>
 #include <simulation\game_interface\simulation_game_units.h>
+#include <simulation\game_interface\simulation_game_action.h>
 
 void __cdecl simulation_action_weapon_state_update(datum_index weapon_index)
 {

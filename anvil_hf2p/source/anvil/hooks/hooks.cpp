@@ -15,13 +15,14 @@
 #include <anvil\hooks\simulation\hooks_weapon_updates.h>
 #include <anvil\hooks\simulation\hooks_player_updates.h>
 #include <anvil\hooks\simulation\hooks_simulation_events.h>
+#include <game\game.h>
+#include <cseries\language.h>
 #define NMD_ASSEMBLY_IMPLEMENTATION
 #include <nmd_assembly.h>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <memoryapi.h>
-#include <game\game.h>
 
 // helper function for insert, this updates call & jump offsets for the new code destination & verifies short jumps land within the shellcode buffer
 void insert_hook_copy_instructions(void* destination, void* source, size_t length, bool redirect_oob_jumps)

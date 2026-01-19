@@ -312,3 +312,8 @@ void __fastcall object_delete(datum_index object_index)
 {
 	INVOKE(0x3FE0C0, object_delete, object_index);
 }
+
+s_multiplayer_object_properties* __fastcall object_try_and_get_multiplayer(datum_index object_index)
+{
+	return INVOKE(0x4097C0, object_try_and_get_multiplayer, object_index);
+}

@@ -7,6 +7,7 @@
 #include "hf2p\hf2p.h"
 #include "cache\cache_files.h"
 #include "rasterizer\rasterizer.h"
+#include "networking\transport\transport_security.h"
 
 void __fastcall game_engine_render_frame_watermarks(bool pregame)
 {

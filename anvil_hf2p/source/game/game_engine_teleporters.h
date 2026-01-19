@@ -1,8 +1,9 @@
 #pragma once
 #include <game\game_engine_area_set.h>
 
-struct c_teleporter_area : c_area
+class c_teleporter_area : public c_area
 {
+public:
 	long m_recharge_timer;
 	long m_blocked_message_delay;
 	long m_blocked_ticks;
