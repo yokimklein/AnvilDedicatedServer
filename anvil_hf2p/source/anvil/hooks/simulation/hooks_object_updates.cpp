@@ -17,6 +17,7 @@
 #include <game\game_results.h>
 #include <game\game_time.h>
 #include <game\game_engine_teleporters.h>
+#include <simulation\game_interface\simulation_game_weapons.h>
 
 void __cdecl object_update_hook(s_hook_registers& registers)
 {
@@ -687,10 +688,22 @@ void __cdecl c_area_set_c_destination_zone_12__select_area_hook1(s_hook_register
     selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
 }
 
-void __cdecl  c_area_set_c_destination_zone_12__select_area_hook2(s_hook_registers& registers)
+void __cdecl c_area_set_c_destination_zone_12__select_area_hook2(s_hook_registers& registers)
 {
     c_area* selected_area = (c_area*)registers.edx;
     selected_area->set_selected(false); // use our reimplementation of set_selected w/ sim update
+}
+
+void __cdecl game_engine_multiplayer_weapon_register_hook(s_hook_registers& registers)
+{
+    datum_index weapon_index = registers.edi;
+    simulation_action_object_update(weapon_index, _simulation_weapon_update_multiplayer_weapon_registration);
+}
+
+void __cdecl game_engine_multiplayer_weapon_deregister_hook(s_hook_registers& registers)
+{
+    datum_index weapon_index = registers.edi;
+    simulation_action_object_update(weapon_index, _simulation_weapon_update_multiplayer_weapon_registration);
 }
 
 void anvil_hooks_object_updates_apply()
@@ -899,4 +912,8 @@ void anvil_hooks_object_updates_apply()
     hook::insert(0x230C43, 0x230C5C, c_area_set_c_destination_zone_12__initialize_hook, _hook_replace);
     hook::insert(0x230C98, 0x230CB1, c_area_set_c_destination_zone_12__select_area_hook1, _hook_replace);
     hook::insert(0x230D4D, 0x230D6A, c_area_set_c_destination_zone_12__select_area_hook2, _hook_replace);
+
+    // multiplayer weapon (de)registration
+    hook::insert(0xFAAEB, 0xFAAF2, game_engine_multiplayer_weapon_register_hook, _hook_execute_replaced_first);
+    hook::insert(0xFABFB, 0xFAC02, game_engine_multiplayer_weapon_deregister_hook, _hook_execute_replaced_first);
 }
