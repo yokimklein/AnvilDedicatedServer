@@ -706,6 +706,12 @@ void __cdecl game_engine_multiplayer_weapon_deregister_hook(s_hook_registers& re
     simulation_action_object_update(weapon_index, _simulation_weapon_update_multiplayer_weapon_registration);
 }
 
+void __cdecl create_flag_hook(s_hook_registers& registers)
+{
+    datum_index object_index = registers.edi;
+    simulation_action_object_update(object_index, _simulation_object_update_parent_state);
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -916,4 +922,7 @@ void anvil_hooks_object_updates_apply()
     // multiplayer weapon (de)registration
     hook::insert(0xFAAEB, 0xFAAF2, game_engine_multiplayer_weapon_register_hook, _hook_execute_replaced_first);
     hook::insert(0xFABFB, 0xFAC02, game_engine_multiplayer_weapon_deregister_hook, _hook_execute_replaced_first);
+
+    // ctf flag creation
+    hook::insert(0x22A6F8, 0x22A708, create_flag_hook, _hook_execute_replaced_last, 0, true);
 }
