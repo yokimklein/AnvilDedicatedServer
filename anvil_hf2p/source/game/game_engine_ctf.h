@@ -65,7 +65,7 @@ public:
 	virtual long get_object_definition_index(void) const;
 	virtual void process_player_holding_object(long, long) const;
 	virtual bool update_object(struct s_multiplayer_weapon_tracker const*) const;
-	virtual void initialize_object_data(long) const;
+	virtual void initialize_object_data(long index) const;
 	virtual short get_sudden_death_time(void) const;
 	virtual void emit_object_returned_event(long, bool) const;
 	virtual bool object_should_exist(long) const;
@@ -76,6 +76,9 @@ public:
 	virtual bool verify_state(void) const;
 
 	//void dump_settings(s_file_reference* file) const;
+
+	// hooked version of the call ($TODO: cleaner way to do this, replacing the vtable entry would be nice)
+	void __thiscall initialize_object_data_(long index) const;
 };
 
 struct s_ctf_shared_globals

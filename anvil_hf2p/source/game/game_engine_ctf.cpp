@@ -1,6 +1,10 @@
 #include "game_engine_ctf.h"
 #include <items\weapons.h>
+#include <game\game_engine.h>
 #include <game\game_engine_team.h>
+#include <memory\tls.h>
+#include <simulation\game_interface\simulation_game_engine_globals.h>
+#include <simulation\game_interface\simulation_game_engine_ctf.h>
 
 c_game_engine_ctf_variant* c_game_engine_ctf_variant::constructor()
 {
@@ -210,3 +214,18 @@ void c_game_engine_ctf_variant::set_carrier_traits(c_player_traits const* traits
 //		object_detach(weapon_index);
 //	}
 //}
+
+void __thiscall c_ctf_engine::initialize_object_data_(long index) const
+{
+	TLS_DATA_GET_VALUE_REFERENCE(game_engine_globals);
+
+	game_engine_globals->ctf_globals.flag_reset_timer[index] = NONE;
+	game_engine_globals->ctf_globals.timeout_return_second_counter[index] = 0;
+	simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_flag_reset_timers);
+
+	game_engine_globals->ctf_globals.touch_return_timer[index] = NONE;
+	simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_touch_return_timers);
+
+	game_engine_globals->ctf_globals.flag_weapon_flags[index] = 0;
+	simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_flag_weapon_flags);
+}

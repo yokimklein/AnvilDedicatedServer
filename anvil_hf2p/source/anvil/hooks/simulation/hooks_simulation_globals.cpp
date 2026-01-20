@@ -89,6 +89,11 @@ void __cdecl c_ctf_engine__initialize_for_new_round_hook(s_hook_registers& regis
     simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_helper_flags);
 }
 
+void __fastcall c_ctf_engine__initialize_object_data_hook(c_ctf_engine* thisptr, void* unused, long index)
+{
+    thisptr->initialize_object_data_(index);
+}
+
 void anvil_hooks_simulation_globals_apply()
 {
     // pre-game camera countdown
@@ -126,4 +131,7 @@ void anvil_hooks_simulation_globals_apply()
     hook::insert(0x229992, 0x22999A, c_ctf_engine__get_time_left_in_ticks_hook5, _hook_execute_replaced_first);
     hook::insert(0x229ADB, 0x229AE2, c_ctf_engine__get_time_left_in_ticks_hook6, _hook_execute_replaced_first);
     hook::insert(0x228379, 0x228383, c_ctf_engine__initialize_for_new_round_hook, _hook_execute_replaced_first);
+
+    // ctf initial flag reset timers, touch return timers, flag weapon flags
+    hook::function(0x228220, 0x41, c_ctf_engine__initialize_object_data_hook);
 }
