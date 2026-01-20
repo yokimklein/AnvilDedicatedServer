@@ -84,6 +84,11 @@ void __cdecl c_ctf_engine__get_time_left_in_ticks_hook6(s_hook_registers& regist
     simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_helper_flags);
 }
 
+void __cdecl c_ctf_engine__initialize_for_new_round_hook(s_hook_registers& registers)
+{
+    simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_helper_flags);
+}
+
 void anvil_hooks_simulation_globals_apply()
 {
     // pre-game camera countdown
@@ -113,11 +118,12 @@ void anvil_hooks_simulation_globals_apply()
     // ctf defense team
     hook::insert(0x22852F, 0x228535, c_ctf_engine__game_starting, _hook_execute_replaced_first);
 
-    // ctf helper flags
+    // ctf helper flags - sudden death
     hook::insert(0x229A03, 0x229A0A, c_ctf_engine__get_time_left_in_ticks_hook1, _hook_execute_replaced_first);
     hook::insert(0x229A2A, 0x229A31, c_ctf_engine__get_time_left_in_ticks_hook2, _hook_execute_replaced_first);
     hook::insert(0x229A5B, 0x229A62, c_ctf_engine__get_time_left_in_ticks_hook3, _hook_execute_replaced_first);
     hook::insert(0x229A7B, 0x229A82, c_ctf_engine__get_time_left_in_ticks_hook4, _hook_execute_replaced_first);
     hook::insert(0x229992, 0x22999A, c_ctf_engine__get_time_left_in_ticks_hook5, _hook_execute_replaced_first);
     hook::insert(0x229ADB, 0x229AE2, c_ctf_engine__get_time_left_in_ticks_hook6, _hook_execute_replaced_first);
+    hook::insert(0x228379, 0x228383, c_ctf_engine__initialize_for_new_round_hook, _hook_execute_replaced_first);
 }
