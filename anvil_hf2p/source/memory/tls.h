@@ -80,7 +80,7 @@ struct s_thread_local_storage
 	byte* __unknown38; // prop
 	byte* __unknown3C; // command scripts
 	byte* __unknown40; // clump
-	byte* __unknown44;
+	byte* g_render_texture_camera_globals;
 	byte* __unknown48;
 	struct s_player_control_globals* player_control_globals;
 	byte* __unknown50; // s_object_globals* object_globals?

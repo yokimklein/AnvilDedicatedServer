@@ -2,50 +2,7 @@
 #include <cseries\cseries.h>
 #include <game\player_appearance.h>
 #include <networking\transport\transport_security.h>
-
-// e_multiplayer_team
-// k_multiplayer_team_none = -1
-
-enum e_game_team
-{
-	_game_team_none = -1,
-
-	_campaign_team_default = 0,
-	_campaign_team_player,
-	_campaign_team_human,
-	_campaign_team_covenant,
-	_campaign_team_flood,
-	_campaign_team_sentinel,
-	_campaign_team_heretic,
-	_campaign_team_prophet,
-	_campaign_team_guilty,
-	_campaign_team_unused9,
-	_campaign_team_unused10,
-	_campaign_team_unused11,
-	_campaign_team_unused12,
-	_campaign_team_unused13,
-	_campaign_team_unused14,
-	_campaign_team_unused15,
-
-	k_campaign_team_count,
-
-	_multiplayer_team_first = 0,
-	_multiplayer_team_red = _multiplayer_team_first,
-	_multiplayer_team_blue,
-	_multiplayer_team_green,
-	_multiplayer_team_yellow,
-	_multiplayer_team_purple,
-	_multiplayer_team_orange,
-	_multiplayer_team_brown,
-	_multiplayer_team_grey,
-
-	k_multiplayer_team_count,
-
-	_multiplayer_team_last = _multiplayer_team_grey,
-	_multiplayer_team_none = -1,
-
-	k_maximum_teams = 16
-};
+#include <game\game_engine_team.h>
 
 enum e_player_vote_selection
 {

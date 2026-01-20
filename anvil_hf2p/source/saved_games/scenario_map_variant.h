@@ -1,6 +1,7 @@
 #pragma once
 #include <cseries\cseries.h>
 #include <objects\multiplayer_game_objects.h>
+#include <game\game_engine_team.h>
 
 enum e_game_engine_symmetric_placement
 {
@@ -25,21 +26,6 @@ enum e_scenario_game_engine
 	_scenario_game_engine_target_training,
 
 	k_scenario_game_engine_count
-};
-
-enum e_multiplayer_team_designator
-{
-	_multiplayer_team_designator_defender = 0,
-	_multiplayer_team_designator_attacker,
-	_multiplayer_team_designator_third_party,
-	_multiplayer_team_designator_fourth_party,
-	_multiplayer_team_designator_fifth_party,
-	_multiplayer_team_designator_sixth_party,
-	_multiplayer_team_designator_seventh_party,
-	_multiplayer_team_designator_eigth_party,
-	_multiplayer_team_designator_neutral,
-
-	k_multiplayer_team_designator_count
 };
 
 enum e_teleporter_channel

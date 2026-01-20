@@ -39,3 +39,8 @@ long __fastcall game_engine_variant_get_maximum_team_count(c_game_variant* varia
 	ASSERT(multiplayer_map_id != _map_id_none);
 	return INVOKE(0xDC6F0, game_engine_variant_get_maximum_team_count, variant, multiplayer_map_id);
 }
+
+e_multiplayer_team_designator __fastcall game_engine_team_index_to_team_designator(e_game_team team)
+{
+	return INVOKE(0xDC3B0, game_engine_team_index_to_team_designator, team);
+}

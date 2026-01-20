@@ -1,4 +1,6 @@
 #include "game_engine_ctf.h"
+#include <items\weapons.h>
+#include <game\game_engine_team.h>
 
 c_game_engine_ctf_variant* c_game_engine_ctf_variant::constructor()
 {
@@ -179,3 +181,32 @@ void c_game_engine_ctf_variant::set_carrier_traits(c_player_traits const* traits
 {
 	m_carrier_traits.set(traits, force);
 }
+
+// $TODO:
+//void flag_reset(datum_index weapon_index)
+//{
+//	weapon_datum* weapon = (weapon_datum*)object_get_and_verify_type(weapon_index, _object_mask_weapon);
+//	ASSERT(!game_is_predicted());
+//
+//	e_game_team team_index = weapon->weapon.team_index;
+//	if (team_index == _game_team_none)
+//	{
+//		return;
+//	}
+//
+//	e_multiplayer_team_designator team_designator = game_engine_team_index_to_team_designator(team_index);
+//	if (neutral_flag_ctf())
+//	{
+//		team_designator = _multiplayer_team_designator_neutral;
+//	}
+//
+//	if (!get_flag_spawn_position(team_designator, &flag_spawn_position, &spawn_position_area))
+//	{
+//		return;
+//	}
+//
+//	if (weapon->object.parent_object_index != NONE)
+//	{
+//		object_detach(weapon_index);
+//	}
+//}

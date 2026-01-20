@@ -712,6 +712,12 @@ void __cdecl create_flag_hook(s_hook_registers& registers)
     simulation_action_object_update(object_index, _simulation_object_update_parent_state);
 }
 
+void __cdecl flag_reset_hook(s_hook_registers& registers)
+{
+    datum_index object_index = registers.edi;
+    simulation_action_object_update(object_index, _simulation_object_update_parent_state);
+}
+
 void anvil_hooks_object_updates_apply()
 {
     // add simulation_action_object_update back to object_update
@@ -925,4 +931,9 @@ void anvil_hooks_object_updates_apply()
 
     // ctf flag creation
     hook::insert(0x22A6F8, 0x22A708, create_flag_hook, _hook_execute_replaced_last, 0, true);
+
+    // ctf flag reset
+    patch::bytes(0x22A93B, { 0x52, 0x02 }); // redirect jump to identical borrowed function epilogue from player_score so this path doesn't execute our hook
+    patch::bytes(0x22A973, { 0x1A, 0x02 }); // ditto
+    hook::insert(0x22AA74, 0x22AA79, flag_reset_hook, _hook_execute_replaced_last);
 }

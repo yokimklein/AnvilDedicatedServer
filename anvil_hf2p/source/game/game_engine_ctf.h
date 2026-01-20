@@ -102,3 +102,5 @@ struct s_ctf_globals : s_ctf_shared_globals
 	c_static_array<short, 9> timeout_return_second_counter;
 };
 static_assert(sizeof(s_ctf_globals) == 0x16D8);
+
+//void flag_reset(datum_index weapon_index);
