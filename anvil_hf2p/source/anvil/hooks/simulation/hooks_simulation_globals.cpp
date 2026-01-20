@@ -2,6 +2,7 @@
 #include <anvil\hooks\hooks.h>
 #include <game\game_engine.h>
 #include <simulation\game_interface\simulation_game_engine_globals.h>
+#include <simulation\game_interface\simulation_game_engine_ctf.h>
 
 void __cdecl game_engine_update_time_hook(s_hook_registers& registers)
 {
@@ -48,6 +49,11 @@ void __cdecl game_engine_teams_use_one_shared_life_hook(s_hook_registers& regist
     simulation_action_game_engine_globals_update(_simulation_game_engine_globals_update_team_lives_per_round);
 }
 
+void __cdecl c_ctf_engine__game_starting(s_hook_registers& registers)
+{
+    simulation_action_game_engine_globals_update(_simulation_ctf_engine_globals_update_defensive_team);
+}
+
 void anvil_hooks_simulation_globals_apply()
 {
     // pre-game camera countdown
@@ -73,4 +79,7 @@ void anvil_hooks_simulation_globals_apply()
     // sync team lives per round
     hook::insert(0xDCA19, 0xDCA1F, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
     hook::insert(0xDC847, 0xDC84C, game_engine_teams_use_one_shared_life_hook, _hook_execute_replaced_first);
+
+    // ctf defense team
+    hook::insert(0x22852F, 0x228535, c_ctf_engine__game_starting, _hook_execute_replaced_first);
 }
