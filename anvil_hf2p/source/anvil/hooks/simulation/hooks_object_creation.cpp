@@ -68,14 +68,14 @@ void __cdecl throw_release_hook1(s_hook_registers& registers)
 	datum_index object_index = (datum_index)registers.esi;
 	bool force_inside_bsp = *(bool*)(registers.ebp + 0x04);
 	bool force_inside_bsp_valid = (force_inside_bsp == 0x0 || force_inside_bsp == 0x1);
-	bool stick = *(bool*)(registers.ebp + 0x20); // should always be valid
-	VASSERT(stick == 0x00 || stick == 0x01, "stick contains undefined data! this should never happen!");
+	bool force_creation = *(bool*)(registers.ebp + 0x24); // $NOTE: originally + 0x20, but the stack frame has been increased by 4 bytes
+	ASSERT(force_creation == 0x00 || force_creation == 0x01, "force_creation contains undefined data! this should never happen!");
 
 	// Added these checks which the update would be nested within had there been enough space to fit it
 	if (object_index != NONE && !action_state_storage->throw_predicted)
 	{
 		// needs to stay in this order - force_inside_bsp will contain an undefined value if object_force_inside_bsp hasn't run
-		if (stick || (force_inside_bsp_valid && force_inside_bsp))
+		if (force_creation || (force_inside_bsp_valid && force_inside_bsp))
 		{
 			simulation_action_object_create(object_index);
 		}
