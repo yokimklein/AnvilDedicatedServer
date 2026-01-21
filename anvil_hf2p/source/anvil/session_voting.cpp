@@ -4,6 +4,7 @@
 #include "game\player_configuration.h"
 #include "game\game_engine_simulation.h"
 #include "networking\session\network_session.h"
+#include "networking\session\network_session_parameters_game.h"
 #include "game\game.h"
 #include "anvil\session_control.h"
 #include "anvil\config.h"
@@ -199,11 +200,15 @@ void anvil_session_update_voting(c_network_session* session)
         }
     }
     // if dedi state is ready to start and the map has finished loading, start the countdown
-    else if (*dedicated_server_session_state == _dedicated_server_session_state_game_start_countdown &&
-        parameters->m_parameters.game_start_status.get()->game_start_status == _session_game_start_status_ready_leader &&
-        parameters->m_parameters.game_start_status.get()->map_load_progress == 100)
+    else if (*dedicated_server_session_state == _dedicated_server_session_state_game_start_countdown)
     {
-        parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, SESSION_COUNTDOWN_TIME_SECONDS);
+        const s_network_session_parameter_game_start_status* game_start_status = parameters->m_parameters.game_start_status.get();
+        if (game_start_status &&
+            game_start_status->game_start_status == _session_game_start_status_ready_leader &&
+            game_start_status->map_load_progress == 100)
+        {
+            parameters->m_parameters.countdown_timer.set(_network_game_countdown_delayed_reason_start, SESSION_COUNTDOWN_TIME_SECONDS);
+        }
     }
     else if (*dedicated_server_session_state == _dedicated_server_session_state_matchmaking_session)
     {
