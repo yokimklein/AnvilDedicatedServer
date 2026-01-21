@@ -85,7 +85,7 @@ bool damage_aftermath_is_important(datum_index object_index, s_damage_aftermath_
 	if (damage_effect_definition->damage.intantaneous_acceleration * object_definition->object.acceleration_scale > k_real_epsilon
 		&& (!result_data->flags.test(_damage_aftermath_outside_aoe_dmg_range_bit))
 		|| TEST_BIT(_object_mask_unit, object->object.object_identifier.m_type.get())
-		&& (!object->object.damage_flags.test(_object_damage_flag_bit2) || result_data->flags.test(_damage_aftermath_body_depleted_bit))
+		&& (!object->object.damage_flags.test(_object_damage_flag_bit2) || result_data->flags.test(_damage_aftermath_body_depleted_bit) || result_data->flags.test(_damage_aftermath_shield_depleted_bit))
 		&& (result_data->body_damage > 0.0f || result_data->shield_damage > 0.0f))
 	{
 		return true;
