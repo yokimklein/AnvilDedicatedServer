@@ -357,7 +357,7 @@ void anvil_hooks_debug_apply()
 	patch::function(0xD4C028, log_print_hs_log_print_1_evaluate);
 
 	// reimplement hs events_suppress_console_display
-	patch::function(0xD4C678, events_suppress_display_events_suppress_output_1_evaluate);
+	patch::function(0xD4C67C, events_suppress_display_events_suppress_output_1_evaluate);
 
 	// main_time_halted for console pausing
 	hook::insert(0x958FD, 0x95903, main_loop_body_hook3, _hook_replace);
