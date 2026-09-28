@@ -63,6 +63,9 @@ enum e_player_flags
 	// halo 4 x360:     bit 18
 	_player_unknown_bit16,
 
+	// unconditionally set in player_reset for every player, not yet identified
+	_player_unknown_bit17,
+
 	k_player_flag_count
 };
 
@@ -232,11 +235,21 @@ struct player_datum : s_datum_header
 	long aim_assist_object_index;
 	long aim_assist_timestamp;
 
-	ushort ticks_sprinting;
-	ushort field_2CE6;
-	ushort sprint_restoration_timer;
-	ushort sprint_depleted_timer;
-	bool sprint_disabled;
+	struct // momentum
+	{
+		// set in `player_submit_actions`, struct?
+		int16 momentum_timer;
+
+		int16 momemtum_unknown2CE6;
+
+		// set in `player_submit_actions`
+		int16 momentum_decay_timer; // set from tags, `game_globals:player_control:cooldown_time`
+
+		// set in `player_submit_actions`, `sub_53C570`
+		int16 momentum_falloff_timer; // set from tags, `momentum_falloff_timer - (game_globals:player_control:stamina_deplete_restore_time * s_equipment:adrenaline:sprint_restore)`
+
+		bool momemtum_suppressed;
+	};
 
 	word vehicle_entrance_ban_ticks;
 
@@ -392,6 +405,9 @@ struct players_global_data
 static_assert(sizeof(players_global_data) == 0x238);
 static_assert(0x14 == OFFSETOF(players_global_data, machine_identifiers));
 #pragma pack(pop)
+
+void __fastcall player_set_configuration(datum_index player_index, s_player_configuration const* configuration);
+void __fastcall players_rebuild_user_mapping(bool notify);
 
 bool player_identifier_is_valid(s_player_identifier const* identifier);
 const char* player_identifier_get_string(s_player_identifier const* identifier);

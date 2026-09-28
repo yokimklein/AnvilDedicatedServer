@@ -2,6 +2,7 @@
 #include <cseries\cseries.h>
 #include <physics\collision_bsp_references.h>
 #include <game\materials.h>
+#include <math\real_math.h>
 
 enum e_collision_result_type
 {
@@ -71,3 +72,13 @@ struct collision_result
 	byte __data5B[0x1];
 };
 static_assert(sizeof(collision_result) == 0x5C);
+
+struct s_collision_test_flags
+{
+	long collision_flags;
+	long object_flags;
+};
+inline REFERENCE_DECLARE(0x40EAB3C, s_collision_test_flags, collision_test_for_projectiles_flags);
+inline REFERENCE_DECLARE(0x40EAAD4, s_collision_test_flags, collision_test_pathfinding_flags);
+
+extern bool collision_test_vector(s_collision_test_flags flags, bool arg8, const real_point3d* point, const real_vector3d* vector, long first_ignore_object_index, long second_ignore_object_index, long third_ignore_object_index, collision_result* collision);

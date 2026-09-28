@@ -40,11 +40,13 @@ long player_mapping_get_input_user(datum_index player_index)
 	TLS_DATA_GET_VALUE_REFERENCE(player_mapping_globals);
 	if (player_index == NONE)
 	{
+		ASSERT(player_index != NONE);
 		return NONE;
 	}
 	else
 	{
-		return player_mapping_globals->player_input_user_mapping[player_index];
+
+		return player_mapping_globals->player_input_user_mapping[(short)DATUM_INDEX_TO_ABSOLUTE_INDEX(player_index)];
 	}
 }
 
@@ -426,4 +428,14 @@ void players_get_machines(ulong* machine_valid_mask, s_machine_identifier machin
 	TLS_DATA_GET_VALUE_REFERENCE(players_globals);
 	*machine_valid_mask = players_globals->machine_valid_mask;
 	csmemcpy(machine_identifiers, players_globals->machine_identifiers.get_elements(), sizeof(players_globals->machine_identifiers));
+}
+
+void __fastcall player_set_configuration(datum_index player_index, s_player_configuration const* configuration)
+{
+	INVOKE(0xB48C0, player_set_configuration, player_index, configuration);
+}
+
+void __fastcall players_rebuild_user_mapping(bool notify)
+{
+	INVOKE(0xB4660, players_rebuild_user_mapping, notify);
 }

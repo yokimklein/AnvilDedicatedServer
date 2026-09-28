@@ -36,3 +36,18 @@ long player_mapping_get_unit_by_output_user(long user_index)
 		return player_mapping_globals->output_user_unit_mapping[user_index];
 	}
 }
+
+void __fastcall player_mapping_set_input_user(long player_index, long input_user_index)
+{
+	INVOKE(0xE19E0, player_mapping_set_input_user, player_index, input_user_index);
+}
+
+void __fastcall player_mapping_set_input_controller(long player_index, long controller_index)
+{
+	INVOKE(0xE1AA0, player_mapping_set_input_controller, player_index, controller_index);
+}
+
+void __fastcall player_mapping_attach_output_user(long input_user_index, long player_index)
+{
+	INVOKE(0xE1CE0, player_mapping_attach_output_user, input_user_index, player_index);
+}

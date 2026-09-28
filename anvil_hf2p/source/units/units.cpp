@@ -77,6 +77,11 @@ void __fastcall unit_add_initial_loadout(datum_index unit_index)
     INVOKE(0xFB6E0, unit_add_initial_loadout, unit_index);
 }
 
+long __fastcall unit_inventory_get_weapon(datum_index unit_index, short inventory_index)
+{
+    return INVOKE(0x422E60, unit_inventory_get_weapon, unit_index, inventory_index);
+}
+
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)
 {
     unit_datum* unit = (unit_datum*)object_get_and_verify_type(unit_index, _object_mask_unit);

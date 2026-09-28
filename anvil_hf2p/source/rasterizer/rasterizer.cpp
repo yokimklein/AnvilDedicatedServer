@@ -9,7 +9,7 @@ REFERENCE_DECLARE(0x4ECF2B8, rectangle2d, c_rasterizer::g_last_viewport);
 REFERENCE_DECLARE(0x23390EC, IDirect3DVertexDeclaration9*, c_rasterizer::g_current_vertex_declaration);
 REFERENCE_DECLARE(0x2339330, IDirect3DDevice9Ex*, c_rasterizer::g_device);
 REFERENCE_DECLARE(0x23390C8, IDirect3DIndexBuffer9*, c_rasterizer::g_current_index_buffer);
-REFERENCE_DECLARE_ARRAY(0x10AADE8, long, c_rasterizer::x_last_sampler_filter_modes, 20);
+REFERENCE_DECLARE_ARRAY(0xEAADE8, long, c_rasterizer::x_last_sampler_filter_modes, 20);
 long c_rasterizer::g_render_force_anisotropic_level = -1;
 REFERENCE_DECLARE_ARRAY(0x23390DC, long, c_rasterizer::x_last_render_state_value, 4);
 REFERENCE_DECLARE(0x23390F4, c_rasterizer::e_alpha_blend_mode, c_rasterizer::g_current_alpha_blend_mode);
@@ -104,9 +104,12 @@ const s_tag_reference* c_rasterizer_globals::get_explicit_vertex_shader_ref(long
 	return &shader->vertex_shader;
 }
 
+#pragma runtime_checks("", off)
 bool __fastcall c_rasterizer::set_vertex_shader(const c_rasterizer_vertex_shader* vertex_shader, e_vertex_type base_vertex_type, e_transfer_vector_vertex_types transfer_vertex_type, e_entry_point entry_point)
 {
-	return INVOKE(0x25C5B0, c_rasterizer::set_vertex_shader, vertex_shader, base_vertex_type, transfer_vertex_type, entry_point);
+	bool return_value = INVOKE(0x25C5B0, c_rasterizer::set_vertex_shader, vertex_shader, base_vertex_type, transfer_vertex_type, entry_point);
+	__asm add esp, 8; // Fixup stack
+	return return_value;
 
 	//if (!c_rasterizer::g_device)
 	//	return true;
@@ -132,6 +135,7 @@ bool __fastcall c_rasterizer::set_vertex_shader(const c_rasterizer_vertex_shader
 	//
 	//return true;
 }
+#pragma runtime_checks("", restore)
 
 bool __fastcall c_rasterizer::set_pixel_shader(const c_rasterizer_pixel_shader* pixel_shader, e_entry_point entry_point)
 {
@@ -160,15 +164,21 @@ bool __fastcall c_rasterizer::set_pixel_shader(const c_rasterizer_pixel_shader* 
 	//return true;
 }
 
+#pragma runtime_checks("", off)
 void __fastcall c_rasterizer::draw_primitive_up(c_rasterizer_index_buffer::e_primitive_type primitive_type, ulong primitive_count, const void* stream_data, ulong stride)
 {
 	INVOKE(0x260B10, c_rasterizer::draw_primitive_up, primitive_type, primitive_count, stream_data, stride);
+	__asm add esp, 8; // Fixup stack
 }
+#pragma runtime_checks("", restore)
 
+#pragma runtime_checks("", off)
 void __fastcall c_rasterizer::set_pixel_shader_constant(long constant_index, long count, const real_vector4d* constants)
 {
 	INVOKE(0x291410, c_rasterizer::set_pixel_shader_constant, constant_index, count, constants);
+	__asm add esp, 4; // Fixup stack
 }
+#pragma runtime_checks("", restore)
 
 void __fastcall c_rasterizer::set_z_buffer_mode(e_z_buffer_mode mode)
 {

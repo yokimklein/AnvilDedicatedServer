@@ -28,8 +28,81 @@ enum e_unit_flags
 	k_unit_flags_count
 };
 
+// $TODO are there more than 32 flags?
 enum e_unit_control_flags
 {
+	// _button_crouch
+	// _button_vehicle_dive
+	_unit_control_crouch_modifier_bit = 0,
+
+	// _button_jump
+	// _button_vehicle_raise
+	_unit_control_jump_bit,
+
+	// _button_flashlight
+	_unit_control_vision_mode_bit,
+
+	_unit_control_exact_facing_bit,
+
+	// _button_use_consumable_1
+	_unit_control_use_equipment_bit,
+
+	// _button_melee_attack
+	_unit_control_melee_attack_bit,
+
+	_unit_control_melee_lunge_bit,
+
+	// _button_use_consumable_2
+	_unit_control_equipment_2_bit,
+
+	// _button_lean_right
+	_unit_control_sprint_bit8,
+
+	// _button_use_consumable_3
+	_unit_control_equipment_3_bit,
+
+	// _button_use_consumable_4
+	_unit_control_equipment_4_bit,
+
+	// _button_vehicle_boost
+	_unit_control_sprint_bit11,
+
+	_unit_control_skip_cinematic_bit,
+	_unit_control_bit13,
+
+	// _button_vehicle_boost
+	_unit_control_lower_weapon_bit,
+
+	_unit_control_jetpack_bit,
+
+	_unit_control_bit16,
+	_unit_control_bit17,
+
+	_unit_control_primary_weapon_primary_trigger_bit,
+	_unit_control_primary_weapon_secondary_trigger_bit,
+	_unit_control_primary_weapon_predicted_primary_trigger_bit,
+	_unit_control_primary_weapon_predicted_secondary_trigger_bit,
+
+	// _button_flashlight
+	_unit_control_primary_weapon_power_toggle_bit,
+
+	_unit_control_secondary_weapon_primary_trigger_bit,
+	_unit_control_secondary_weapon_secondary_trigger_bit,
+	_unit_control_secondary_weapon_predicted_primary_trigger_bit,
+	_unit_control_secondary_weapon_predicted_secondary_trigger_bit,
+
+	// _button_flashlight
+	_unit_control_secondary_weapon_power_toggle_bit,
+
+	// _button_throw_grenade
+	_unit_control_throw_grenade_bit,
+
+	_unit_control_reload_primary_bit,
+	_unit_control_reload_secondary_bit,
+
+	// _button_fire_tertiary
+	_unit_control_tertiary_weapon_bit,
+
 	k_unit_control_flags_count
 };
 
@@ -58,7 +131,7 @@ struct unit_control_data
 	s_unit_weapon_set weapon_set;
 	word grenade_index;
 	word zoom_level;
-	dword_flags control_flags;
+	c_flags<e_unit_control_flags, ulong, k_unit_control_flags_count> control_flags;
 	real_vector3d throttle;
 	real primary_trigger;
 	real secondary_trigger;
@@ -291,6 +364,7 @@ void __fastcall unit_set_actively_controlled(datum_index unit_index, bool active
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);
 void __fastcall unit_delete_all_weapons_internal(datum_index unit_index);
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type);
+long __fastcall unit_inventory_get_weapon(datum_index unit_index, short inventory_index); // returns NONE if inventory_index == NONE
 void __fastcall unit_drop_item(datum_index unit_index, datum_index equipment_index, e_unit_drop_type drop_type);
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data);
 void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* aiming_vector, real_vector3d* looking_vector);

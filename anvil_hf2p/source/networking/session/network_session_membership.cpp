@@ -190,9 +190,6 @@ s_network_session_player* c_network_session_membership::add_player_internal(long
     ASSERT(get_player_from_identifier(player_identifier) == NONE);
     const s_network_session_shared_membership* membership = get_current_membership();
     s_network_session_player* player = get_raw_player(player_index);
-    s_network_session_player test_player;
-    csmemset(&test_player, 0, sizeof(test_player));
-    ASSERT(!memcmp(player, &test_player, sizeof(test_player)));
 
     m_baseline.player_valid_mask.set(player_index, true);
     m_baseline.player_count++;

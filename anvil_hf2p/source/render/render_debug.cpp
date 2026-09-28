@@ -1323,189 +1323,173 @@ bool render_debug_draw_immediately(const real_argb_color* color)
 
 void render_debug_add_cache_entry(short type, ...)
 {
-	ASSERT(g_render_debug_globals);
+	s_render_debug_globals* render_debug_globals = get_render_debug_globals();
 
-	if (g_render_debug_globals->cache_count < NUMBEROF(g_render_debug_globals->cache))
+	if (render_debug_globals->cache_count > NUMBEROF(render_debug_globals->cache) - 1)
 	{
-		cache_entry* entry = &g_render_debug_globals->cache[g_render_debug_globals->cache_count++];
+		static bool warned = false;
+		if (!warned)
+		{
+			event(_event_warning, "render debug cache overflow.");
+			warned = true;
+		}
+	}
+	else
+	{
+		bool discard_entry = false;
+		cache_entry* entry = &render_debug_globals->cache[render_debug_globals->cache_count++];
+		real entry_alpha = 1.0f;
 
-		real alpha = 1.0f;
+		real_point3d centroid = *global_origin3d;
 
-		va_list list;
-		va_start(list, type);
-
+		va_list arglist;
+		va_start(arglist, type);
 		switch (type)
 		{
-			case _render_debug_type_circle:
-			{
-				entry->circle.plane = *va_arg(list, real_plane3d*);
-				entry->circle.projection_axis = (short)va_arg(list, int);
-				entry->circle.projection_sign = (bool)va_arg(list, int);
-				entry->circle.center = *va_arg(list, real_point2d*);
-				entry->circle.radius = (real)va_arg(list, real64);
-				entry->circle.color = *va_arg(list, real_argb_color*);
-				entry->circle.offset = (real)va_arg(list, real64);
-				alpha = entry->circle.color.alpha;
+		case _render_debug_type_circle:
+		{
+			entry->circle.plane = *va_arg(arglist, real_plane3d*);
+			entry->circle.projection_axis = (short)va_arg(arglist, int);
+			entry->circle.projection_sign = (bool)va_arg(arglist, int);
+			entry->circle.center = *va_arg(arglist, real_point2d*);
+			entry->circle.radius = (real)va_arg(arglist, real64);
+			entry->circle.color = *va_arg(arglist, real_argb_color*);
+			entry->circle.offset = (real)va_arg(arglist, real64);
+			entry_alpha = entry->circle.color.alpha;
 
-				real_point3d centroid{};
-				project_point2d(&entry->circle.center, &entry->circle.plane, entry->circle.projection_axis, entry->circle.projection_sign, &centroid);
-				ASSERT(VALID_INDEX(entry->circle.projection_axis, NUMBEROF(centroid.n)));
-			}
-			break;
-			case _render_debug_type_point:
-			{
-				entry->point.point = *va_arg(list, real_point3d*);
-				entry->point.scale = (real)va_arg(list, real64);
-				entry->point.color = *va_arg(list, real_argb_color*);
-				alpha = entry->point.color.alpha;
-			}
-			break;
-			case _render_debug_type_line:
-			{
+			project_point2d(&entry->circle.center, &entry->circle.plane, entry->circle.projection_axis, entry->circle.projection_sign, &centroid);
+			ASSERT(VALID_INDEX(entry->circle.projection_axis, NUMBEROF(centroid.n)));
+		}
+		break;
+		case _render_debug_type_point:
+		{
+			entry->point.point = *va_arg(arglist, real_point3d*);
+			entry->point.scale = (real)va_arg(arglist, real64);
+			entry->point.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->point.color.alpha;
+		}
+		break;
+		case _render_debug_type_line:
+		{
 
-				entry->line.point0 = *va_arg(list, real_point3d*);
-				entry->line.point1 = *va_arg(list, real_point3d*);
-				entry->line.color0 = *va_arg(list, real_argb_color*);
-				entry->line.color1 = *va_arg(list, real_argb_color*);
-				alpha = fminf(entry->line.color1.alpha, entry->line.color0.alpha);
-			}
-			break;
-			case _render_debug_type_line2d:
+			entry->line.point0 = *va_arg(arglist, real_point3d*);
+			entry->line.point1 = *va_arg(arglist, real_point3d*);
+			entry->line.color0 = *va_arg(arglist, real_argb_color*);
+			entry->line.color1 = *va_arg(arglist, real_argb_color*);
+			entry_alpha = fminf(entry->line.color1.alpha, entry->line.color0.alpha);
+		}
+		break;
+		case _render_debug_type_line2d:
+		{
+			entry->line2d.point0 = *va_arg(arglist, real_point2d*);
+			entry->line2d.point1 = *va_arg(arglist, real_point2d*);
+			entry->line2d.color0 = *va_arg(arglist, real_argb_color*);
+			entry->line2d.color1 = *va_arg(arglist, real_argb_color*);
+			entry_alpha = fminf(entry->line.color1.alpha, entry->line.color0.alpha);
+		}
+		break;
+		case _render_debug_type_sphere:
+		{
+			entry->sphere.center = *va_arg(arglist, real_point3d*);
+			entry->sphere.radius = (real)va_arg(arglist, real64);
+			entry->sphere.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->sphere.color.alpha;
+		}
+		break;
+		case _render_debug_type_cylinder:
+		{
+			entry->cylinder.base = *va_arg(arglist, real_point3d*);
+			entry->cylinder.height = *va_arg(arglist, real_vector3d*);
+			entry->cylinder.width = (real)va_arg(arglist, real64);
+			entry->cylinder.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->sphere.color.alpha;
+		}
+		break;
+		case _render_debug_type_pill:
+		{
+			entry->pill.base = *va_arg(arglist, real_point3d*);
+			entry->pill.height = *va_arg(arglist, real_vector3d*);
+			entry->pill.width = (real)va_arg(arglist, real64);
+			entry->pill.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->pill.color.alpha;
+		}
+		break;
+		case _render_debug_type_box:
+		case _render_debug_type_box_outline:
+		{
+			entry->box.bounds = *va_arg(arglist, real_rectangle3d*);
+			entry->box.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->box.color.alpha;
+		}
+		break;
+		case _render_debug_type_triangle:
+		{
+			entry->triangle.point0 = *va_arg(arglist, real_point3d*);
+			entry->triangle.point1 = *va_arg(arglist, real_point3d*);
+			entry->triangle.point2 = *va_arg(arglist, real_point3d*);
+			entry->triangle.color = *va_arg(arglist, real_argb_color*);
+			entry_alpha = entry->triangle.color.alpha;
+		}
+		break;
+		case _render_debug_type_string:
+		{
+			long string_index = render_debug_add_cache_string(va_arg(arglist, const char*));
+			if (string_index == NONE)
 			{
-				entry->line2d.point0 = *va_arg(list, real_point2d*);
-				entry->line2d.point1 = *va_arg(list, real_point2d*);
-				entry->line2d.color0 = *va_arg(list, real_argb_color*);
-				entry->line2d.color1 = *va_arg(list, real_argb_color*);
-				alpha = fminf(entry->line.color1.alpha, entry->line.color0.alpha);
+				discard_entry = true;
 			}
-			break;
-			case _render_debug_type_sphere:
+			else
 			{
-				entry->sphere.center = *va_arg(list, real_point3d*);
-				entry->sphere.radius = (real)va_arg(list, real64);
-				entry->sphere.color = *va_arg(list, real_argb_color*);
-				alpha = entry->sphere.color.alpha;
+				entry->string.string_index = string_index;
+				entry->string.tab_stop_count = 0;
 			}
-			break;
-			case _render_debug_type_cylinder:
+		}
+		break;
+		case _render_debug_type_string_at_point:
+		{
+			long string_index = render_debug_add_cache_string(va_arg(arglist, const char*));
+			if (string_index == NONE)
 			{
-				entry->cylinder.base = *va_arg(list, real_point3d*);
-				entry->cylinder.height = *va_arg(list, real_vector3d*);
-				entry->cylinder.width = (real)va_arg(list, real64);
-				entry->cylinder.color = *va_arg(list, real_argb_color*);
-				alpha = entry->sphere.color.alpha;
+				discard_entry = true;
 			}
-			break;
-			case _render_debug_type_pill:
+			else
 			{
-				entry->pill.base = *va_arg(list, real_point3d*);
-				entry->pill.height = *va_arg(list, real_vector3d*);
-				entry->pill.width = (real)va_arg(list, real64);
-				entry->pill.color = *va_arg(list, real_argb_color*);
-				alpha = entry->pill.color.alpha;
+				entry->string_at_point.string_index = string_index;
+				entry->string_at_point.point = *va_arg(arglist, real_point3d*);
+				entry->string_at_point.color = *va_arg(arglist, real_argb_color*);
+				entry_alpha = entry->string_at_point.color.alpha;
 			}
-			break;
-			case _render_debug_type_box:
-			case _render_debug_type_box_outline:
-			{
-				entry->box.bounds = *va_arg(list, real_rectangle3d*);
-				entry->box.color = *va_arg(list, real_argb_color*);
-				alpha = entry->box.color.alpha;
-			}
-			break;
-			case _render_debug_type_triangle:
-			{
-				entry->triangle.point0 = *va_arg(list, real_point3d*);
-				entry->triangle.point1 = *va_arg(list, real_point3d*);
-				entry->triangle.point2 = *va_arg(list, real_point3d*);
-				entry->triangle.color = *va_arg(list, real_argb_color*);
-				alpha = entry->triangle.color.alpha;
-			}
-			break;
-			case _render_debug_type_string:
-			{
-				const char* string = va_arg(list, const char*);
-				long string_index = render_debug_add_cache_string(string);
-				if (string_index != NONE)
-				{
-					entry->string.string_index = string_index;
-					entry->string.tab_stop_count = 0;
-
-					//LABEL_46
-					entry->type = type;
-					entry->layer = 0;
-					entry->sort_key = 0.0f;
-					if (g_render_debug_globals->group_level > 0)
-						entry->sort_key = g_render_debug_globals->group_key;
-				}
-			}
-			break;
-			case _render_debug_type_string_at_point:
-			{
-				const char* string = va_arg(list, const char*);
-				long string_index = render_debug_add_cache_string(string);
-				if (string_index != NONE)
-				{
-					entry->string_at_point.string_index = string_index;
-					entry->string_at_point.point = *va_arg(list, real_point3d*);
-					entry->string_at_point.color = *va_arg(list, real_argb_color*);
-					alpha = entry->string_at_point.color.alpha;
-				}
-			}
-			break;
-			case _render_debug_type_box2d_outline:
-			{
-				entry->box2d_outline.bounds = *va_arg(list, real_rectangle2d*);
-				entry->box2d_outline.color = *va_arg(list, real_argb_color*);
-				alpha = entry->box2d_outline.color.alpha;
-
-				//LABEL_46
-				entry->type = type;
-				entry->layer = 0;
-				entry->sort_key = 0.0f;
-				if (g_render_debug_globals->group_level > 0)
-					entry->sort_key = g_render_debug_globals->group_key;
-				return;
-			}
-			break;
-			default:
-			{
-				entry->type = type;
-				entry->layer = 0;
-				entry->sort_key = 0.0f;
-				if (g_render_debug_globals->group_level > 0)
-					entry->sort_key = g_render_debug_globals->group_key;
-				return;
-			}
-			break;
+		}
+		break;
+		case _render_debug_type_box2d_outline:
+		{
+			entry->box2d_outline.bounds = *va_arg(arglist, real_rectangle2d*);
+			entry->box2d_outline.color = *va_arg(arglist, real_argb_color*);
+		}
+		break;
+		default:
+		break;
 		}
 
 		entry->type = type;
 
-		if (alpha > 0.0f)
+		if (discard_entry || entry_alpha <= 0.0f)
 		{
-			entry->layer = alpha < 1.0f ? 1 : 0;
+			render_debug_globals->cache_count--;
 		}
 		else
 		{
-			g_render_debug_globals->cache_count--;
+			entry->layer = entry_alpha < 1.0f;
 		}
 
-		if (g_render_debug_globals->group_level <= 0)
+		if (render_debug_globals->group_level > 0)
 		{
 			entry->sort_key = 0.0f;
 		}
 		else
 		{
-			entry->sort_key = g_render_debug_globals->group_key;
+			entry->sort_key = render_debug_globals->group_key;
 		}
-	}
-
-	static bool render_debug_cache_overflow = false;
-	if (!render_debug_cache_overflow)
-	{
-		event(_event_warning, "render debug cache overflow.");
-		render_debug_cache_overflow = true;
 	}
 }
 

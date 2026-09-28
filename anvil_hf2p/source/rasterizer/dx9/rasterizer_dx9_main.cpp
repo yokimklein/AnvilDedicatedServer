@@ -12,10 +12,13 @@ void c_rasterizer::set_indices(IDirect3DIndexBuffer9* index_buffer)
 	}
 }
 
+#pragma runtime_checks("", off)
 void __fastcall c_rasterizer::set_sampler_filter_mode_custom_device_no_cache(IDirect3DDevice9Ex* device, long sampler_index, e_sampler_filter_mode sampler_filter_mode)
 {
 	INVOKE(0x25BFF0, c_rasterizer::set_sampler_filter_mode_custom_device_no_cache, device, sampler_index, sampler_filter_mode);
+	__asm add esp, 4; // Fix usercall & cleanup stack
 }
+#pragma runtime_checks("", restore)
 
 void c_rasterizer::set_sampler_filter_mode(long sampler_index, e_sampler_filter_mode sampler_filter_mode)
 {

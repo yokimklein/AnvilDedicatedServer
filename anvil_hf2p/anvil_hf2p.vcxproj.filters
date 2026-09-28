@@ -477,6 +477,9 @@
     <ClInclude Include="source\models\damage_info_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\models\render_model_definitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="source\objects\object_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1119,6 +1122,9 @@
     <ClInclude Include="source\cache\physical_memory_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\ai\path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -1541,6 +1547,9 @@
     <ClCompile Include="source\physics\collision_bsp_references.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\physics\collisions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="source\simulation\game_interface\simulation_game_units.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1836,6 +1845,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\game\game_engine_area_set.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ai\path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
