@@ -764,7 +764,11 @@ struct s_simulation_configuration
 	s_simulation_warping_configuration warping;
 	s_simulation_weapon_configuration weapon;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_simulation_configuration) == 0xA98);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_simulation_configuration) == 0xAAC);
+#endif
 static_assert(0xA0 == OFFSETOF(s_simulation_configuration, simulation_event_configurations));
 
 struct s_event_manager_view_configuration
@@ -887,11 +891,19 @@ struct s_network_configuration
 	s_chicken_switches chicken_switches;
 	s_determinism_configuration determinism_configuration;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_configuration) == 0x1700);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_configuration) == 0x1714);
+#endif
 static_assert(0x244 == OFFSETOF(s_network_configuration, life_cycle));
 static_assert(0x2C0 == OFFSETOF(s_network_configuration, logic));
 static_assert(0x3E4 == OFFSETOF(s_network_configuration, simulation_configuration));
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0x16F8 == OFFSETOF(s_network_configuration, determinism_configuration));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0x170C == OFFSETOF(s_network_configuration, determinism_configuration));
+#endif
 
 extern s_network_configuration& g_network_configuration;
 extern bool& g_network_configuration_initialized;

@@ -30,7 +30,11 @@ struct s_network_session_interface_user
     dword user_update_timestamp[3];
     dword user_remove_timestamp[3];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_interface_user) == 0xBE8);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_interface_user) == 0xC08);
+#endif
 
 typedef c_flags<e_network_session_peer_properties_status_flags, dword, k_network_session_peer_properties_status_flag_count> c_network_session_peer_properties_status_flags;
 
@@ -84,13 +88,22 @@ struct s_network_session_interface_globals
     byte : 8;
     byte : 8;
     c_static_array<long, 3> session_variant_session_maximum_team_counts;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
     c_network_session_manager* session_manager;
     byte : 8;
     byte : 8;
     byte : 8;
     byte : 8;
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+    byte unknown_ms30[0xC]; // ms30 added 0xC bytes somewhere after session_update_times, the fields between aren't used by the engine so their exact position is unverified
+    c_network_session_manager* session_manager;
+#endif
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_interface_globals) == 0x3410);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_interface_globals) == 0x3498);
+#endif
 static_assert(0x02 == OFFSETOF(s_network_session_interface_globals, machine_name));
 static_assert(0x22 == OFFSETOF(s_network_session_interface_globals, session_name));
 static_assert(0x64 == OFFSETOF(s_network_session_interface_globals, flags)); // 0x3EAE124
@@ -98,7 +111,11 @@ static_assert(0x68 == OFFSETOF(s_network_session_interface_globals, game_start_e
 static_assert(0x6C == OFFSETOF(s_network_session_interface_globals, map_id));
 static_assert(0x70 == OFFSETOF(s_network_session_interface_globals, current_map)); // 0x3EAE130
 static_assert(0x74 == OFFSETOF(s_network_session_interface_globals, current_map_progress_percentage)); // 0x3EAE134
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0x3018 == OFFSETOF(s_network_session_interface_globals, game_instance)); // 0x3EB10D8
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0x3098 == OFFSETOF(s_network_session_interface_globals, game_instance)); // 0x3EB10D8
+#endif
 #pragma pack(pop)
 
 extern s_network_session_interface_globals& session_interface_globals; // 0x3EAE0C0

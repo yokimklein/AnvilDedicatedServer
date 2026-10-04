@@ -17,7 +17,7 @@
 #include <networking\network_globals.h>
 #include <cseries\cseries_events.h>
 
-REFERENCE_DECLARE(0x3EAE0C0, s_network_session_interface_globals, session_interface_globals);
+REFERENCE_DECLARE(ADDRESS_SESSION_INTERFACE_GLOBALS, s_network_session_interface_globals, session_interface_globals);
 
 void __fastcall network_session_update_peer_properties(c_network_session* session, s_network_session_peer* peer)
 {
@@ -241,17 +241,17 @@ void network_session_update_team_indices(c_network_session* session, bool varian
 
 void __fastcall network_session_interface_update_session(c_network_session* session)
 {
-	INVOKE(0x2F410, network_session_interface_update_session, session);
+	INVOKE(ADDRESS_NETWORK_SESSION_INTERFACE_UPDATE_SESSION, network_session_interface_update_session, session);
 }
 
 bool __fastcall network_session_interface_get_local_user_identifier(s_player_identifier* player_identifier)
 {
-	return INVOKE(0x3D50, network_session_interface_get_local_user_identifier, player_identifier);
+	return INVOKE(ADDRESS_NETWORK_SESSION_INTERFACE_GET_LOCAL_USER_IDENTIFIER, network_session_interface_get_local_user_identifier, player_identifier);
 }
 
 void __fastcall network_session_calculate_peer_connectivity(c_network_session* session, s_network_session_peer_connectivity* peer_connectivity)
 {
-	INVOKE(0x2E500, network_session_calculate_peer_connectivity, session, peer_connectivity);
+	INVOKE(ADDRESS_NETWORK_SESSION_CALCULATE_PEER_CONNECTIVITY, network_session_calculate_peer_connectivity, session, peer_connectivity);
 }
 
 void network_session_interface_set_local_name(wchar_t const* machine_name, wchar_t const* session_name)
@@ -267,7 +267,7 @@ bool network_session_interface_get_squad_session(c_network_session** out_session
 
 void __cdecl network_session_interface_update()
 {
-	INVOKE(0x2DC50, network_session_interface_update);
+	INVOKE(ADDRESS_NETWORK_SESSION_INTERFACE_UPDATE, network_session_interface_update);
 }
 
 void network_session_interface_set_peer_status_flag(e_network_session_peer_properties_status_flags peer_status_flag, bool enabled)

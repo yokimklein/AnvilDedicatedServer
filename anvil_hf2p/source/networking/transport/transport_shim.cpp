@@ -3,7 +3,7 @@
 #include <game\game.h>
 #include <combaseapi.h>
 
-REFERENCE_DECLARE(0x49C0260, s_xnet_shim_table, g_xnet_shim_table);
+REFERENCE_DECLARE(ADDRESS_G_XNET_SHIM_TABLE, s_xnet_shim_table, g_xnet_shim_table);
 
 // returns the index of the row with a matching transport address or secure address
 // returns NONE if no rows match & ignore_invalid_rows is true, otherwise it returns the first invalid/unused row

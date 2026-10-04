@@ -146,5 +146,5 @@ void __fastcall unlock_resources_and_resume_render_thread(ulong flags);
 template<typename... parameters_t, long k_parameter_count = sizeof...(parameters_t)>
 bool main_status(const char* status_type, const char* format, parameters_t... parameters)
 {
-	return DECLFUNC(0x96D20, bool, __cdecl, const char*, const char*, ...)(status_type, format, parameters...);
+	return DECLFUNC(ADDRESS_MAIN_STATUS, bool, __cdecl, const char*, const char*, ...)(status_type, format, parameters...);
 }

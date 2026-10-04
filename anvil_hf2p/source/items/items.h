@@ -35,4 +35,8 @@ struct item_datum
 	_object_datum object;
 	_item_datum item;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(item_datum) == 0x190);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(item_datum) == 0x184);
+#endif

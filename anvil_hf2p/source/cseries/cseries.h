@@ -14,6 +14,23 @@
 
 #include <memory\member_to_static.h>
 
+// packs a major.minor.build engine version into one integer for preprocessor comparisons
+// e.g. #if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+#define ENGINE_VERSION_ID(major, minor, build) ((major) * 100000000 + (minor) * 1000000 + (build))
+
+#define ADDRESS_NOT_PRESENT 0 // address has no equivalent in the enabled engine version
+
+// engine address map for the targeted version, anvil\address_map\<ENGINE_VERSION>.inl
+// adding an engine version only requires a new address map
+#define ENGINE_ADDRESS_MAP_STRINGIFY_DETAIL(x) #x
+#define ENGINE_ADDRESS_MAP_STRINGIFY(x) ENGINE_ADDRESS_MAP_STRINGIFY_DETAIL(x)
+#define ENGINE_ADDRESS_MAP ENGINE_ADDRESS_MAP_STRINGIFY(anvil/address_map/ENGINE_VERSION.inl)
+
+#if !__has_include(ENGINE_ADDRESS_MAP)
+#error "no address map in anvil\address_map for ENGINE_VERSION"
+#endif
+#include ENGINE_ADDRESS_MAP
+
 extern inline size_t base_address_impl(size_t address);
 
 template<typename k_return_type = size_t>

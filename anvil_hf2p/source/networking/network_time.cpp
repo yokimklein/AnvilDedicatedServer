@@ -1,7 +1,7 @@
 #include "network_time.h"
 #include <cseries\cseries_windows.h>
 
-REFERENCE_DECLARE(0x1038344, s_network_time_globals, network_time_globals);
+REFERENCE_DECLARE(ADDRESS_NETWORK_TIME_GLOBALS, s_network_time_globals, network_time_globals);
 
 ulong network_time_get_exact()
 {

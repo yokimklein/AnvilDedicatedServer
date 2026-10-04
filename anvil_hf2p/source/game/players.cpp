@@ -75,7 +75,7 @@ void __fastcall player_set_facing(datum_index player_index, real_vector3d* forwa
 
 void __fastcall player_control_set_facing(long input_user_index, real_vector3d* forward)
 {
-	INVOKE(0x106780, player_control_set_facing, input_user_index, forward);
+	INVOKE(ADDRESS_PLAYER_CONTROL_SET_FACING, player_control_set_facing, input_user_index, forward);
 }
 
 long player_index_from_absolute_player_index(short absolute_player_index)
@@ -102,12 +102,12 @@ void __fastcall player_increment_control_context(datum_index player_index)
 
 bool __fastcall player_is_local(datum_index player_index)
 {
-	return INVOKE(0xC1480, player_is_local, player_index);
+	return INVOKE(ADDRESS_PLAYER_IS_LOCAL, player_is_local, player_index);
 }
 
 void __fastcall player_clear_assassination_state(datum_index player_index)
 {
-	INVOKE(0xBA0F0, player_clear_assassination_state, player_index);
+	INVOKE(ADDRESS_PLAYER_CLEAR_ASSASSINATION_STATE, player_clear_assassination_state, player_index);
 }
 
 long get_player_action_control_context_identifier_bits()
@@ -209,12 +209,12 @@ void player_navpoint_data_set_action(s_player_navpoint_data* waypoint, e_navpoin
 
 void __fastcall player_swap(long player_absolute_index, long swap_player_absolute_index)
 {
-	INVOKE(0xB5340, player_swap, player_absolute_index, swap_player_absolute_index);
+	INVOKE(ADDRESS_PLAYER_SWAP, player_swap, player_absolute_index, swap_player_absolute_index);
 }
 
 void __fastcall player_delete(datum_index player_index)
 {
-	INVOKE(0xB5670, player_delete, player_index);
+	INVOKE(ADDRESS_PLAYER_DELETE, player_delete, player_index);
 }
 
 s_s3d_player_loadout* player_get_loadout(player_datum* player)
@@ -432,10 +432,10 @@ void players_get_machines(ulong* machine_valid_mask, s_machine_identifier machin
 
 void __fastcall player_set_configuration(datum_index player_index, s_player_configuration const* configuration)
 {
-	INVOKE(0xB48C0, player_set_configuration, player_index, configuration);
+	INVOKE(ADDRESS_PLAYER_SET_CONFIGURATION, player_set_configuration, player_index, configuration);
 }
 
 void __fastcall players_rebuild_user_mapping(bool notify)
 {
-	INVOKE(0xB4660, players_rebuild_user_mapping, notify);
+	INVOKE(ADDRESS_PLAYERS_REBUILD_USER_MAPPING, players_rebuild_user_mapping, notify);
 }

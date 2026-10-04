@@ -124,11 +124,11 @@ void anvil_launch_scenario(const char* scenario_path, const wchar_t* map_name)
     }
 
     long scnr_path_address = (long)g_tutorial_scenario_path.get_string();
-    patch::bytes(0x33AB0D, (byte*)&scnr_path_address, 4);
-    patch::bytes(0x33AB58, (byte*)&scnr_path_address, 4);
+    patch::bytes(ADDRESS_TUTORIAL_START_PATCH, (byte*)&scnr_path_address, 4);
+    patch::bytes(ADDRESS_TUTORIAL_START_PATCH_2, (byte*)&scnr_path_address, 4);
 
     long map_name_address = (long)g_tutorial_map_name.get_string();
-    patch::bytes(0xDD176, (byte*)&map_name_address, 4);
+    patch::bytes(ADDRESS_LEVELS_GET_TUTORIAL_MAP_ID_PATCH, (byte*)&map_name_address, 4);
 
     event(_event_status, "" __FUNCTION__ ": launching scenario [%s] map [%ls]", g_tutorial_scenario_path.get_string(), g_tutorial_map_name.get_string());
     hq_start_tutorial_level();

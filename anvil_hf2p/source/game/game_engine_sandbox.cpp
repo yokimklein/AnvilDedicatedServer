@@ -2,7 +2,7 @@
 
 c_game_engine_sandbox_variant* c_game_engine_sandbox_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD71350); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_SANDBOX_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -20,7 +20,7 @@ void c_game_engine_sandbox_variant::set(c_game_engine_sandbox_variant const* var
 
 void c_game_engine_sandbox_variant::set(s_game_engine_sandbox_variant_definition const* definition)
 {
-	DECLFUNC(0x1ABB90, void, __thiscall, c_game_engine_sandbox_variant*, s_game_engine_sandbox_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_SANDBOX_VARIANT_SET, void, __thiscall, c_game_engine_sandbox_variant*, s_game_engine_sandbox_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_sandbox_variant::get_open_channel_voice() const

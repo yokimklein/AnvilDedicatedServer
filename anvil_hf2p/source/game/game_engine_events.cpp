@@ -4,5 +4,5 @@ s_game_engine_event_response_definition* __fastcall audience_member_find_respons
 {
 	ASSERT(player_index != NONE);
 	ASSERT(event_data);
-	return INVOKE(0xD0E40, audience_member_find_response, player_index, event_data);
+	return INVOKE(ADDRESS_AUDIENCE_MEMBER_FIND_RESPONSE, audience_member_find_response, player_index, event_data);
 }

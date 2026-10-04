@@ -11,7 +11,7 @@ void c_simulation_view::set_view_establishment(e_simulation_view_establishment_m
 		ASSERT(establishment_mode == _simulation_view_establishment_mode_none);
 	}
 
-	DECLFUNC(0x335B0, void, __thiscall, c_simulation_view*, e_simulation_view_establishment_mode, long)(this, establishment_mode, establishment_identifier);
+	DECLFUNC(ADDRESS_C_SIMULATION_VIEW_SET_VIEW_ESTABLISHMENT, void, __thiscall, c_simulation_view*, e_simulation_view_establishment_mode, long)(this, establishment_mode, establishment_identifier);
 }
 
 bool c_simulation_view::established() const

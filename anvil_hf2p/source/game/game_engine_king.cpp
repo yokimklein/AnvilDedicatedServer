@@ -2,7 +2,7 @@
 
 c_game_engine_king_variant* c_game_engine_king_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD713B0); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_KING_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -27,7 +27,7 @@ void c_game_engine_king_variant::set(c_game_engine_king_variant const* variant, 
 
 void c_game_engine_king_variant::set(s_game_engine_king_variant_definition const* definition)
 {
-	DECLFUNC(0x1AC240, void, __thiscall, c_game_engine_king_variant*, s_game_engine_king_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_KING_VARIANT_SET, void, __thiscall, c_game_engine_king_variant*, s_game_engine_king_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_king_variant::get_opaque_hill() const

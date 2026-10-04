@@ -1,7 +1,7 @@
 #include "object_types.h"
 #include <objects\objects.h>
 
-REFERENCE_DECLARE_ARRAY(0xEB2448, object_type_definition*, object_type_definitions, k_object_type_count);
+REFERENCE_DECLARE_ARRAY(ADDRESS_OBJECT_TYPE_DEFINITIONS, object_type_definition*, object_type_definitions, k_object_type_count);
 
 void object_type_detach_gamestate_entity(datum_index object_index)
 {

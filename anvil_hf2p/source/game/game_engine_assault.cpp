@@ -2,7 +2,7 @@
 
 c_game_engine_assault_variant* c_game_engine_assault_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD714A0); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_ASSAULT_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -31,7 +31,7 @@ void c_game_engine_assault_variant::set(c_game_engine_assault_variant const* var
 
 void c_game_engine_assault_variant::set(s_game_engine_assault_variant_definition const* definition)
 {
-	DECLFUNC(0x1A7B50, void, __thiscall, c_game_engine_assault_variant*, s_game_engine_assault_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_ASSAULT_VARIANT_SET, void, __thiscall, c_game_engine_assault_variant*, s_game_engine_assault_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_assault_variant::get_reset_bomb_on_disarm() const

@@ -2,7 +2,7 @@
 
 c_game_engine_slayer_variant* c_game_engine_slayer_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD71500); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_SLAYER_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -31,7 +31,7 @@ void c_game_engine_slayer_variant::set(c_game_engine_slayer_variant const* varia
 
 void c_game_engine_slayer_variant::set(s_game_engine_slayer_variant_definition const* definition)
 {
-	DECLFUNC(0x1AC9F0, void, __thiscall, c_game_engine_slayer_variant*, s_game_engine_slayer_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_SLAYER_VARIANT_SET, void, __thiscall, c_game_engine_slayer_variant*, s_game_engine_slayer_variant_definition const*)(this, definition);
 }
 
 short c_game_engine_slayer_variant::get_score_to_win() const

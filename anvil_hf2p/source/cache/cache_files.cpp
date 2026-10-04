@@ -32,7 +32,7 @@ byte const g_cache_file_creator_key[64]
 
 s_tag_reference g_last_tag_accessed = { .group_tag = _tag_none, .index = _datum_index_none };
 
-REFERENCE_DECLARE(0x3EDDCD0, s_cache_file_globals, g_cache_file_globals);
+REFERENCE_DECLARE(ADDRESS_G_CACHE_FILE_GLOBALS, s_cache_file_globals, g_cache_file_globals);
 
 void* __fastcall tag_get(tag group_tag, datum_index tag_index)
 {
@@ -60,7 +60,7 @@ tag tag_get_group_tag(datum_index tag_index)
 
 long __fastcall cache_file_get_global_tag_index(tag group_tag)
 {
-	return INVOKE(0x82E30, cache_file_get_global_tag_index, group_tag);
+	return INVOKE(ADDRESS_CACHE_FILE_GET_GLOBAL_TAG_INDEX, cache_file_get_global_tag_index, group_tag);
 }
 
 const char* cache_file_get_build_number()

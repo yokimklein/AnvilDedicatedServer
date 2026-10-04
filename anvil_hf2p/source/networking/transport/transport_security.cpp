@@ -8,8 +8,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
 
-REFERENCE_DECLARE(0x4EBE9D0, s_transport_security_globals, transport_security_globals);
-REFERENCE_DECLARE(0x49C1060, s_transport_secure_address const, g_session_secure_address);
+REFERENCE_DECLARE(ADDRESS_TRANSPORT_SECURITY_GLOBALS, s_transport_security_globals, transport_security_globals);
+REFERENCE_DECLARE(ADDRESS_G_SESSION_SECURE_ADDRESS, s_transport_secure_address const, g_session_secure_address);
 
 char const* transport_secure_nonce_get_string(qword secure_nonce)
 {

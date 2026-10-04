@@ -2,7 +2,7 @@
 
 c_game_engine_territories_variant* c_game_engine_territories_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD71380); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_TERRITORIES_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -23,7 +23,7 @@ void c_game_engine_territories_variant::set(c_game_engine_territories_variant co
 
 void c_game_engine_territories_variant::set(s_game_engine_territories_variant_definition const* definition)
 {
-	DECLFUNC(0x1AB3C0, void, __thiscall, c_game_engine_territories_variant*, s_game_engine_territories_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_TERRITORIES_VARIANT_SET, void, __thiscall, c_game_engine_territories_variant*, s_game_engine_territories_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_territories_variant::get_one_sided() const

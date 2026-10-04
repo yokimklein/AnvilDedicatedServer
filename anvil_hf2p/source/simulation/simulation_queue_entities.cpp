@@ -3,5 +3,5 @@
 
 void __fastcall simulation_queue_entity_deletion_insert(s_simulation_entity* entity, bool force_cleanup)
 {
-	INVOKE(0x55B80, simulation_queue_entity_deletion_insert, entity, force_cleanup);
+	INVOKE(ADDRESS_SIMULATION_QUEUE_ENTITY_DELETION_INSERT, simulation_queue_entity_deletion_insert, entity, force_cleanup);
 }

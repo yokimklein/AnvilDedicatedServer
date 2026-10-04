@@ -4,7 +4,7 @@
 void* __cdecl _physical_memory_malloc_fixed(memory_stage stage, const char* name, long size, ulong flags)
 {
 	// stage & name unused
-	return DECLFUNC(0xA0580, void*, __cdecl, long, ulong)(size, flags);
+	return DECLFUNC(ADDRESS_PHYSICAL_MEMORY_MALLOC_FIXED, void*, __cdecl, long, ulong)(size, flags);
 }
 
 void* __fastcall _physical_memory_malloc(memory_stage stage, const char* name, long size, ulong flags)

@@ -7,13 +7,13 @@
 #include "text\font_package_cache.h"
 #include "text\font_fallback.h"
 
-REFERENCE_DECLARE(0x4067900, s_font_cache_globals, g_internal_font_cache_globals);
+REFERENCE_DECLARE(ADDRESS_G_INTERNAL_FONT_CACHE_GLOBALS, s_font_cache_globals, g_internal_font_cache_globals);
 
 c_font_cache_mt_safe::c_font_cache_mt_safe()
 	: c_font_cache_base()
 	, m_locked()
 {
-	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(0xD80A3C));
+	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(ADDRESS_M_LOCKED_VFTABLE));
 }
 
 c_font_cache_mt_safe::~c_font_cache_mt_safe()
@@ -59,7 +59,7 @@ c_font_cache_base::c_font_cache_base() :
 
 void __fastcall font_cache_new()
 {
-	INVOKE(0x16A880, font_cache_new);
+	INVOKE(ADDRESS_FONT_CACHE_NEW, font_cache_new);
 }
 
 e_character_status font_cache_retrieve_character(ulong character_key, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count> flags, const s_font_character** out_character, const void** out_pixel_data)

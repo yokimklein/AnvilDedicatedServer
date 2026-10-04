@@ -226,7 +226,7 @@ bool file_open(s_file_reference* reference, ulong open_flags, ulong* error)
 #pragma runtime_checks("", off)
 bool __fastcall file_write(s_file_reference* reference, ulong size, const void* buffer)
 {
-	bool result = INVOKE(0xA47D0, file_write, reference, size, buffer);
+	bool result = INVOKE(ADDRESS_FILE_WRITE, file_write, reference, size, buffer);
 	__asm add esp, 4; // Fix usercall & cleanup stack
 	return result;
 }
@@ -258,7 +258,7 @@ void invalidate_file_handle(s_file_handle* handle)
 
 ulong __fastcall file_get_eof(const s_file_reference* reference)
 {
-	return INVOKE(0xA46D0, file_get_eof, reference);
+	return INVOKE(ADDRESS_FILE_GET_EOF, file_get_eof, reference);
 }
 
 bool file_set_position(s_file_reference* reference, ulong offset, bool print_error)
@@ -328,7 +328,7 @@ bool file_read(s_file_reference* reference, ulong size, bool print_error, void* 
 
 bool __fastcall file_set_eof(s_file_reference* reference, ulong offset)
 {
-	return INVOKE(0xA46D0, file_set_eof, reference, offset);
+	return INVOKE(ADDRESS_FILE_GET_EOF, file_set_eof, reference, offset);
 }
 
 void find_files_start(s_find_file_data* data, ulong flags, const s_file_reference* file)
@@ -353,15 +353,15 @@ void find_files_start_with_search_spec(s_find_file_data* data, ulong flags, cons
 
 bool __fastcall find_files_next(s_find_file_data* data, s_file_reference* out_file, s_file_last_modification_date* out_date)
 {
-	return INVOKE(0xA4B40, find_files_next, data, out_file, out_date);
+	return INVOKE(ADDRESS_FIND_FILES_NEXT, find_files_next, data, out_file, out_date);
 }
 
 void __fastcall find_files_end(s_find_file_data* data)
 {
-	INVOKE(0xA4AF0, find_files_end, data);
+	INVOKE(ADDRESS_FIND_FILES_END, find_files_end, data);
 }
 
 bool __fastcall file_delete(s_file_reference* reference)
 {
-	return INVOKE(0xA3FD0, file_delete, reference);
+	return INVOKE(ADDRESS_FILE_DELETE, file_delete, reference);
 }

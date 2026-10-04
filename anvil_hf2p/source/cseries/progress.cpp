@@ -1,7 +1,7 @@
 #include "progress.h"
 #include "cseries\cseries.h"
 
-REFERENCE_DECLARE(0x4EC4720, s_progress_globals, progress_globals);
+REFERENCE_DECLARE(ADDRESS_PROGRESS_GLOBALS, s_progress_globals, progress_globals);
 
 void progress_set_default_callbacks(const progress_callbacks* callbacks)
 {

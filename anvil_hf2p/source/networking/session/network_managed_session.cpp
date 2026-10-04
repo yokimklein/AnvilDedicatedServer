@@ -6,7 +6,7 @@
 #include <anvil\backend\cache.h>
 #include <cseries\cseries_events.h>
 
-REFERENCE_DECLARE(0x3EAB120, s_online_session_manager_globals, online_session_manager_globals);
+REFERENCE_DECLARE(ADDRESS_ONLINE_SESSION_MANAGER_GLOBALS, s_online_session_manager_globals, online_session_manager_globals);
 
 bool managed_session_get_security_information(long index, s_transport_session_description* out_secure_host_description, e_transport_platform* out_transport_platform)
 {
@@ -353,12 +353,12 @@ bool __fastcall managed_session_compare_id(long index, s_transport_secure_identi
 
 	ASSERT(index < k_managed_sessions_max_count);
 
-	return INVOKE(0x28B40, managed_session_compare_id, index, secure_id);
+	return INVOKE(ADDRESS_MANAGED_SESSION_COMPARE_ID, managed_session_compare_id, index, secure_id);
 }
 
 void __fastcall managed_session_delete_session_internal(long index, s_online_managed_session* managed_session)
 {
-	INVOKE(0x28C30, managed_session_delete_session_internal, index, managed_session);
+	INVOKE(ADDRESS_MANAGED_SESSION_DELETE_SESSION_INTERNAL, managed_session_delete_session_internal, index, managed_session);
 }
 
 s_online_managed_session* managed_session_get(long index)

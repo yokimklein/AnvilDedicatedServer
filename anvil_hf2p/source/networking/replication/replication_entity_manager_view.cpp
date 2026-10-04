@@ -14,7 +14,7 @@ void c_replication_entity_manager_view::create_entity(long entity_index)
 
 void c_replication_entity_manager_view::set_state(long entity_index, e_replication_entity_view_state view_state)
 {
-	INVOKE_CLASS_MEMBER(0x20CA0, c_replication_entity_manager_view, set_state, entity_index, view_state);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_REPLICATION_ENTITY_MANAGER_VIEW_SET_STATE, c_replication_entity_manager_view, set_state, entity_index, view_state);
 }
 
 void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_index)
@@ -57,10 +57,10 @@ void c_replication_entity_manager_view::mark_entity_for_deletion(long entity_ind
 
 void c_replication_entity_manager_view::clear_entity_mask(long absolute_index)
 {
-	INVOKE_CLASS_MEMBER(0x1F7A0, c_replication_entity_manager_view, clear_entity_mask, absolute_index);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_REPLICATION_ENTITY_MANAGER_VIEW_CLEAR_ENTITY_MASK, c_replication_entity_manager_view, clear_entity_mask, absolute_index);
 }
 
 void c_replication_entity_manager_view::set_entity_mask(long absolute_index)
 {
-	INVOKE_CLASS_MEMBER(0x1F760, c_replication_entity_manager_view, set_entity_mask, absolute_index);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_REPLICATION_ENTITY_MANAGER_VIEW_SET_ENTITY_MASK, c_replication_entity_manager_view, set_entity_mask, absolute_index);
 }

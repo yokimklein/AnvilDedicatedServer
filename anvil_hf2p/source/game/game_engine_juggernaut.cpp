@@ -2,7 +2,7 @@
 
 c_game_engine_juggernaut_variant* c_game_engine_juggernaut_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD714D0); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_JUGGERNAUT_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -37,7 +37,7 @@ void c_game_engine_juggernaut_variant::set(c_game_engine_juggernaut_variant cons
 
 void c_game_engine_juggernaut_variant::set(s_game_engine_juggernaut_variant_definition const* definition)
 {
-	DECLFUNC(0x1AA590, void, __thiscall, c_game_engine_juggernaut_variant*, s_game_engine_juggernaut_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_JUGGERNAUT_VARIANT_SET, void, __thiscall, c_game_engine_juggernaut_variant*, s_game_engine_juggernaut_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_juggernaut_variant::get_allied_against_juggernaut() const

@@ -6,10 +6,10 @@
 #include <main\console.h>
 #include <main\main_time.h>
 
-REFERENCE_DECLARE(0xEAC158, long, c_view::g_view_stack_top);
-REFERENCE_DECLARE_ARRAY(0x233FD70, c_view*, c_view::g_view_stack, 4);
+REFERENCE_DECLARE(ADDRESS_C_VIEW_G_VIEW_STACK_TOP, long, c_view::g_view_stack_top);
+REFERENCE_DECLARE_ARRAY(ADDRESS_C_VIEW_G_VIEW_STACK, c_view*, c_view::g_view_stack, 4);
 
-REFERENCE_DECLARE(0x233FD80, c_player_view*, c_player_view::x_current_player_view);
+REFERENCE_DECLARE(ADDRESS_C_PLAYER_VIEW_X_CURRENT_PLAYER_VIEW, c_player_view*, c_player_view::x_current_player_view);
 
 
 // $TODO:

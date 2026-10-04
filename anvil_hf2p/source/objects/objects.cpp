@@ -12,7 +12,7 @@
 
 object_datum* __fastcall object_try_and_get_and_verify_type(datum_index object_index, dword object_type_mask)
 {
-	return INVOKE(0x403000, object_try_and_get_and_verify_type, object_index, object_type_mask);
+	return INVOKE(ADDRESS_OBJECT_TRY_AND_GET_AND_VERIFY_TYPE, object_try_and_get_and_verify_type, object_index, object_type_mask);
 }
 
 object_datum* object_get(datum_index object_index)
@@ -155,17 +155,17 @@ void __fastcall object_set_damage_owner(datum_index object_index, s_damage_owner
 
 void __fastcall object_wake(datum_index object_index)
 {
-	INVOKE(0x3FBE70, object_wake, object_index);
+	INVOKE(ADDRESS_OBJECT_WAKE, object_wake, object_index);
 }
 
 void __fastcall object_set_requires_motion(datum_index object_index)
 {
-	INVOKE(0x403E50, object_set_requires_motion, object_index);
+	INVOKE(ADDRESS_OBJECT_SET_REQUIRES_MOTION, object_set_requires_motion, object_index);
 }
 
 bool __fastcall object_needs_rigid_body_update(datum_index object_index)
 {
-	return INVOKE(0x3FE620, object_needs_rigid_body_update, object_index);
+	return INVOKE(ADDRESS_OBJECT_NEEDS_RIGID_BODY_UPDATE, object_needs_rigid_body_update, object_index);
 
 	//object_datum* object = object_try_and_get_and_verify_type(object_index, -1);
 	//if (object->object.gamestate_index == NONE)
@@ -182,30 +182,30 @@ bool __fastcall object_needs_rigid_body_update(datum_index object_index)
 
 void __fastcall attachments_update(datum_index object_index)
 {
-	INVOKE(0x409070, attachments_update, object_index);
+	INVOKE(ADDRESS_ATTACHMENTS_UPDATE, attachments_update, object_index);
 }
 
 void __fastcall object_compute_node_matrices(datum_index object_index)
 {
-	INVOKE(0x4056A0, object_compute_node_matrices, object_index);
+	INVOKE(ADDRESS_OBJECT_COMPUTE_NODE_MATRICES, object_compute_node_matrices, object_index);
 }
 
 datum_index __fastcall object_new(s_object_placement_data* placement_data)
 {
-	return INVOKE(0x3FCEE0, object_new, placement_data);
+	return INVOKE(ADDRESS_OBJECT_NEW, object_new, placement_data);
 }
 
 // Had to disable RTC here otherwise it'll throw an exception before add esp 4 corrects the stack
 #pragma runtime_checks("", off)
 void __fastcall object_set_garbage(datum_index object_index, bool unknown_bool, long collection_ticks)
 {
-	INVOKE(0x403C50, object_set_garbage, object_index, unknown_bool, collection_ticks);
+	INVOKE(ADDRESS_OBJECT_SET_GARBAGE, object_set_garbage, object_index, unknown_bool, collection_ticks);
 	__asm add esp, 4; // Fix usercall & cleanup stack
 }
 
 bool __fastcall object_set_position_internal(datum_index object_index, real_point3d* desired_position, real_vector3d* desired_forward, real_vector3d* desired_up, s_location const* location, bool compute_node_matrices, bool set_havok_object_position, bool in_editor, bool disconnected)
 {
-	bool result = INVOKE(0x3FBF90, object_set_position_internal, object_index, desired_position, desired_forward, desired_up, location, compute_node_matrices, set_havok_object_position, in_editor, disconnected);
+	bool result = INVOKE(ADDRESS_OBJECT_SET_POSITION_INTERNAL, object_set_position_internal, object_index, desired_position, desired_forward, desired_up, location, compute_node_matrices, set_havok_object_position, in_editor, disconnected);
 	__asm add esp, 0x1C; // Fix usercall & cleanup stack
 	return result;
 }
@@ -244,7 +244,7 @@ void* object_get_and_verify_type(datum_index object_index, dword object_type_mas
 
 void __fastcall object_get_origin_interpolated(datum_index object_index, real_point3d* out_origin)
 {
-	INVOKE(0x401390, object_get_origin_interpolated, object_index, out_origin);
+	INVOKE(ADDRESS_OBJECT_GET_ORIGIN_INTERPOLATED, object_get_origin_interpolated, object_index, out_origin);
 	/*
 	object_datum* object = object_get(object_index);
 	if (object->object.gamestate_index != NONE
@@ -310,10 +310,10 @@ void object_get_damage_owner(datum_index object_index, s_damage_owner* out_owner
 
 void __fastcall object_delete(datum_index object_index)
 {
-	INVOKE(0x3FE0C0, object_delete, object_index);
+	INVOKE(ADDRESS_OBJECT_DELETE, object_delete, object_index);
 }
 
 s_multiplayer_object_properties* __fastcall object_try_and_get_multiplayer(datum_index object_index)
 {
-	return INVOKE(0x4097C0, object_try_and_get_multiplayer, object_index);
+	return INVOKE(ADDRESS_OBJECT_TRY_AND_GET_MULTIPLAYER, object_try_and_get_multiplayer, object_index);
 }

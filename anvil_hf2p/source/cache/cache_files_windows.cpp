@@ -1,7 +1,7 @@
 #include "cache_files_windows.h"
 #include <game\game.h>
 
-REFERENCE_DECLARE(0x3FE1408, s_cache_file_table_of_contents, cache_file_table_of_contents);
+REFERENCE_DECLARE(ADDRESS_CACHE_FILE_TABLE_OF_CONTENTS, s_cache_file_table_of_contents, cache_file_table_of_contents);
 
 bool cached_map_file_is_shared(e_map_file_index map_file_index)
 {
@@ -20,7 +20,7 @@ bool cached_map_file_is_shared(e_map_file_index map_file_index)
 
 bool __fastcall cached_map_file_open_for_running_off_dvd(e_map_file_index index, const char* file_path)
 {
-	return INVOKE(0xED780, cached_map_file_open_for_running_off_dvd, index, file_path);
+	return INVOKE(ADDRESS_CACHED_MAP_FILE_OPEN_FOR_RUNNING_OFF_DVD, cached_map_file_open_for_running_off_dvd, index, file_path);
 }
 
 bool __fastcall cache_file_get_async_file_handle_from_index(e_map_file_index map_file_index, s_file_handle* out_handle)

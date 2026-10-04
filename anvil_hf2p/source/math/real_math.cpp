@@ -317,7 +317,7 @@ real_point3d* __cdecl project_point2d(const real_point2d* p2d, const real_plane3
 
 real_vector3d* __fastcall generate_up_vector3d(const real_vector3d* forward, real_vector3d* up)
 {
-	return INVOKE(0x84960, generate_up_vector3d, forward, up);
+	return INVOKE(ADDRESS_GENERATE_UP_VECTOR3D, generate_up_vector3d, forward, up);
 }
 
 real dot_product4d_quaternion(const real_quaternion* a, const real_quaternion* b)

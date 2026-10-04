@@ -1,7 +1,7 @@
 #include "synchronization.h"
 #include <windows.h>
 
-REFERENCE_DECLARE(0x3EE11C4, s_synchronization_globals, g_synch_globals);
+REFERENCE_DECLARE(ADDRESS_G_SYNCH_GLOBALS, s_synchronization_globals, g_synch_globals);
 
 void internal_critical_section_enter(long critical_section_id)
 {
@@ -62,17 +62,17 @@ bool internal_event_wait_timeout(long event_id, ulong timeout_in_milliseconds)
 
 long __fastcall internal_semaphore_release(long semaphore_id)
 {
-    return INVOKE(0x94200, internal_semaphore_release, semaphore_id);
+    return INVOKE(ADDRESS_INTERNAL_SEMAPHORE_RELEASE, internal_semaphore_release, semaphore_id);
 }
 
 void __fastcall internal_semaphore_take(long semaphore_id)
 {
-    INVOKE(0x941A0, internal_semaphore_take, semaphore_id);
+    INVOKE(ADDRESS_INTERNAL_SEMAPHORE_TAKE, internal_semaphore_take, semaphore_id);
 }
 
 void __fastcall release_locks_safe_for_crash_release()
 {
-	INVOKE(0x94430, release_locks_safe_for_crash_release);
+	INVOKE(ADDRESS_RELEASE_LOCKS_SAFE_FOR_CRASH_RELEASE, release_locks_safe_for_crash_release);
 }
 
 bool synchronization_objects_initialized()

@@ -32,7 +32,7 @@ long c_network_session_parameter_session_size::get_max_player_count() const
 
 bool c_network_session_parameter_session_size::set_max_player_count(long player_count)
 {
-	return DECLFUNC(0x2D670, bool, __thiscall, c_network_session_parameter_session_size*, long)(this, player_count);
+	return DECLFUNC(ADDRESS_C_NETWORK_SESSION_PARAMETER_SESSION_SIZE_SET_MAX_PLAYER_COUNT, bool, __thiscall, c_network_session_parameter_session_size*, long)(this, player_count);
 }
 
 long c_network_session_parameter_session_size::get_max_peer_count() const
@@ -51,7 +51,7 @@ long c_network_session_parameter_session_size::get_max_peer_count() const
 
 bool c_network_session_parameter_session_mode::set(e_network_session_mode session_mode)
 {
-	return DECLFUNC(0x2D820, bool, __thiscall, c_network_session_parameter_session_mode*, e_network_session_mode)(this, session_mode);
+	return DECLFUNC(ADDRESS_C_NETWORK_SESSION_PARAMETER_SESSION_MODE_SET, bool, __thiscall, c_network_session_parameter_session_mode*, e_network_session_mode)(this, session_mode);
 }
 
 bool c_network_session_parameter_lobby_vote_set::set(s_network_session_parameter_lobby_vote_set* vote_set)

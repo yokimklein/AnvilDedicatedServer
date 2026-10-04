@@ -41,7 +41,11 @@ struct device_datum
     _object_datum object;
     _device_datum device;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(device_datum) == 0x254);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(device_datum) == 0x248);
+#endif
 
 struct device_group_datum : s_datum_header
 {

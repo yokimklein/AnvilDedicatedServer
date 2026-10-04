@@ -36,7 +36,7 @@ void __fastcall projectile_detonate_effects_and_damage(datum_index projectile_in
 #pragma runtime_checks("", off)
 void __fastcall projectile_detonate_effects_and_damage_shared(long definition_index, real_point3d const* position, real_vector3d const* forward, real_vector3d const* hit_vector, s_effect_vector const* effect_vector, float damage_scale, s_damage_owner const* damage_owner, datum_index object_index, s_location const* location, short shot_id, c_flags<e_simulation_projectile_effect_flag, uchar, k_simulation_projectile_effect_flag_count> effect_flags, c_global_material_type material_type, bool valid_material_type, bool collided_with_invalid_material, bool valid_parent_index, datum_index object_index2, e_predictability predictability)
 {
-    INVOKE(0x466620, projectile_detonate_effects_and_damage_shared, definition_index, position, forward, hit_vector, effect_vector, damage_scale, damage_owner, object_index, location, shot_id, effect_flags, material_type, valid_material_type, collided_with_invalid_material, valid_parent_index, object_index2, predictability);
+    INVOKE(ADDRESS_PROJECTILE_DETONATE_EFFECTS_AND_DAMAGE_SHARED, projectile_detonate_effects_and_damage_shared, definition_index, position, forward, hit_vector, effect_vector, damage_scale, damage_owner, object_index, location, shot_id, effect_flags, material_type, valid_material_type, collided_with_invalid_material, valid_parent_index, object_index2, predictability);
     __asm add esp, 0x3C; // TODO: check if esp is as it should be after call
 }
 #pragma runtime_checks("", restore)

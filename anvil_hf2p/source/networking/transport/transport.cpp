@@ -3,11 +3,11 @@
 #include "cseries\cseries_events.h"
 #include "networking\transport\transport_security.h"
 
-REFERENCE_DECLARE(0x4EBE948, s_transport_globals, transport_globals);
+REFERENCE_DECLARE(ADDRESS_TRANSPORT_GLOBALS, s_transport_globals, transport_globals);
 
 void transport_initialize()
 {
-	INVOKE(0x39C0, transport_initialize);
+	INVOKE(ADDRESS_TRANSPORT_INITIALIZE, transport_initialize);
 }
 
 void transport_global_update()
@@ -32,7 +32,7 @@ bool transport_network_available()
 
 void transport_startup()
 {
-	INVOKE(0x3A50, transport_startup);
+	INVOKE(ADDRESS_TRANSPORT_STARTUP, transport_startup);
 }
 
 bool transport_available()

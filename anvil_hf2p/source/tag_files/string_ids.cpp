@@ -2180,6 +2180,16 @@ s_string_id const g_constant_string_id_table[]
 	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_vehicle_5),
 	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_headshot),
 	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_betrayal),
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_vehicle_10), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_sniper_kills_5), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_sniper_kills_10), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_shotgun_kills_5), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_shotgun_kills_10), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_sword_kills_5), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_sword_kills_10), // new in ms30
+	DEFINE_CONSTANT_STRING_ID(game_engine, earn_wp_event_superdetonation), // new in ms30
+#endif
 	DEFINE_CONSTANT_STRING_ID(game_engine, general_event_kill),
 	DEFINE_CONSTANT_STRING_ID(game_engine, general_event_suicide),
 	DEFINE_CONSTANT_STRING_ID(game_engine, general_event_kill_teammate),

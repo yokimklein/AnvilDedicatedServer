@@ -400,3 +400,13 @@ FodyWeavers.xsd
 Userstoby.ssh
 removed/
 11.1.604673_cert_ms29/
+12.1.700255_cert_ms30_oct19/
+.claude
+.clinerules
+.cursor
+.github
+.opencode
+.windsurf
+AGENTS.md
+ms30_port/*
+claudeprompt.txt

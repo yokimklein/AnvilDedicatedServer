@@ -3,12 +3,12 @@
 
 bool c_network_message_gateway::receive_out_of_band_packet(transport_address const* incoming_address, c_bitstream* packet)
 {
-	return INVOKE_CLASS_MEMBER(0x231A0, c_network_message_gateway, receive_out_of_band_packet, incoming_address, packet);
+	return INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_MESSAGE_GATEWAY_RECEIVE_OUT_OF_BAND_PACKET, c_network_message_gateway, receive_out_of_band_packet, incoming_address, packet);
 }
 
 bool c_network_message_gateway::send_message_directed(transport_address const* outgoing_address, e_network_message_type message_type, long message_storage_size, void const* message)
 {
-	return INVOKE_CLASS_MEMBER(0x232C0, c_network_message_gateway, send_message_directed, outgoing_address, message_type, message_storage_size, message);
+	return INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_MESSAGE_GATEWAY_SEND_MESSAGE_DIRECTED, c_network_message_gateway, send_message_directed, outgoing_address, message_type, message_storage_size, message);
 }
 
 void c_network_message_gateway::send_all_pending_messages()
@@ -73,5 +73,5 @@ void c_network_message_gateway::send_all_pending_messages()
 bool __fastcall c_network_message_gateway::read_packet_header(c_bitstream* packet)
 {
 	ASSERT(packet);
-	return INVOKE(0x235C0, c_network_message_gateway::read_packet_header, packet);
+	return INVOKE(ADDRESS_C_NETWORK_MESSAGE_GATEWAY_READ_PACKET_HEADER, c_network_message_gateway::read_packet_header, packet);
 }

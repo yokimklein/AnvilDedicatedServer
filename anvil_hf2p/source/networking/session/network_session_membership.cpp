@@ -92,7 +92,7 @@ long c_network_session_membership::get_peer_from_secure_address(s_transport_secu
 {
     ASSERT(get_session());
     ASSERT(secure_address);
-    return DECLFUNC(0x312B0, long, __thiscall, const c_network_session_membership*, s_transport_secure_address const*)(this, secure_address);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_GET_PEER_FROM_SECURE_ADDRESS, long, __thiscall, const c_network_session_membership*, s_transport_secure_address const*)(this, secure_address);
 }
 
 bool c_network_session_membership::is_peer_valid(long peer_index) const
@@ -108,7 +108,7 @@ bool c_network_session_membership::is_player_valid(long player_index) const
 bool c_network_session_membership::add_peer(long peer_index, e_network_session_peer_state peer_state, ulong joining_network_version_number, s_transport_secure_address const* secure_address, qword join_party_nonce, qword join_nonce)
 {
     ASSERT(get_session());
-    return DECLFUNC(0x30DE0, bool, __thiscall, c_network_session_membership*, long, e_network_session_peer_state, ulong, s_transport_secure_address const*, qword, qword)(this, peer_index, peer_state, joining_network_version_number, secure_address, join_party_nonce, join_nonce);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_ADD_PEER, bool, __thiscall, c_network_session_membership*, long, e_network_session_peer_state, ulong, s_transport_secure_address const*, qword, qword)(this, peer_index, peer_state, joining_network_version_number, secure_address, join_party_nonce, join_nonce);
 }
 
 // Rewritten as the existing find_or_add_player method has peer index 0 baked into it and will ignore the actual peer index arg
@@ -222,7 +222,7 @@ long c_network_session_membership::get_peer_from_incoming_address(transport_addr
 {
     ASSERT(get_session());
     ASSERT(incoming_address);
-    return DECLFUNC(0x31230, long, __thiscall, c_network_session_membership*, transport_address const*)(this, incoming_address);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_GET_PEER_FROM_INCOMING_ADDRESS, long, __thiscall, c_network_session_membership*, transport_address const*)(this, incoming_address);
 }
 
 void c_network_session_membership::set_peer_connection_state(long peer_index, e_network_session_peer_state state)
@@ -292,12 +292,12 @@ long c_network_session_membership::get_player_count() const
 
 void c_network_session_membership::idle()
 {
-    DECLFUNC(0x328E0, void, __thiscall, c_network_session_membership*)(this);
+    DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_IDLE, void, __thiscall, c_network_session_membership*)(this);
 }
 
 bool c_network_session_membership::all_peers_established()
 {
-    return DECLFUNC(0x20E50, bool, __thiscall, c_network_session_membership*)(this);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_ALL_PEERS_ESTABLISHED, bool, __thiscall, c_network_session_membership*)(this);
 }
 
 long c_network_session_membership::get_observer_channel_index(long peer_index) const
@@ -400,7 +400,7 @@ void c_network_session_membership::remove_peer(long peer_index)
         transport_secure_address_get_string(&raw_peer->secure_address),
         peer_name_string);
 
-    DECLFUNC(0x30E50, void, __thiscall, c_network_session_membership*, long)(this, peer_index);
+    DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_REMOVE_PEER, void, __thiscall, c_network_session_membership*, long)(this, peer_index);
 
     /* UNFINISHED - i discovered the function still exists midway through rewriting it
     if (get_peer_connection_state(peer_index) >= _network_session_peer_state_connected || get_peer_connection_state(peer_index) == _network_session_peer_state_rejoining)
@@ -784,13 +784,13 @@ bool c_network_session_membership::is_player_in_player_add_queue(s_player_identi
 
 long c_network_session_membership::find_player_in_player_add_queue(s_player_identifier const* player_identifier) const
 {
-    return DECLFUNC(0x32D90, long, __thiscall, const c_network_session_membership*, s_player_identifier const* player_identifier)(this, player_identifier);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_FIND_PLAYER_IN_PLAYER_ADD_QUEUE, long, __thiscall, const c_network_session_membership*, s_player_identifier const* player_identifier)(this, player_identifier);
 }
 
 void c_network_session_membership::remove_player_from_player_add_queue(s_player_identifier const* player_identifier)
 {
     ASSERT(player_identifier);
-    DECLFUNC(0x32C00, void, __thiscall, c_network_session_membership*, s_player_identifier const* player_identifier)(this, player_identifier);
+    DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_REMOVE_PLAYER_FROM_PLAYER_ADD_QUEUE, void, __thiscall, c_network_session_membership*, s_player_identifier const* player_identifier)(this, player_identifier);
 }
 
 void c_network_session_membership::commit_player_from_player_add_queue(s_player_identifier const* player_identifier)
@@ -818,7 +818,7 @@ void c_network_session_membership::commit_player_from_player_add_queue(s_player_
 
 void c_network_session_membership::set_player_properties(long player_index, long player_update_number, long controller_index, s_player_configuration_from_client const* player_data_from_client, long voice_settings)
 {
-    DECLFUNC(0x31C10, void, __thiscall, c_network_session_membership*, long, long, long, s_player_configuration_from_client const*, long)(this, player_index, player_update_number, controller_index, player_data_from_client, voice_settings);
+    DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_SET_PLAYER_PROPERTIES, void, __thiscall, c_network_session_membership*, long, long, long, s_player_configuration_from_client const*, long)(this, player_index, player_update_number, controller_index, player_data_from_client, voice_settings);
 }
 
 long c_network_session_membership::get_creation_timestamp(long peer_index)
@@ -874,7 +874,7 @@ void c_network_session_membership::remove_player(long player_index)
 
 void c_network_session_membership::remove_player_internal(long player_index)
 {
-    DECLFUNC(0x31B80, void, __thiscall, c_network_session_membership*, long)(this, player_index);
+    DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_REMOVE_PLAYER_INTERNAL, void, __thiscall, c_network_session_membership*, long)(this, player_index);
 }
 
 long c_network_session_membership::get_player_from_identifier(s_player_identifier const* player_identifier) const
@@ -883,7 +883,7 @@ long c_network_session_membership::get_player_from_identifier(s_player_identifie
     ASSERT(player_identifier);
 
     // Funny how similar the address is to the call above, really confused me for a moment
-    return DECLFUNC(0x318B0, long, __thiscall, const c_network_session_membership*, s_player_identifier const*)(this, player_identifier);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_GET_PLAYER_FROM_IDENTIFIER, long, __thiscall, const c_network_session_membership*, s_player_identifier const*)(this, player_identifier);
 }
 
 bool c_network_session_membership::add_player_to_player_add_queue(s_player_identifier const* player_identifier, long peer_index, long peer_user_index, long controller_index, s_player_configuration_from_client* player_data_from_client, long voice_settings)
@@ -893,7 +893,7 @@ bool c_network_session_membership::add_player_to_player_add_queue(s_player_ident
     ASSERT(peer_user_index >= 0 && peer_user_index < k_number_of_users);
     ASSERT(player_data_from_client);
 
-    return DECLFUNC(0x32B40, bool, __thiscall, c_network_session_membership*, s_player_identifier const*, long, long, long, s_player_configuration_from_client*, long)(this, player_identifier, peer_index, peer_user_index, controller_index, player_data_from_client, voice_settings);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_ADD_PLAYER_TO_PLAYER_ADD_QUEUE, bool, __thiscall, c_network_session_membership*, s_player_identifier const*, long, long, long, s_player_configuration_from_client*, long)(this, player_identifier, peer_index, peer_user_index, controller_index, player_data_from_client, voice_settings);
 }
 
 long c_network_session_membership::local_peer_index() const
@@ -919,14 +919,14 @@ const s_transport_secure_address* c_network_session_membership::get_peer_address
 
 long c_network_session_membership::get_peer_from_observer_channel(long channel_index)
 {
-    return DECLFUNC(0x31180, long, __thiscall, c_network_session_membership*, long)(this, channel_index);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_GET_PEER_FROM_OBSERVER_CHANNEL, long, __thiscall, c_network_session_membership*, long)(this, channel_index);
 }
 
 bool c_network_session_membership::host_exists_at_incoming_address(transport_address const* incoming_address)
 {
     ASSERT(get_session());
     ASSERT(incoming_address);
-    return DECLFUNC(0x31370, bool, __thiscall, c_network_session_membership*, transport_address const*)(this, incoming_address);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_HOST_EXISTS_AT_INCOMING_ADDRESS, bool, __thiscall, c_network_session_membership*, transport_address const*)(this, incoming_address);
 }
 
 long c_network_session_membership::leader_peer_index()
@@ -940,7 +940,7 @@ bool c_network_session_membership::handle_membership_update(s_network_message_me
     c_network_session* session = get_session();
     ASSERT((session->established() || session->peer_joining()) && !session->is_host());
 
-    return DECLFUNC(0x31DD0, bool, __thiscall, c_network_session_membership*, s_network_message_membership_update const*)(this, message);
+    return DECLFUNC(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_HANDLE_MEMBERSHIP_UPDATE, bool, __thiscall, c_network_session_membership*, s_network_message_membership_update const*)(this, message);
 }
 
 long c_network_session_membership::update_number() const
@@ -1002,7 +1002,7 @@ bool c_network_session_membership::is_host() const
 
 bool c_network_session_membership::peer_property_flag_test(e_peer_property_flag_test_type test_type, e_network_session_peer_properties_status_flags flag) const
 {
-    return INVOKE_CLASS_MEMBER(0x32890, c_network_session_membership, peer_property_flag_test, test_type, flag);
+    return INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_PEER_PROPERTY_FLAG_TEST, c_network_session_membership, peer_property_flag_test, test_type, flag);
 }
 
 // user_player_indices doesn't exist in HO so I'm unsure if this method does either

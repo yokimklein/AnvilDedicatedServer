@@ -186,28 +186,28 @@ void __cdecl object_set_damage_owner_hook6(s_hook_registers& registers)
 void anvil_hooks_damage_updates_apply()
 {
     // object_damage_update
-    hook::insert(0x40D4CE, 0x40D553, object_damage_update_hook1, _hook_replace, FLAG(_hook_no_nop)); // sync shield recharge vitality
-    hook::insert(0x40D526, 0x40D542, object_damage_update_hook2, _hook_execute_replaced_last, 0, true); // sync shield recharge vitality
-    hook::insert(0x40D5C1, 0x40D660, object_damage_update_hook3, _hook_replace); // sync body recharge vitality
+    hook::insert(ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK1, ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK1_RETURN, object_damage_update_hook1, _hook_replace, FLAG(_hook_no_nop)); // sync shield recharge vitality
+    hook::insert(ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK2, ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK2_RETURN, object_damage_update_hook2, _hook_execute_replaced_last, 0, true); // sync shield recharge vitality
+    hook::insert(ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK3, ADDRESS_OBJECT_DAMAGE_UPDATE_HOOK3_RETURN, object_damage_update_hook3, _hook_replace); // sync body recharge vitality
 
     // object_damage_shield - syncs immediate shield values on damage
-    hook::insert(0x41268C, 0x412694, object_damage_shield_hook1, _hook_execute_replaced_first); // shield vamparism trait
-    hook::insert(0x41287B, 0x412881, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be popped back into esi
+    hook::insert(ADDRESS_OBJECT_DAMAGE_SHIELD_HOOK1, ADDRESS_OBJECT_DAMAGE_SHIELD_HOOK1_RETURN, object_damage_shield_hook1, _hook_execute_replaced_first); // shield vamparism trait
+    hook::insert(ADDRESS_OBJECT_DAMAGE_SHIELD_HOOK2, ADDRESS_OBJECT_DAMAGE_SHIELD_HOOK2_RETURN, object_damage_shield_hook2, _hook_execute_replaced_first); // if this runs first, object_index should be popped back into esi
     
     // object_damage_body
-    hook::insert(0x411E3C, 0x411E43, object_damage_body_hook1, _hook_execute_replaced_last); // sync object body vitality on damage
+    hook::insert(ADDRESS_OBJECT_DAMAGE_BODY_HOOK1, ADDRESS_OBJECT_DAMAGE_BODY_HOOK1_RETURN, object_damage_body_hook1, _hook_execute_replaced_last); // sync object body vitality on damage
     
     // object_deplete_body_internal
-    hook::insert(0x40D9D3, 0x40D9DA, object_deplete_body_internal_hook1, _hook_execute_replaced_last); // sync object death
+    hook::insert(ADDRESS_OBJECT_DEPLETE_BODY_INTERNAL_HOOK1, ADDRESS_OBJECT_DEPLETE_BODY_INTERNAL_HOOK1_RETURN, object_deplete_body_internal_hook1, _hook_execute_replaced_last); // sync object death
     
     // damage_section_response_fire
-    hook::insert(0x413D3F, 0x413D47, damage_section_response_fire_hook, _hook_execute_replaced_last); // includes simulation_action_damage_section_response
+    hook::insert(ADDRESS_DAMAGE_SECTION_RESPONSE_FIRE_HOOK, ADDRESS_DAMAGE_SECTION_RESPONSE_FIRE_HOOK_RETURN, damage_section_response_fire_hook, _hook_execute_replaced_last); // includes simulation_action_damage_section_response
     
     // object_set_damage_owner
-    hook::function(0x404320, 0x75, object_set_damage_owner_hook1);
-    hook::insert(0x113B0F, 0x113B15, object_set_damage_owner_hook2, _hook_execute_replaced_first); // inlined in event_generate_accelerations
-    hook::insert(0x20CF07, 0x20CF0D, object_set_damage_owner_hook3, _hook_execute_replaced_first); // inlined in havok_collision_damage_update
-    hook::insert(0x40F00C, 0x40F012, object_set_damage_owner_hook4, _hook_execute_replaced_first); // inlined in object_cause_damage
-    hook::insert(0x4572A5, 0x4572AB, object_set_damage_owner_hook5, _hook_execute_replaced_first); // inlined in motor_animation_exit_seat_immediate_internal
-    hook::insert(0x4BEA5D, 0x4BEA63, object_set_damage_owner_hook6, _hook_execute_replaced_first); // inlined in vehicle_flip_submit
+    hook::function(ADDRESS_OBJECT_SET_DAMAGE_OWNER, LENGTH_OBJECT_SET_DAMAGE_OWNER, object_set_damage_owner_hook1);
+    hook::insert(ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK2, ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK2_RETURN, object_set_damage_owner_hook2, _hook_execute_replaced_first); // inlined in event_generate_accelerations
+    hook::insert(ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK3, ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK3_RETURN, object_set_damage_owner_hook3, _hook_execute_replaced_first); // inlined in havok_collision_damage_update
+    hook::insert(ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK4, ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK4_RETURN, object_set_damage_owner_hook4, _hook_execute_replaced_first); // inlined in object_cause_damage
+    hook::insert(ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK5, ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK5_RETURN, object_set_damage_owner_hook5, _hook_execute_replaced_first); // inlined in motor_animation_exit_seat_immediate_internal
+    hook::insert(ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK6, ADDRESS_OBJECT_SET_DAMAGE_OWNER_HOOK6_RETURN, object_set_damage_owner_hook6, _hook_execute_replaced_first); // inlined in vehicle_flip_submit
 }

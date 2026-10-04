@@ -794,8 +794,8 @@ s_console_global const k_console_globals[] =
 	//CONSOLE_GLOBAL_DECLARE_BOOL(net_skip_countdown),
 	//CONSOLE_GLOBAL_DECLARE_BOOL(net_experimental),
 	//
-	CONSOLE_GLOBAL_DECLARE_BOOL2(net_show_latency_and_framerate_metrics_on_chud, *base_address<bool*>(0x103E768)),
-	CONSOLE_GLOBAL_DECLARE_BOOL2(net_fake_latency_and_framerate_metrics_on_chud, *base_address<bool*>(0x1038283)),
+	CONSOLE_GLOBAL_DECLARE_BOOL2(net_show_latency_and_framerate_metrics_on_chud, *base_address<bool*>(ADDRESS_NET_SHOW_LATENCY_AND_FRAMERATE_METRICS_ON_CHUD)),
+	CONSOLE_GLOBAL_DECLARE_BOOL2(net_fake_latency_and_framerate_metrics_on_chud, *base_address<bool*>(ADDRESS_NET_FAKE_LATENCY_AND_FRAMERATE_METRICS_ON_CHUD)),
 	//
 	//CONSOLE_GLOBAL_DECLARE_BOOL(debug_enable_force_phonebooth_assassinate),
 	//

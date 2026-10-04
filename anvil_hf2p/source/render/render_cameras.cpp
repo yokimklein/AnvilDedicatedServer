@@ -10,7 +10,7 @@ bool __fastcall render_camera_view_to_screen(const render_camera* camera, const 
 	ASSERT(view_point);
 	ASSERT(screen_point);
 
-	bool return_value = INVOKE(0x2948D0, render_camera_view_to_screen, camera, projection, window_display_bounds, view_point, screen_point);
+	bool return_value = INVOKE(ADDRESS_RENDER_CAMERA_VIEW_TO_SCREEN, render_camera_view_to_screen, camera, projection, window_display_bounds, view_point, screen_point);
 	__asm add esp, 12; // Fixup stack
 	return return_value;
 }

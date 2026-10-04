@@ -11,5 +11,5 @@ const char* c_simulation_event_handler::get_event_type_name(e_simulation_event_t
 
 void c_simulation_event_handler::send_event(e_simulation_event_type event_type, long entity_reference_count, long const* entity_reference_indices, c_flags<long, ulong, k_maximum_machines> machine_mask, long event_payload_size, void const* event_payload, long cancel_timer)
 {
-	DECLFUNC(0x3A900, void, __thiscall, c_simulation_event_handler*, e_simulation_event_type, long, long const*, c_flags<long, ulong, k_maximum_machines>, long, void const*, long)(this, event_type, entity_reference_count, entity_reference_indices, machine_mask, event_payload_size, event_payload, cancel_timer);
+	DECLFUNC(ADDRESS_C_SIMULATION_EVENT_HANDLER_SEND_EVENT, void, __thiscall, c_simulation_event_handler*, e_simulation_event_type, long, long const*, c_flags<long, ulong, k_maximum_machines>, long, void const*, long)(this, event_type, entity_reference_count, entity_reference_indices, machine_mask, event_payload_size, event_payload, cancel_timer);
 }

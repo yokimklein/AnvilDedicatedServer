@@ -1,7 +1,7 @@
 #include "visibility_collection.h"
 #include "cache\restricted_memory_regions.h"
 
-REFERENCE_DECLARE(0x40BB4A8, c_visibility_globals_keeper, g_visibility_globals_keeper);
+REFERENCE_DECLARE(ADDRESS_G_VISIBILITY_GLOBALS_KEEPER, c_visibility_globals_keeper, g_visibility_globals_keeper);
 
 c_visibility_collection* get_global_camera_collection()
 {
@@ -13,5 +13,5 @@ bool __vectorcall visibility_volume_test_sphere(visibility_volume* volume, const
 {
 	// $TODO: verify calling convention works
 	// radius arg is in xmm2, though it seems vectorcalls set the first float arg to xmm0 so this may not work
-	return INVOKE(0x1CCE30, visibility_volume_test_sphere, volume, point, radius);
+	return INVOKE(ADDRESS_VISIBILITY_VOLUME_TEST_SPHERE, visibility_volume_test_sphere, volume, point, radius);
 }

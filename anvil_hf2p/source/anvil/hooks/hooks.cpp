@@ -650,15 +650,36 @@ void hook::call(size_t call_address, void* function)
 //    csmemcpy(base_address<void*>(address), bytes, length);
 //}
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+// ms30 keeps the tags.dat global tags (the closure of tag 0, cache_file_global_tags) resident between map loads and only
+// loads the scenario and zone of the next map. Maps that carry their own tags (shared_file_flags bit 1 clear) reset the
+// tag tables instead, but scenario_tags_load never clears the resident flag on that path, so:
+// - a self-contained map loaded after a tags.dat map skips loading tag 0 and has no globals
+// - the tags.dat map loaded after it reuses the stale tag offset table (cache_file_tags_section_prepare returns early)
+// The reset branch only runs when nothing is resident or the map has its own tags, so clearing the flag there is safe:
+// tags.dat maps set it again once tag 0 is loaded.
+REFERENCE_DECLARE(ADDRESS_CACHE_FILE_RESIDENT_TAGS_LOADED, bool, cache_file_resident_tags_loaded);
+
+void __cdecl scenario_tags_load_reset_hook(s_hook_registers& registers)
+{
+    cache_file_resident_tags_loaded = false;
+}
+#endif
+
 void anvil_patches_apply()
 {
     // enable tag edits
-    patch::bytes(0x082DB4, { 0xEB });
-    patch::nop_region(0x083120, 2);
-    patch::nop_region(0x083AFC, 2);
+    patch::bytes(ADDRESS_CACHE_FILE_HEADER_VERIFY_PATCH, { 0xEB }); // skip the header rsa check in cache_file_header_verify
+    patch::nop_region(ADDRESS_TAG_LOAD_CHECKSUM_NOP, 2); // ignore tag instance adler32 mismatches
+    patch::nop_region(ADDRESS_SCENARIO_TAGS_LOAD_NOP, 2); // ignore the second header rsa check in scenario_tags_load
+
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+    // allow maps that carry their own tags
+    hook::insert(ADDRESS_SCENARIO_TAGS_LOAD_RESET_HOOK, ADDRESS_SCENARIO_TAGS_LOAD_RESET_HOOK_RETURN, scenario_tags_load_reset_hook, _hook_execute_replaced_first);
+#endif
 
     // contrail gpu freeze fix - twister
-    patch::bytes(0x1D6B70, { 0xC3 });
+    //patch::bytes(0x1D6B70, { 0xC3 });
 
     // enable netdebug
     //g_network_interface_show_latency_and_framerate_metrics_on_chud = true; // set this to true to enable
@@ -670,7 +691,7 @@ void anvil_patches_apply()
     //patch::bytes(0x411E02, { 0xC1, 0x02 }); // replace 0x36D with 0x2C1
 
     // english patch
-    patch::bytes(0x2B923A, { _language_english });
+    patch::bytes(ADDRESS_ENGLISH_LANGUAGE_PATCH, { _language_english });
 }
 
 void anvil_hooks_apply()

@@ -187,12 +187,12 @@ ulong c_network_channel::get_remote_identifier() const
 
 void c_network_channel::open(transport_address const* remote_address, bool send_connect_packets, long channel_identifier)
 {
-	DECLFUNC(0xBE20, void, __thiscall, c_network_channel*, transport_address const*, bool, long)(this, remote_address, send_connect_packets, channel_identifier);
+	DECLFUNC(ADDRESS_C_NETWORK_CHANNEL_OPEN, void, __thiscall, c_network_channel*, transport_address const*, bool, long)(this, remote_address, send_connect_packets, channel_identifier);
 }
 
 void c_network_channel::send_connection_established(long remote_identifier)
 {
-	DECLFUNC(0xBF80, void, __thiscall, c_network_channel*, long)(this, remote_identifier);
+	DECLFUNC(ADDRESS_C_NETWORK_CHANNEL_SEND_CONNECTION_ESTABLISHED, void, __thiscall, c_network_channel*, long)(this, remote_identifier);
 }
 
 // originally a switch-case statement in OG source

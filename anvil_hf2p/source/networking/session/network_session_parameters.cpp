@@ -9,14 +9,14 @@ void c_network_session_parameters::check_to_send_updates()
 	ASSERT(m_session->is_host());
 	const c_network_session_membership* membership = m_session->get_session_membership();
 	ASSERT(membership);
-	DECLFUNC(0x1A390, void, __thiscall, c_network_session_parameters*)(this);
+	DECLFUNC(ADDRESS_C_NETWORK_SESSION_PARAMETERS_CHECK_TO_SEND_UPDATES, void, __thiscall, c_network_session_parameters*)(this);
 }
 
 void c_network_session_parameters::check_to_send_change_requests()
 {
 	ASSERT(m_session->established());
 	ASSERT(!m_session->is_host());
-	DECLFUNC(0x1A7B0, void, __thiscall, c_network_session_parameters*)(this);
+	DECLFUNC(ADDRESS_C_NETWORK_SESSION_PARAMETERS_CHECK_TO_SEND_CHANGE_REQUESTS, void, __thiscall, c_network_session_parameters*)(this);
 }
 
 void c_network_session_parameters::update()

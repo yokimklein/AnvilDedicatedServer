@@ -20,12 +20,14 @@
 #include <cseries\cseries_events.h>
 #include <interface\user_interface_session.h>
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 void __cdecl hf2p_podium_tick_hook(s_hook_registers& registers)
 {
     long player_index = (long)registers.esi;
 
     hf2p_trigger_player_podium_taunt(player_index);
 }
+#endif
 
 void __cdecl c_simulation_player_taunt_request_event_definition__apply_game_event_hook(s_hook_registers& registers)
 {
@@ -53,21 +55,22 @@ void __fastcall encode_message_header_hook(c_network_message_type_collection* _t
     c_network_message_type_collection* message_type_collection = const_cast<c_network_message_type_collection*>(session->message_gateway()->message_types());
 
     event(_event_verbose, "networking:messages:send: %s (%d bytes)", message_type_collection->get_message_type_name(message_type), message_storage_size);
-    DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);
+    DECLFUNC(ADDRESS_ENCODE_MESSAGE_HEADER_HOOK, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(message_type_collection, stream, message_type, message_storage_size);
 }
 
-// disable contrails to prevent gpu freezing - TODO: fix this properly
+// disable contrails to prevent gpu freezing - $TODO: fix this properly
+// $NOTE: This doesn't account for ASLR so surely this breaks??
 __declspec(naked) void contrail_fix_hook()
 {
     __asm
     {
-        add edx, [0x0068A38A]
+        add edx, [ADDRESS_CONTRAIL_FIX_OPERAND_VA]
         cmp edx, -1
         jg render
-        push 0x68A3E3
+        push ADDRESS_CONTRAIL_FIX_SKIP_VA
         retn
         render:
-        push 0x68A390
+        push ADDRESS_CONTRAIL_FIX_RENDER_VA
         retn
     }
 }
@@ -110,6 +113,7 @@ int __cdecl vsnprintf_s_net_debug_hook(char* DstBuf, size_t SizeInBytes, size_t 
     return result;
 }
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 #pragma runtime_checks("", off)
 // fastcall which user cleans up 4 bytes
 void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* loadout, s_backend_customisation* user_customisation)
@@ -123,10 +127,47 @@ void __fastcall sub_718BF0_hook(long texture_render_index, s_backend_loadout* lo
 
     // texture_render_index is Bitmaps[].Index in texture_render_list tag
 
-    INVOKE(0x318BF0, sub_718BF0_hook, texture_render_index, loadout, user_customisation);
+    INVOKE(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA, sub_718BF0_hook, texture_render_index, loadout, user_customisation);
     __asm add esp, 4; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+// ms30 reworked hf2p_set_biped_texture_render_data into a usercall taking the texture name in ecx, a string in edx & the loadout and customisation on the stack, which the caller cleans up
+// it still dereferences the loadout & customisation without checking them, so skip the call when either is null
+static size_t const k_hf2p_set_biped_texture_render_data_call_addresses[]
+{
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_1,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_2,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_3,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_4,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_5,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_6,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_7,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_8,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_9,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_10,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_11,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_12,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_13,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_14,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_15,
+    ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_MS30_CALL_16,
+};
+static size_t hf2p_set_biped_texture_render_data_address = 0;
+__declspec(naked) void hf2p_set_biped_texture_render_data_hook()
+{
+    __asm
+    {
+        cmp dword ptr [esp + 4], 0 // loadout
+        jz skip
+        cmp dword ptr [esp + 8], 0 // customisation
+        jz skip
+        jmp dword ptr [hf2p_set_biped_texture_render_data_address] // registers & stack are untouched, the original function returns to our caller
+    skip:
+        retn
+    }
+}
+#endif
 
 void __cdecl sub_319CE0_hook(s_hook_registers& registers)
 {
@@ -141,63 +182,74 @@ void __cdecl sub_319CE0_hook(s_hook_registers& registers)
 void anvil_hooks_miscellaneous_apply()
 {
     // hook game window text to display "Dedicated Server" / "Game Server" instead of "Game Client"
-    hook::call(0x13C3, c_static_string_64_print_hook);
+    hook::call(ADDRESS_C_STATIC_STRING_64_PRINT_CALL, c_static_string_64_print_hook);
 
     // output the message type for debugging
-    hook::call(0x16AF8, encode_message_header_hook);
-    hook::call(0x16C26, encode_message_header_hook);
-    hook::call(0x233D4, encode_message_header_hook);
+    hook::call(ADDRESS_ENCODE_MESSAGE_HEADER_CALL, encode_message_header_hook);
+    hook::call(ADDRESS_ENCODE_MESSAGE_HEADER_CALL_2, encode_message_header_hook);
+    hook::call(ADDRESS_ENCODE_MESSAGE_HEADER_CALL_3, encode_message_header_hook);
 
     // contrail gpu freeze 'fix' - twister
-    hook::function(0x28A38A, 5, contrail_fix_hook);
+    //hook::function(0x28A38A, 5, contrail_fix_hook);
 
     // temporary test to force elite ui model on mainmenu
     //hook::function(0x2059B0, 0x24, ui_get_player_model_id_evaluate_hook);
     
     // podium animation testing
-    hook::function(0x2E8750, 0xB2, hf2p_player_podium_initialize);
+    hook::function(ADDRESS_HF2P_PLAYER_PODIUM_INITIALIZE, 0xB2, hf2p_player_podium_initialize);
 
     // podium taunt triggering & syncing
-    hook::insert(0x2E9C3A, 0x2E9C3F, hf2p_podium_tick_hook, _hook_execute_replaced_first);
-    hook::insert(0x68CDC, 0x68CEE, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, 0, true);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+    // ms30 implements podium taunts itself (triggered with the space bar)
+    hook::insert(ADDRESS_HF2P_PODIUM_TICK_HOOK, ADDRESS_HF2P_PODIUM_TICK_HOOK_RETURN, hf2p_podium_tick_hook, _hook_execute_replaced_first);
+#endif
+    hook::insert(ADDRESS_C_SIMULATION_PLAYER_TAUNT_REQUEST_EVENT_DEFINITION_APPLY_GAME_EVENT_HOOK, ADDRESS_C_SIMULATION_PLAYER_TAUNT_REQUEST_EVENT_DEFINITION_APPLY_GAME_EVENT_HOOK_RETURN, c_simulation_player_taunt_request_event_definition__apply_game_event_hook, _hook_execute_replaced_first, 0, true);
 
     // hook watermark
-    hook::function(0x1B0AB0, 0x5CF, game_engine_render_watermarks);
+    hook::function(ADDRESS_GAME_ENGINE_RENDER_WATERMARKS, 0x5CF, game_engine_render_watermarks);
 
     // hook net_debug_print's vsnprintf_s call to print API logs to the console
-    hook::call(0x55D8BF, vsnprintf_s_net_debug_hook);
+    hook::call(ADDRESS_VSNPRINTF_S_NET_DEBUG_CALL, vsnprintf_s_net_debug_hook);
     
     // $TODO: may not be required with backend being disabled?
     // $TODO: why is this happening? Are we missing data which the clients need?
     // Fix host crashing when killed by a player when not connected to the API
-    hook::call(0x33B1E0, sub_718BF0_hook);
-    patch::nop_region(0x33B1E5, 3);
-    hook::call(0x33B2B0, sub_718BF0_hook);
-    patch::nop_region(0x33B2B5, 3);
-    hook::call(0x33B33A, sub_718BF0_hook);
-    patch::bytes(0x33B341, { 0x08 });
-    hook::call(0x33B3BA, sub_718BF0_hook);
-    patch::bytes(0x33B3C1, { 0x08 });
-    hook::call(0x33B43A, sub_718BF0_hook);
-    patch::bytes(0x33B441, { 0x08 });
-    hook::call(0x33B4B7, sub_718BF0_hook);
-    patch::bytes(0x33B4BE, { 0x08 });
-    hook::call(0x33B53A, sub_718BF0_hook);
-    patch::bytes(0x33B541, { 0x08 });
-    hook::call(0x33B5BA, sub_718BF0_hook);
-    patch::bytes(0x33B5C1, { 0x08 });
-    hook::call(0x33B63A, sub_718BF0_hook);
-    patch::bytes(0x33B641, { 0x08 });
-    hook::call(0x33B6B8, sub_718BF0_hook);
-    patch::nop_region(0x33B6BD, 3);
-    hook::call(0x33B6D3, sub_718BF0_hook);
-    patch::nop_region(0x33B6D8, 3);
-    hook::call(0x33B6EE, sub_718BF0_hook);
-    patch::nop_region(0x33B6F3, 3);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_1, sub_718BF0_hook);
+    patch::nop_region(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_1, 3);
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_2, sub_718BF0_hook);
+    patch::nop_region(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_2, 3);
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_3, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_3, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_4, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_4, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_5, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_5, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_6, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_6, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_7, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_7, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_8, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_8, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_9, sub_718BF0_hook);
+    patch::bytes(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_9, { 0x08 });
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_10, sub_718BF0_hook);
+    patch::nop_region(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_10, 3);
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_11, sub_718BF0_hook);
+    patch::nop_region(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_11, 3);
+    hook::call(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CALL_12, sub_718BF0_hook);
+    patch::nop_region(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA_CLEANUP_12, 3);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+    hf2p_set_biped_texture_render_data_address = base_address(ADDRESS_HF2P_SET_BIPED_TEXTURE_RENDER_DATA);
+    for (size_t call_address : k_hf2p_set_biped_texture_render_data_call_addresses)
+    {
+        hook::call(call_address, hf2p_set_biped_texture_render_data_hook);
+    }
+#endif
 
     // load string ids
-    hook::insert(0x110C, 0x1111, string_id_initialize, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_STRING_ID_INITIALIZE, ADDRESS_STRING_ID_INITIALIZE_RETURN, string_id_initialize, _hook_execute_replaced_first);
 
     // leave sessions gracefully instead of force disconnecting
-    hook::insert(0x319D38, 0x319D3D, sub_319CE0_hook, _hook_replace);
+    hook::insert(ADDRESS_LEAVE_SESSIONS_GRACEFULLY_HOOK, ADDRESS_LEAVE_SESSIONS_GRACEFULLY_HOOK_RETURN, sub_319CE0_hook, _hook_replace);
 }

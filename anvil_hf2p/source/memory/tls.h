@@ -157,6 +157,9 @@ struct s_thread_local_storage
 	byte* __unknown16C;
 	byte* __unknown170; // c_particle_emitter_gpu::s_row
 	byte* __unknown174;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	byte* g_rasterizer_implicit_geometry_globals; // ms30 moved this here from 0x1C4, fields 0x178-0x1C0 shift +4
+#endif
 	byte* g_water_interaction_events;
 	byte* __unknown17C;
 	byte* __unknown180; // object list header 
@@ -175,8 +178,10 @@ struct s_thread_local_storage
 	byte* __unknown1B4; // light_volume
 	byte* __unknown1B8; // beam
 	byte* __unknown1BC; // impact_arrays
-	byte* __unknown1C0;
+	byte* __unknown1C0; // ai reference frame
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 	byte* g_rasterizer_implicit_geometry_globals;
+#endif
 	byte* __unknown1C8; // c_contrail_gpu::s_row
 	byte* hue_saturation_control;
 	byte* __unknown1D0;
@@ -185,8 +190,9 @@ struct s_thread_local_storage
 	byte* __unknown1DC; // contrail
 	byte* __unknown1E0; // light_volume
 	byte* __unknown1E4; // beam
-	bool g_file_errors_suppressed;
+	bool __unknown1E8; // set around object_broadphase add/remove/update/ray_cast
 	bool g_thread_assert_triggered;
+	bool g_file_errors_suppressed;
 	byte* __unknown1EC; // actor firing-position owner
 	byte* __unknown1F0;
 	byte* __unknown1F4; // ragdolls
@@ -208,14 +214,23 @@ struct s_thread_local_storage
 	byte* __unknown234;
 	bool* director_camera_scripted;
 	byte* g_object_message_queue;
-	byte* __unknown240;
-	byte* __unknown244;
-	byte* __unknown248;
-	byte* __unknown24C;
-	byte* __unknown250;
-	byte* __unknown254;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long rasterizer_texture_reuse_index; // s_rasterizer_texture datum reused when a bitmap resource is rebuilt at a new texture resolution
+#endif
+	byte* __unknown240; // decal message queue
+	byte* __unknown244; // havok game state
+	byte* __unknown248; // spawner globals
+	byte* __unknown24C; // observer gamestate globals
+	byte* __unknown250; // render game globals
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long rasterizer_texture_bitmap_tag_index; // bitmap tag being rebuilt, bitmap flag 0x200 skips the texture resolution reduction
+#endif
+	byte* __unknown254; // scenario soft ceilings
 	byte* __unknown258; // hs dist. globals
 	byte* __unknown25C; // tracking hs thread
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long tag_resource_fixup_depth; // incremented around load_bitmaps_one_by_one_sync and fixup_available_and_necessary_resources
+#endif
 	byte* __unknown260; // cluster collideable object refe
 	byte* __unknown264; // collideable object cluster refe
 	byte* __unknown268;
@@ -270,7 +285,28 @@ struct s_thread_local_storage
 	byte* __unknown348;
 	byte* __unknown34C;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_thread_local_storage) == 0x350);
+static_assert(0x2CC == OFFSETOF(s_thread_local_storage, g_registered_thread_index));
+static_assert(0x2F4 == OFFSETOF(s_thread_local_storage, g_restricted_address));
+static_assert(0x31C == OFFSETOF(s_thread_local_storage, g_thread_assert_arguments));
+static_assert(0x1C4 == OFFSETOF(s_thread_local_storage, g_rasterizer_implicit_geometry_globals));
+static_assert(0x178 == OFFSETOF(s_thread_local_storage, g_water_interaction_events));
+static_assert(0x18C == OFFSETOF(s_thread_local_storage, game_sound_scripted_impulses_globals));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_thread_local_storage) == 0x35C);
+static_assert(0x2D8 == OFFSETOF(s_thread_local_storage, g_registered_thread_index));
+static_assert(0x300 == OFFSETOF(s_thread_local_storage, g_restricted_address));
+static_assert(0x328 == OFFSETOF(s_thread_local_storage, g_thread_assert_arguments));
+static_assert(0x178 == OFFSETOF(s_thread_local_storage, g_rasterizer_implicit_geometry_globals));
+static_assert(0x17C == OFFSETOF(s_thread_local_storage, g_water_interaction_events));
+static_assert(0x190 == OFFSETOF(s_thread_local_storage, game_sound_scripted_impulses_globals));
+static_assert(0x240 == OFFSETOF(s_thread_local_storage, rasterizer_texture_reuse_index));
+static_assert(0x258 == OFFSETOF(s_thread_local_storage, rasterizer_texture_bitmap_tag_index));
+static_assert(0x268 == OFFSETOF(s_thread_local_storage, tag_resource_fixup_depth));
+#endif
+static_assert(0x1E9 == OFFSETOF(s_thread_local_storage, g_thread_assert_triggered));
+static_assert(0x1EA == OFFSETOF(s_thread_local_storage, g_file_errors_suppressed));
 static_assert(0x30 == OFFSETOF(s_thread_local_storage, players_globals));
 
 #define TLS_DATA_GET_VALUE_REFERENCE(NAME) decltype(get_tls()->NAME)& NAME = get_tls()->NAME

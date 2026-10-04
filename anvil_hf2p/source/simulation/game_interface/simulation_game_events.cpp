@@ -10,7 +10,7 @@
 
 void simulation_event_generate_for_remote_peers(e_simulation_event_type event_type, long entity_reference_count, datum_index* object_reference_indices, long ignore_player_index, long event_payload_size, void const* event_payload)
 {
-	static void* simulation_event_generate_for_remote_peers_call = base_address<void*>(0x7E490);
+	static void* simulation_event_generate_for_remote_peers_call = base_address<void*>(ADDRESS_SIMULATION_EVENT_GENERATE_FOR_REMOTE_PEERS_CALL);
 	__asm
 	{
 		push event_payload
@@ -140,7 +140,7 @@ void event_handler_send_event(c_flags<long, ulong, k_maximum_machines> machine_m
 #pragma runtime_checks("", off)
 void __fastcall simulation_event_build_entity_reference_indices(long entity_reference_count, datum_index const* object_reference_indices, long const* entity_reference_indices)
 {
-	INVOKE(0x7E610, simulation_event_build_entity_reference_indices, entity_reference_count, object_reference_indices, entity_reference_indices);
+	INVOKE(ADDRESS_SIMULATION_EVENT_BUILD_ENTITY_REFERENCE_INDICES, simulation_event_build_entity_reference_indices, entity_reference_count, object_reference_indices, entity_reference_indices);
 	__asm add esp, 4; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)

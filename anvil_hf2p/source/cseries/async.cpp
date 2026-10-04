@@ -10,7 +10,7 @@ void __fastcall internal_async_yield_until_done(c_synchronized_long* done, bool 
 void __fastcall async_yield_until_done_function(c_synchronized_long* done, bool(*yield_function)(c_synchronized_long*), bool idle, bool networking, bool spinner, e_yield_reason yield_reason)
 {
 	VASSERT(yield_function == NULL, "yield_function field was optimised out for this invoke, but the field was populated!");
-	INVOKE(0x98B80, async_yield_until_done_function, done, NULL, idle, networking, spinner, yield_reason);
+	INVOKE(ADDRESS_ASYNC_YIELD_UNTIL_DONE_FUNCTION, async_yield_until_done_function, done, NULL, idle, networking, spinner, yield_reason);
     __asm
     {
         add esp, 16; // Fix usercall & cleanup stack

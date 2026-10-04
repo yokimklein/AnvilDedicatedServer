@@ -115,12 +115,12 @@ void c_tag_resource_cache_controller::mark_necessary_resources(c_tag_resource_ru
 
 void c_tag_resource_cache_controller::acquire_page_reservation(datum_index index)
 {
-	INVOKE_CLASS_MEMBER(0x247C40, c_tag_resource_cache_controller, acquire_page_reservation, index);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_TAG_RESOURCE_CACHE_CONTROLLER_ACQUIRE_PAGE_RESERVATION, c_tag_resource_cache_controller, acquire_page_reservation, index);
 }
 
 void c_tag_resource_cache_controller::release_page_reservation_force(datum_index index)
 {
-	INVOKE_CLASS_MEMBER(0x247D30, c_tag_resource_cache_controller, release_page_reservation_force, index);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_TAG_RESOURCE_CACHE_CONTROLLER_RELEASE_PAGE_RESERVATION_FORCE, c_tag_resource_cache_controller, release_page_reservation_force, index);
 }
 
 bool bitmap_group_can_be_sampled(datum_index tag_index)

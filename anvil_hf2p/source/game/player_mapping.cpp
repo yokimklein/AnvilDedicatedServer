@@ -3,7 +3,7 @@
 
 long __fastcall player_mapping_get_next_output_user(short absolute_player_index, long user_index)
 {
-	return INVOKE(0xE1F90, player_mapping_get_next_output_user, absolute_player_index, user_index);
+	return INVOKE(ADDRESS_PLAYER_MAPPING_GET_NEXT_OUTPUT_USER, player_mapping_get_next_output_user, absolute_player_index, user_index);
 }
 
 long player_mapping_get_player_by_input_user(e_input_user_index input_user_index)
@@ -39,15 +39,15 @@ long player_mapping_get_unit_by_output_user(long user_index)
 
 void __fastcall player_mapping_set_input_user(long player_index, long input_user_index)
 {
-	INVOKE(0xE19E0, player_mapping_set_input_user, player_index, input_user_index);
+	INVOKE(ADDRESS_PLAYER_MAPPING_SET_INPUT_USER, player_mapping_set_input_user, player_index, input_user_index);
 }
 
 void __fastcall player_mapping_set_input_controller(long player_index, long controller_index)
 {
-	INVOKE(0xE1AA0, player_mapping_set_input_controller, player_index, controller_index);
+	INVOKE(ADDRESS_PLAYER_MAPPING_SET_INPUT_CONTROLLER, player_mapping_set_input_controller, player_index, controller_index);
 }
 
 void __fastcall player_mapping_attach_output_user(long input_user_index, long player_index)
 {
-	INVOKE(0xE1CE0, player_mapping_attach_output_user, input_user_index, player_index);
+	INVOKE(ADDRESS_PLAYER_MAPPING_ATTACH_OUTPUT_USER, player_mapping_attach_output_user, input_user_index, player_index);
 }

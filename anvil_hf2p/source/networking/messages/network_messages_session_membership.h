@@ -26,7 +26,11 @@ struct s_network_message_membership_update_player
 	ulong player_voice;
 	ulong : 32;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_message_membership_update_player) == 0xBA0);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_message_membership_update_player) == 0xBC0);
+#endif
 static_assert(OFFSETOF(s_network_message_membership_update_player, player_index) == 0x00);
 static_assert(OFFSETOF(s_network_message_membership_update_player, update_type) == 0x04);
 static_assert(OFFSETOF(s_network_message_membership_update_player, player_location_updated) == 0x08);
@@ -38,7 +42,11 @@ static_assert(OFFSETOF(s_network_message_membership_update_player, player_proper
 static_assert(OFFSETOF(s_network_message_membership_update_player, player_update_number) == 0x1C);
 static_assert(OFFSETOF(s_network_message_membership_update_player, controller_index) == 0x20);
 static_assert(OFFSETOF(s_network_message_membership_update_player, player_data) == 0x28);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(OFFSETOF(s_network_message_membership_update_player, player_voice) == 0xB98);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(OFFSETOF(s_network_message_membership_update_player, player_voice) == 0xBB8);
+#endif
 #pragma pack(pop)
 
 struct s_network_message_membership_update_peer_properties
@@ -112,7 +120,11 @@ struct s_network_message_membership_update
 	ulong checksum;
 	long : 32;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_message_membership_update) == 0xCBD8);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_message_membership_update) == 0xCDD8);
+#endif
 
 struct s_network_message_peer_properties
 {

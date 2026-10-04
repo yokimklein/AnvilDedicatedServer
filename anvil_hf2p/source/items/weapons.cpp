@@ -17,10 +17,10 @@ datum_index weapon_get_owner_unit_index(datum_index weapon_index)
 
 void __fastcall weapon_delay_predicted_state(datum_index weapon_index)
 {
-    INVOKE(0x432310, weapon_delay_predicted_state, weapon_index);
+    INVOKE(ADDRESS_WEAPON_DELAY_PREDICTED_STATE, weapon_delay_predicted_state, weapon_index);
 }
 
 long __fastcall weapon_get_owner_unit_inventory_index(datum_index weapon_index)
 {
-    return INVOKE(0x433D90, weapon_get_owner_unit_inventory_index, weapon_index);
+    return INVOKE(ADDRESS_WEAPON_GET_OWNER_UNIT_INVENTORY_INDEX, weapon_get_owner_unit_inventory_index, weapon_index);
 }

@@ -4,7 +4,7 @@
 
 bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vector3d* melee_aiming_vector)
 {
-	return INVOKE(0x4409F0, biped_calculate_melee_aiming, biped_index, melee_aiming_vector);
+	return INVOKE(ADDRESS_BIPED_CALCULATE_MELEE_AIMING, biped_calculate_melee_aiming, biped_index, melee_aiming_vector);
 }
 
 bool __fastcall biped_update_melee_turning(datum_index biped_index)

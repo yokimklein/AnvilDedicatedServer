@@ -1,7 +1,7 @@
 #include "main_game.h"
 #include "game\game.h"
 
-REFERENCE_DECLARE(0x3F8E588, s_main_game_globals, main_game_globals);
+REFERENCE_DECLARE(ADDRESS_MAIN_GAME_GLOBALS, s_main_game_globals, main_game_globals);
 
 bool main_game_change_in_progress()
 {

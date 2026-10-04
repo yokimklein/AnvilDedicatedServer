@@ -7,7 +7,7 @@
 e_font_package_status __fastcall font_package_get(long package_index, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count> flags, ulong character_key, const s_font_package** out_package)
 {
     // character_key was optimised away
-    e_font_package_status status = DECLFUNC(0x16A370, e_font_package_status, __fastcall, long, void*, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count>, const s_font_package**)(package_index, NULL, flags, out_package);
+    e_font_package_status status = DECLFUNC(ADDRESS_FONT_PACKAGE_GET, e_font_package_status, __fastcall, long, void*, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count>, const s_font_package**)(package_index, NULL, flags, out_package);
     __asm add esp, 8; // Fix usercall & cleanup stack
     return status;
 }
@@ -15,12 +15,12 @@ e_font_package_status __fastcall font_package_get(long package_index, c_flags<e_
 
 const s_font_character* __fastcall font_package_get_character(const s_font_package* font_package, ulong character_key)
 {
-    return INVOKE(0x16B9C0, font_package_get_character, font_package, character_key);
+    return INVOKE(ADDRESS_FONT_PACKAGE_GET_CHARACTER, font_package_get_character, font_package, character_key);
 }
 
 long __cdecl package_table_search_function(void const* a1, void const* a2, const void* a3)
 {
-    return INVOKE(0x16B980, package_table_search_function, a1, a2, a3);
+    return INVOKE(ADDRESS_PACKAGE_TABLE_SEARCH_FUNCTION, package_table_search_function, a1, a2, a3);
 }
 
 long font_package_table_find_character(const s_font_package_file_header* package_header, ulong character_key)
@@ -36,5 +36,5 @@ long font_package_table_find_character(const s_font_package_file_header* package
 
 void __fastcall font_package_cache_new()
 {
-    INVOKE(0x16A050, font_package_cache_new);
+    INVOKE(ADDRESS_FONT_PACKAGE_CACHE_NEW, font_package_cache_new);
 }

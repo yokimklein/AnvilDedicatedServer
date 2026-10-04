@@ -25,7 +25,7 @@ void __fastcall file_reference_add_directory(s_file_reference* reference, const 
 
 void __fastcall file_reference_add_directory(s_file_reference* reference, wchar_t const* path)
 {
-    DECLFUNC(0xA5690, void, __fastcall, s_file_reference*, wchar_t const*)(reference, path);
+    DECLFUNC(ADDRESS_FILE_REFERENCE_ADD_DIRECTORY, void, __fastcall, s_file_reference*, wchar_t const*)(reference, path);
 }
 
 void __fastcall file_reference_set_name(s_file_reference* reference, const char* name)
@@ -37,7 +37,7 @@ void __fastcall file_reference_set_name(s_file_reference* reference, const char*
 
 void __fastcall file_reference_set_name(s_file_reference* reference, wchar_t const* name)
 {
-    DECLFUNC(0xA5710, void, __fastcall, s_file_reference*, wchar_t const*)(reference, name);
+    DECLFUNC(ADDRESS_FILE_REFERENCE_SET_NAME, void, __fastcall, s_file_reference*, wchar_t const*)(reference, name);
 }
 
 s_file_reference* file_reference_create_from_path(s_file_reference* reference, const char* path, bool is_directory)
@@ -86,7 +86,7 @@ void file_path_add_name(wchar_t* path, long maximum_path_length, const wchar_t* 
 
 bool __fastcall file_create_parent_directories_if_not_present(const s_file_reference* info)
 {
-    return INVOKE(0xA58E0, file_create_parent_directories_if_not_present, info);
+    return INVOKE(ADDRESS_FILE_CREATE_PARENT_DIRECTORIES_IF_NOT_PRESENT, file_create_parent_directories_if_not_present, info);
 }
 
 file_reference_info* file_reference_get_info(s_file_reference* info)
@@ -169,7 +169,7 @@ char* file_reference_get_name(const s_file_reference* reference, ulong flags, ch
 
 wchar_t* __fastcall file_reference_get_name(const s_file_reference* reference, ulong flags, wchar_t* out_name, long name_length)
 {
-    return DECLFUNC(0xA5790, wchar_t*, __fastcall, const s_file_reference*, ulong, wchar_t*, long)(reference, flags, out_name, name_length);
+    return DECLFUNC(ADDRESS_FILE_REFERENCE_GET_NAME, wchar_t*, __fastcall, const s_file_reference*, ulong, wchar_t*, long)(reference, flags, out_name, name_length);
 }
 
 void directory_create_or_delete_contents(const char* directory)

@@ -202,6 +202,9 @@ struct _weapon_datum
 	real overcharged;
 	real current_power;
 	real desired_power;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long unknown30; // new in ms30
+#endif
 	c_target_tracking_system tracked_target;
 
 	byte __data70[0x4];
@@ -217,7 +220,11 @@ struct _weapon_datum
 	long game_time_last_fired;
 	weapon_first_person_emulation first_person_emulation;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(_weapon_datum) == 0x150);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(_weapon_datum) == 0x154);
+#endif
 static_assert(OFFSETOF(_weapon_datum, team_index) == 0x12);
 
 struct weapon_datum
@@ -227,7 +234,11 @@ struct weapon_datum
 	_item_datum item;
 	_weapon_datum weapon;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(weapon_datum) == 0x2E0);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(weapon_datum) == 0x2D8);
+#endif
 
 datum_index weapon_get_owner_unit_index(datum_index weapon_index);
 void __fastcall weapon_delay_predicted_state(datum_index weapon_index);

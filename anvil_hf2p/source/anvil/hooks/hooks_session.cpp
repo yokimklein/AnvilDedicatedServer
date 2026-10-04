@@ -19,7 +19,7 @@ void __fastcall handle_out_of_band_message_hook(c_network_message_handler* messa
 }
 void __fastcall handle_channel_message_hook(c_network_message_handler* message_handler, void* unused, c_network_channel* channel, e_network_message_type message_type, long message_storage_size, const void* stub_message)
 {
-    const void* message = base_address<const void*>(0x4FFB090);
+    const void* message = base_address<const void*>(ADDRESS_MEMBERSHIP_UPDATE_MESSAGE);
     message_handler->handle_channel_message(channel, message_type, message_storage_size, message);
 }
 
@@ -82,59 +82,59 @@ void __fastcall send_all_pending_messages_hook(c_network_message_gateway* thispt
 void anvil_hooks_session_apply()
 {
     // add back missing host code by replacing existing stripped down functions
-    hook::function(0x25110, 0x1D4, handle_out_of_band_message_hook);
-    hook::function(0x252F0, 0x369, handle_channel_message_hook);
-    hook::function(0x2A580, 0xBC, network_join_process_joins_from_queue);
-    hook::function(0x21AB0, 0x17C, session_idle_hook);
+    hook::function(ADDRESS_HANDLE_OUT_OF_BAND_MESSAGE, 0x1D4, handle_out_of_band_message_hook);
+    hook::function(ADDRESS_HANDLE_CHANNEL_MESSAGE, 0x369, handle_channel_message_hook);
+    hook::function(ADDRESS_NETWORK_JOIN_PROCESS_JOINS_FROM_QUEUE, 0xBC, network_join_process_joins_from_queue);
+    hook::function(ADDRESS_SESSION_IDLE, 0x17C, session_idle_hook);
 
     // I couldn't directly hook peer_request_properties_update without experiencing access violations, so this will do
     // add back set_peer_address & set_peer_properties to peer_request_properties_update
-    hook::function(0x2F650, 0x255, network_session_update_peer_properties);
+    hook::function(ADDRESS_NETWORK_SESSION_UPDATE_PEER_PROPERTIES, 0x255, network_session_update_peer_properties);
 
     // add debug print back to before life cycle end is called in c_gui_location_manager::update
-    hook::call(0x3EEE1F, network_life_cycle_end_hook);
+    hook::call(ADDRESS_NETWORK_LIFE_CYCLE_END_CALL, network_life_cycle_end_hook);
 
     // add back network_session_check_properties
-    hook::call(0x2AD9E, network_session_interface_update_session_hook);
-    hook::call(0x2DC71, network_session_interface_update_session_hook);
+    hook::call(ADDRESS_NETWORK_SESSION_INTERFACE_UPDATE_SESSION_CALL, network_session_interface_update_session_hook);
+    hook::call(ADDRESS_NETWORK_SESSION_INTERFACE_UPDATE_SESSION_CALL_2, network_session_interface_update_session_hook);
 
     // unregister the host address description to the xnet shim table on session destruction - the transport_secure_key_create hook further down handles session creation
-    hook::call(0x21342, managed_session_delete_session_internal_hook);
-    hook::call(0x28051, managed_session_delete_session_internal_hook);
-    hook::function(0x284B8, 5, managed_session_delete_session_internal_hook); // replace jump call
+    hook::call(ADDRESS_MANAGED_SESSION_DELETE_SESSION_INTERNAL_CALL, managed_session_delete_session_internal_hook);
+    hook::call(ADDRESS_MANAGED_SESSION_DELETE_SESSION_INTERNAL_CALL_2, managed_session_delete_session_internal_hook);
+    hook::function(ADDRESS_MANAGED_SESSION_DELETE_JUMP, 5, managed_session_delete_session_internal_hook); // replace jump call
 
     // hook game_engine_should_spawn_player so we can control the pregame spawn countdown
-    hook::function(0xFBBA0, 0xF0, game_engine_should_spawn_player);
+    hook::function(ADDRESS_GAME_ENGINE_SHOULD_SPAWN_PLAYER, LENGTH_GAME_ENGINE_SHOULD_SPAWN_PLAYER, game_engine_should_spawn_player);
 
     // hook can_accept_player_join_request to reimplement dedicated server userid check
-    hook::call(0x212DF, can_accept_player_join_request_hook);
+    hook::call(ADDRESS_CAN_ACCEPT_PLAYER_JOIN_REQUEST_CALL, can_accept_player_join_request_hook);
 
     // hook c_network_session::disconnect to add call to clear lobby info
     //hook::call(0x21B29, session_disconnect_hook); // c_network_session::idle
     //hook::call(0x21B6A, session_disconnect_hook); // c_network_session::idle
-    hook::call(0x21CB4, session_disconnect_hook);
-    hook::call(0x225FE, session_disconnect_hook);
-    hook::call(0x2440E, session_disconnect_hook);
-    hook::call(0x256D4, session_disconnect_hook);
-    hook::call(0x25723, session_disconnect_hook);
-    hook::call(0x2AC3C, session_disconnect_hook);
-    hook::call(0x2AD3D, session_disconnect_hook);
-    hook::call(0x3E36F, session_disconnect_hook);
-    hook::call(0x3E8A4, session_disconnect_hook);
-    hook::call(0x3EA40, session_disconnect_hook);
-    hook::call(0x3EAA9, session_disconnect_hook);
-    hook::call(0x4B418, session_disconnect_hook);
-    hook::call(0x4B522, session_disconnect_hook);
-    hook::call(0x4B538, session_disconnect_hook);
-    hook::call(0x4B5B2, session_disconnect_hook);
-    hook::call(0x4B659, session_disconnect_hook);
-    hook::call(0x4D14E, session_disconnect_hook);
-    hook::call(0x4F42F, session_disconnect_hook);
-    hook::call(0x311749, session_disconnect_hook);
-    hook::call(0x311767, session_disconnect_hook);
-    hook::call(0x3AA106, session_disconnect_hook);
-    hook::call(0x3AAF2C, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_2, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_3, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_4, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_5, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_6, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_7, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_8, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_9, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_10, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_11, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_12, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_13, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_14, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_15, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_16, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_17, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_18, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_19, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_20, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_21, session_disconnect_hook);
+    hook::call(ADDRESS_SESSION_DISCONNECT_CALL_22, session_disconnect_hook);
 
     // hook c_network_message_gateway::send_all_pending_messages to attempt to fix stack overflow
-    hook::function(0x23480, 0x13F, send_all_pending_messages_hook);
+    hook::function(ADDRESS_SEND_ALL_PENDING_MESSAGES, 0x13F, send_all_pending_messages_hook);
 }

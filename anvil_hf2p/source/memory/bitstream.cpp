@@ -13,7 +13,7 @@ bool c_bitstream::would_overflow(long size_in_bits) const
 
 void c_bitstream::write_accumulator_to_memory(qword value, long size_in_bits)
 {
-	DECLFUNC(0xA8110, void, __thiscall, c_bitstream*, qword, long)(this, value, size_in_bits);
+	DECLFUNC(ADDRESS_C_BITSTREAM_WRITE_ACCUMULATOR_TO_MEMORY, void, __thiscall, c_bitstream*, qword, long)(this, value, size_in_bits);
 
 	//int32 shift_bits = QWORD_BITS - m_bitstream_data.accumulator_bit_count;
 	//int32 accumulator_bit_count = size_in_bits - shift_bits;
@@ -59,12 +59,12 @@ void c_bitstream::finish_writing(long* bits_wasted)
 {
 	//VASSERT(!overflowed(), c_string_builder("bitstream overflowed (%d bits > %d max-size), cannot be written successfully",
 	//	m_bitstream_data.current_stream_bit_position, CHAR_BITS * m_data_size_bytes).get_string());
-	DECLFUNC(0xA6030, void, __thiscall, c_bitstream*, long*)(this, bits_wasted);
+	DECLFUNC(ADDRESS_C_BITSTREAM_FINISH_WRITING, void, __thiscall, c_bitstream*, long*)(this, bits_wasted);
 }
 
 void c_bitstream::reset(long state)
 {
-	DECLFUNC(0xA7BD0, void, __thiscall, c_bitstream*, long)(this, state);
+	DECLFUNC(ADDRESS_C_BITSTREAM_RESET, void, __thiscall, c_bitstream*, long)(this, state);
 }
 
 bool c_bitstream::begin_consistency_check()
@@ -77,7 +77,7 @@ bool c_bitstream::read_bool(const char* debug_string)
 {
 	ASSERT(reading());
 
-	return DECLFUNC(0xA82E0, bool, __thiscall, c_bitstream*)(this);
+	return DECLFUNC(ADDRESS_C_BITSTREAM_READ_BOOL, bool, __thiscall, c_bitstream*)(this);
 }
 
 void c_bitstream::finish_reading()

@@ -6,7 +6,7 @@
 #include <string.h>
 
 c_draw_string::c_draw_string() :
-	__vftable(reinterpret_cast<decltype(__vftable)>(base_address(0xD80A58))),
+	__vftable(reinterpret_cast<decltype(__vftable)>(base_address(ADDRESS__VFTABLE))),
 	m_flags(),
 	m_font_id(_terminal_font),
 	m_styled_font_header(font_get_header(_terminal_font)),
@@ -49,7 +49,7 @@ c_draw_string::~c_draw_string()
 
 bool c_draw_string::draw_more(c_font_cache_base* font_cache, const char* string)
 {
-	return INVOKE_CLASS_MEMBER(0x16CBE0, c_draw_string, draw_more, font_cache, string);
+	return INVOKE_CLASS_MEMBER(ADDRESS_C_DRAW_STRING_DRAW_MORE, c_draw_string, draw_more, font_cache, string);
 }
 
 short c_draw_string::get_line_height() const
@@ -211,8 +211,8 @@ c_simple_font_draw_string::c_simple_font_draw_string() :
 	c_draw_string(),
 	m_character_cache()
 {
-	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(0xD89148));
-	DECLFUNC(0x2AB680, void, __thiscall, c_simple_font_draw_string*)(this);
+	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(ADDRESS_M_CHARACTER_CACHE_VFTABLE));
+	DECLFUNC(ADDRESS_M_CHARACTER_CACHE, void, __thiscall, c_simple_font_draw_string*)(this);
 }
 
 c_rasterizer_draw_string::c_rasterizer_draw_string() :
@@ -225,7 +225,7 @@ c_rasterizer_draw_string::c_rasterizer_draw_string() :
 	pad(),
 	m_render_data()
 {
-	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(0xD85DC8));
+	__vftable = reinterpret_cast<decltype(__vftable)>(base_address(ADDRESS_M_RENDER_DATA_VFTABLE));
 }
 
 c_simple_font_draw_string::s_character_group_render_data::s_character_group_render_data()
@@ -249,7 +249,7 @@ void c_simple_font_draw_string::s_character_group_render_data::reset()
 
 real __vectorcall draw_string_get_glyph_scaling_for_display_settings()
 {
-	return INVOKE(0x16DC30, draw_string_get_glyph_scaling_for_display_settings);
+	return INVOKE(ADDRESS_DRAW_STRING_GET_GLYPH_SCALING_FOR_DISPLAY_SETTINGS, draw_string_get_glyph_scaling_for_display_settings);
 	//long aspect_ratio = interface_get_closest_authored_ui_aspect_ratio(); // interface_constants
 	//
 	//if (aspect_ratio == 0)

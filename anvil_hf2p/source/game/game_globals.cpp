@@ -4,8 +4,8 @@
 #include <memory\tls.h>
 #include <scenario\scenario.h>
 
-REFERENCE_DECLARE_ARRAY(0xD3D550, short, k_difficulty_value_indirection_table, k_game_difficulty_value_count);
-REFERENCE_DECLARE(0x103E788, s_game_globals*, global_game_globals);
+REFERENCE_DECLARE_ARRAY(ADDRESS_K_DIFFICULTY_VALUE_INDIRECTION_TABLE, short, k_difficulty_value_indirection_table, k_game_difficulty_value_count);
+REFERENCE_DECLARE(ADDRESS_GLOBAL_GAME_GLOBALS, s_game_globals*, global_game_globals);
 
 real game_difficulty_get_value_by_difficulty(short value_type, e_campaign_difficulty_level difficulty_level)
 {

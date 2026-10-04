@@ -3,5 +3,5 @@
 
 short __fastcall user_interface_controller_get_signed_in_controller_count()
 {
-    return INVOKE(0x3AD970, user_interface_controller_get_signed_in_controller_count);
+    return INVOKE(ADDRESS_USER_INTERFACE_CONTROLLER_GET_SIGNED_IN_CONTROLLER_COUNT, user_interface_controller_get_signed_in_controller_count);
 }

@@ -12,12 +12,12 @@ bool game_engine_variant_has_teams(c_game_variant* variant)
 
 void __cdecl game_engine_recompute_active_teams()
 {
-	INVOKE(0xDC5E0, game_engine_recompute_active_teams);
+	INVOKE(ADDRESS_GAME_ENGINE_RECOMPUTE_ACTIVE_TEAMS, game_engine_recompute_active_teams);
 }
 
 void __fastcall game_engine_adjust_team_score_for_composition(e_game_team team_index)
 {
-	INVOKE(0xC9330, game_engine_adjust_team_score_for_composition, team_index);
+	INVOKE(ADDRESS_GAME_ENGINE_ADJUST_TEAM_SCORE_FOR_COMPOSITION, game_engine_adjust_team_score_for_composition, team_index);
 }
 
 bool game_engine_variant_is_observer_allowed(c_game_variant* variant)
@@ -37,10 +37,10 @@ long __fastcall game_engine_variant_get_maximum_team_count(c_game_variant* varia
 {
 	ASSERT(variant);
 	ASSERT(multiplayer_map_id != _map_id_none);
-	return INVOKE(0xDC6F0, game_engine_variant_get_maximum_team_count, variant, multiplayer_map_id);
+	return INVOKE(ADDRESS_GAME_ENGINE_VARIANT_GET_MAXIMUM_TEAM_COUNT, game_engine_variant_get_maximum_team_count, variant, multiplayer_map_id);
 }
 
 e_multiplayer_team_designator __fastcall game_engine_team_index_to_team_designator(e_game_team team)
 {
-	return INVOKE(0xDC3B0, game_engine_team_index_to_team_designator, team);
+	return INVOKE(ADDRESS_GAME_ENGINE_TEAM_INDEX_TO_TEAM_DESIGNATOR, game_engine_team_index_to_team_designator, team);
 }

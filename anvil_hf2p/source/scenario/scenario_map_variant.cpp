@@ -6,12 +6,12 @@
 
 c_map_variant::c_map_variant()
 {
-	DECLFUNC(0xAB2F0, void, __thiscall, c_map_variant*)(this);
+	DECLFUNC(ADDRESS_C_MAP_VARIANT_C_MAP_VARIANT, void, __thiscall, c_map_variant*)(this);
 }
 
 void c_map_variant::create_default(e_map_id map_id)
 {
-	DECLFUNC(0xAB380, void, __thiscall, c_map_variant*, e_map_id)(this, map_id);
+	DECLFUNC(ADDRESS_C_MAP_VARIANT_CREATE_DEFAULT, void, __thiscall, c_map_variant*, e_map_id)(this, map_id);
 }
 
 c_map_variant* game_engine_get_runtime_map_variant()

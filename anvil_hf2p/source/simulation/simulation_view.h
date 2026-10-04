@@ -73,7 +73,11 @@ class c_simulation_distributed_view : public s_datum_header
 	c_simulation_view_telemetry_provider m_telemetry_provider;
 	c_game_results_replicator m_game_results_replicator;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_simulation_distributed_view) == 0x17E48);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_simulation_distributed_view) == 0x18048);
+#endif
 
 struct s_simulation_view_statistics
 {

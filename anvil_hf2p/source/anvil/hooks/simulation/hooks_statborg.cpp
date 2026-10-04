@@ -70,31 +70,31 @@ void __fastcall stats_reset_for_round_switch_hook(c_game_statborg* thisptr)
 void anvil_hooks_statborg_apply()
 {
     // add back simulation_action_game_statborg_update & simulation_action_game_engine_player_update calls
-    hook::function(0xFA2D0, 0x1F3, game_engine_player_added);
+    hook::function(ADDRESS_GAME_ENGINE_PLAYER_ADDED, 0x1F3, game_engine_player_added);
 
     // c_game_statborg::stats_finalize_for_game_end
-    hook::insert(0xCA2F0, 0xCA2F7, game_engine_update_after_game_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_HOOK, ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_HOOK_RETURN, game_engine_update_after_game_hook, _hook_execute_replaced_first);
 
     // c_game_statborg::adjust_player_stat
-    hook::insert(0x1AF61D, 0x1AF624, c_game_statborg__adjust_player_stat_hook, _hook_execute_replaced_first);
-    hook::insert(0xC8AF3, 0xC8AFA, game_engine_end_round_with_winner_hook1, _hook_execute_replaced_last); // teams
-    hook::insert(0xC8C3D, 0xC8C44, game_engine_end_round_with_winner_hook2, _hook_execute_replaced_last); // ffa
-    hook::insert(0xFB000, 0xFB007, game_engine_earn_wp_event_hook, _hook_execute_replaced_last);
+    hook::insert(ADDRESS_C_GAME_STATBORG_ADJUST_PLAYER_STAT_HOOK, ADDRESS_C_GAME_STATBORG_ADJUST_PLAYER_STAT_HOOK_RETURN, c_game_statborg__adjust_player_stat_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK1, ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK1_RETURN, game_engine_end_round_with_winner_hook1, _hook_execute_replaced_last); // teams
+    hook::insert(ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK2, ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK2_RETURN, game_engine_end_round_with_winner_hook2, _hook_execute_replaced_last); // ffa
+    hook::insert(ADDRESS_GAME_ENGINE_EARN_WP_EVENT_HOOK, ADDRESS_GAME_ENGINE_EARN_WP_EVENT_HOOK_RETURN, game_engine_earn_wp_event_hook, _hook_execute_replaced_last);
 
     // c_game_statborg::adjust_team_stat
-    hook::function(0x1AF710, 0x61, adjust_team_stat_hook);
+    hook::function(ADDRESS_ADJUST_TEAM_STAT, 0x61, adjust_team_stat_hook);
 
-    hook::insert(0xC8A5F, 0xC8A66, game_engine_end_round_with_winner_hook3, _hook_execute_replaced_first);
-    hook::insert(0x1C7FC4, 0x1C7FD2, c_game_engine__recompute_team_score_hook, _hook_execute_replaced_last);
+    hook::insert(ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK3, ADDRESS_GAME_ENGINE_END_ROUND_WITH_WINNER_HOOK3_RETURN, game_engine_end_round_with_winner_hook3, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_GAME_ENGINE_RECOMPUTE_TEAM_SCORE_HOOK, ADDRESS_C_GAME_ENGINE_RECOMPUTE_TEAM_SCORE_HOOK_RETURN, c_game_engine__recompute_team_score_hook, _hook_execute_replaced_last);
 
     // c_game_statborg::player_changed_teams
-    hook::insert(0xFA956, 0xFA95F, player_changed_teams_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_PLAYER_CHANGED_TEAMS_HOOK, ADDRESS_PLAYER_CHANGED_TEAMS_HOOK_RETURN, player_changed_teams_hook, _hook_execute_replaced_first);
 
     // game_engine_player_indices_swapped > c_game_statborg::player_indices_swapped (inlined)
-    hook::function(0xFA740, 0x7F, game_engine_player_indices_swapped); // add back inlined c_game_statborg::player_indices_swapped
+    hook::function(ADDRESS_GAME_ENGINE_PLAYER_INDICES_SWAPPED, 0x7F, game_engine_player_indices_swapped); // add back inlined c_game_statborg::player_indices_swapped
 
     // c_game_statborg::stats_reset_for_round_switch
-    hook::function(0x1AEE00, 0x14E, stats_reset_for_round_switch_hook);
+    hook::function(ADDRESS_STATS_RESET_FOR_ROUND_SWITCH, 0x14E, stats_reset_for_round_switch_hook);
 
     // TODO: other inlined instances of c_game_statborg::adjust_player_stat
     //c_game_statborg::record_kill // this call from ms23 is gone entirely in ms29, not even inlined

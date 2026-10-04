@@ -20,8 +20,8 @@ void __fastcall object_scripting_clear_all_function_variables_hook(datum_index o
 void anvil_hooks_object_deletion_apply()
 {
     // add simulation_action_object_delete back to object_delete
-    hook::call(0x3FE1BE, object_scripting_clear_all_function_variables_hook);
+    hook::call(ADDRESS_OBJECT_SCRIPTING_CLEAR_ALL_FUNCTION_VARIABLES_CALL, object_scripting_clear_all_function_variables_hook);
 
     // deleted dropped inventory items
-    hook::insert(0x484186, 0x48418D, item_in_unit_inventory_hook2, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_ITEM_IN_UNIT_INVENTORY_HOOK2, ADDRESS_ITEM_IN_UNIT_INVENTORY_HOOK2_RETURN, item_in_unit_inventory_hook2, _hook_execute_replaced_first);
 }

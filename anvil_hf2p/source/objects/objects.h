@@ -186,8 +186,10 @@ struct _object_datum
 	short simulation_unknown_team_index;
 	c_flags<e_object_simulation_flags, byte, k_number_of_object_simulation_flags> simulation_flags;
 	char child_variant_index;
-	long unknown_simulation_ticks;
-	real_vector3d unknown_simulation_position;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+	long unknown_simulation_ticks; // removed in ms30
+	real_vector3d unknown_simulation_position; // removed in ms30
+#endif
 	long first_widget_index;
 	short destroyed_constraints;
 	short loosened_constraints;
@@ -241,17 +243,30 @@ struct _object_datum
 		long device_machine_air_probe_index;
 	};
 	long unknown; // TODO: verify where this new field goes!
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long unknown168; // new in ms30, zeroed in object_new
+#endif
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(_object_datum) == 0x178);
 static_assert(0x138 == OFFSETOF(_object_datum, sync_action_name));
 static_assert(0x118 == OFFSETOF(_object_datum, shield_stun_ticks));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(_object_datum) == 0x16C);
+static_assert(0x128 == OFFSETOF(_object_datum, sync_action_name));
+static_assert(0x108 == OFFSETOF(_object_datum, shield_stun_ticks));
+#endif
 
 struct object_datum
 {
 	long definition_index;
 	_object_datum object;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(object_datum) == 0x17C);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(object_datum) == 0x170);
+#endif
 
 struct object_header_datum : s_datum_header
 {

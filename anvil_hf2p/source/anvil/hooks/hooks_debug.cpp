@@ -106,6 +106,19 @@ void __cdecl render_initialize_hook(s_hook_registers& registers)
 #endif
 }
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+// ms30 moved input_update from the start of main_loop_body to after simulation_update, so it now runs after the
+// terminal update (main_loop_body_hook1) and clears the input_suppressed flag the terminal sets while it is open.
+// Without this, keys typed into the terminal (e.g. backspace) also reach the director and the game.
+void __cdecl main_loop_body_input_update_hook(s_hook_registers& registers)
+{
+	if (terminal_gets_active())
+	{
+		input_suppress();
+	}
+}
+#endif
+
 void __cdecl main_loop_body_hook2(s_hook_registers& registers)
 {
 #if defined(PLAY_ENABLED)
@@ -302,7 +315,7 @@ e_character_status __fastcall font_cache_retrieve_character_hook(ulong character
 	}
 
 	e_character_status result = _character_status_invalid;
-	result = DECLFUNC(0x16B870, e_character_status, __fastcall, ulong, const s_font_character**, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count>, const void**)(character_key, out_character, flags, out_pixel_data);
+	result = DECLFUNC(ADDRESS_FONT_CACHE_RETRIEVE_CHARACTER_HOOK, e_character_status, __fastcall, ulong, const s_font_character**, c_flags<e_font_cache_flags, ulong, k_font_cache_flag_count>, const void**)(character_key, out_character, flags, out_pixel_data);
 	__asm { add esp, 8 }; // cleanup usercall
 	return result;
 }
@@ -334,103 +347,107 @@ void __fastcall c_debug_director__update_hook(c_debug_director* thisptr, void* u
 void anvil_hooks_debug_apply()
 {
 	// events
-	hook::insert(0xA9333, 0xA9338, main_game_reset_map_hook, _hook_execute_replaced_last);
-	hook::insert(0xA9603, 0xA9608, main_game_change_immediate_hook, _hook_execute_replaced_last);
-	hook::insert(0x1045, 0x104D, shell_initialized_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_MAIN_GAME_RESET_MAP_HOOK, ADDRESS_MAIN_GAME_RESET_MAP_HOOK_RETURN, main_game_reset_map_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_MAIN_GAME_CHANGE_IMMEDIATE_HOOK, ADDRESS_MAIN_GAME_CHANGE_IMMEDIATE_HOOK_RETURN, main_game_change_immediate_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_SHELL_INITIALIZED_HOOK, ADDRESS_SHELL_INITIALIZED_HOOK_RETURN, shell_initialized_hook, _hook_execute_replaced_last);
 
 	// debug render
-	hook::insert(0x271938, 0x27193D, render_debug_window_render_hook, _hook_replace);
-	hook::insert(0x268BEB, 0x268BF0, render_initialize_hook, _hook_execute_replaced_first);
-	hook::insert(0x957EE, 0x957F3, main_loop_body_hook2, _hook_execute_replaced_last);
-	hook::insert(0xB1A1B, 0xB1A22, game_tick_hook1, _hook_execute_replaced_first);
-	hook::insert(0xB1C53, 0xB1C5B, game_tick_hook2, _hook_execute_replaced_first);
+	hook::insert(ADDRESS_RENDER_DEBUG_WINDOW_RENDER_HOOK, ADDRESS_RENDER_DEBUG_WINDOW_RENDER_HOOK_RETURN, render_debug_window_render_hook, _hook_replace);
+	hook::insert(ADDRESS_RENDER_INITIALIZE_HOOK, ADDRESS_RENDER_INITIALIZE_HOOK_RETURN, render_initialize_hook, _hook_execute_replaced_first);
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_HOOK2, ADDRESS_MAIN_LOOP_BODY_HOOK2_RETURN, main_loop_body_hook2, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_GAME_TICK_HOOK1, ADDRESS_GAME_TICK_HOOK1_RETURN, game_tick_hook1, _hook_execute_replaced_first);
+	hook::insert(ADDRESS_GAME_TICK_HOOK2, ADDRESS_GAME_TICK_HOOK2_RETURN, game_tick_hook2, _hook_execute_replaced_first);
 
 	// console/terminal
-	hook::insert(0x95883, 0x95888, main_loop_body_hook1, _hook_execute_replaced_first);
-	hook::insert(0x952A8, 0x952AD, main_loop_enter_hook1, _hook_execute_replaced_last);
-	hook::insert(0x95346, 0x9534B, main_loop_enter_hook2, _hook_execute_replaced_last);
-	hook::insert(0x95DB1, 0x95DBB, main_loop_exit_hook, _hook_execute_replaced_last);
-	hook::call(0x1644A1, render_debug_frame_render);
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_HOOK1, ADDRESS_MAIN_LOOP_BODY_HOOK1_RETURN, main_loop_body_hook1, _hook_execute_replaced_first);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_INPUT_UPDATE_HOOK1, ADDRESS_MAIN_LOOP_BODY_INPUT_UPDATE_HOOK1_RETURN, main_loop_body_input_update_hook, _hook_execute_replaced_first);
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_INPUT_UPDATE_HOOK2, ADDRESS_MAIN_LOOP_BODY_INPUT_UPDATE_HOOK2_RETURN, main_loop_body_input_update_hook, _hook_execute_replaced_first);
+#endif
+	hook::insert(ADDRESS_MAIN_LOOP_ENTER_HOOK1, ADDRESS_MAIN_LOOP_ENTER_HOOK1_RETURN, main_loop_enter_hook1, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_MAIN_LOOP_ENTER_HOOK2, ADDRESS_MAIN_LOOP_ENTER_HOOK2_RETURN, main_loop_enter_hook2, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_MAIN_LOOP_EXIT_HOOK, ADDRESS_MAIN_LOOP_EXIT_HOOK_RETURN, main_loop_exit_hook, _hook_execute_replaced_last);
+	hook::call(ADDRESS_RENDER_DEBUG_FRAME_RENDER_CALL, render_debug_frame_render);
 
 	// reimplement hs print
-	patch::function(0xD4A234, print_hs_print_1_evaluate);
-	patch::function(0xD4C028, log_print_hs_log_print_1_evaluate);
+	patch::function(ADDRESS_PRINT_HS_PRINT_1_EVALUATE_SLOT, print_hs_print_1_evaluate);
+	patch::function(ADDRESS_LOG_PRINT_HS_LOG_PRINT_1_EVALUATE_SLOT, log_print_hs_log_print_1_evaluate);
 
 	// reimplement hs events_suppress_console_display
-	patch::function(0xD4C67C, events_suppress_display_events_suppress_output_1_evaluate);
+	patch::function(ADDRESS_EVENTS_SUPPRESS_DISPLAY_EVENTS_SUPPRESS_OUTPUT_1_EVALUATE_SLOT, events_suppress_display_events_suppress_output_1_evaluate);
 
 	// main_time_halted for console pausing
-	hook::insert(0x958FD, 0x95903, main_loop_body_hook3, _hook_replace);
-	hook::insert(0x95A9D, 0x95AA4, main_loop_body_hook4, _hook_replace);
-	hook::insert(0x164856, 0x16485D, rumble_update_hook, _hook_replace);
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_HOOK3, ADDRESS_MAIN_LOOP_BODY_HOOK3_RETURN, main_loop_body_hook3, _hook_replace);
+	hook::insert(ADDRESS_MAIN_LOOP_BODY_HOOK4, ADDRESS_MAIN_LOOP_BODY_HOOK4_RETURN, main_loop_body_hook4, _hook_replace);
+	hook::insert(ADDRESS_RUMBLE_UPDATE_HOOK, ADDRESS_RUMBLE_UPDATE_HOOK_RETURN, rumble_update_hook, _hook_replace);
 
 	// fallback font
-	hook::insert(0x9F2B7, 0x9F2BC, font_initialize_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_FONT_INITIALIZE_HOOK, ADDRESS_FONT_INITIALIZE_HOOK_RETURN, font_initialize_hook, _hook_execute_replaced_last);
 	
 	// $TODO: HOOK ENTIRE FUNC
 	//hook::insert(0x9F208, 0x9F20D, font_initialize_emergency_hook, _hook_execute_replaced_last);
-	hook::function(0x9F1E0, 0xAC, font_initialize_emergency);
+	hook::function(ADDRESS_FONT_INITIALIZE_EMERGENCY, 0xAC, font_initialize_emergency);
 	
-	hook::insert(0x9F661, 0x9F666, font_loading_idle_hook, _hook_execute_replaced_last);
-	patch::nop_region(0x9F6C3, 10); // disable damaged_media_halt_and_display_error();
+	hook::insert(ADDRESS_FONT_LOADING_IDLE_HOOK, ADDRESS_FONT_LOADING_IDLE_HOOK_RETURN, font_loading_idle_hook, _hook_execute_replaced_last);
+	patch::nop_region(ADDRESS_FONT_LOADING_IDLE_NOP, 10); // disable damaged_media_halt_and_display_error();
 
 	//hook::function(0x16B870, 0x98, font_cache_retrieve_character_hook);
-	hook::call(0x16B6BF, font_cache_retrieve_character_hook);
-	hook::call(0x16B747, font_cache_retrieve_character_hook);
-	hook::call(0x16B768, font_cache_retrieve_character_hook);
-	hook::call(0x16B783, font_cache_retrieve_character_hook);
-	patch::nop_region(0x16B6C7, 3); // cleanup usercall
-	patch::nop_region(0x16B74E, 3); // cleanup usercall
-	patch::nop_region(0x16B76F, 3); // cleanup usercall
-	patch::nop_region(0x16B788, 3); // cleanup usercall
+	hook::call(ADDRESS_FONT_CACHE_RETRIEVE_CHARACTER_CALL, font_cache_retrieve_character_hook);
+	hook::call(ADDRESS_FONT_CACHE_RETRIEVE_CHARACTER_CALL_2, font_cache_retrieve_character_hook);
+	hook::call(ADDRESS_FONT_CACHE_RETRIEVE_CHARACTER_CALL_3, font_cache_retrieve_character_hook);
+	hook::call(ADDRESS_FONT_CACHE_RETRIEVE_CHARACTER_CALL_4, font_cache_retrieve_character_hook);
+	patch::nop_region(ADDRESS_FONT_CACHE_LOAD_INTERNAL_NOP, 3); // cleanup usercall
+	patch::nop_region(ADDRESS_FONT_CACHE_LOAD_INTERNAL_NOP_2, 3); // cleanup usercall
+	patch::nop_region(ADDRESS_FONT_CACHE_LOAD_INTERNAL_NOP_3, 3); // cleanup usercall
+	patch::nop_region(ADDRESS_FONT_CACHE_LOAD_INTERNAL_NOP_4, 3); // cleanup usercall
 	// font_get_header inlines
-	hook::insert(0x16C152, 0x16C17A, c_draw_string__ctor_hook, _hook_replace);
-	hook::insert(0x16CEF8, 0x16CF25, c_draw_string__draw_internal_hook, _hook_replace);
-	hook::insert(0x16D429, 0x16D455, c_draw_string__parse_string_new_hook, _hook_replace);
+	hook::insert(ADDRESS_C_DRAW_STRING_CTOR_HOOK, ADDRESS_C_DRAW_STRING_CTOR_HOOK_RETURN, c_draw_string__ctor_hook, _hook_replace);
+	hook::insert(ADDRESS_C_DRAW_STRING_DRAW_INTERNAL_HOOK, ADDRESS_C_DRAW_STRING_DRAW_INTERNAL_HOOK_RETURN, c_draw_string__draw_internal_hook, _hook_replace);
+	hook::insert(ADDRESS_C_DRAW_STRING_PARSE_STRING_NEW_HOOK, ADDRESS_C_DRAW_STRING_PARSE_STRING_NEW_HOOK_RETURN, c_draw_string__parse_string_new_hook, _hook_replace);
 	// c_draw_string::set_font
-	hook::function(0x16C760, 0x65, c_draw_string__set_font_hook);
+	hook::function(ADDRESS_C_DRAW_STRING_SET_FONT, 0x65, c_draw_string__set_font_hook);
 	// inlines
-	hook::insert(0x9FE99, 0x9FF03, main_time_frame_rate_display_hook, _hook_replace);
-	patch::nop_region(0x9FF09, 6); // remove leftover code from inline
-	hook::insert(0xE2BF2, 0xE2C22, director_render_hook, _hook_replace);
-	patch::nop_region(0xE2C2E, 7); // remove leftover code from inline
-	hook::insert(0x175F4F, 0x175F7F, subtitle_render_hook, _hook_replace);
-	patch::nop_region(0x175F8E, 7); // remove leftover code from inline
-	hook::insert(0x1B0EDD, 0x1B0F30, game_engine_render_frame_watermarks_hook, _hook_replace);
-	patch::nop_region(0x1B0F48, 6); // remove leftover code from inline
-	hook::insert(0x269BBC, 0x269BEB, render_fullscreen_text_hook, _hook_replace);
-	patch::nop_region(0x269BEE, 6); // remove leftover code from inline
-	hook::insert(0x3CE494, 0x3CE4BC, chud_get_string_width_hook, _hook_replace);
-	patch::nop_region(0x3CE482, 3); // remove leftover code from inline
-	hook::insert(0x3DA0CA, 0x3DA0FC, c_user_interface_text__compute_text_bounds_hook, _hook_replace);
-	patch::nop_region(0x3DA09C, 2); // remove leftover code from inline
-	patch::nop_region(0x3DA0A4, 10); // remove leftover code from inline
-	patch::nop_region(0x3DA0B4, 14); // remove leftover code from inline
-	hook::insert(0x3D9CF9, 0x3D9D25, c_user_interface_text__render_hook, _hook_replace);
-	patch::nop_region(0x3D9C6C, 7); // remove leftover code from inline
-	patch::nop_region(0x3D9C81, 16); // remove leftover code from inline
-	patch::nop_region(0x3D9CA4, 9); // remove leftover code from inline
-	patch::nop_region(0x3D9D43, 6); // remove leftover code from inline
-	hook::insert(0x3E0EA6, 0x3E0EE4, chud_build_text_geometry_hook, _hook_replace);
-	patch::nop_region(0x3E0E91, 17); // remove leftover code from inline
-	patch::nop_region(0x3E0EFF, 6); // remove leftover code from inline
+	hook::insert(ADDRESS_MAIN_TIME_FRAME_RATE_DISPLAY_HOOK, ADDRESS_MAIN_TIME_FRAME_RATE_DISPLAY_HOOK_RETURN, main_time_frame_rate_display_hook, _hook_replace);
+	patch::nop_region(ADDRESS_MAIN_TIME_FRAME_RATE_DISPLAY_NOP, 6); // remove leftover code from inline
+	hook::insert(ADDRESS_DIRECTOR_RENDER_HOOK, ADDRESS_DIRECTOR_RENDER_HOOK_RETURN, director_render_hook, _hook_replace);
+	patch::nop_region(ADDRESS_DIRECTOR_RENDER_NOP, 7); // remove leftover code from inline
+	hook::insert(ADDRESS_SUBTITLE_RENDER_HOOK, ADDRESS_SUBTITLE_RENDER_HOOK_RETURN, subtitle_render_hook, _hook_replace);
+	patch::nop_region(ADDRESS_SUBTITLE_RENDER_NOP, 7); // remove leftover code from inline
+	hook::insert(ADDRESS_GAME_ENGINE_RENDER_FRAME_WATERMARKS_HOOK, ADDRESS_GAME_ENGINE_RENDER_FRAME_WATERMARKS_HOOK_RETURN, game_engine_render_frame_watermarks_hook, _hook_replace);
+	patch::nop_region(ADDRESS_GAME_ENGINE_RENDER_WATERMARKS_NOP, 6); // remove leftover code from inline
+	hook::insert(ADDRESS_RENDER_FULLSCREEN_TEXT_HOOK, ADDRESS_RENDER_FULLSCREEN_TEXT_HOOK_RETURN, render_fullscreen_text_hook, _hook_replace);
+	patch::nop_region(ADDRESS_RENDER_FULLSCREEN_TEXT_NOP, 6); // remove leftover code from inline
+	hook::insert(ADDRESS_CHUD_GET_STRING_WIDTH_HOOK, ADDRESS_CHUD_GET_STRING_WIDTH_HOOK_RETURN, chud_get_string_width_hook, _hook_replace);
+	patch::nop_region(ADDRESS_CHUD_GET_STRING_WIDTH_NOP, 3); // remove leftover code from inline
+	hook::insert(ADDRESS_C_USER_INTERFACE_TEXT_COMPUTE_TEXT_BOUNDS_HOOK, ADDRESS_C_USER_INTERFACE_TEXT_COMPUTE_TEXT_BOUNDS_HOOK_RETURN, c_user_interface_text__compute_text_bounds_hook, _hook_replace);
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_COMPUTE_TEXT_BOUNDS_NOP, 2); // remove leftover code from inline
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_COMPUTE_TEXT_BOUNDS_NOP_2, 10); // remove leftover code from inline
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_COMPUTE_TEXT_BOUNDS_NOP_3, 14); // remove leftover code from inline
+	hook::insert(ADDRESS_C_USER_INTERFACE_TEXT_RENDER_HOOK, ADDRESS_C_USER_INTERFACE_TEXT_RENDER_HOOK_RETURN, c_user_interface_text__render_hook, _hook_replace);
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_RENDER_NOP, 7); // remove leftover code from inline
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_RENDER_NOP_2, 16); // remove leftover code from inline
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_RENDER_NOP_3, 9); // remove leftover code from inline
+	patch::nop_region(ADDRESS_C_USER_INTERFACE_TEXT_RENDER_NOP_4, 6); // remove leftover code from inline
+	hook::insert(ADDRESS_CHUD_BUILD_TEXT_GEOMETRY_HOOK, ADDRESS_CHUD_BUILD_TEXT_GEOMETRY_HOOK_RETURN, chud_build_text_geometry_hook, _hook_replace);
+	patch::nop_region(ADDRESS_CHUD_BUILD_TEXT_GEOMETRY_NOP, 17); // remove leftover code from inline
+	patch::nop_region(ADDRESS_CHUD_BUILD_TEXT_GEOMETRY_NOP_2, 6); // remove leftover code from inline
 	
 	// font_get_font_index
-	hook::insert(0x16B675, 0x16B689, font_cache_load_internal_hook, _hook_replace);
-	hook::insert(0x25F3E8, 0x25F3FE, hardware_cache_load_character_hook, _hook_replace);
-	hook::insert(0x25F2E3, 0x25F300, hardware_cache_predict_character_hook, _hook_replace);
+	hook::insert(ADDRESS_FONT_CACHE_LOAD_INTERNAL_HOOK, ADDRESS_FONT_CACHE_LOAD_INTERNAL_HOOK_RETURN, font_cache_load_internal_hook, _hook_replace);
+	hook::insert(ADDRESS_HARDWARE_CACHE_LOAD_CHARACTER_HOOK, ADDRESS_HARDWARE_CACHE_LOAD_CHARACTER_HOOK_RETURN, hardware_cache_load_character_hook, _hook_replace);
+	hook::insert(ADDRESS_HARDWARE_CACHE_PREDICT_CHARACTER_HOOK, ADDRESS_HARDWARE_CACHE_PREDICT_CHARACTER_HOOK_RETURN, hardware_cache_predict_character_hook, _hook_replace);
 
 	// events_dispose in inlined cseries_dispose @ shell_dispose
-	hook::insert(0x123A, 0x123F, shell_dispose_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_SHELL_DISPOSE_HOOK, ADDRESS_SHELL_DISPOSE_HOOK_RETURN, shell_dispose_hook, _hook_execute_replaced_last);
 
 	// director
-	hook::insert(0xE280D, 0xE2813, director_update_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_DIRECTOR_UPDATE_HOOK, ADDRESS_DIRECTOR_UPDATE_HOOK_RETURN, director_update_hook, _hook_execute_replaced_last);
 	//patch::bytes(0x1BE2AE, { _key_backspace }); // rebind camera mode swap from f12 to backspace to avoid breakpoint keybind
-	patch::function(0xD81A24, c_debug_director__update_hook);
+	patch::function(ADDRESS_C_DEBUG_DIRECTOR_UPDATE_HOOK_SLOT, c_debug_director__update_hook);
 
 	// exceptions/asserts
-	hook::function(0x167CF0, 0x190, exceptions_update);
-	hook::function(0x2B4780, 0x5A, TopLevelExceptionFilter);
+	hook::function(ADDRESS_EXCEPTIONS_UPDATE, 0x190, exceptions_update);
+	hook::function(ADDRESS_TOPLEVELEXCEPTIONFILTER, 0x5A, TopLevelExceptionFilter);
 
 	// hook tag_get to store last tag index
 	// The vast majority of tag_get instances have been inlined, so the 'last tag accessed' may not necessarily be accurate
@@ -439,5 +456,5 @@ void anvil_hooks_debug_apply()
 	//hook::function(0x83C70, 0x21, tag_get);
 
 	// catch fire
-	hook::function(0x96BD0, 0x140, main_halt_and_catch_fire);
+	hook::function(ADDRESS_MAIN_HALT_AND_CATCH_FIRE, 0x140, main_halt_and_catch_fire);
 }

@@ -21,8 +21,8 @@
 #include <game\multiplayer_definitions.h>
 #include <game\player_mapping.h>
 
-REFERENCE_DECLARE_ARRAY(0xE9C240, char const*, k_game_engine_end_conditions, k_game_engine_game_end_condition_count);
-REFERENCE_DECLARE_ARRAY(0xF01EC0, c_game_engine*, game_engines, k_game_engine_type_count);
+REFERENCE_DECLARE_ARRAY(ADDRESS_K_GAME_ENGINE_END_CONDITIONS, char const*, k_game_engine_end_conditions, k_game_engine_game_end_condition_count);
+REFERENCE_DECLARE_ARRAY(ADDRESS_GAME_ENGINES, c_game_engine*, game_engines, k_game_engine_type_count);
 
 void game_engine_attach_to_simulation()
 {
@@ -166,7 +166,7 @@ bool game_engine_in_round()
 
 bool __fastcall game_engine_player_is_playing(datum_index player_index)
 {
-	return INVOKE(0xC77A0, game_engine_player_is_playing, player_index);
+	return INVOKE(ADDRESS_GAME_ENGINE_PLAYER_IS_PLAYING, game_engine_player_is_playing, player_index);
 }
 
 void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, long timer_ticks)
@@ -181,7 +181,7 @@ void __fastcall game_engine_player_set_spawn_timer(datum_index player_index, lon
 
 void __fastcall game_engine_get_multiplayer_string(string_id id, c_static_wchar_string<1024>* out_multiplayer_string)
 {
-	INVOKE(0xCD1F0, game_engine_get_multiplayer_string, id, out_multiplayer_string);
+	INVOKE(ADDRESS_GAME_ENGINE_GET_MULTIPLAYER_STRING, game_engine_get_multiplayer_string, id, out_multiplayer_string);
 }
 
 void game_engine_player_activated(datum_index player_index)

@@ -216,6 +216,12 @@
     <ClInclude Include="source\cseries\cseries.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\anvil\address_map\1101604673.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\anvil\address_map\1201700255.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="source\math\integer_math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -424,6 +430,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\memory\rockall_heap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memory\secure_signature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\cache\cache_file_tag_resource_vtable_list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\networking\replication\replication_entity_manager_view.h">

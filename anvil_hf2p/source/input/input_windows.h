@@ -443,6 +443,9 @@ struct s_input_globals
 	c_static_array<s_key_state, MAXIMUM_BUFFERED_KEYSTROKES> buffered_keys;
 	short buffered_mouse_button_read_index;
 	short buffered_mouse_button_read_count;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	long unknown5B8; // new in ms30
+#endif
 	c_static_array<s_mouse_state, 64> buffered_mouse_buttons;
 	short : 16;
 	bool raw_input_mouse_state_update;
@@ -480,6 +483,7 @@ static_assert(OFFSETOF(s_input_globals, buffered_key_read_count) == 0x1B2);
 static_assert(OFFSETOF(s_input_globals, buffered_keys) == 0x1B4);
 static_assert(OFFSETOF(s_input_globals, buffered_mouse_button_read_index) == 0x5B4);
 static_assert(OFFSETOF(s_input_globals, buffered_mouse_button_read_count) == 0x5B6);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(OFFSETOF(s_input_globals, buffered_mouse_buttons) == 0x5B8);
 static_assert(OFFSETOF(s_input_globals, raw_input_mouse_state_update) == 0xABA);
 static_assert(OFFSETOF(s_input_globals, raw_mouse_state) == 0xABC);
@@ -492,6 +496,20 @@ static_assert(OFFSETOF(s_input_globals, mouse_wheel_ticks) == 0xB28);
 static_assert(OFFSETOF(s_input_globals, gamepad_valid_mask) == 0xB2C);
 static_assert(OFFSETOF(s_input_globals, gamepad_states) == 0xB30);
 static_assert(OFFSETOF(s_input_globals, suppressed_gamepad_state) == 0xC20);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(OFFSETOF(s_input_globals, buffered_mouse_buttons) == 0x5BC);
+static_assert(OFFSETOF(s_input_globals, raw_input_mouse_state_update) == 0xABE);
+static_assert(OFFSETOF(s_input_globals, raw_mouse_state) == 0xAC0);
+static_assert(OFFSETOF(s_input_globals, mouse_relative_x) == 0xB18);
+static_assert(OFFSETOF(s_input_globals, mouse_relative_y) == 0xB1C);
+static_assert(OFFSETOF(s_input_globals, mouse_wheel_delta) == 0xB20);
+static_assert(OFFSETOF(s_input_globals, mouse_x_ticks) == 0xB24);
+static_assert(OFFSETOF(s_input_globals, mouse_y_ticks) == 0xB28);
+static_assert(OFFSETOF(s_input_globals, mouse_wheel_ticks) == 0xB2C);
+static_assert(OFFSETOF(s_input_globals, gamepad_valid_mask) == 0xB30);
+static_assert(OFFSETOF(s_input_globals, gamepad_states) == 0xB34);
+static_assert(OFFSETOF(s_input_globals, suppressed_gamepad_state) == 0xC24);
+#endif
 #pragma pack(pop)
 
 constexpr size_t test = OFFSETOF(s_input_globals, mouse_wheel_ticks);

@@ -1,6 +1,6 @@
 #include "input_windows.h"
 
-REFERENCE_DECLARE(0x3EDD060, s_input_globals, input_globals);
+REFERENCE_DECLARE(ADDRESS_INPUT_GLOBALS, s_input_globals, input_globals);
 
 bool __fastcall input_get_key(s_key_state* key, e_input_type input_type)
 {
@@ -91,10 +91,10 @@ mouse_state* input_get_mouse_state(e_input_type input_type)
 
 void input_clear_all_rumblers()
 {
-	INVOKE(0x817E0, input_clear_all_rumblers);
+	INVOKE(ADDRESS_INPUT_CLEAR_ALL_RUMBLERS, input_clear_all_rumblers);
 }
 
 void __fastcall input_update()
 {
-	INVOKE(0x80C10, input_update);
+	INVOKE(ADDRESS_INPUT_UPDATE, input_update);
 }

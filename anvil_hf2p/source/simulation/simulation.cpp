@@ -2,7 +2,7 @@
 #include <game\game.h>
 #include <simulation\simulation_watcher.h>
 
-REFERENCE_DECLARE(0x4EBEBA8, s_simulation_globals, simulation_globals);
+REFERENCE_DECLARE(ADDRESS_SIMULATION_GLOBALS, s_simulation_globals, simulation_globals);
 
 bool simulation_reset_in_progress()
 {

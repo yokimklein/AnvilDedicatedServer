@@ -3,7 +3,7 @@
 
 bool collision_test_vector(s_collision_test_flags flags, bool arg8, const real_point3d* point, const real_vector3d* vector, long first_ignore_object_index, long second_ignore_object_index, long third_ignore_object_index, collision_result* collision)
 {
-	size_t target = base_address<size_t>(0x1A1F80);
+	size_t target = base_address<size_t>(ADDRESS_COLLISION_TEST_VECTOR_TARGET);
 	bool return_value;
 
 	__asm

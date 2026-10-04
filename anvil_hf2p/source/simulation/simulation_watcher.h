@@ -36,4 +36,8 @@ protected:
 	bool __unknown16656;
 	bool __unknown16657;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_simulation_watcher) == 0xBB58);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_simulation_watcher) == 0xBD58);
+#endif

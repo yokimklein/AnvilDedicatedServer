@@ -2,7 +2,7 @@
 
 long __fastcall data_next_absolute_index(s_data_array const* data, long absolute_index)
 {
-	return INVOKE(0xA8FE0, data_next_absolute_index, data, absolute_index);
+	return INVOKE(ADDRESS_DATA_NEXT_ABSOLUTE_INDEX, data_next_absolute_index, data, absolute_index);
 }
 
 void data_iterator_begin(s_data_iterator* iterator, s_data_array const* data)
@@ -34,7 +34,7 @@ void* data_iterator_next(s_data_iterator* data)
 
 void __fastcall datum_delete(s_data_array* data, datum_index index)
 {
-	INVOKE(0xA8F20, datum_delete, data, index);
+	INVOKE(ADDRESS_DATUM_DELETE, datum_delete, data, index);
 }
 
 void datum_initialize(s_data_array* data, s_datum_header* header)
@@ -174,7 +174,7 @@ long data_allocation_size(long maximum_count, long size, long alignment_bits)
 
 void __fastcall data_delete_all(s_data_array* data)
 {
-	INVOKE(0xA8B80, data_delete_all, data);
+	INVOKE(ADDRESS_DATA_DELETE_ALL, data_delete_all, data);
 }
 
 void __cdecl data_dispose(s_data_array* data)
@@ -193,7 +193,7 @@ void __cdecl data_dispose(s_data_array* data)
 #pragma runtime_checks("", off)
 void __fastcall data_initialize(s_data_array* data, const char* name, long maximum_count, long size, long alignment_bits, c_allocation_base* allocation)
 {
-	INVOKE(0xA8920, data_initialize, data, name, maximum_count, size, alignment_bits, allocation);
+	INVOKE(ADDRESS_DATA_INITIALIZE, data_initialize, data, name, maximum_count, size, alignment_bits, allocation);
 	__asm add esp, 0x10; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)

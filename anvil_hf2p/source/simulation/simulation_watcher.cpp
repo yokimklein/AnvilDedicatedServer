@@ -4,7 +4,7 @@
 long c_simulation_watcher::get_machine_index_by_identifier(s_machine_identifier const* remote_machine_identifier)
 {
 	ASSERT(remote_machine_identifier);
-	return DECLFUNC(0x15620, long, __thiscall, c_simulation_watcher*, s_machine_identifier const*)(this, remote_machine_identifier);
+	return DECLFUNC(ADDRESS_C_SIMULATION_WATCHER_GET_MACHINE_INDEX_BY_IDENTIFIER, long, __thiscall, c_simulation_watcher*, s_machine_identifier const*)(this, remote_machine_identifier);
 }
 
 bool c_simulation_watcher::boot_machine(s_machine_identifier const* machine_identifier, e_network_session_boot_reason reason)

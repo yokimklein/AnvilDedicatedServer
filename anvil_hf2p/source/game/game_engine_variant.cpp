@@ -294,7 +294,7 @@ c_game_engine_infection_variant* c_game_variant::get_infection_variant_writeable
 
 c_game_variant* __fastcall build_default_game_variant(c_game_variant* game_variant, e_game_engine_type engine_variant)
 {
-	return INVOKE(0xE9BE0, build_default_game_variant, game_variant, engine_variant);
+	return INVOKE(ADDRESS_BUILD_DEFAULT_GAME_VARIANT, build_default_game_variant, game_variant, engine_variant);
 }
 
 bool game_engine_tag_defined_variant_get_built_in_variant(e_game_engine_type game_engine_index, long variant_index, c_game_variant* output_variant)

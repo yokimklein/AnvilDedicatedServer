@@ -110,12 +110,20 @@ struct s_network_session_parameter_initial_participants
 	bool player_options_exists;
 	game_player_options player_options[k_network_maximum_players_per_session];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_parameter_initial_participants) == 0xBA30);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_parameter_initial_participants) == 0xBC30);
+#endif
 
 class c_network_session_parameter_initial_participants : public c_network_session_parameter_chunked<s_network_session_parameter_initial_participants, 0x1F800>
 {
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_network_session_parameter_initial_participants) == 0x56500);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_network_session_parameter_initial_participants) == 0x56900);
+#endif
 
 struct s_network_session_parameter_game_start_status
 {

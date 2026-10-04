@@ -1,7 +1,7 @@
 #include "network_configuration.h"
 
-REFERENCE_DECLARE(0x10383D0, s_network_configuration, g_network_configuration);
-REFERENCE_DECLARE(0x1038282, bool, g_network_configuration_initialized);
+REFERENCE_DECLARE(ADDRESS_G_NETWORK_CONFIGURATION, s_network_configuration, g_network_configuration);
+REFERENCE_DECLARE(ADDRESS_G_NETWORK_CONFIGURATION_INITIALIZED, bool, g_network_configuration_initialized);
 
 s_network_configuration* get_network_configuration()
 {

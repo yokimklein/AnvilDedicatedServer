@@ -240,7 +240,11 @@ struct s_game_results_player_data
 
 	long player_score;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_game_results_player_data) == 0xB90);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_game_results_player_data) == 0xBB0);
+#endif
 
 class s_game_results_player_data_update
 {
@@ -250,7 +254,11 @@ public:
 	byte __pad2[0x6];
 	s_game_results_player_data update;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_game_results_player_data_update) == 0xB98);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_game_results_player_data_update) == 0xBB8);
+#endif
 
 struct s_game_results_team_data
 {
@@ -410,7 +418,11 @@ struct s_game_results_incremental_update
 	c_static_array<s_game_results_machine_data_update, 17> machines;
 	byte __pad1[6];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_game_results_incremental_update) == 0x10CA0);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_game_results_incremental_update) == 0x10EA0);
+#endif
 
 struct s_game_results_incremental
 {
@@ -424,7 +436,11 @@ struct s_game_results_incremental
 	s_game_results_statistics statistics;
 	c_static_array<s_game_results_machine_data, 17> machines;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_game_results_incremental) == 0x10950);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_game_results_incremental) == 0x10B50);
+#endif
 
 struct s_game_results_event
 {
@@ -514,15 +530,25 @@ struct c_game_results
 	c_static_array<s_game_results_event, 1000> events;
 	c_static_array<s_game_results_machine_data, 17> machines;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_game_results) == 0x199B0);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_game_results) == 0x19BB0);
+#endif
 static_assert(0x00 == OFFSETOF(c_game_results, finish_reason));
 static_assert(0x01 == OFFSETOF(c_game_results, initialized));
 static_assert(0x02 == OFFSETOF(c_game_results, finalized));
 static_assert(0x08 == OFFSETOF(c_game_results, game_description));
 static_assert(0x3D0 == OFFSETOF(c_game_results, players));
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0xBCD0 == OFFSETOF(c_game_results, teams));
 static_assert(0xBD10 == OFFSETOF(c_game_results, statistics));
 static_assert(0x19790 == OFFSETOF(c_game_results, machines));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0xBED0 == OFFSETOF(c_game_results, teams));
+static_assert(0xBF10 == OFFSETOF(c_game_results, statistics));
+static_assert(0x19990 == OFFSETOF(c_game_results, machines));
+#endif
 
 struct s_game_results_globals
 {
@@ -548,7 +574,11 @@ struct c_game_results_replicator
 	dword m_last_update_time; // updates every 10000ms
 	byte __data1B464[4];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_game_results_replicator) == 0x10968);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_game_results_replicator) == 0x10B68);
+#endif
 
 struct s_integer_statistic_definition
 {

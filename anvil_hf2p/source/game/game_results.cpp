@@ -1,16 +1,16 @@
 #include "game_results.h"
 
-REFERENCE_DECLARE(0x3FC2750, c_game_results, g_current_game_results);
+REFERENCE_DECLARE(ADDRESS_G_CURRENT_GAME_RESULTS, c_game_results, g_current_game_results);
 
 void __cdecl game_results_notify_player_indices_changed()
 {
-	INVOKE(0xCDBA0, game_results_notify_player_indices_changed);
+	INVOKE(ADDRESS_GAME_RESULTS_NOTIFY_PLAYER_INDICES_CHANGED, game_results_notify_player_indices_changed);
 }
 
 void game_results_statistic_set(long absolute_player_index, e_game_team team_index, long statistic, long value)
 {
 	// silly wacky function wrapper because this uses some kind of special calling convention that behaves like __fastcall but with the caller cleaning up the stack
-	static void* game_results_statistic_set_call = base_address<void*>(0xCE0B0);
+	static void* game_results_statistic_set_call = base_address<void*>(ADDRESS_GAME_RESULTS_STATISTIC_SET_CALL);
 	__asm
 	{
 		push value
@@ -25,7 +25,7 @@ void game_results_statistic_set(long absolute_player_index, e_game_team team_ind
 #pragma runtime_checks("", off)
 void __fastcall game_results_statistic_increment(long player_absolute_index, e_game_team team_index, long statistic, long value)
 {
-	INVOKE(0xCDFB0, game_results_statistic_increment, player_absolute_index, team_index, statistic, value);
+	INVOKE(ADDRESS_GAME_RESULTS_STATISTIC_INCREMENT, game_results_statistic_increment, player_absolute_index, team_index, statistic, value);
 	__asm add esp, 8; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)

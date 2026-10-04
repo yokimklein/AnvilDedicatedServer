@@ -83,7 +83,7 @@ void __fastcall player_update_loadout(datum_index player_index, player_datum* pl
 #pragma runtime_checks("", off)
 void __fastcall player_update_loadout_internal(long loadout_index, qword user_xuid)
 {
-	INVOKE(0xE05E0, player_update_loadout_internal, loadout_index, user_xuid);
+	INVOKE(ADDRESS_PLAYER_UPDATE_LOADOUT_INTERNAL, player_update_loadout_internal, loadout_index, user_xuid);
 	__asm add esp, 8; // Fix usercall & cleanup stack
 }
 #pragma runtime_checks("", restore)
@@ -91,7 +91,7 @@ void __fastcall player_update_loadout_internal(long loadout_index, qword user_xu
 bool __fastcall equipment_add(long slot_index, long equipment_index)
 {
 	ASSERT(VALID_INDEX(slot_index, 4));
-	return INVOKE(0xE0530, equipment_add, slot_index, equipment_index);
+	return INVOKE(ADDRESS_EQUIPMENT_ADD, equipment_add, slot_index, equipment_index);
 }
 
 /* - These user storage related functions are from Saber's backend, which we've since disabled so these no longer work

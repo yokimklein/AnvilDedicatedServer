@@ -31,12 +31,12 @@ void hf2p_initialize()
 
 void game_startup_main()
 {
-    INVOKE(0x2B0280, game_startup_main);
+    INVOKE(ADDRESS_GAME_STARTUP_MAIN, game_startup_main);
 }
 
 void game_startup_client()
 {
-    INVOKE(0x2B0560, game_startup_client);
+    INVOKE(ADDRESS_GAME_STARTUP_CLIENT, game_startup_client);
 }
 
 void game_startup_dedicated_server()
@@ -88,5 +88,5 @@ void game_startup_sapien()
 
 bool __fastcall hf2p_session_invalid(s_transport_secure_identifier* session_id)
 {
-    return INVOKE(0x557EC0, hf2p_session_invalid, session_id);
+    return INVOKE(ADDRESS_HF2P_SESSION_INVALID, hf2p_session_invalid, session_id);
 }

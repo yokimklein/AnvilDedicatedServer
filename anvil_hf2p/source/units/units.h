@@ -28,79 +28,40 @@ enum e_unit_flags
 	k_unit_flags_count
 };
 
-// $TODO are there more than 32 flags?
 enum e_unit_control_flags
 {
-	// _button_crouch
-	// _button_vehicle_dive
 	_unit_control_crouch_modifier_bit = 0,
-
-	// _button_jump
-	// _button_vehicle_raise
 	_unit_control_jump_bit,
-
-	// _button_flashlight
 	_unit_control_vision_mode_bit,
-
 	_unit_control_exact_facing_bit,
-
-	// _button_use_consumable_1
 	_unit_control_use_equipment_bit,
-
-	// _button_melee_attack
 	_unit_control_melee_attack_bit,
-
 	_unit_control_melee_lunge_bit,
-
-	// _button_use_consumable_2
-	_unit_control_equipment_2_bit,
-
-	// _button_lean_right
-	_unit_control_sprint_bit8,
-
-	// _button_use_consumable_3
-	_unit_control_equipment_3_bit,
-
-	// _button_use_consumable_4
-	_unit_control_equipment_4_bit,
-
-	// _button_vehicle_boost
-	_unit_control_sprint_bit11,
-
-	_unit_control_skip_cinematic_bit,
-	_unit_control_bit13,
-
-	// _button_vehicle_boost
-	_unit_control_lower_weapon_bit,
-
-	_unit_control_jetpack_bit,
-
-	_unit_control_bit16,
-	_unit_control_bit17,
-
-	_unit_control_primary_weapon_primary_trigger_bit,
-	_unit_control_primary_weapon_secondary_trigger_bit,
-	_unit_control_primary_weapon_predicted_primary_trigger_bit,
-	_unit_control_primary_weapon_predicted_secondary_trigger_bit,
-
-	// _button_flashlight
+	_unit_control_equipment_2_bit, // _unit_control_lean_left_bit
+	_unit_control_sprint_bit8, // _button_lean_right
+	_unit_control_equipment_3_bit, // _unit_control_lunge_bit
+	_unit_control_equipment_4_bit, // _unit_control_cheat_jetpack_bit
+	_unit_control_sprint_bit11, // _button_vehicle_boost
+	_unit_control_turn_boost_bit,
+	_unit_control_phantoms_active_bit,
+	_unit_control_e_brake_bit,
+	_unit_control_lower_weapon_bit = _unit_control_e_brake_bit,
+	_unit_control_gaze_bit,
+	_unit_control_lock_facing_to_aiming_bit,
+	_unit_control_walk_bit,
+    _unit_control_primary_weapon_primary_trigger_bit,
+    _unit_control_primary_weapon_secondary_trigger_bit,
+    _unit_control_primary_weapon_predicted_primary_trigger_bit,
+    _unit_control_primary_weapon_predicted_secondary_trigger_bit,
 	_unit_control_primary_weapon_power_toggle_bit,
-
 	_unit_control_secondary_weapon_primary_trigger_bit,
 	_unit_control_secondary_weapon_secondary_trigger_bit,
 	_unit_control_secondary_weapon_predicted_primary_trigger_bit,
 	_unit_control_secondary_weapon_predicted_secondary_trigger_bit,
-
-	// _button_flashlight
 	_unit_control_secondary_weapon_power_toggle_bit,
-
-	// _button_throw_grenade
 	_unit_control_throw_grenade_bit,
-
 	_unit_control_reload_primary_bit,
 	_unit_control_reload_secondary_bit,
-
-	// _button_fire_tertiary
 	_unit_control_tertiary_weapon_bit,
 
 	k_unit_control_flags_count
@@ -242,6 +203,9 @@ struct _unit_datum
 	long predicted_simulation_actor_cell_index;
 	long predicted_simulation_actor_spawn_point_index;
 	c_static_array<s_unit_predicted_weapon_state, 4> predicted_weapon_state;
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	byte unknown_ms30[0x10]; // 0x10 bytes were added in ms30 between predicted_simulation_actor_spawn_point_index & active_camouflage, exact position unverified as no code accesses predicted_weapon_state
+#endif
 	real active_camouflage;
 	real active_camouflage_maximum;
 	real active_camouflage_regrowth;
@@ -315,7 +279,11 @@ struct _unit_datum
 	long emblem_unknown_index2; // used in unit_delete & unit_disconnect_from_structure_bsp - accesses global array with size 0xCD
 	long : 32;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(_unit_datum) == 0x410);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(_unit_datum) == 0x420);
+#endif
 static_assert(0x00 == OFFSETOF(_unit_datum, actor_index));
 static_assert(0x04 == OFFSETOF(_unit_datum, simulation_actor_index));
 static_assert(0x10 == OFFSETOF(_unit_datum, player_index));
@@ -334,6 +302,7 @@ static_assert(0x194 == OFFSETOF(_unit_datum, consumable_energy_restored_game_tim
 static_assert(0x1BC == OFFSETOF(_unit_datum, seat_power));
 static_assert(0x240 == OFFSETOF(_unit_datum, predicted_player_index));
 static_assert(0x244 == OFFSETOF(_unit_datum, predicted_simulation_actor_index));
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0x274 == OFFSETOF(_unit_datum, active_camouflage));
 static_assert(0x278 == OFFSETOF(_unit_datum, active_camouflage_maximum));
 static_assert(0x27C == OFFSETOF(_unit_datum, active_camouflage_regrowth));
@@ -350,6 +319,24 @@ static_assert(0x2C0 == OFFSETOF(_unit_datum, hologram_definition_index));
 static_assert(0x2C4 == OFFSETOF(_unit_datum, hologram_shimmer_value));
 static_assert(0x2C8 == OFFSETOF(_unit_datum, hologram_destination));
 static_assert(0x338 == OFFSETOF(_unit_datum, melee_inhibit_time));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0x284 == OFFSETOF(_unit_datum, active_camouflage));
+static_assert(0x288 == OFFSETOF(_unit_datum, active_camouflage_maximum));
+static_assert(0x28C == OFFSETOF(_unit_datum, active_camouflage_regrowth));
+static_assert(0x290 == OFFSETOF(_unit_datum, active_camouflage_end_time));
+static_assert(0x2A2 == OFFSETOF(_unit_datum, emp_timer));
+static_assert(0x2A4 == OFFSETOF(_unit_datum, emp_campaign_metagame_timer));
+static_assert(0x2AC == OFFSETOF(_unit_datum, delayed_damage_category));
+static_assert(0x2B0 == OFFSETOF(_unit_datum, delayed_damage_peak));
+static_assert(0x2B4 == OFFSETOF(_unit_datum, delayed_damage_owner_weak_object_index));
+static_assert(0x2C4 == OFFSETOF(_unit_datum, hologram_creator_weak_unit_index));
+static_assert(0x2C8 == OFFSETOF(_unit_datum, hologram_creation_time));
+static_assert(0x2CC == OFFSETOF(_unit_datum, hologram_ticks_left));
+static_assert(0x2D0 == OFFSETOF(_unit_datum, hologram_definition_index));
+static_assert(0x2D4 == OFFSETOF(_unit_datum, hologram_shimmer_value));
+static_assert(0x2D8 == OFFSETOF(_unit_datum, hologram_destination));
+static_assert(0x348 == OFFSETOF(_unit_datum, melee_inhibit_time));
+#endif
 
 struct unit_datum
 {
@@ -358,7 +345,13 @@ struct unit_datum
 	_motor_datum motor;
 	_unit_datum unit;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(unit_datum) == 0x598);
+static_assert(OFFSETOF(unit_datum, unit) == 0x188);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(unit_datum) == 0x5A0);
+static_assert(OFFSETOF(unit_datum, unit) == 0x180);
+#endif
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled);
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index);

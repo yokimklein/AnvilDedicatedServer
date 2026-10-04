@@ -98,7 +98,7 @@ bool __fastcall transport_address_equivalent(transport_address const* a, transpo
 {
 	ASSERT(a != NULL);
 	ASSERT(b != NULL);
-	return INVOKE(0x77D0, transport_address_equivalent, a, b);
+	return INVOKE(ADDRESS_TRANSPORT_ADDRESS_EQUIVALENT, transport_address_equivalent, a, b);
 }
 
 bool transport_address_valid(transport_address const* address)

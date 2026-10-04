@@ -3,7 +3,7 @@
 #include "render\views\render_view.h"
 #include "interface\user_interface_controller.h"
 
-REFERENCE_DECLARE(0xEB0CAC, real_vector2d, g_aspect_ratio_scale);
+REFERENCE_DECLARE(ADDRESS_G_ASPECT_RATIO_SCALE, real_vector2d, g_aspect_ratio_scale);
 
 void interface_get_current_display_settings(rectangle2d* out_render_bounds, rectangle2d* out_render_title_safe_bounds, rectangle2d* out_display_bounds, rectangle2d* out_display_title_safe_bounds)
 {
@@ -44,7 +44,7 @@ void interface_scale_rectangle2d_for_xenon_scaler(rectangle2d* rectangle, const 
 
 void __fastcall calculate_aspect_ratio_scaling()
 {
-    INVOKE(0x3C5E80, calculate_aspect_ratio_scaling);
+    INVOKE(ADDRESS_CALCULATE_ASPECT_RATIO_SCALING, calculate_aspect_ratio_scaling);
 }
 
 void interface_get_current_display_or_window_settings(rectangle2d* out_render_bounds, rectangle2d* out_render_title_safe_bounds, rectangle2d* out_display_bounds, rectangle2d* out_display_title_safe_bounds)

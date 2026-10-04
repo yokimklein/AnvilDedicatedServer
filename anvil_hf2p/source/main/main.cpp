@@ -22,8 +22,8 @@
 #define WIN32_MEAN_AND_LEAN
 #include <windows.h>
 
-REFERENCE_DECLARE_ARRAY(0x103E7C8, s_main_status_value, g_status_values, 32);
-REFERENCE_DECLARE(0x3EE1E48, _main_globals, main_globals);
+REFERENCE_DECLARE_ARRAY(ADDRESS_G_STATUS_VALUES, s_main_status_value, g_status_values, 32);
+REFERENCE_DECLARE(ADDRESS_MAIN_GLOBALS, _main_globals, main_globals);
 
 const char* const k_crash_info_output_filename = "crash_report\\crash_info.txt";
 
@@ -37,7 +37,7 @@ bool main_is_in_main_loop_pregame()
 
 long __cdecl _internal_halt_render_thread_and_lock_resources(const char* file_name, long line_number)
 {
-	return INVOKE(0x94CB0, _internal_halt_render_thread_and_lock_resources, file_name, line_number);
+	return INVOKE(ADDRESS_INTERNAL_HALT_RENDER_THREAD_AND_LOCK_RESOURCES, _internal_halt_render_thread_and_lock_resources, file_name, line_number);
 }
 
 void __fastcall main_exit_game()
@@ -124,7 +124,7 @@ void main_write_stack_to_crash_info_status_file(const char* crash_info, void* co
 		// dump last accessed tag and resource owner
 		c_static_string<1024> last_accessed;
 		char tag_group[8]{};
-		REFERENCE_DECLARE(0x0190E460, long, last_resource_owner);
+		REFERENCE_DECLARE(ADDRESS_LAST_RESOURCE_OWNER, long, last_resource_owner);
 
 		if (g_last_tag_accessed.index != NONE)
 		{
@@ -410,5 +410,5 @@ c_wait_for_render_thread::~c_wait_for_render_thread()
 
 void __fastcall unlock_resources_and_resume_render_thread(ulong flags)
 {
-	INVOKE(0x94E00, unlock_resources_and_resume_render_thread, flags);
+	INVOKE(ADDRESS_UNLOCK_RESOURCES_AND_RESUME_RENDER_THREAD, unlock_resources_and_resume_render_thread, flags);
 }

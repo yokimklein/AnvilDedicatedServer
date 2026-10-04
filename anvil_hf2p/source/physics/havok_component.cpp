@@ -1,6 +1,6 @@
 #include "havok_component.h"
 
-REFERENCE_DECLARE(0x1046CDC, c_smart_data_array<c_havok_component>, g_havok_components);
+REFERENCE_DECLARE(ADDRESS_G_HAVOK_COMPONENTS, c_smart_data_array<c_havok_component>, g_havok_components);
 
 s_data_array* havok_components_get_data_array()
 {
@@ -9,5 +9,5 @@ s_data_array* havok_components_get_data_array()
 
 void c_havok_component::force_activate(bool active)
 {
-	DECLFUNC(0x127C30, void, __thiscall, c_havok_component*, bool)(this, active);
+	DECLFUNC(ADDRESS_C_HAVOK_COMPONENT_FORCE_ACTIVATE, void, __thiscall, c_havok_component*, bool)(this, active);
 }

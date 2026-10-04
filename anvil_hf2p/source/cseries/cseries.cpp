@@ -83,7 +83,7 @@ const real_rgb_color* const global_real_rgb_darkgreen = &private_real_argb_color
 const real_rgb_color* const global_real_rgb_salmon = &private_real_argb_colors[15].rgb;
 const real_rgb_color* const global_real_rgb_violet = &private_real_argb_colors[16].rgb;
 
-REFERENCE_DECLARE(0xE9B960, c_normal_allocation*, g_normal_allocation);
+REFERENCE_DECLARE(ADDRESS_G_NORMAL_ALLOCATION, c_normal_allocation*, g_normal_allocation);
 
 static c_interlocked_long g_entry_gate;
 
@@ -443,12 +443,12 @@ char* tag_to_string(tag _tag, char* buffer)
 
 long __fastcall bit_vector_count_bits(const dword* bit_mask, int bit_count)
 {
-    return INVOKE(0xC39D0, bit_vector_count_bits, bit_mask, bit_count);
+    return INVOKE(ADDRESS_BIT_VECTOR_COUNT_BITS, bit_vector_count_bits, bit_mask, bit_count);
 }
 
 long __fastcall index_from_mask(const dword* mask, long bit_count)
 {
-    return INVOKE(0xC3C10, index_from_mask, mask, bit_count);
+    return INVOKE(ADDRESS_INDEX_FROM_MASK, index_from_mask, mask, bit_count);
 }
 
 void* offset_pointer(void* pointer, long offset)

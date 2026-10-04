@@ -74,7 +74,11 @@ struct projectile_datum
 	_object_datum object;
 	_projectile_datum projectile;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(projectile_datum) == 0x218);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(projectile_datum) == 0x20C);
+#endif
 
 // last 2 args were compiled out to consts in ms29, leaving these out for the hook
 void __fastcall projectile_detonate_effects_and_damage(datum_index projectile_index, real_point3d const* position, real_vector3d const* forward, s_effect_vector const* effect_vector, float damage_scale, datum_index object_index, c_flags<e_simulation_projectile_effect_flag, uchar, k_simulation_projectile_effect_flag_count> effect_flags, c_global_material_type material_type, real_vector3d const* hit_normal, s_location const* location, bool valid_material_type, bool collided_with_invalid_material);

@@ -1,7 +1,7 @@
 #include "shell.h"
 #include "cseries\cseries.h"
 
-REFERENCE_DECLARE(0x1038280, bool, shell_application_paused);
+REFERENCE_DECLARE(ADDRESS_SHELL_APPLICATION_PAUSED, bool, shell_application_paused);
 
 #define SHELL_VERSION VERSION_PROJECT_NAME " " VERSION_
 

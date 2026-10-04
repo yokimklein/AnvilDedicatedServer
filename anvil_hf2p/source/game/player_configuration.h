@@ -70,7 +70,11 @@ struct s_player_configuration_from_host
 	s_s3d_player_container s3d_player_container;
 	s_s3d_player_customization s3d_player_customization;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_player_configuration_from_host) == 0xB40);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_player_configuration_from_host) == 0xB60);
+#endif
 
 struct s_player_configuration
 {
@@ -85,4 +89,8 @@ struct s_player_configuration
 	s_player_configuration_from_client client;
 	s_player_configuration_from_host host;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_player_configuration) == 0xB70);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_player_configuration) == 0xB90);
+#endif

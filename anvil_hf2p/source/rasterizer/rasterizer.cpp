@@ -4,15 +4,15 @@
 #include "multithreading\threads.h"
 #include "cseries\cseries_events.h"
 
-REFERENCE_DECLARE(0xEAC130, s_rasterizer_render_globals, c_rasterizer::render_globals);
-REFERENCE_DECLARE(0x4ECF2B8, rectangle2d, c_rasterizer::g_last_viewport);
-REFERENCE_DECLARE(0x23390EC, IDirect3DVertexDeclaration9*, c_rasterizer::g_current_vertex_declaration);
-REFERENCE_DECLARE(0x2339330, IDirect3DDevice9Ex*, c_rasterizer::g_device);
-REFERENCE_DECLARE(0x23390C8, IDirect3DIndexBuffer9*, c_rasterizer::g_current_index_buffer);
-REFERENCE_DECLARE_ARRAY(0xEAADE8, long, c_rasterizer::x_last_sampler_filter_modes, 20);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_RENDER_GLOBALS, s_rasterizer_render_globals, c_rasterizer::render_globals);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_G_LAST_VIEWPORT, rectangle2d, c_rasterizer::g_last_viewport);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_G_CURRENT_VERTEX_DECLARATION, IDirect3DVertexDeclaration9*, c_rasterizer::g_current_vertex_declaration);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_G_DEVICE, IDirect3DDevice9Ex*, c_rasterizer::g_device);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_G_CURRENT_INDEX_BUFFER, IDirect3DIndexBuffer9*, c_rasterizer::g_current_index_buffer);
+REFERENCE_DECLARE_ARRAY(ADDRESS_RASTERIZER_X_LAST_SAMPLER_FILTER_MODES, long, c_rasterizer::x_last_sampler_filter_modes, 20);
 long c_rasterizer::g_render_force_anisotropic_level = -1;
-REFERENCE_DECLARE_ARRAY(0x23390DC, long, c_rasterizer::x_last_render_state_value, 4);
-REFERENCE_DECLARE(0x23390F4, c_rasterizer::e_alpha_blend_mode, c_rasterizer::g_current_alpha_blend_mode);
+REFERENCE_DECLARE_ARRAY(ADDRESS_RASTERIZER_X_LAST_RENDER_STATE_VALUE, long, c_rasterizer::x_last_render_state_value, 4);
+REFERENCE_DECLARE(ADDRESS_RASTERIZER_G_CURRENT_ALPHA_BLEND_MODE, c_rasterizer::e_alpha_blend_mode, c_rasterizer::g_current_alpha_blend_mode);
 
 void c_rasterizer::get_fullscreen_render_pixel_bounds(rectangle2d* resolution)
 {
@@ -40,22 +40,22 @@ void c_rasterizer::get_fullscreen_render_title_safe_pixel_bounds(rectangle2d* re
 
 void __fastcall c_rasterizer::get_display_pixel_bounds(rectangle2d* display_pixel_bounds)
 {
-	INVOKE(0x257FE0, c_rasterizer::get_display_pixel_bounds, display_pixel_bounds);
+	INVOKE(ADDRESS_C_RASTERIZER_GET_DISPLAY_PIXEL_BOUNDS, c_rasterizer::get_display_pixel_bounds, display_pixel_bounds);
 }
 
 void __fastcall c_rasterizer::get_display_title_safe_pixel_bounds(rectangle2d* resolution)
 {
-	INVOKE(0x258050, c_rasterizer::get_display_title_safe_pixel_bounds, resolution);
+	INVOKE(ADDRESS_C_RASTERIZER_GET_DISPLAY_TITLE_SAFE_PIXEL_BOUNDS, c_rasterizer::get_display_title_safe_pixel_bounds, resolution);
 }
 
 void __fastcall c_rasterizer::restore_last_viewport()
 {
-	INVOKE(0x2588F0, c_rasterizer::restore_last_viewport);
+	INVOKE(ADDRESS_C_RASTERIZER_RESTORE_LAST_VIEWPORT, c_rasterizer::restore_last_viewport);
 }
 
 void __fastcall c_rasterizer::set_depth_stencil_surface(e_surface depth_stencil)
 {
-	INVOKE(0x25E7B0, c_rasterizer::set_depth_stencil_surface, depth_stencil);
+	INVOKE(ADDRESS_C_RASTERIZER_SET_DEPTH_STENCIL_SURFACE, c_rasterizer::set_depth_stencil_surface, depth_stencil);
 }
 
 rectangle2d* c_rasterizer::get_last_viewport()
@@ -107,7 +107,7 @@ const s_tag_reference* c_rasterizer_globals::get_explicit_vertex_shader_ref(long
 #pragma runtime_checks("", off)
 bool __fastcall c_rasterizer::set_vertex_shader(const c_rasterizer_vertex_shader* vertex_shader, e_vertex_type base_vertex_type, e_transfer_vector_vertex_types transfer_vertex_type, e_entry_point entry_point)
 {
-	bool return_value = INVOKE(0x25C5B0, c_rasterizer::set_vertex_shader, vertex_shader, base_vertex_type, transfer_vertex_type, entry_point);
+	bool return_value = INVOKE(ADDRESS_C_RASTERIZER_SET_VERTEX_SHADER, c_rasterizer::set_vertex_shader, vertex_shader, base_vertex_type, transfer_vertex_type, entry_point);
 	__asm add esp, 8; // Fixup stack
 	return return_value;
 
@@ -139,7 +139,7 @@ bool __fastcall c_rasterizer::set_vertex_shader(const c_rasterizer_vertex_shader
 
 bool __fastcall c_rasterizer::set_pixel_shader(const c_rasterizer_pixel_shader* pixel_shader, e_entry_point entry_point)
 {
-	return INVOKE(0x25C4E0, c_rasterizer::set_pixel_shader, pixel_shader, entry_point);
+	return INVOKE(ADDRESS_C_RASTERIZER_SET_PIXEL_SHADER, c_rasterizer::set_pixel_shader, pixel_shader, entry_point);
 
 	//if (!c_rasterizer::g_device)
 	//	return true;
@@ -167,7 +167,7 @@ bool __fastcall c_rasterizer::set_pixel_shader(const c_rasterizer_pixel_shader* 
 #pragma runtime_checks("", off)
 void __fastcall c_rasterizer::draw_primitive_up(c_rasterizer_index_buffer::e_primitive_type primitive_type, ulong primitive_count, const void* stream_data, ulong stride)
 {
-	INVOKE(0x260B10, c_rasterizer::draw_primitive_up, primitive_type, primitive_count, stream_data, stride);
+	INVOKE(ADDRESS_C_RASTERIZER_DRAW_PRIMITIVE_UP, c_rasterizer::draw_primitive_up, primitive_type, primitive_count, stream_data, stride);
 	__asm add esp, 8; // Fixup stack
 }
 #pragma runtime_checks("", restore)
@@ -175,19 +175,19 @@ void __fastcall c_rasterizer::draw_primitive_up(c_rasterizer_index_buffer::e_pri
 #pragma runtime_checks("", off)
 void __fastcall c_rasterizer::set_pixel_shader_constant(long constant_index, long count, const real_vector4d* constants)
 {
-	INVOKE(0x291410, c_rasterizer::set_pixel_shader_constant, constant_index, count, constants);
+	INVOKE(ADDRESS_C_RASTERIZER_SET_PIXEL_SHADER_CONSTANT, c_rasterizer::set_pixel_shader_constant, constant_index, count, constants);
 	__asm add esp, 4; // Fixup stack
 }
 #pragma runtime_checks("", restore)
 
 void __fastcall c_rasterizer::set_z_buffer_mode(e_z_buffer_mode mode)
 {
-	INVOKE(0x25B090, c_rasterizer::set_z_buffer_mode, mode);
+	INVOKE(ADDRESS_C_RASTERIZER_SET_Z_BUFFER_MODE, c_rasterizer::set_z_buffer_mode, mode);
 }
 
 void __fastcall c_rasterizer::set_cull_mode(e_cull_mode cull_mode)
 {
-	INVOKE(0x25BE20, c_rasterizer::set_cull_mode, cull_mode);
+	INVOKE(ADDRESS_C_RASTERIZER_SET_CULL_MODE, c_rasterizer::set_cull_mode, cull_mode);
 
 	//if (cull_mode != g_current_cull_mode)
 	//{
@@ -208,22 +208,22 @@ void c_rasterizer::set_alpha_blend_mode(e_alpha_blend_mode alpha_blend_mode)
 // optimised function has device argument baked into body as c_rasterizer::g_device, device will be ignored
 void __fastcall c_rasterizer::set_alpha_blend_mode_custom_device_no_cache(IDirect3DDevice9Ex* device, e_alpha_blend_mode alpha_blend_mode)
 {
-	INVOKE(0x25AC40, c_rasterizer::set_alpha_blend_mode_custom_device_no_cache, NULL, alpha_blend_mode);
+	INVOKE(ADDRESS_C_RASTERIZER_SET_ALPHA_BLEND_MODE_CUSTOM_DEVICE_NO_CACHE, c_rasterizer::set_alpha_blend_mode_custom_device_no_cache, NULL, alpha_blend_mode);
 }
 
 bool __fastcall c_rasterizer::begin_frame()
 {
-	return INVOKE(0x2598B0, c_rasterizer::begin_frame);
+	return INVOKE(ADDRESS_C_RASTERIZER_BEGIN_FRAME, c_rasterizer::begin_frame);
 }
 
 void __fastcall c_rasterizer::setup_targets_simple()
 {
-	INVOKE(0x25D200, c_rasterizer::setup_targets_simple);
+	INVOKE(ADDRESS_C_RASTERIZER_SETUP_TARGETS_SIMPLE, c_rasterizer::setup_targets_simple);
 }
 
 bool __fastcall c_rasterizer::end_frame()
 {
-	return INVOKE(0x259E40, c_rasterizer::end_frame);
+	return INVOKE(ADDRESS_C_RASTERIZER_END_FRAME, c_rasterizer::end_frame);
 }
 
 bool rasterizer_get_is_widescreen()

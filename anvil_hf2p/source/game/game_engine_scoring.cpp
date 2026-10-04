@@ -3,7 +3,7 @@
 void game_engine_scoring_notify_statborg_reset()
 {
 	// TODO: structs for these
-	*base_address<long*>(0x3FDC928) = NONE;
-	*base_address<long*>(0x3FDC9A8) = NONE;
-	*base_address<long*>(0x3FDCA28) = NONE;
+	*base_address<long*>(ADDRESS_SCORING_STATBORG_RESET_VALUE_0) = NONE;
+	*base_address<long*>(ADDRESS_SCORING_STATBORG_RESET_VALUE_1) = NONE;
+	*base_address<long*>(ADDRESS_SCORING_STATBORG_RESET_VALUE_2) = NONE;
 }

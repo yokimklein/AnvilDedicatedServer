@@ -2,7 +2,7 @@
 #include "cseries\cseries.h"
 #include <multithreading\threads.h>
 
-REFERENCE_DECLARE(0x10382B0, s_windows_params, g_windows_params);;
+REFERENCE_DECLARE(ADDRESS_G_WINDOWS_PARAMS, s_windows_params, g_windows_params);;
 
 LONG __stdcall TopLevelExceptionFilter(_EXCEPTION_POINTERS* exception_pointers)
 {

@@ -32,7 +32,7 @@ bool c_director::set_camera_mode_internal(e_camera_mode camera_mode, real transi
 	// $TODO: the invoked call has force_update optimised out as it was never used
 	ASSERT(force_update == false);
 
-	auto set_camera_mode_internal_call = DECLFUNC(0xE3460, bool, __vectorcall, c_director*, e_camera_mode, real, bool);
+	auto set_camera_mode_internal_call = DECLFUNC(ADDRESS_C_DIRECTOR_SET_CAMERA_MODE_INTERNAL, bool, __vectorcall, c_director*, e_camera_mode, real, bool);
 	bool result;
 	__asm
 	{
@@ -106,7 +106,7 @@ c_director* director_get(long user_index)
 
 void __fastcall director_set_mode(long user_index, e_director_mode director_mode)
 {
-	INVOKE(0xE2E80, director_set_mode, user_index, director_mode);
+	INVOKE(ADDRESS_DIRECTOR_SET_MODE, director_set_mode, user_index, director_mode);
 }
 
 e_director_mode choose_appropriate_director(long user_index)

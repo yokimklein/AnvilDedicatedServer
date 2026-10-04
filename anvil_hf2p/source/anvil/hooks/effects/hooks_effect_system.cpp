@@ -22,10 +22,10 @@ struct s_gpu_storage_2x16un
 void __fastcall write_particle_state_hook(s_particle_state* STATE, unsigned long index)
 {
 	// call original function
-	INVOKE(0x590560, write_particle_state_hook, STATE, index);
+	INVOKE(ADDRESS_WRITE_PARTICLE_STATE, write_particle_state_hook, STATE, index);
 
-	REFERENCE_DECLARE(0x242B628, unsigned int, g_particle_state_write_buffer);
-	REFERENCE_DECLARE(0x2423E24, unsigned int, g_particle_state_write_buffer_stride);
+	REFERENCE_DECLARE(ADDRESS_G_PARTICLE_STATE_WRITE_BUFFER, unsigned int, g_particle_state_write_buffer);
+	REFERENCE_DECLARE(ADDRESS_G_PARTICLE_STATE_WRITE_BUFFER_STRIDE, unsigned int, g_particle_state_write_buffer_stride);
 
 	// write to anm2
 	unsigned long* p = (unsigned long*)(g_particle_state_write_buffer + index * g_particle_state_write_buffer_stride + 0x40); // 0x40 = anm2
@@ -35,6 +35,6 @@ void __fastcall write_particle_state_hook(s_particle_state* STATE, unsigned long
 void anvil_hooks_effect_system_apply()
 {
 	// -- fix particle alpha_black_point and palette_v
-	hook::call(0x59151B, write_particle_state_hook);
-	hook::call(0x591628, write_particle_state_hook);
+	hook::call(ADDRESS_WRITE_PARTICLE_STATE_CALL, write_particle_state_hook);
+	hook::call(ADDRESS_WRITE_PARTICLE_STATE_CALL_2, write_particle_state_hook);
 }

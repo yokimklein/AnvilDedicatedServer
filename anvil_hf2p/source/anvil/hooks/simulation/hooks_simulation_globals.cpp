@@ -97,41 +97,41 @@ void __fastcall c_ctf_engine__initialize_object_data_hook(c_ctf_engine* thisptr,
 void anvil_hooks_simulation_globals_apply()
 {
     // pre-game camera countdown
-    hook::function(0xC6C00, 0x111, game_engine_update_round_conditions);
+    hook::function(ADDRESS_GAME_ENGINE_UPDATE_ROUND_CONDITIONS, LENGTH_GAME_ENGINE_UPDATE_ROUND_CONDITIONS, game_engine_update_round_conditions);
 
     // round timer
-    hook::insert(0xC98CB, 0xC98D1, game_engine_update_time_hook, _hook_execute_replaced_last);
+    hook::insert(ADDRESS_GAME_ENGINE_UPDATE_TIME_HOOK, ADDRESS_GAME_ENGINE_UPDATE_TIME_HOOK_RETURN, game_engine_update_time_hook, _hook_execute_replaced_last);
 
     // sync game end & podium
-    hook::insert(0xCA265, 0xCA26C, game_engine_update_after_game_hook2, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_HOOK2, ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_HOOK2_RETURN, game_engine_update_after_game_hook2, _hook_execute_replaced_first);
 
     // sync round index
-    hook::insert(0xC9C2A, 0xC9C31, game_engine_update_after_game_update_state_hook1, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_UPDATE_STATE_HOOK1, ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_UPDATE_STATE_HOOK1_RETURN, game_engine_update_after_game_update_state_hook1, _hook_execute_replaced_first);
 
     // sync game engine state
-    hook::insert(0xC9D9B, 0xC9DA2, game_engine_update_after_game_update_state_hook2, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_UPDATE_STATE_HOOK2, ADDRESS_GAME_ENGINE_UPDATE_AFTER_GAME_UPDATE_STATE_HOOK2_RETURN, game_engine_update_after_game_update_state_hook2, _hook_execute_replaced_first);
 
     // sync initial teams
-    hook::insert(0xDC9F2, 0xDC9F9, game_engine_build_initial_teams_hook1, _hook_execute_replaced_first);
-    hook::insert(0xDC51D, 0xDC522, game_engine_build_valid_team_mapping_hook, _hook_execute_replaced_first);
-    hook::insert(0xDC661, 0xDC666, game_engine_recompute_active_teams_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_BUILD_INITIAL_TEAMS_HOOK1, ADDRESS_GAME_ENGINE_BUILD_INITIAL_TEAMS_HOOK1_RETURN, game_engine_build_initial_teams_hook1, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_BUILD_VALID_TEAM_MAPPING_HOOK, ADDRESS_GAME_ENGINE_BUILD_VALID_TEAM_MAPPING_HOOK_RETURN, game_engine_build_valid_team_mapping_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_RECOMPUTE_ACTIVE_TEAMS_HOOK, ADDRESS_GAME_ENGINE_RECOMPUTE_ACTIVE_TEAMS_HOOK_RETURN, game_engine_recompute_active_teams_hook, _hook_execute_replaced_first);
 
     // sync team lives per round
-    hook::insert(0xDCA19, 0xDCA1F, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
-    hook::insert(0xDC847, 0xDC84C, game_engine_teams_use_one_shared_life_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_BUILD_INITIAL_TEAMS_HOOK2, ADDRESS_GAME_ENGINE_BUILD_INITIAL_TEAMS_HOOK2_RETURN, game_engine_build_initial_teams_hook2, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_GAME_ENGINE_TEAMS_USE_ONE_SHARED_LIFE_HOOK, ADDRESS_GAME_ENGINE_TEAMS_USE_ONE_SHARED_LIFE_HOOK_RETURN, game_engine_teams_use_one_shared_life_hook, _hook_execute_replaced_first);
 
     // ctf defense team
-    hook::insert(0x22852F, 0x228535, c_ctf_engine__game_starting, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GAME_STARTING, ADDRESS_C_CTF_ENGINE_GAME_STARTING_RETURN, c_ctf_engine__game_starting, _hook_execute_replaced_first);
 
     // ctf helper flags - sudden death
-    hook::insert(0x229A03, 0x229A0A, c_ctf_engine__get_time_left_in_ticks_hook1, _hook_execute_replaced_first);
-    hook::insert(0x229A2A, 0x229A31, c_ctf_engine__get_time_left_in_ticks_hook2, _hook_execute_replaced_first);
-    hook::insert(0x229A5B, 0x229A62, c_ctf_engine__get_time_left_in_ticks_hook3, _hook_execute_replaced_first);
-    hook::insert(0x229A7B, 0x229A82, c_ctf_engine__get_time_left_in_ticks_hook4, _hook_execute_replaced_first);
-    hook::insert(0x229992, 0x22999A, c_ctf_engine__get_time_left_in_ticks_hook5, _hook_execute_replaced_first);
-    hook::insert(0x229ADB, 0x229AE2, c_ctf_engine__get_time_left_in_ticks_hook6, _hook_execute_replaced_first);
-    hook::insert(0x228379, 0x228383, c_ctf_engine__initialize_for_new_round_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK1, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK1_RETURN, c_ctf_engine__get_time_left_in_ticks_hook1, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK2, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK2_RETURN, c_ctf_engine__get_time_left_in_ticks_hook2, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK3, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK3_RETURN, c_ctf_engine__get_time_left_in_ticks_hook3, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK4, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK4_RETURN, c_ctf_engine__get_time_left_in_ticks_hook4, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK5, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK5_RETURN, c_ctf_engine__get_time_left_in_ticks_hook5, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK6, ADDRESS_C_CTF_ENGINE_GET_TIME_LEFT_IN_TICKS_HOOK6_RETURN, c_ctf_engine__get_time_left_in_ticks_hook6, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_CTF_ENGINE_INITIALIZE_FOR_NEW_ROUND_HOOK, ADDRESS_C_CTF_ENGINE_INITIALIZE_FOR_NEW_ROUND_HOOK_RETURN, c_ctf_engine__initialize_for_new_round_hook, _hook_execute_replaced_first);
 
     // ctf initial flag reset timers, touch return timers, flag weapon flags
-    hook::function(0x228220, 0x41, c_ctf_engine__initialize_object_data_hook);
+    hook::function(ADDRESS_C_CTF_ENGINE_INITIALIZE_OBJECT_DATA, 0x41, c_ctf_engine__initialize_object_data_hook);
 }

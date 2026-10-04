@@ -168,7 +168,11 @@ struct s_network_session_player
 	};
 	long unknown3;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_player) == 0xB98);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_player) == 0xBB8);
+#endif
 static_assert(0x0C == OFFSETOF(s_network_session_player, peer_index));
 static_assert(0x20 == OFFSETOF(s_network_session_player, configuration));
 
@@ -200,7 +204,11 @@ struct s_network_session_shared_membership
 	long player_sequence_number;
 	long unknown3;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_shared_membership) == 0xC890);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_shared_membership) == 0xCA90);
+#endif
 static_assert(0x00 == OFFSETOF(s_network_session_shared_membership, update_number));
 static_assert(0x04 == OFFSETOF(s_network_session_shared_membership, leader_peer_index));
 static_assert(0x08 == OFFSETOF(s_network_session_shared_membership, host_peer_index));
@@ -213,7 +221,11 @@ static_assert(0x20 == OFFSETOF(s_network_session_shared_membership, peers));
 static_assert(0xF00 == OFFSETOF(s_network_session_shared_membership, player_count));
 static_assert(0xF04 == OFFSETOF(s_network_session_shared_membership, player_valid_mask));
 static_assert(0xF08 == OFFSETOF(s_network_session_shared_membership, players));
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0xC888 == OFFSETOF(s_network_session_shared_membership, player_sequence_number));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0xCA88 == OFFSETOF(s_network_session_shared_membership, player_sequence_number));
+#endif
 
 class c_network_session;
 struct s_network_message_membership_update;
@@ -313,6 +325,10 @@ public:
 	long m_player_add_queue_count;
 	long unknown3;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_network_session_membership) == 0xE1C70);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_network_session_membership) == 0xE4070);
+#endif
 
 const char* network_session_peer_state_get_string(e_network_session_peer_state state);

@@ -3,5 +3,5 @@
 
 e_language __cdecl get_current_language()
 {
-	return INVOKE(0xB0C00, get_current_language);
+	return INVOKE(ADDRESS_GET_CURRENT_LANGUAGE, get_current_language);
 }

@@ -195,6 +195,7 @@ void c_life_cycle_state_handler_end_game_write_stats::update_write_stats()
 		return;
 	}
 
+#if ANVIL_BACKEND_ENABLED
 	c_backend::private_service::submit_game_statistics::s_request request;
 	request.LobbyID = transport_secure_identifier_get_string(&lobby_identifier);
 	request.DedicatedServerID = transport_secure_address_get_string(&server_identifier);
@@ -205,12 +206,12 @@ void c_life_cycle_state_handler_end_game_write_stats::update_write_stats()
 	
 		// UserID
 		request_player.UserID = player->configuration.host.user_xuid;
-
+	
 		if (request_player.UserID == USER_SYSTEM)
 		{
 			continue;
 		}
-
+	
 		// Kills
 		request_player.Kills = final_results->statistics.player[player_index].statistics[_game_results_statistic_kills].statistic;
 		// Deaths
@@ -253,6 +254,8 @@ void c_life_cycle_state_handler_end_game_write_stats::update_write_stats()
 	}
 	
 	c_backend::private_service::submit_game_statistics::request(request);
+#endif
+
 	m_flags.set(_end_game_write_stats_write_completed_bit, true);
 }
 
@@ -329,12 +332,12 @@ e_end_game_stats_write_desire c_life_cycle_state_handler_end_game_write_stats::g
 
 void c_life_cycle_state_handler_end_game_write_stats::update_session_start()
 {
-	INVOKE_CLASS_MEMBER(0x4CB50, c_life_cycle_state_handler_end_game_write_stats, update_session_start);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_END_GAME_WRITE_STATS_UPDATE_SESSION_START, c_life_cycle_state_handler_end_game_write_stats, update_session_start);
 }
 
 void c_life_cycle_state_handler_end_game_write_stats::update_session_end()
 {
-	INVOKE_CLASS_MEMBER(0x4CBC0, c_life_cycle_state_handler_end_game_write_stats, update_session_end);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_END_GAME_WRITE_STATS_UPDATE_SESSION_END, c_life_cycle_state_handler_end_game_write_stats, update_session_end);
 }
 
 void c_life_cycle_state_handler_end_game_write_stats::update_submit_webstats()

@@ -8,8 +8,8 @@
 #include <input\input_windows.h>
 #include <winuser.rh>
 
-REFERENCE_DECLARE(0x4A2973C, long, g_player_podium_count);
-REFERENCE_DECLARE_ARRAY(0x4A29740, s_player_podium, g_player_podiums, k_maximum_multiplayer_players);
+REFERENCE_DECLARE(ADDRESS_G_PLAYER_PODIUM_COUNT, long, g_player_podium_count);
+REFERENCE_DECLARE_ARRAY(ADDRESS_G_PLAYER_PODIUMS, s_player_podium, g_player_podiums, k_maximum_multiplayer_players);
 
 void __fastcall hf2p_player_podium_initialize(long podium_biped_index, long player_index)
 {
@@ -63,7 +63,7 @@ void hf2p_trigger_player_podium_taunt(long player_podium_index)
 
 void __fastcall hf2p_player_podium_increment_loop_count(long player_index)
 {
-	INVOKE(0x2E8430, hf2p_player_podium_increment_loop_count, player_index);
+	INVOKE(ADDRESS_HF2P_PLAYER_PODIUM_INCREMENT_LOOP_COUNT, hf2p_player_podium_increment_loop_count, player_index);
 }
 
 /*

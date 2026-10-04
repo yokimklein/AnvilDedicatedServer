@@ -2,7 +2,7 @@
 
 c_game_engine_vip_variant* c_game_engine_vip_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD713E0); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_VIP_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -39,7 +39,7 @@ void c_game_engine_vip_variant::set(c_game_engine_vip_variant const* variant, bo
 
 void c_game_engine_vip_variant::set(s_game_engine_vip_variant_definition const* definition)
 {
-	DECLFUNC(0x1A9020, void, __thiscall, c_game_engine_vip_variant*, s_game_engine_vip_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_VIP_VARIANT_SET, void, __thiscall, c_game_engine_vip_variant*, s_game_engine_vip_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_vip_variant::get_single_vip() const

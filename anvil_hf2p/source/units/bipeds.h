@@ -82,7 +82,11 @@ struct biped_datum
 	_unit_datum unit;
 	_biped_datum biped;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(biped_datum) == 0x828);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(biped_datum) == 0x830);
+#endif
 
 bool __fastcall biped_calculate_melee_aiming(datum_index biped_index, real_vector3d* melee_aiming_vector);
 bool __fastcall biped_update_melee_turning(datum_index biped_index);

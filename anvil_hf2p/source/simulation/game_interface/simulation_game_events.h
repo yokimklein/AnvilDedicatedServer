@@ -20,6 +20,9 @@ enum e_simulation_event_type
 	_simulation_event_type_weapon_empty_click,
 	_simulation_event_type_hs_script_wake, // new - distributed script waking
 	_simulation_event_type_hit_marker,
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	_simulation_event_type_challenge_progress_update, // new in ms30 (c_simulation_challenge_progress_update_event_definition)
+#endif
 	_simulation_event_type_authority_ignored_predicted_position, // new - async ragdolls?
 	_simulation_event_type_unit_exit_vehicle,
 	_simulation_event_type_unit_assassinate,

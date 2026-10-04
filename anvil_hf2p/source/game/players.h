@@ -238,15 +238,15 @@ struct player_datum : s_datum_header
 	struct // momentum
 	{
 		// set in `player_submit_actions`, struct?
-		int16 momentum_timer;
+		short momentum_timer;
 
-		int16 momemtum_unknown2CE6;
+		short momemtum_unknown2CE6;
 
 		// set in `player_submit_actions`
-		int16 momentum_decay_timer; // set from tags, `game_globals:player_control:cooldown_time`
+		short momentum_decay_timer; // set from tags, `game_globals:player_control:cooldown_time`
 
 		// set in `player_submit_actions`, `sub_53C570`
-		int16 momentum_falloff_timer; // set from tags, `momentum_falloff_timer - (game_globals:player_control:stamina_deplete_restore_time * s_equipment:adrenaline:sprint_restore)`
+		short momentum_falloff_timer; // set from tags, `momentum_falloff_timer - (game_globals:player_control:stamina_deplete_restore_time * s_equipment:adrenaline:sprint_restore)`
 
 		bool momemtum_suppressed;
 	};
@@ -319,13 +319,18 @@ struct player_datum : s_datum_header
 	short spawn_count;
 	short : 16;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(player_datum) == 0x19B0);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(player_datum) == 0x19F0);
+#endif
 static_assert(0x04 == OFFSETOF(player_datum, flags));
 static_assert(0x30 == OFFSETOF(player_datum, unit_index));
 static_assert(0x40 == OFFSETOF(player_datum, equipment_cooldown_ticks));
 static_assert(0x49 == OFFSETOF(player_datum, next_spawn_control_context));
 static_assert(0x4C == OFFSETOF(player_datum, active_loadout_index));
 static_assert(0x70 == OFFSETOF(player_datum, configuration));
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0x1758 == OFFSETOF(player_datum, respawn_timer_countdown_ticks));
 static_assert(0x175C == OFFSETOF(player_datum, respawn_timer_countdown_seconds));
 static_assert(0x178E == OFFSETOF(player_datum, vehicle_entrance_ban_ticks));
@@ -340,6 +345,22 @@ static_assert(0x18EC == OFFSETOF(player_datum, assassination_victim_unit_index))
 static_assert(0x18F0 == OFFSETOF(player_datum, is_assassination_victim));
 static_assert(0x18F4 == OFFSETOF(player_datum, assasination_authorative_position));
 static_assert(0x1900 == OFFSETOF(player_datum, assasination_authorative_forward));
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0x1798 == OFFSETOF(player_datum, respawn_timer_countdown_ticks));
+static_assert(0x179C == OFFSETOF(player_datum, respawn_timer_countdown_seconds));
+static_assert(0x17CE == OFFSETOF(player_datum, vehicle_entrance_ban_ticks));
+static_assert(0x1882 == OFFSETOF(player_datum, multiplayer.remaining_lives));
+static_assert(0x1888 == OFFSETOF(player_datum, multiplayer.time_of_death));
+static_assert(0x18B4 == OFFSETOF(player_datum, multiplayer.dead_camera_target_player_index));
+static_assert(0x18F4 == OFFSETOF(player_datum, revenge_shield_boost_unknown80));
+static_assert(0x18F6 == OFFSETOF(player_datum, revenge_shield_boost_multiplier));
+static_assert(0x1900 == OFFSETOF(player_datum, revenge_shield_boost_player_index));
+static_assert(0x1904 == OFFSETOF(player_datum, revenge_shield_boost_damage));
+static_assert(0x192C == OFFSETOF(player_datum, assassination_victim_unit_index));
+static_assert(0x1930 == OFFSETOF(player_datum, is_assassination_victim));
+static_assert(0x1934 == OFFSETOF(player_datum, assasination_authorative_position));
+static_assert(0x1940 == OFFSETOF(player_datum, assasination_authorative_forward));
+#endif
 
 struct c_player_in_game_iterator
 {

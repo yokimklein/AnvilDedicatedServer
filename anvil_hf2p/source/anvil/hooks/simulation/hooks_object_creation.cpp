@@ -28,7 +28,11 @@ void __cdecl weapon_barrel_create_projectiles_hook0(s_hook_registers& registers)
 {
 	// esp + original sp - variable offset + new stack space
 	bool* no_barrel_prediction = (bool*)(registers.ebp + 0x04);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 	*no_barrel_prediction = *(bool*)(registers.esp + 0x2250 - 0x2244);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	*no_barrel_prediction = *(bool*)(registers.esp + 0x2250 - 0x2240);
+#endif
 }
 
 // crate projectiles
@@ -161,36 +165,36 @@ void __cdecl create_flag_at_position_hook(s_hook_registers& registers)
 void anvil_hooks_object_creation_apply()
 {
 	// create & update player biped on spawn (player_spawn)
-	hook::call(0xBB084, player_set_facing_player_spawn_hook);
+	hook::call(ADDRESS_PLAYER_SET_FACING_PLAYER_SPAWN_CALL, player_set_facing_player_spawn_hook);
 
 	// map variant object spawning
-	hook::call(0xAEA03, game_engine_register_object_hook); // c_map_variant::create_object
-	hook::call(0x172D86, game_engine_register_object_hook); // c_candy_spawner:spawn_object
-	hook::call(0x4095BB, game_engine_register_object_hook); // object_new_from_scenario_internal
+	hook::call(ADDRESS_GAME_ENGINE_REGISTER_OBJECT_CALL, game_engine_register_object_hook); // c_map_variant::create_object
+	hook::call(ADDRESS_GAME_ENGINE_REGISTER_OBJECT_CALL_2, game_engine_register_object_hook); // c_candy_spawner:spawn_object
+	hook::call(ADDRESS_GAME_ENGINE_REGISTER_OBJECT_CALL_3, game_engine_register_object_hook); // object_new_from_scenario_internal
 
 	// effect object spawning
-	hook::insert(0x114A2F, 0x114A6C, event_generate_part_hook, _hook_replace);
+	hook::insert(ADDRESS_EVENT_GENERATE_PART_HOOK, ADDRESS_EVENT_GENERATE_PART_HOOK_RETURN, event_generate_part_hook, _hook_replace);
 	
 	// weapon_barrel_create_projectiles
-	hook::add_variable_space_to_stack_frame(0x4371F0, 0x439A51, 4); // Add 4 bytes of variable space to the stack frame
-	hook::insert(0x4373B4, 0x4373BB, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve no_barrel_prediction in our new variable
-	hook::insert(0x4391CD, 0x4391D9, weapon_barrel_create_projectiles_hook1, _hook_replace); // crate projectiles
-	hook::insert(0x4394A2, 0x4394A8, weapon_barrel_create_projectiles_hook2, _hook_execute_replaced_last); // non-predicted standard projectiles
-	hook::insert(0x439A4B, 0x439A50, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+	hook::add_variable_space_to_stack_frame(ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES, ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_END, 4); // Add 4 bytes of variable space to the stack frame
+	hook::insert(ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK0, ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK0_RETURN, weapon_barrel_create_projectiles_hook0, _hook_execute_replaced_last); // preserve no_barrel_prediction in our new variable
+	hook::insert(ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK1, ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK1_RETURN, weapon_barrel_create_projectiles_hook1, _hook_replace); // crate projectiles
+	hook::insert(ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK2, ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_HOOK2_RETURN, weapon_barrel_create_projectiles_hook2, _hook_execute_replaced_last); // non-predicted standard projectiles
+	hook::insert(ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_STACK_CLEANUP, ADDRESS_WEAPON_BARREL_CREATE_PROJECTILES_STACK_CLEANUP_RETURN, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
 
 	// grenade & equipment throw spawning
-	hook::add_variable_space_to_stack_frame(0x47CE00, 0x47D21C, 4); // Add 4 bytes of variable space to the stack frame
-	hook::insert(0x47D174, 0x47D179, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
-	hook::insert(0x47D185, 0x47D18D, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
-	hook::insert(0x47D211, 0x47D21B, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
-	hook::insert(0x47D17B, 0x47D18D, throw_release_hook3, _hook_replace, FLAG(_hook_no_nop)); // redirect code path to avoid accidentally calling above hook
-	patch::nop_region(0x47D180, 5); // cleanup leftover instruction bytes
+	hook::add_variable_space_to_stack_frame(ADDRESS_THROW_RELEASE, ADDRESS_THROW_RELEASE_END, 4); // Add 4 bytes of variable space to the stack frame
+	hook::insert(ADDRESS_THROW_RELEASE_HOOK0, ADDRESS_THROW_RELEASE_HOOK0_RETURN, throw_release_hook0, _hook_execute_replaced_last); // preserve object_force_inside_bsp's return value
+	hook::insert(ADDRESS_THROW_RELEASE_HOOK1, ADDRESS_THROW_RELEASE_HOOK1_RETURN, throw_release_hook1, _hook_replace); // create thrown projectiles - we're replacing the inlined function call at the return address in another hook so we can replace this
+	hook::insert(ADDRESS_THROW_RELEASE_STACK_CLEANUP, ADDRESS_THROW_RELEASE_STACK_CLEANUP_RETURN, (void*)4, _hook_stack_frame_cleanup); // clean up our new variable before returning
+	hook::insert(ADDRESS_THROW_RELEASE_HOOK3, ADDRESS_THROW_RELEASE_HOOK3_RETURN, throw_release_hook3, _hook_replace, FLAG(_hook_no_nop)); // redirect code path to avoid accidentally calling above hook
+	patch::nop_region(ADDRESS_THROW_RELEASE_NOP, 5); // cleanup leftover instruction bytes
 
 	// hologram spawning
-	hook::insert(0x45113A, 0x451144, equipment_activate_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_EQUIPMENT_ACTIVATE_HOOK, ADDRESS_EQUIPMENT_ACTIVATE_HOOK_RETURN, equipment_activate_hook, _hook_execute_replaced_last);
 
 	// item inventory
-	hook::insert(0x484337, 0x48433D, item_in_unit_inventory_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_ITEM_IN_UNIT_INVENTORY_HOOK, ADDRESS_ITEM_IN_UNIT_INVENTORY_HOOK_RETURN, item_in_unit_inventory_hook, _hook_execute_replaced_last);
 
 	// actor place
 	//patch::bytes(0x6989CB, { 0x0F, 0x84, 0x6D, 0x00, 0x00, 0x00 }); // redirect jump to hook instead of return
@@ -200,8 +204,8 @@ void anvil_hooks_object_creation_apply()
 	//hook::insert(0x698A3E, 0x698A47, actor_place_hook, _hook_execute_replaced_last);
 
 	// final gambit modifier plasma grenade
-	hook::insert(0x426F19, 0x426F20, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
+	hook::insert(ADDRESS_UNIT_DROP_PLASMA_ON_DEATH_HOOK, ADDRESS_UNIT_DROP_PLASMA_ON_DEATH_HOOK_RETURN, unit_drop_plasma_on_death_hook, _hook_execute_replaced_last);
 
 	// ctf & derived gamemodes flag spawning
-	hook::insert(0x22A596, 0x22A59B, create_flag_at_position_hook, _hook_replace);
+	hook::insert(ADDRESS_CREATE_FLAG_AT_POSITION_HOOK, ADDRESS_CREATE_FLAG_AT_POSITION_HOOK_RETURN, create_flag_at_position_hook, _hook_replace);
 }

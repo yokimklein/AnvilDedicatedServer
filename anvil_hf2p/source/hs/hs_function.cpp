@@ -2,7 +2,7 @@
 #include "hs\hs_library_external.h"
 #include "cseries\cseries_events.h"
 
-REFERENCE_DECLARE_ARRAY(0xEA4188, const hs_function_definition*, hs_function_table, hs_function_table_count);
+REFERENCE_DECLARE_ARRAY(ADDRESS_HS_FUNCTION_TABLE, const hs_function_definition*, hs_function_table, hs_function_table_count);
 
 void __cdecl print_hs_print_1_evaluate(short function_index, long thread_index, bool initialize)
 {

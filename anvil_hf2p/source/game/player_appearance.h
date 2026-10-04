@@ -344,6 +344,12 @@ enum e_modifiers
 	_headshot_heal,
 	_weapon_accuracy,
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	_add_health,
+	_add_shield,
+	_assassin_overshield,
+#endif
+
 	k_modifiers_count
 };
 
@@ -498,7 +504,11 @@ struct s_s3d_player_modifiers
 	// floats are stored as is
 	real modifier_values[k_modifiers_count];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_s3d_player_modifiers) == 0x17C);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_s3d_player_modifiers) == 0x188);
+#endif
 
 #pragma pack(push, 4)
 struct s_s3d_player_container
@@ -520,7 +530,11 @@ struct s_s3d_player_container
 	byte pad[1];
 	s_s3d_player_modifiers modifiers[k_maximum_loadouts];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_s3d_player_container) == 0x494);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_s3d_player_container) == 0x4B8);
+#endif
 #pragma pack(pop)
 
 struct s_s3d_player_customization
@@ -530,8 +544,10 @@ struct s_s3d_player_customization
 		active_loadout_index(),
 		account_label(),
 		emblem(),
-		colors(),
-		padding()
+		colors()
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+		, padding()
+#endif
 	{
 	};
 
@@ -544,8 +560,14 @@ struct s_s3d_player_customization
 	byte account_label; // nameplate
 	byte emblem;
 	ulong colors[k_armor_colors_count];
-	byte padding[4];
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+	byte padding[4]; // removed in ms30
+#endif
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_s3d_player_customization) == 0x1C);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_s3d_player_customization) == 0x18);
+#endif
 
 const char* __fastcall modifier_get_name(e_modifiers modifier);

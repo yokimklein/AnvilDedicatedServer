@@ -1,4 +1,5 @@
 #pragma once
+#include <cseries\cseries.h>
 #include <memory\hashtable.h>
 
 // https://github.com/theTwist84/ManagedDonkey/blob/main/game/source/tag_files/string_ids.hpp
@@ -3603,6 +3604,16 @@ enum e_game_engine_string_id
 	_game_engine_string_id_earn_wp_event_vehicle_5,
 	_game_engine_string_id_earn_wp_event_headshot,
 	_game_engine_string_id_earn_wp_event_betrayal,
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	_game_engine_string_id_earn_wp_event_vehicle_10, // new in ms30
+	_game_engine_string_id_earn_wp_event_sniper_kills_5, // new in ms30
+	_game_engine_string_id_earn_wp_event_sniper_kills_10, // new in ms30
+	_game_engine_string_id_earn_wp_event_shotgun_kills_5, // new in ms30
+	_game_engine_string_id_earn_wp_event_shotgun_kills_10, // new in ms30
+	_game_engine_string_id_earn_wp_event_sword_kills_5, // new in ms30
+	_game_engine_string_id_earn_wp_event_sword_kills_10, // new in ms30
+	_game_engine_string_id_earn_wp_event_superdetonation, // new in ms30
+#endif
 	_game_engine_string_id_general_event_kill,
 	_game_engine_string_id_general_event_suicide,
 	_game_engine_string_id_general_event_kill_teammate,
@@ -3984,7 +3995,11 @@ static_assert(0x61F == k_global_string_id_count);
 static_assert(0x684 == k_gui_string_id_count);
 static_assert(0x09B == k_gui_alert_string_id_count);
 static_assert(0x058 == k_gui_dialog_string_id_count);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0x0F8 == k_game_engine_string_id_count);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0x100 == k_game_engine_string_id_count);
+#endif
 static_assert(0x04C == k_game_start_string_id_count);
 static_assert(0x02F == k_online_string_id_count);
 static_assert(0x018 == k_saved_game_string_id_count);
@@ -4034,7 +4049,11 @@ enum
 	= k_gpu_string_offset + k_gpu_string_id_count
 };
 static_assert(0x1 == k_first_string_offset);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(0xF2D == k_last_string_offset); // TODO: confirm offset
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(0xF35 == k_last_string_offset);
+#endif
 
 long const k_string_namespace_offsets[k_string_namespace_count]
 {

@@ -2,7 +2,7 @@
 
 c_game_engine_oddball_variant* c_game_engine_oddball_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD71440); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_ODDBALL_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -29,7 +29,7 @@ void c_game_engine_oddball_variant::set(c_game_engine_oddball_variant const* var
 
 void c_game_engine_oddball_variant::set(s_game_engine_oddball_variant_definition const* definition)
 {
-	DECLFUNC(0x1A9D90, void, __thiscall, c_game_engine_oddball_variant*, s_game_engine_oddball_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_ODDBALL_VARIANT_SET, void, __thiscall, c_game_engine_oddball_variant*, s_game_engine_oddball_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_oddball_variant::get_auto_ball_pickup() const

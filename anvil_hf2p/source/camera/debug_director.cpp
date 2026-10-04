@@ -28,7 +28,13 @@ void c_debug_director::update_(real dt)
 		{
 			//g_director_camera_speed_scale = int_pin(powf(1.3f, (real32)state->wheel_ticks) * g_director_camera_speed_scale, 0.0009765625f, 256.0f);
 
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+			// ms30's input_update turns the accumulated wheel_delta into whole wheel_ticks every frame and keeps only the
+			// remainder in wheel_delta, so read the ticks like ms30's own c_debug_director::update does
+			real wheel_value = real(state->wheel_ticks);
+#else
 			real wheel_value = real(short(state->wheel_delta) / input_globals.mouse_wheel_delta);
+#endif
 			g_director_camera_speed_scale = int_pin(powf(1.3f, wheel_value) * g_director_camera_speed_scale, 0.0009765625f, 256.0f);
 
 			//real32 wheel_value = real32(int16(state->wheel_delta) / input_globals.mouse_wheel_delta);
@@ -51,7 +57,7 @@ void c_debug_director::update_(real dt)
 		}
 	}
 
-	INVOKE_CLASS_MEMBER(0xE3110, c_director, update, dt);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_DIRECTOR_UPDATE, c_director, update, dt);
 }
 
 void c_debug_director::changed_camera()

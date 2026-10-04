@@ -238,6 +238,14 @@ enum e_critical_sections
 	// CS:Texture Render
 	k_crit_section_texture_render,
 
+	// CS:Render Counters
+	k_crit_section_render_counters,
+
+#if ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+	// CS:Streamed Resources Update
+	k_crit_section_streamed_resources_update, // new in ms30
+#endif
+
 	k_total_critical_sections,
 
 	k_invalid_critical_section = NONE
@@ -342,7 +350,11 @@ struct s_synchronization_globals
 	c_synchronization_handle sync_event[k_total_synchronization_events];
 	c_semaphore_handle semaphore[k_total_synchronization_semaphores];
 };
-static_assert(sizeof(s_synchronization_globals) == 0x91C);
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
+static_assert(sizeof(s_synchronization_globals) == 0x93C);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_synchronization_globals) == 0x95C);
+#endif
 
 class c_critical_section_scope
 {

@@ -106,7 +106,11 @@ struct game_globals_storage
 
 	byte __data25204[4];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(game_globals_storage) == 0x1A708);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(game_globals_storage) == 0x1A908);
+#endif
 
 struct s_game_globals_difficulty_information
 {

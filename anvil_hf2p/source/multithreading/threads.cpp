@@ -3,9 +3,9 @@
 #include "multithreading\synchronization.h"
 #include <windows.h>
 
-REFERENCE_DECLARE_ARRAY(0xD3D5F8, s_thread_definition, k_registered_thread_definitions, k_registered_thread_count);
-REFERENCE_DECLARE(0x1044AD0, s_thread_system_globals, g_thread_globals);
-REFERENCE_DECLARE(0x49B1298, c_interlocked_long, g_thread_owning_device);
+REFERENCE_DECLARE_ARRAY(ADDRESS_K_REGISTERED_THREAD_DEFINITIONS, s_thread_definition, k_registered_thread_definitions, k_registered_thread_count);
+REFERENCE_DECLARE(ADDRESS_G_THREAD_GLOBALS, s_thread_system_globals, g_thread_globals);
+REFERENCE_DECLARE(ADDRESS_G_THREAD_OWNING_DEVICE, c_interlocked_long, g_thread_owning_device);
 
 c_interlocked_long thread_should_assert[k_registered_thread_count]{};
 c_interlocked_long thread_should_crash[k_registered_thread_count]{};
@@ -96,7 +96,7 @@ void sleep(ulong milliseconds)
 
 void __fastcall start_thread(e_registered_threads thread_index)
 {
-	INVOKE(0xA5D20, start_thread, thread_index);
+	INVOKE(ADDRESS_START_THREAD, start_thread, thread_index);
 	//g_thread_globals.thread_should_exit[thread_index].set(FALSE);
 	//g_thread_globals.thread_has_crashed[thread_index].set(FALSE);
 	//initialize_thread(thread_index);

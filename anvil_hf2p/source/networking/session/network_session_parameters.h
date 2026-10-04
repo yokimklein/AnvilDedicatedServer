@@ -78,5 +78,9 @@ public:
 	ulong m_flags;
 	ulong m_initial_parameters_update_mask;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_network_session_parameters) == 0xCA114);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_network_session_parameters) == 0xCA914);
+#endif
 #pragma pack(pop)

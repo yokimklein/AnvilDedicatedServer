@@ -30,7 +30,7 @@ void __fastcall game_engine_render_frame_watermarks(bool pregame)
 	session_string.print(L"%hs", transport_secure_address_get_string(get_session_secure_address(&session_id)));
 
 	c_static_wchar_string<256> game_session_string;
-	s_transport_secure_identifier game_session_id = *base_address<s_transport_secure_identifier*>(0x4A2CBD8); // $TODO: map global
+	s_transport_secure_identifier game_session_id = *base_address<s_transport_secure_identifier*>(ADDRESS_GAME_SESSION_ID); // $TODO: map global
 	if (!hf2p_session_invalid(&game_session_id))
 	{
 		game_session_string.print(L"%hs", transport_secure_identifier_get_string(&game_session_id));
@@ -62,7 +62,7 @@ void __fastcall game_engine_render_frame_watermarks(bool pregame)
 	long scale_index = 3 * (is_widescreen + scale_offset + 2 * is_widescreen);
 	c_rasterizer_draw_string draw_string;
 	draw_string.set_font(font);
-	REFERENCE_DECLARE_ARRAY(0xD81498, real, g_watermark_scales, 18);
+	REFERENCE_DECLARE_ARRAY(ADDRESS_G_WATERMARK_SCALES, real, g_watermark_scales, 18);
 	draw_string.set_scale(g_watermark_scales[scale_index]);
 	draw_string.set_justification(_text_justification_right);
 	draw_string.set_color(&color);
@@ -87,7 +87,7 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 	watermark.print(L"cache %hs|n", cache_file_get_build_number());
 	s_transport_secure_address session_id;
 	watermark.append_print(L"%hs|n", transport_secure_address_get_string(get_session_secure_address(&session_id)));
-	s_transport_secure_identifier game_session_id = *base_address<s_transport_secure_identifier*>(0x4A2CBD8); // $TODO: map global
+	s_transport_secure_identifier game_session_id = *base_address<s_transport_secure_identifier*>(ADDRESS_GAME_SESSION_ID); // $TODO: map global
 	short lines = 3;
 	if (!hf2p_session_invalid(&game_session_id))
 	{
@@ -121,7 +121,7 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 	long scale_index = 3 * (is_widescreen + scale_offset + 2 * is_widescreen);
 	c_rasterizer_draw_string draw_string;
 	draw_string.set_font(_terminal_font);
-	REFERENCE_DECLARE_ARRAY(0xD81498, real, g_watermark_scales, 18);
+	REFERENCE_DECLARE_ARRAY(ADDRESS_G_WATERMARK_SCALES, real, g_watermark_scales, 18);
 	draw_string.set_scale(g_watermark_scales[scale_index] * scale.lower);
 	draw_string.set_justification(_text_justification_right);
 	draw_string.set_color(&color);
@@ -136,5 +136,5 @@ void __fastcall game_engine_render_frame_watermarks_anvil(bool pregame)
 void __fastcall main_render_pregame(e_main_pregame_frame pregame_frame_type, const char* pregame_frame_text)
 {
 	// $TODO: hook and rewrite this
-	INVOKE(0x163B00, main_render_pregame, pregame_frame_type, pregame_frame_text);
+	INVOKE(ADDRESS_MAIN_RENDER_PREGAME, main_render_pregame, pregame_frame_type, pregame_frame_text);
 }

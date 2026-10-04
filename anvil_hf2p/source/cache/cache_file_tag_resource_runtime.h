@@ -1,5 +1,41 @@
 #pragma once
 #include "cseries\cseries.h"
+#include "cache\cache_file_tag_resource_vtable_list.h"
+#include "memory\secure_signature.h"
+
+struct s_cache_file_local_resource_location
+{
+	ulong flags : 2;
+	ulong file_size : 30;
+	ulong memory_size;
+	s_network_http_request_hash entire_checksum;
+};
+static_assert(sizeof(s_cache_file_local_resource_location) == 0x1C);
+
+struct s_cache_file_insertion_point_resource_usage
+{
+	char initial_zone_set_index;
+	byte pad[0x3];
+	c_static_flags<1024> shared_required_locations;
+	c_static_flags<320> local_required_locations;
+	byte __dataAC[0x8];
+};
+static_assert(sizeof(s_cache_file_insertion_point_resource_usage) == 0xB4);
+
+// unused in halo online, zeroed in every map header
+struct s_cache_file_shared_resource_usage
+{
+	s_tag_persistent_identifier shared_layout_identifier;
+	ushort shared_location_count;
+	ushort local_location_count;
+	ulong first_file_offset;
+	s_tag_persistent_identifier codec_identifier;
+	c_static_array<s_cache_file_local_resource_location, 320> local_locations;
+	byte insertion_point_usage_count;
+	char pad[0x3];
+	c_static_array<s_cache_file_insertion_point_resource_usage, 9> insertion_point_usages;
+};
+static_assert(sizeof(s_cache_file_shared_resource_usage) == 0x2980);
 
 class c_tag_resource_fixup;
 class s_control_fixups_tag_block;

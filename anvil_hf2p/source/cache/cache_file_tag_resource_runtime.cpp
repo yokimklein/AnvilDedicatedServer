@@ -4,7 +4,7 @@
 
 void __fastcall tag_resources_lock_game(long& locked)
 {
-	INVOKE(0x7E7E0, tag_resources_lock_game, locked);
+	INVOKE(ADDRESS_TAG_RESOURCES_LOCK_GAME, tag_resources_lock_game, locked);
 	//if (g_resource_runtime_manager.get()->locked_for_game_UGLY())
 	//{
 	//	return 0;
@@ -16,7 +16,7 @@ void __fastcall tag_resources_lock_game(long& locked)
 
 void __fastcall tag_resources_unlock_game(long& locked)
 {
-	INVOKE(0x7E830, tag_resources_unlock_game, locked);
+	INVOKE(ADDRESS_TAG_RESOURCES_UNLOCK_GAME, tag_resources_unlock_game, locked);
 }
 
 //void c_cache_file_tag_resource_runtime_manager::lock_for_game()

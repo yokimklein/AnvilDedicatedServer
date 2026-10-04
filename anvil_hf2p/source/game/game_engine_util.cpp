@@ -58,7 +58,7 @@ void __fastcall game_engine_send_event(s_game_engine_event_data* event_data)
 
 short __fastcall game_engine_get_multiplayer_weapon_selection_absolute_index(long name)
 {
-	return INVOKE(0x11C250, game_engine_get_multiplayer_weapon_selection_absolute_index, name);
+	return INVOKE(ADDRESS_GAME_ENGINE_GET_MULTIPLAYER_WEAPON_SELECTION_ABSOLUTE_INDEX, game_engine_get_multiplayer_weapon_selection_absolute_index, name);
 }
 
 string_id __fastcall game_engine_get_multiplayer_weapon_selection_name(short absolute_index)
@@ -86,5 +86,5 @@ void game_engine_set_event_effect_player_and_team(datum_index effect_player_inde
 
 void __fastcall game_engine_handle_event(s_game_engine_event_data* event_data, bool unknown)
 {
-	INVOKE(0xD0AD0, game_engine_handle_event, event_data, unknown);
+	INVOKE(ADDRESS_GAME_ENGINE_HANDLE_EVENT, game_engine_handle_event, event_data, unknown);
 }

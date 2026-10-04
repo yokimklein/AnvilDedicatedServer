@@ -4,7 +4,7 @@
 #include "text\font_cache.h"
 #include "text\font_package_cache.h"
 
-REFERENCE_DECLARE(0x3F863D4, s_font_globals, g_font_globals);
+REFERENCE_DECLARE(ADDRESS_G_FONT_GLOBALS, s_font_globals, g_font_globals);
 
 const s_font_header* font_get_header_internal(e_font_index internal_index)
 {

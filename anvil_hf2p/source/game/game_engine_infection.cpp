@@ -2,7 +2,7 @@
 
 c_game_engine_infection_variant* c_game_engine_infection_variant::constructor()
 {
-	*(size_t*)this = base_address(0xD71320); // set vftable
+	*(size_t*)this = base_address(ADDRESS_C_GAME_ENGINE_INFECTION_VARIANT_CONSTRUCTOR_VFTABLE); // set vftable
 	return this;
 }
 
@@ -34,7 +34,7 @@ void c_game_engine_infection_variant::set(c_game_engine_infection_variant const*
 
 void c_game_engine_infection_variant::set(s_game_engine_infection_variant_definition const* definition)
 {
-	DECLFUNC(0x1ADCB0, void, __thiscall, c_game_engine_infection_variant*, s_game_engine_infection_variant_definition const*)(this, definition);
+	DECLFUNC(ADDRESS_C_GAME_ENGINE_INFECTION_VARIANT_SET, void, __thiscall, c_game_engine_infection_variant*, s_game_engine_infection_variant_definition const*)(this, definition);
 }
 
 bool c_game_engine_infection_variant::get_respawn_on_haven_move() const

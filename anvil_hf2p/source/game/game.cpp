@@ -5,8 +5,8 @@
 #include <networking\network_configuration.h>
 #include <memory\tls.h>
 
-REFERENCE_DECLARE(0x104DE54, bool, g_disable_video);
-REFERENCE_DECLARE(0x104DD9A, bool, g_disable_audio);
+REFERENCE_DECLARE(ADDRESS_G_DISABLE_VIDEO, bool, g_disable_video);
+REFERENCE_DECLARE(ADDRESS_G_DISABLE_AUDIO, bool, g_disable_audio);
 
 game_options* game_options_get()
 {
@@ -248,7 +248,7 @@ void game_get_determinism_versions(long* determinism_version, long* determinism_
 
 bool __fastcall game_engine_teams_use_one_shared_life(e_game_team team)
 {
-	return INVOKE(0xDC7F0, game_engine_teams_use_one_shared_life, team);
+	return INVOKE(ADDRESS_GAME_ENGINE_TEAMS_USE_ONE_SHARED_LIFE, game_engine_teams_use_one_shared_life, team);
 }
 
 bool game_options_valid()

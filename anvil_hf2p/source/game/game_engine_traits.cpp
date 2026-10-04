@@ -565,5 +565,5 @@ void c_game_engine_map_override_options::set_yellow_powerup_duration_seconds(byt
 
 void __fastcall game_engine_assemble_player_traits(datum_index absolute_player_index)
 {
-	INVOKE(0x11D7E0, game_engine_assemble_player_traits, absolute_player_index);
+	INVOKE(ADDRESS_GAME_ENGINE_ASSEMBLE_PLAYER_TRAITS, game_engine_assemble_player_traits, absolute_player_index);
 }

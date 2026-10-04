@@ -48,7 +48,7 @@ void c_network_message_handler::handle_connect_request(transport_address const* 
 
 void c_network_message_handler::handle_connect_refuse(c_network_channel* channel, s_network_message_connect_refuse const* message)
 {
-	DECLFUNC(0x25AC0, void, __fastcall, c_network_channel*, s_network_message_connect_refuse const*)(channel, message);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_CONNECT_REFUSE, void, __fastcall, c_network_channel*, s_network_message_connect_refuse const*)(channel, message);
 }
 
 void c_network_message_handler::handle_connect_establish(c_network_channel* channel, s_network_message_connect_establish const* message)
@@ -198,7 +198,7 @@ void c_network_message_handler::handle_join_abort(transport_address const* outgo
 
 void c_network_message_handler::handle_join_refuse(transport_address const* outgoing_address, s_network_message_join_refuse const* message)
 {
-	INVOKE_CLASS_MEMBER(0x25660, c_network_message_handler, handle_join_refuse, outgoing_address, message);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_JOIN_REFUSE, c_network_message_handler, handle_join_refuse, outgoing_address, message);
 }
 
 // this is what clients SHOULD be using when they disconnect, instead they just release the channel and timeout - thanks saber
@@ -228,7 +228,7 @@ void c_network_message_handler::handle_leave_session(transport_address const* ou
 
 void c_network_message_handler::handle_leave_acknowledge(transport_address const* outgoing_address, s_network_message_leave_acknowledge const* message)
 {
-	INVOKE_CLASS_MEMBER(0x256E0, c_network_message_handler, handle_leave_acknowledge, outgoing_address, message);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_LEAVE_ACKNOWLEDGE, c_network_message_handler, handle_leave_acknowledge, outgoing_address, message);
 }
 
 void c_network_message_handler::handle_session_disband(transport_address const* outgoing_address, s_network_message_session_disband const* message)
@@ -535,17 +535,17 @@ void c_network_message_handler::handle_view_establishment(c_network_channel* cha
 	// non original but useful log
 	event(_event_verbose, "networking:messages:view-establishment: establishment %d received", message->establishment_mode);
 
-	DECLFUNC(0x257B0, void, __thiscall, c_network_channel*)(channel/*this, channel, message*/);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_VIEW_ESTABLISHMENT, void, __thiscall, c_network_channel*)(channel/*this, channel, message*/);
 }
 
 void c_network_message_handler::handle_player_acknowledge(c_network_channel* channel, s_network_message_player_acknowledge const* message)
 {
-	DECLFUNC(0x25810, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_PLAYER_ACKNOWLEDGE, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_update(c_network_channel* channel, s_network_message_synchronous_update const* message)
 {
-	static void* handle_synchronous_update_call = base_address<void*>(0x25860);
+	static void* handle_synchronous_update_call = base_address<void*>(ADDRESS_HANDLE_SYNCHRONOUS_UPDATE_CALL);
 	__asm
 	{
 		mov ecx, channel
@@ -555,32 +555,32 @@ void c_network_message_handler::handle_synchronous_update(c_network_channel* cha
 
 void c_network_message_handler::handle_synchronous_playback_control(c_network_channel* channel, s_network_message_synchronous_playback_control const* message)
 {
-	DECLFUNC(0x258E0, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_SYNCHRONOUS_PLAYBACK_CONTROL, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_actions(c_network_channel* channel, s_network_message_synchronous_actions const* message)
 {
-	DECLFUNC(0x25990, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_SYNCHRONOUS_ACTIONS, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_acknowledge(c_network_channel* channel, s_network_message_synchronous_acknowledge const* message)
 {
-	DECLFUNC(0x25810, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_PLAYER_ACKNOWLEDGE, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_gamestate(long size, void const* message)
 {
-	INVOKE(0x25A20, c_network_message_handler::handle_synchronous_gamestate, size, message);
+	INVOKE(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_SYNCHRONOUS_GAMESTATE, c_network_message_handler::handle_synchronous_gamestate, size, message);
 }
 
 void c_network_message_handler::handle_distributed_game_results(c_network_channel* channel, s_network_message_distributed_game_results const* message)
 {
-	DECLFUNC(0x25A70, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_DISTRIBUTED_GAME_RESULTS, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_synchronous_client_ready(c_network_channel* channel)
 {
-	DECLFUNC(0x25950, void, __thiscall, c_network_channel*)(channel);
+	DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_HANDLER_HANDLE_SYNCHRONOUS_CLIENT_READY, void, __thiscall, c_network_channel*)(channel);
 }
 
 void c_network_message_handler::handle_test(c_network_channel* channel, s_network_message_test const* message)

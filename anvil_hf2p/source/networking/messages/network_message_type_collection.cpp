@@ -95,7 +95,7 @@ void c_network_message_type_collection::register_message_type(
 
 void c_network_message_type_collection::encode_message_header(c_bitstream* stream, e_network_message_type message_type, long message_storage_size)
 {
-	DECLFUNC(0x387A0, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(this, stream, message_type, message_storage_size);
+	DECLFUNC(ADDRESS_ENCODE_MESSAGE_HEADER_HOOK, void, __thiscall, c_network_message_type_collection*, c_bitstream*, e_network_message_type, long)(this, stream, message_type, message_storage_size);
 }
 
 bool c_network_message_type_collection::decode_message_header(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size) const
@@ -104,7 +104,7 @@ bool c_network_message_type_collection::decode_message_header(c_bitstream* packe
 	ASSERT(message_type);
 	ASSERT(message_storage_size);
 
-	return DECLFUNC(0x38830, bool, __thiscall, const c_network_message_type_collection*, c_bitstream*, e_network_message_type*, long*)(this, packet, message_type, message_storage_size);
+	return DECLFUNC(ADDRESS_C_NETWORK_MESSAGE_TYPE_COLLECTION_DECODE_MESSAGE_HEADER, bool, __thiscall, const c_network_message_type_collection*, c_bitstream*, e_network_message_type*, long*)(this, packet, message_type, message_storage_size);
 }
 
 bool __cdecl c_network_message_type_collection::decode_message(c_bitstream* packet, e_network_message_type* message_type, long* message_storage_size, void* message_storage) const

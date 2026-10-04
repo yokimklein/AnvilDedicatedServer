@@ -29,7 +29,11 @@ struct s_network_session_status_data_player
 	s_player_identifier identifier;
 	s_player_configuration configuration;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_status_data_player) == 0xB78);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_status_data_player) == 0xB98);
+#endif
 
 struct game_player_options
 {
@@ -40,7 +44,11 @@ struct game_player_options
 	s_machine_identifier machine_identifier;
 	s_network_session_status_data_player player_data;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(game_player_options) == 0xB90);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(game_player_options) == 0xBB0);
+#endif
 
 struct game_options
 {
@@ -89,4 +97,8 @@ struct game_options
 	game_machine_options machines;
 	c_static_array<game_player_options, k_network_maximum_players_per_session> players;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(game_options) == 0x1A048);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(game_options) == 0x1A248);
+#endif

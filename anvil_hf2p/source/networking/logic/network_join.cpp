@@ -11,7 +11,7 @@
 #include <game\game.h>
 #include <cseries\cseries_events.h>
 
-REFERENCE_DECLARE(0x1039AF8, s_networking_join_data, g_network_join_data);
+REFERENCE_DECLARE(ADDRESS_G_NETWORK_JOIN_DATA, s_networking_join_data, g_network_join_data);
 
 void network_join_add_join_to_queue(c_network_session* session, transport_address const* incoming_address, s_network_session_join_request const* join_request)
 {
@@ -175,6 +175,7 @@ bool network_join_process_joins_from_queue()
 	{
 		s_networking_join_queue_entry& queue_entry = g_network_join_data.join_queue[0];
 
+#if ANVIL_BACKEND_ENABLED
 		if (game_is_dedicated_server())
 		{
 			// check if sessionIDs have been requested, if not request them
@@ -199,7 +200,7 @@ bool network_join_process_joins_from_queue()
 			else if (c_backend::private_service::retrieve_lobby_members::m_status.status == _request_status_received)
 			{
 				c_backend::private_service::retrieve_lobby_members::m_status.status = _request_status_none;
-
+			
 				// reset join if session data returned invalid, otherwise continue to join accept
 				if (!g_backend_data_cache.m_lobby_session.valid)
 				{
@@ -213,6 +214,7 @@ bool network_join_process_joins_from_queue()
 				return true;
 			}
 		}
+#endif
 
 		// Accept first entry in the queue
 		session->join_accept(&queue_entry.join_request, &queue_entry.address);
@@ -225,7 +227,7 @@ bool network_join_process_joins_from_queue()
 
 void __cdecl network_join_flush_join_queue()
 {
-	INVOKE(0x2A640, network_join_flush_join_queue);
+	INVOKE(ADDRESS_NETWORK_JOIN_FLUSH_JOIN_QUEUE, network_join_flush_join_queue);
 }
 
 void network_join_remove_join_from_queue(qword join_nonce)

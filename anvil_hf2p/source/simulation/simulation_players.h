@@ -29,7 +29,11 @@ struct s_player_collection_player
 	s_machine_identifier machine_identifier;
 	s_player_configuration configuration;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_player_collection_player) == 0xB90);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_player_collection_player) == 0xBB0);
+#endif
 
 struct s_player_collection
 {
@@ -37,4 +41,8 @@ struct s_player_collection
 	long player_count;
 	s_player_collection_player players[k_maximum_players];
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_player_collection) == 0xB908);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_player_collection) == 0xBB08);
+#endif

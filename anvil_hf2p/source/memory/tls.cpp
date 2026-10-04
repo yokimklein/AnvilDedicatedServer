@@ -1,7 +1,6 @@
 #include "tls.h"
 #include <windows.h>
 
-// $TODO: pull latest tls from donkey
 s_thread_local_storage* get_tls()
 {
 	static dword tls_index = 'NOGO';

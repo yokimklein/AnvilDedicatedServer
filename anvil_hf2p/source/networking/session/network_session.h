@@ -207,4 +207,8 @@ private:
 	} m_local_user_player_add;
 	static_assert(sizeof(c_network_session::s_local_player_add_queue_entry) == 0x10);
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_network_session) == 0x1AC098);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_network_session) == 0x1AEC98);
+#endif

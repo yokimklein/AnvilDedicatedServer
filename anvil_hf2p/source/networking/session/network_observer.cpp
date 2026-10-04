@@ -28,12 +28,12 @@ static_assert(NUMBEROF(k_owner_type_strings) == k_network_observer_owner_count);
 
 void c_network_observer::handle_connect_request(transport_address const* incoming_address, s_network_message_connect_request const* connect_request)
 {
-	INVOKE_CLASS_MEMBER(0x10E30, c_network_observer, handle_connect_request, incoming_address, connect_request);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_HANDLE_CONNECT_REQUEST, c_network_observer, handle_connect_request, incoming_address, connect_request);
 }
 
 void c_network_observer::observer_channel_initiate_connection(e_network_observer_owner observer_owner, long observer_channel_index)
 {
-	INVOKE_CLASS_MEMBER(0xF970, c_network_observer, observer_channel_initiate_connection, observer_owner, observer_channel_index);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_OBSERVER_CHANNEL_INITIATE_CONNECTION, c_network_observer, observer_channel_initiate_connection, observer_owner, observer_channel_index);
 }
 
 const char* c_network_observer::get_name(long observer_index)
@@ -62,7 +62,7 @@ c_network_observer::s_channel_observer* c_network_observer::get_observer(e_netwo
 
 void c_network_observer::observer_channel_send_message(e_network_observer_owner owner_type, long observer_channel_index, bool out_of_band, e_network_message_type message_type, long message_size, void const* message)
 {
-	INVOKE_CLASS_MEMBER(0xF440, c_network_observer, observer_channel_send_message, owner_type, observer_channel_index, out_of_band, message_type, message_size, message);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_OBSERVER_CHANNEL_SEND_MESSAGE, c_network_observer, observer_channel_send_message, owner_type, observer_channel_index, out_of_band, message_type, message_size, message);
 }
 
 bool c_network_observer::observer_channel_connected(e_network_observer_owner owner_type, long observer_index)
@@ -72,17 +72,17 @@ bool c_network_observer::observer_channel_connected(e_network_observer_owner own
 
 bool c_network_observer::observer_channel_backlogged(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
-	return INVOKE_CLASS_MEMBER(0xF880, c_network_observer, observer_channel_backlogged, owner_type, observer_index, message_type);
+	return INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_OBSERVER_CHANNEL_BACKLOGGED, c_network_observer, observer_channel_backlogged, owner_type, observer_index, message_type);
 }
 
 void c_network_observer::observer_channel_set_waiting_on_backlog(e_network_observer_owner owner_type, long observer_index, e_network_message_type message_type)
 {
-	INVOKE_CLASS_MEMBER(0xF900, c_network_observer, observer_channel_set_waiting_on_backlog, owner_type, observer_index, message_type);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_OBSERVER_CHANNEL_SET_WAITING_ON_BACKLOG, c_network_observer, observer_channel_set_waiting_on_backlog, owner_type, observer_index, message_type);
 }
 
 void c_network_observer::quality_statistics_get_ratings(ulong* connectivity_badness_rating, ulong* host_badness_rating, ulong* client_badness_rating)
 {
-	INVOKE_CLASS_MEMBER(0xEF30, c_network_observer, quality_statistics_get_ratings, connectivity_badness_rating, host_badness_rating, client_badness_rating);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_QUALITY_STATISTICS_GET_RATINGS, c_network_observer, quality_statistics_get_ratings, connectivity_badness_rating, host_badness_rating, client_badness_rating);
 }
 
 long c_network_observer::observer_channel_find_by_network_channel(e_network_observer_owner owner_type, c_network_channel const* channel) const
@@ -129,5 +129,5 @@ void c_network_observer::quality_statistics_notify_peer_left_gracefully(e_networ
 
 void c_network_observer::quality_statistics_report_badness(long observer_index, bool bad_not_good)
 {
-	INVOKE_CLASS_MEMBER(0xF160, c_network_observer, quality_statistics_report_badness, observer_index, bad_not_good);
+	INVOKE_CLASS_MEMBER(ADDRESS_C_NETWORK_OBSERVER_QUALITY_STATISTICS_REPORT_BADNESS, c_network_observer, quality_statistics_report_badness, observer_index, bad_not_good);
 }

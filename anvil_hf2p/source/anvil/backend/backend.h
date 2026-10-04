@@ -9,6 +9,8 @@
 #include <functional>
 #include <cseries\cseries.h>
 
+#define ANVIL_BACKEND_ENABLED 0
+
 // $TODO: https
 
 namespace net = boost::asio;

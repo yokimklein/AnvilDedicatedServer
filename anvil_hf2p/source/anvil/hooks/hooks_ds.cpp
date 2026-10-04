@@ -58,6 +58,7 @@ void __cdecl c_life_cycle_state_handler_in_game__exit_hook(s_hook_registers& reg
 // request all player containers for all players in session in case loadouts have been updated since joining & prior to game starting
 void __cdecl c_life_cycle_state_handler_start_game__enter_hook(s_hook_registers& registers)
 {
+#if ANVIL_BACKEND_ENABLED
     c_network_session* session = (c_network_session*)registers.eax;
 
     if (!session->is_host())
@@ -77,6 +78,7 @@ void __cdecl c_life_cycle_state_handler_start_game__enter_hook(s_hook_registers&
     {
         c_backend::user_storage_service::get_public_data::request(user_ids, membership->get_player_count(), (e_user_storage_container)container_index);
     }
+#endif
 }
 
 bool __fastcall c_network_session_parameter_game_start_status__set_hook(c_network_session_parameter_game_start_status* thisptr, void* unused, s_network_session_parameter_game_start_status* start_status)
@@ -206,26 +208,26 @@ void __cdecl game_initialize_hook(s_hook_registers& registers)
 void anvil_hooks_ds_apply()
 {
     // add anvil_session_update to network_update after network_session_interface_update
-    hook::insert(0x24601, 0x24606, anvil_session_update_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_ANVIL_SESSION_UPDATE_HOOK, ADDRESS_ANVIL_SESSION_UPDATE_HOOK_RETURN, anvil_session_update_hook, _hook_execute_replaced_first);
     
     // hook c_network_session_parameter_game_start_status::set calls to log when the session start status & start error are updated
-    hook::function(0x3BA00, 0x6C, c_network_session_parameter_game_start_status__set_hook);
-    hook::insert(0x4DF34, 0x4DF99, c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook, _hook_replace);
+    hook::function(ADDRESS_C_NETWORK_SESSION_PARAMETER_GAME_START_STATUS_SET, 0x6C, c_network_session_parameter_game_start_status__set_hook);
+    hook::insert(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_PRE_GAME_SQUAD_GAME_START_STATUS_UPDATE_HOOK, ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_PRE_GAME_SQUAD_GAME_START_STATUS_UPDATE_HOOK_RETURN, c_life_cycle_state_handler_pre_game__squad_game_start_status_update_hook, _hook_replace);
 
     // hook XNetCreateKey() to use a lobby/party ID from the API when running as a dedicated server
-    hook::function(0x3BC0, 0x79, transport_secure_key_create);
+    hook::function(ADDRESS_TRANSPORT_SECURE_KEY_CREATE, 0x79, transport_secure_key_create);
 
     // hook transport_secure_address_resolve to get secure address from API when running as a dedicated server
-    hook::function(0x3C50, 0xFB, transport_secure_address_resolve);
+    hook::function(ADDRESS_TRANSPORT_SECURE_ADDRESS_RESOLVE, 0xFB, transport_secure_address_resolve);
 
     // prevent the game from adding a player to the dedicated host
-    hook::call(0x2F5AC, peer_request_player_add_hook);
-    hook::call(0x212CC, network_session_interface_get_local_user_identifier_hook);
+    hook::call(ADDRESS_PEER_REQUEST_PLAYER_ADD_CALL, peer_request_player_add_hook);
+    hook::call(ADDRESS_NETWORK_SESSION_INTERFACE_GET_LOCAL_USER_IDENTIFIER_CALL, network_session_interface_get_local_user_identifier_hook);
 
     // set dedicated server session state to in game when c_life_cycle_state_handler_in_game::enter is called
-    hook::insert(0x4EAE9, 0x4EAF3, c_life_cycle_state_handler_in_game__enter_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_IN_GAME_ENTER_HOOK, ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_IN_GAME_ENTER_HOOK_RETURN, c_life_cycle_state_handler_in_game__enter_hook, _hook_execute_replaced_first);
     // set dedicated server session state back to waiting for players when c_life_cycle_state_handler_in_game::exit is called
-    hook::insert(0x4EB7B, 0x4EB82, c_life_cycle_state_handler_in_game__exit_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_IN_GAME_EXIT_HOOK, ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_IN_GAME_EXIT_HOOK_RETURN, c_life_cycle_state_handler_in_game__exit_hook, _hook_execute_replaced_first);
 
     // TODO: hook main_loading_initialize & main_game_load_map to disable load progress when running as a dedicated server (check if this is the same progress used for voting)
     // TODO: disable sound & rendering system when running as a dedicated server - optionally allow playing as host & spectate fly cam
@@ -233,45 +235,45 @@ void anvil_hooks_ds_apply()
     // disable saber's backend, we're using our own now
     // replace inlined hf2p_scenario_tags_load_finished in scenario_load with our own function to set xp event rewards & consumable costs
     // remove call to hf2p_initialize in scenario_load
-    hook::insert(0x7E978, 0x7E9AD, anvil_scenario_tags_load_title_instances, _hook_replace);
+    hook::insert(ADDRESS_ANVIL_SCENARIO_TAGS_LOAD_TITLE_INSTANCES, ADDRESS_ANVIL_SCENARIO_TAGS_LOAD_TITLE_INSTANCES_RETURN, anvil_scenario_tags_load_title_instances, _hook_replace);
     // $TODO: restore fmod_initialize dispose etc functions this nuked when sound isn't disabled
 
     // remove 13 hf2p service update calls in hf2p_game_update
-    patch::nop_region(0x2B0C51, 65);
+    patch::nop_region(ADDRESS_HF2P_GAME_UPDATE_NOP, LENGTH_HF2P_GAME_UPDATE_NOP);
 
     // remove call to game_shield_initialize in hf2p_security_initialize - this will crash unless hf2p_initialize is disabled
     // this prevents the game from exiting when no username and signincode launch args are supplied
-    patch::nop_region(0x2B0226, 5);
+    patch::nop_region(ADDRESS_HF2P_SECURITY_INITIALIZE_NOP, 5);
     // $TODO: replace above with removing hf2p_game_initialize?
 
     // remove call to hf2p_client_dispose & hf2p_main_dispose in game_dispose
-    patch::nop_region(0x95D9F, 5);
-    patch::nop_region(0x95DA4, 5);
+    patch::nop_region(ADDRESS_MAIN_LOOP_EXIT_NOP, 5);
+    patch::nop_region(ADDRESS_MAIN_LOOP_EXIT_NOP_2, 5);
 
     // remove call to heartbeat update in main_loop_pregame
-    patch::nop_region(0x96067, 5);
+    patch::nop_region(ADDRESS_MAIN_LOOP_PREGAME_NOP, 5);
 
     // hook remove_from_player_list to remove leaving players from the public data cache
-    hook::call(0x286F4, remove_from_player_list_hook);
-    hook::call(0x29567, remove_from_player_list_hook);
-    hook::call(0x30EE3, remove_from_player_list_hook);
-    hook::call(0x31AA9, remove_from_player_list_hook);
+    hook::call(ADDRESS_REMOVE_FROM_PLAYER_LIST_CALL, remove_from_player_list_hook);
+    hook::call(ADDRESS_REMOVE_FROM_PLAYER_LIST_CALL_2, remove_from_player_list_hook);
+    hook::call(ADDRESS_REMOVE_FROM_PLAYER_LIST_CALL_3, remove_from_player_list_hook);
+    hook::call(ADDRESS_REMOVE_FROM_PLAYER_LIST_CALL_4, remove_from_player_list_hook);
     // fix stack for remove_from_player_list hook
-    patch::nop_region(0x286F9, 3);
-    patch::nop_region(0x2956C, 3);
-    patch::nop_region(0x30EFB, 3);
-    patch::nop_region(0x31AB7, 3);
+    patch::nop_region(ADDRESS_MANAGED_SESSION_SYNCHRONIZE_TO_PLAYER_LIST_NOP, 3);
+    patch::nop_region(ADDRESS_MANAGED_SESSION_SUCCESSFUL_PLAYERS_REMOVE_COMPLETE_NOP, 3);
+    patch::nop_region(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_REMOVE_PEER_NOP, 3);
+    patch::nop_region(ADDRESS_C_NETWORK_SESSION_MEMBERSHIP_REMOVE_PLAYER_NOP, 3);
 
     // Request public data on game start (hook end of c_life_cycle_state_handler_start_game::enter)
-    hook::insert(0x4C40F, 0x4C415, c_life_cycle_state_handler_start_game__enter_hook, _hook_execute_replaced_first);
+    hook::insert(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_START_GAME_ENTER_HOOK, ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_START_GAME_ENTER_HOOK_RETURN, c_life_cycle_state_handler_start_game__enter_hook, _hook_execute_replaced_first);
 
     // Replace saber's backend for getting consumable TI data
-    hook::insert(0x3AF851, 0x3AF857, chud_update_user_data_hook, _hook_replace);
-    hook::function(0x42D290, 0x169, unit_handle_equipment_energy_cost);
-    hook::function(0xBF840, 0x62, player_can_use_consumable);
+    hook::insert(ADDRESS_CHUD_UPDATE_USER_DATA_HOOK, ADDRESS_CHUD_UPDATE_USER_DATA_HOOK_RETURN, chud_update_user_data_hook, _hook_replace);
+    hook::function(ADDRESS_UNIT_HANDLE_EQUIPMENT_ENERGY_COST, LENGTH_UNIT_HANDLE_EQUIPMENT_ENERGY_COST, unit_handle_equipment_energy_cost);
+    hook::function(ADDRESS_PLAYER_CAN_USE_CONSUMABLE, LENGTH_PLAYER_CAN_USE_CONSUMABLE, player_can_use_consumable);
 
     // Restore end game write stats to submit game stats to the API
-    hook::function(0x4C630, 0x218, c_life_cycle_state_handler_end_game_write_stats__update_hook);
+    hook::function(ADDRESS_C_LIFE_CYCLE_STATE_HANDLER_END_GAME_WRITE_STATS_UPDATE, 0x218, c_life_cycle_state_handler_end_game_write_stats__update_hook);
 
     //// WIP headless (no audio & video)
     //// take control of mark_necessary_resources to block audio & video resources

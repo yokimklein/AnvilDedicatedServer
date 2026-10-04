@@ -14,6 +14,7 @@
 #include "anvil\session_voting.h"
 #include "networking\network_utilities.h"
 #include "cseries\cseries_events.h"
+#include <game\game_engine_util.h>
 
 bool anvil_session_create()
 {
@@ -38,6 +39,7 @@ void anvil_session_update()
         return;
     }
 
+#if ANVIL_BACKEND_ENABLED
     c_backend::update();
 
     // Wait until we're connected to the API before proceeding
@@ -46,11 +48,17 @@ void anvil_session_update()
     {
         return;
     }
+#endif
 
     c_network_session* session = life_cycle_globals.state_manager.get_active_squad_session();
 
     // If there's no session, create one once we have a lobby from the API
-    if (session->disconnected() && g_backend_data_cache.m_lobby_info.valid)
+#if ANVIL_BACKEND_ENABLED
+    bool ready_to_create_session = session->disconnected() && g_backend_data_cache.m_lobby_info.valid;
+#else
+    bool ready_to_create_session = session->disconnected();
+#endif
+    if (ready_to_create_session)
     {
         anvil_session_create();
         logged_connection_info = false;
@@ -84,6 +92,8 @@ void anvil_session_update()
                 // update server info on API
                 s_transport_secure_address server_identifier;
                 anvil_get_server_identifier(&server_identifier);
+
+#if ANVIL_BACKEND_ENABLED
                 c_backend::private_service::update_game_server::request
                 (
                     transport_secure_address_get_string(&server_identifier),
@@ -92,6 +102,7 @@ void anvil_session_update()
                     transport_security_globals.address.port,
                     g_anvil_configuration["playlist_id"]
                 );
+#endif
                 // set default dedicated server state
                 e_dedicated_server_session_state session_state = _dedicated_server_session_state_matchmaking_session;
                 session->get_session_parameters()->m_parameters.dedicated_server_session_state.set(&session_state);
@@ -151,6 +162,9 @@ bool anvil_session_set_gamemode(e_game_engine_type engine_index, long variant_in
     }
 
     game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_time_limit_minutes(time_limit);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_round_limit(3);
+    //game_variant.get_active_variant_writeable()->get_miscellaneous_options_writeable()->set_early_victory_win_count(3);
+    //game_variant.get_ctf_variant_writeable()->set_score_to_win(1);
 
     if (!session->get_session_parameters()->m_parameters.ui_game_mode.request_change(_gui_game_mode_multiplayer))
     {

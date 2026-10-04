@@ -2,16 +2,16 @@
 #include <networking\session\network_session.h>
 #include <cseries\cseries.h>
 
-REFERENCE_DECLARE(0x3EADFA8, s_network_life_cycle_globals, life_cycle_globals);
+REFERENCE_DECLARE(ADDRESS_LIFE_CYCLE_GLOBALS, s_network_life_cycle_globals, life_cycle_globals);
 
 void __fastcall network_life_cycle_end()
 {
-	INVOKE(0x2AC20, network_life_cycle_end);
+	INVOKE(ADDRESS_NETWORK_LIFE_CYCLE_END, network_life_cycle_end);
 }
 
 bool __fastcall network_life_cycle_create_local_squad(e_network_session_class session_class)
 {
-	return INVOKE(0x2AD00, network_life_cycle_create_local_squad, session_class);
+	return INVOKE(ADDRESS_NETWORK_LIFE_CYCLE_CREATE_LOCAL_SQUAD, network_life_cycle_create_local_squad, session_class);
 }
 
 bool network_life_cycle_get_observer(c_network_observer** out_observer)

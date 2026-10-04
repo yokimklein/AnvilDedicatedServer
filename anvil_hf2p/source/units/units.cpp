@@ -8,7 +8,7 @@
 
 void __fastcall unit_set_actively_controlled(datum_index unit_index, bool actively_controlled)
 {
-    INVOKE(0x423010, unit_set_actively_controlled, unit_index, actively_controlled);
+    INVOKE(ADDRESS_UNIT_SET_ACTIVELY_CONTROLLED, unit_set_actively_controlled, unit_index, actively_controlled);
 }
 
 void __fastcall unit_inventory_cycle_weapon_set_identifier(datum_index unit_index)
@@ -43,20 +43,20 @@ void __fastcall unit_delete_all_weapons_internal(datum_index unit_index)
 #pragma runtime_checks("", off)
 void __fastcall unit_inventory_set_weapon_index(datum_index unit_index, datum_index inventory_index, datum_index item_index, e_unit_drop_type drop_type)
 {
-    INVOKE(0x426D10, unit_inventory_set_weapon_index, unit_index, inventory_index, item_index, drop_type);
+    INVOKE(ADDRESS_UNIT_INVENTORY_SET_WEAPON_INDEX, unit_inventory_set_weapon_index, unit_index, inventory_index, item_index, drop_type);
     __asm add esp, 8; // cleanup stack after usercall
 }
 
 void __fastcall unit_drop_item(datum_index unit_index, datum_index equipment_index, e_unit_drop_type drop_type)
 {
-    INVOKE(0x426500, unit_drop_item, unit_index, equipment_index, drop_type);
+    INVOKE(ADDRESS_UNIT_DROP_ITEM, unit_drop_item, unit_index, equipment_index, drop_type);
     __asm add esp, 4; // cleanup stack after usercall
 }
 #pragma runtime_checks("", restore)
 
 void __fastcall unit_control(datum_index unit_index, void* unit_control_data)
 {
-    INVOKE(0x41BA10, unit_control, unit_index, unit_control_data);
+    INVOKE(ADDRESS_UNIT_CONTROL, unit_control, unit_index, unit_control_data);
 
     c_simulation_object_update_flags update_flags;
     update_flags.set_flag(unit_index, _simulation_unit_update_desired_aiming_vector);
@@ -74,12 +74,12 @@ void __fastcall unit_set_aiming_vectors(datum_index unit_index, real_vector3d* a
 
 void __fastcall unit_add_initial_loadout(datum_index unit_index)
 {
-    INVOKE(0xFB6E0, unit_add_initial_loadout, unit_index);
+    INVOKE(ADDRESS_UNIT_ADD_INITIAL_LOADOUT, unit_add_initial_loadout, unit_index);
 }
 
 long __fastcall unit_inventory_get_weapon(datum_index unit_index, short inventory_index)
 {
-    return INVOKE(0x422E60, unit_inventory_get_weapon, unit_index, inventory_index);
+    return INVOKE(ADDRESS_UNIT_INVENTORY_GET_WEAPON, unit_inventory_get_weapon, unit_index, inventory_index);
 }
 
 void __fastcall unit_delete_equipment(datum_index unit_index, long slot_index)

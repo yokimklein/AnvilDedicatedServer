@@ -26,9 +26,17 @@ struct s_network_session_parameter_saved_film_game_options
 	long start_ticks;
 	game_options game_options;
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(s_network_session_parameter_saved_film_game_options) == 0x1A050);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(s_network_session_parameter_saved_film_game_options) == 0x1A250);
+#endif
 
 class c_network_session_parameter_saved_film_game_options : public c_network_session_parameter_chunked<s_network_session_parameter_saved_film_game_options, 0x8800>
 {
 };
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
 static_assert(sizeof(c_network_session_parameter_saved_film_game_options) == 0x45140);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+static_assert(sizeof(c_network_session_parameter_saved_film_game_options) == 0x45540);
+#endif

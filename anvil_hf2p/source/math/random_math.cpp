@@ -2,7 +2,7 @@
 #include "cseries\cseries.h"
 #include <windows.h>
 
-REFERENCE_DECLARE(0x4EBF024, dword, random_seed_local);
+REFERENCE_DECLARE(ADDRESS_RANDOM_SEED_LOCAL, dword, random_seed_local);
 
 dword get_local_random_seed()
 {

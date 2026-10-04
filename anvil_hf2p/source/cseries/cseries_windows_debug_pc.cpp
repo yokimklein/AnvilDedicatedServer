@@ -41,10 +41,10 @@ static_assert(sizeof(s_exception_information) == 0x2F4);
 
 bool g_set_always_a_debugger_present = false;
 bool g_set_never_a_debugger_present = false;
-REFERENCE_DECLARE(0x106DECC, ulong, g_exception_time);
+REFERENCE_DECLARE(ADDRESS_G_EXCEPTION_TIME, ulong, g_exception_time);
 //REFERENCE_DECLARE(0x0, PEXCEPTION_POINTERS, g_exception_pointers);
-REFERENCE_DECLARE(0x40274B8, c_synchronized_long, g_exception_caching_in_progress);
-REFERENCE_DECLARE(0x40274BC, s_exception_information, g_exception_information);
+REFERENCE_DECLARE(ADDRESS_G_EXCEPTION_CACHING_IN_PROGRESS, c_synchronized_long, g_exception_caching_in_progress);
+REFERENCE_DECLARE(ADDRESS_G_EXCEPTION_INFORMATION, s_exception_information, g_exception_information);
 
 const char* const k_screenshot_file = "crash_report\\crash_screenshot.bmp";
 
@@ -218,7 +218,7 @@ bool has_cached_exception()
 
 const char* __fastcall exception_code_get_string(ulong code)
 {
-	return INVOKE(0x167E80, exception_code_get_string, code);
+	return INVOKE(ADDRESS_EXCEPTION_CODE_GET_STRING, exception_code_get_string, code);
 }
 
 bool is_debugger_present()
@@ -249,7 +249,7 @@ void cache_exception_information(_EXCEPTION_POINTERS* exception_pointers)
 
 void crashdump_from_exception()
 {
-	INVOKE(0x2B4650, crashdump_from_exception);
+	INVOKE(ADDRESS_CRASHDUMP_FROM_EXCEPTION, crashdump_from_exception);
 }
 
 long generic_exception_filter(ulong exception_code, _EXCEPTION_POINTERS* exception_pointers)
@@ -283,5 +283,5 @@ void build_exception_information(_EXCEPTION_POINTERS* exception_pointers, s_exce
 void __fastcall build_exception_pointers(_EXCEPTION_POINTERS* exception_pointers)
 {
 	// $TODO: new since ms23, need to look into this further
-	INVOKE(0x167BD0, build_exception_pointers, exception_pointers);
+	INVOKE(ADDRESS_BUILD_EXCEPTION_POINTERS, build_exception_pointers, exception_pointers);
 }

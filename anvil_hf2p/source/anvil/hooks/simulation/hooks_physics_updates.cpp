@@ -94,7 +94,11 @@ void __cdecl object_set_at_rest_hook4(s_hook_registers& registers)
 
 void __cdecl object_set_at_rest_hook5(s_hook_registers& registers)
 {
+#if ENGINE_VERSION == ENGINE_VERSION_ID(11, 1, 604673)
     datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x48);
+#elif ENGINE_VERSION == ENGINE_VERSION_ID(12, 1, 700255)
+    datum_index object_index = *(datum_index*)(registers.esp + 0x58 - 0x44);
+#endif
 
     object_set_at_rest(object_index, true);
 }
@@ -184,55 +188,55 @@ void __fastcall object_set_at_rest_hook14(datum_index object_index)
 void anvil_hooks_physics_updates_apply()
 {
     // object_set_position_internal
-    hook::insert(0x3FC038, 0x3FC03E, object_set_position_internal_hook1, _hook_execute_replaced_first); // updates position
-    hook::insert(0x3FC060, 0x3FC066, object_set_position_internal_hook2, _hook_execute_replaced_first); // updates forward & up
-    hook::insert(0x404A51, 0x404ADD, object_move_respond_to_physics_hook, _hook_replace); // replaced inlined code with call
+    hook::insert(ADDRESS_OBJECT_SET_POSITION_INTERNAL_HOOK1, ADDRESS_OBJECT_SET_POSITION_INTERNAL_HOOK1_RETURN, object_set_position_internal_hook1, _hook_execute_replaced_first); // updates position
+    hook::insert(ADDRESS_OBJECT_SET_POSITION_INTERNAL_HOOK2, ADDRESS_OBJECT_SET_POSITION_INTERNAL_HOOK2_RETURN, object_set_position_internal_hook2, _hook_execute_replaced_first); // updates forward & up
+    hook::insert(ADDRESS_OBJECT_MOVE_RESPOND_TO_PHYSICS_HOOK, ADDRESS_OBJECT_MOVE_RESPOND_TO_PHYSICS_HOOK_RETURN, object_move_respond_to_physics_hook, _hook_replace); // replaced inlined code with call
 
     // object_set_velocities_internal - TODO: check if object_set_velocities was inlined anywhere
-    hook::function(0x3FC500, 0x53, object_set_velocities_internal_hook);
-    hook::insert(0x3FC7F8, 0x3FC833, object_apply_acceleration_hook, _hook_replace); // replaced inlined code with call
+    hook::function(ADDRESS_OBJECT_SET_VELOCITIES_INTERNAL, 0x53, object_set_velocities_internal_hook);
+    hook::insert(ADDRESS_OBJECT_APPLY_ACCELERATION_HOOK, ADDRESS_OBJECT_APPLY_ACCELERATION_HOOK_RETURN, object_apply_acceleration_hook, _hook_replace); // replaced inlined code with call
     
     // object_set_at_rest
-    hook::function(0x4011F0, 0x90, object_set_at_rest); // add updates back to original call
+    hook::function(ADDRESS_OBJECT_SET_AT_REST, 0x90, object_set_at_rest); // add updates back to original call
     // hook nearby object_wake calls in inlined object_set_at_rest instances to add back sim updates
-    hook::call(0x6BBB8, object_set_at_rest_hook); // c_simulation_object_entity_definition::object_apply_update
-    hook::call(0x773D6, object_set_at_rest_hook); // c_simulation_generic_entity_definition::handle_delete_object
-    hook::call(0xC82A1, object_set_at_rest_hook); // garbage_collect_multiplayer
-    hook::call(0x172CB3, object_set_at_rest_hook); // c_candy_spawner::spawn_object
-    hook::call(0x1282B8, object_set_at_rest_hook); // c_havok_component::wake_all_bodies_in_phantoms
-    hook::call(0x3FBF35, object_set_at_rest_hook); // object_reset
-    hook::call(0x419397, object_set_at_rest_hook); // unit_fix_position
-    hook::call(0x413DD3, object_set_at_rest_hook); // damage_response_fire
-    hook::call(0x415DC3, object_set_at_rest_hook); // object_damage_constraints
-    hook::call(0x43DAF6, object_set_at_rest_hook); // biped_update_without_parent
-    hook::call(0x4632B7, object_set_at_rest_hook); // projectile_accelerate
-    hook::call(0x456EB5, object_set_at_rest_hook); // motor_animation_exit_seat_immediate_internal
-    hook::call(0x1EF12D, object_set_at_rest_hook); // object_wake_physics - inlined into object_wake_physics_evaluate w/ object_wake call
-    hook::call(0x46D33E, object_set_at_rest_hook); // object_early_mover_delete
-    hook::call(0x4848B8, object_set_at_rest_hook); // item_multiplayer_at_rest_state_initialize 
-    hook::call(0x4980E3, object_set_at_rest_hook); // biped_stun_submit
-    hook::call(0x4A9126, object_set_at_rest_hook); // c_vehicle_type_mantis::update_physics
-    hook::call(0x4A4300, object_set_at_rest_hook); // biped_dead_force_airborne
-    hook::call(0x4A1F00, object_set_at_rest_hook); // biped_exit_relaxation
-    hook::call(0x4A2396, object_set_at_rest_hook); // biped_start_relaxation
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL, object_set_at_rest_hook); // c_simulation_object_entity_definition::object_apply_update
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_2, object_set_at_rest_hook); // c_simulation_generic_entity_definition::handle_delete_object
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_3, object_set_at_rest_hook); // garbage_collect_multiplayer
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_4, object_set_at_rest_hook); // c_candy_spawner::spawn_object
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_5, object_set_at_rest_hook); // c_havok_component::wake_all_bodies_in_phantoms
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_6, object_set_at_rest_hook); // object_reset
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_7, object_set_at_rest_hook); // unit_fix_position
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_8, object_set_at_rest_hook); // damage_response_fire
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_9, object_set_at_rest_hook); // object_damage_constraints
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_10, object_set_at_rest_hook); // biped_update_without_parent
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_11, object_set_at_rest_hook); // projectile_accelerate
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_12, object_set_at_rest_hook); // motor_animation_exit_seat_immediate_internal
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_13, object_set_at_rest_hook); // object_wake_physics - inlined into object_wake_physics_evaluate w/ object_wake call
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_14, object_set_at_rest_hook); // object_early_mover_delete
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_15, object_set_at_rest_hook); // item_multiplayer_at_rest_state_initialize 
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_16, object_set_at_rest_hook); // biped_stun_submit
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_17, object_set_at_rest_hook); // c_vehicle_type_mantis::update_physics
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_18, object_set_at_rest_hook); // biped_dead_force_airborne
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_19, object_set_at_rest_hook); // biped_exit_relaxation
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_20, object_set_at_rest_hook); // biped_start_relaxation
     // inlined object_set_at_rest instances
-    hook::insert(0x770F5, 0x77142, object_set_at_rest_hook2, _hook_replace); // UNTESTED!! // c_simulation_generic_entity_definition::create_object
-    hook::insert(0x7255B, 0x725A8, object_set_at_rest_hook3, _hook_replace); // UNTESTED!! // c_simulation_vehicle_entity_definition::create_object
-    hook::insert(0x400A97, 0x400AD1, object_set_at_rest_hook4, _hook_replace); // object_attach_to_node_immediate
-    patch::nop_region(0x400A89, 4); // cleanup redundant instructions
-    patch::nop_region(0x400A91, 3); // cleanup redundant instructions
-    hook::insert(0x467DB1, 0x467DE7, object_set_at_rest_hook5, _hook_replace); // projectile_attach
-    patch::nop_region(0x467D93, 14); // cleanup redundant instructions
-    patch::nop_region(0x467DA4, 9); // cleanup redundant instructions
-    hook::insert(0x464E82, 0x464EC7, object_set_at_rest_hook6, _hook_replace); // projectile_collision
-    hook::insert(0x4623A6, 0x462431, object_set_at_rest_hook7, _hook_replace); // projectile_initial_update (called for conically fired projectiles, ie shotguns)
-    patch::nop_region(0x462398, 11); // cleanup redundant instructions
-    hook::insert(0x46D200, 0x46D281, object_set_at_rest_hook8, _hook_replace); // UNTESTED!! // object_early_mover_delete
-    hook::insert(0x46D2D0, 0x46D343, object_set_at_rest_hook9, _hook_replace); // UNTESTED!! // object_early_mover_delete
-    hook::insert(0x6D50C7, 0x6D50EF, object_set_at_rest_hook10, _hook_replace); // UNTESTED!! // swarm_accelerate > creature_accelerate inlined
-    patch::nop_region(0x6D506C, 0x5B); // nop leftover code
-    hook::call(0x48FB9A, object_set_at_rest_hook11); // scenery_new, hooked scenery_animation_idle call
-    hook::insert(0x4BEB84, 0x4BEBB7, object_set_at_rest_hook12, _hook_replace); // vehicle_program_activate // havok vehicle physics invalid flag, used only by troop hog back
-    hook::insert(0x4BFF31, 0x4BFF76, object_set_at_rest_hook13, _hook_replace); // UNTESTED!! // vehicle_program_update
-    hook::call(0x4C7A66, object_set_at_rest_hook14); // unit_custom_animation_play_animation_submit // plays on podium
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK2, ADDRESS_OBJECT_SET_AT_REST_HOOK2_RETURN, object_set_at_rest_hook2, _hook_replace); // UNTESTED!! // c_simulation_generic_entity_definition::create_object
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK3, ADDRESS_OBJECT_SET_AT_REST_HOOK3_RETURN, object_set_at_rest_hook3, _hook_replace); // UNTESTED!! // c_simulation_vehicle_entity_definition::create_object
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK4, ADDRESS_OBJECT_SET_AT_REST_HOOK4_RETURN, object_set_at_rest_hook4, _hook_replace); // object_attach_to_node_immediate
+    patch::nop_region(ADDRESS_OBJECT_ATTACH_TO_NODE_IMMEDIATE_NOP, 4); // cleanup redundant instructions
+    patch::nop_region(ADDRESS_OBJECT_ATTACH_TO_NODE_IMMEDIATE_NOP_2, 3); // cleanup redundant instructions
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK5, ADDRESS_OBJECT_SET_AT_REST_HOOK5_RETURN, object_set_at_rest_hook5, _hook_replace); // projectile_attach
+    patch::nop_region(ADDRESS_PROJECTILE_ATTACH_NOP, 14); // cleanup redundant instructions
+    patch::nop_region(ADDRESS_PROJECTILE_ATTACH_NOP_2, 9); // cleanup redundant instructions
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK6, ADDRESS_OBJECT_SET_AT_REST_HOOK6_RETURN, object_set_at_rest_hook6, _hook_replace); // projectile_collision
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK7, ADDRESS_OBJECT_SET_AT_REST_HOOK7_RETURN, object_set_at_rest_hook7, _hook_replace); // projectile_initial_update (called for conically fired projectiles, ie shotguns)
+    patch::nop_region(ADDRESS_PROJECTILE_INITIAL_UPDATE_NOP, 11); // cleanup redundant instructions
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK8, ADDRESS_OBJECT_SET_AT_REST_HOOK8_RETURN, object_set_at_rest_hook8, _hook_replace); // UNTESTED!! // object_early_mover_delete
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK9, ADDRESS_OBJECT_SET_AT_REST_HOOK9_RETURN, object_set_at_rest_hook9, _hook_replace); // UNTESTED!! // object_early_mover_delete
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK10, ADDRESS_OBJECT_SET_AT_REST_HOOK10_RETURN, object_set_at_rest_hook10, _hook_replace); // UNTESTED!! // swarm_accelerate > creature_accelerate inlined
+    patch::nop_region(ADDRESS_SWARM_ACCELERATE_NOP, 0x5B); // nop leftover code
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_21, object_set_at_rest_hook11); // scenery_new, hooked scenery_animation_idle call
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK12, ADDRESS_OBJECT_SET_AT_REST_HOOK12_RETURN, object_set_at_rest_hook12, _hook_replace); // vehicle_program_activate // havok vehicle physics invalid flag, used only by troop hog back
+    hook::insert(ADDRESS_OBJECT_SET_AT_REST_HOOK13, ADDRESS_OBJECT_SET_AT_REST_HOOK13_RETURN, object_set_at_rest_hook13, _hook_replace); // UNTESTED!! // vehicle_program_update
+    hook::call(ADDRESS_OBJECT_SET_AT_REST_CALL_22, object_set_at_rest_hook14); // unit_custom_animation_play_animation_submit // plays on podium
 }

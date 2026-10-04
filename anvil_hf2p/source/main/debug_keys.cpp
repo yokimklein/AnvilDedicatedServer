@@ -30,7 +30,7 @@ debug_key global_debug_key_list[]
 		.allow_out_of_game = false,
 		.allow_in_editor = false,
 		.toggle_variable = true,
-		.variable = base_address<bool*>(0x103E7C4)
+		.variable = base_address<bool*>(ADDRESS_DISPLAY_FRAMERATE)
 	},
 	{
 		.name = "anvil session begin vote",
