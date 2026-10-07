@@ -410,3 +410,4 @@ removed/
 AGENTS.md
 ms30_port/*
 claudeprompt.txt
+!anvil_hf2p/external_libraries/**/[Dd]ebug/
